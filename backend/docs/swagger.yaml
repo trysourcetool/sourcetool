@@ -1,0 +1,1593 @@
+basePath: /api/v1.
+definitions:
+  errdefs.Error:
+    properties:
+      detail:
+        type: string
+      id:
+        type: string
+      meta:
+        additionalProperties: {}
+        type: object
+      status:
+        type: integer
+      title:
+        type: string
+    type: object
+  server_http_types.HostInstancePayload:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      sdkName:
+        type: string
+      sdkVersion:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.APIKeyPayload:
+    properties:
+      createdAt:
+        type: string
+      environment:
+        $ref: '#/definitions/types.EnvironmentPayload'
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.CreateAPIKeyInput:
+    properties:
+      environmentId:
+        type: string
+      name:
+        type: string
+    required:
+    - environmentId
+    - name
+    type: object
+  types.CreateAPIKeyPayload:
+    properties:
+      apiKey:
+        $ref: '#/definitions/types.APIKeyPayload'
+    type: object
+  types.CreateEnvironmentInput:
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - color
+    - name
+    - slug
+    type: object
+  types.CreateEnvironmentPayload:
+    properties:
+      environment:
+        $ref: '#/definitions/types.EnvironmentPayload'
+    type: object
+  types.CreateGroupInput:
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+      userIds:
+        items:
+          type: string
+        type: array
+    required:
+    - name
+    - slug
+    - userIds
+    type: object
+  types.CreateGroupPayload:
+    properties:
+      group:
+        $ref: '#/definitions/types.GroupPayload'
+    type: object
+  types.CreateOrganizationInput:
+    properties:
+      subdomain:
+        type: string
+    type: object
+  types.CreateOrganizationPayload:
+    properties:
+      organization:
+        $ref: '#/definitions/types.OrganizationPayload'
+    type: object
+  types.DeleteAPIKeyPayload:
+    properties:
+      apiKey:
+        $ref: '#/definitions/types.APIKeyPayload'
+    type: object
+  types.DeleteEnvironmentPayload:
+    properties:
+      environment:
+        $ref: '#/definitions/types.EnvironmentPayload'
+    type: object
+  types.DeleteGroupPayload:
+    properties:
+      group:
+        $ref: '#/definitions/types.GroupPayload'
+    type: object
+  types.EnvironmentPayload:
+    properties:
+      color:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.GetAPIKeyPayload:
+    properties:
+      apiKey:
+        $ref: '#/definitions/types.APIKeyPayload'
+    type: object
+  types.GetEnvironmentPayload:
+    properties:
+      environment:
+        $ref: '#/definitions/types.EnvironmentPayload'
+    type: object
+  types.GetGoogleAuthCodeURLInvitationInput:
+    properties:
+      invitationToken:
+        type: string
+    required:
+    - invitationToken
+    type: object
+  types.GetGoogleAuthCodeURLInvitationPayload:
+    properties:
+      url:
+        type: string
+    type: object
+  types.GetGoogleAuthCodeURLPayload:
+    properties:
+      url:
+        type: string
+    type: object
+  types.GetGroupPayload:
+    properties:
+      group:
+        $ref: '#/definitions/types.GroupPayload'
+    type: object
+  types.GetMePayload:
+    properties:
+      user:
+        $ref: '#/definitions/types.UserPayload'
+    type: object
+  types.GroupPagePayload:
+    properties:
+      createdAt:
+        type: string
+      groupId:
+        type: string
+      id:
+        type: string
+      pageId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.GroupPayload:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.InviteUsersInput:
+    properties:
+      emails:
+        items:
+          type: string
+        type: array
+      role:
+        enum:
+        - admin
+        - developer
+        - member
+        type: string
+    required:
+    - emails
+    - role
+    type: object
+  types.InviteUsersPayload:
+    properties:
+      userInvitations:
+        items:
+          $ref: '#/definitions/types.UserInvitationPayload'
+        type: array
+    type: object
+  types.ListAPIKeysPayload:
+    properties:
+      devKey:
+        $ref: '#/definitions/types.APIKeyPayload'
+      liveKeys:
+        items:
+          $ref: '#/definitions/types.APIKeyPayload'
+        type: array
+    type: object
+  types.ListEnvironmentsPayload:
+    properties:
+      environments:
+        items:
+          $ref: '#/definitions/types.EnvironmentPayload'
+        type: array
+    type: object
+  types.ListGroupsPayload:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/types.GroupPayload'
+        type: array
+      userGroups:
+        items:
+          $ref: '#/definitions/types.UserGroupPayload'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/types.UserPayload'
+        type: array
+    type: object
+  types.ListPagesPayload:
+    properties:
+      groupPages:
+        items:
+          $ref: '#/definitions/types.GroupPagePayload'
+        type: array
+      groups:
+        items:
+          $ref: '#/definitions/types.GroupPayload'
+        type: array
+      pages:
+        items:
+          $ref: '#/definitions/types.PagePayload'
+        type: array
+      userGroups:
+        items:
+          $ref: '#/definitions/types.UserGroupPayload'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/types.UserPayload'
+        type: array
+    type: object
+  types.ListUsersPayload:
+    properties:
+      userInvitations:
+        items:
+          $ref: '#/definitions/types.UserInvitationPayload'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/types.UserPayload'
+        type: array
+    type: object
+  types.ObtainAuthTokenPayload:
+    properties:
+      authUrl:
+        type: string
+      token:
+        type: string
+    type: object
+  types.OrganizationPayload:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      subdomain:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.PagePayload:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      route:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  types.PingHostInstancePayload:
+    properties:
+      hostInstance:
+        $ref: '#/definitions/server_http_types.HostInstancePayload'
+    type: object
+  types.RefreshTokenPayload:
+    properties:
+      expiresAt:
+        type: string
+    type: object
+  types.SaveAuthInput:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  types.SaveAuthPayload:
+    properties:
+      expiresAt:
+        type: string
+      redirectUrl:
+        type: string
+    type: object
+  types.SendSignUpInstructionsInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  types.SendSignUpInstructionsPayload:
+    properties:
+      email:
+        type: string
+    type: object
+  types.SendUpdateUserEmailInstructionsInput:
+    properties:
+      email:
+        type: string
+      emailConfirmation:
+        type: string
+    required:
+    - email
+    - emailConfirmation
+    type: object
+  types.SignInInvitationInput:
+    properties:
+      invitationToken:
+        type: string
+      password:
+        type: string
+    required:
+    - invitationToken
+    - password
+    type: object
+  types.SignInWithGoogleInput:
+    properties:
+      sessionToken:
+        type: string
+    required:
+    - sessionToken
+    type: object
+  types.SignInWithGoogleInvitationInput:
+    properties:
+      sessionToken:
+        type: string
+    required:
+    - sessionToken
+    type: object
+  types.SignInWithGooglePayload:
+    properties:
+      authUrl:
+        type: string
+      isOrganizationExists:
+        type: boolean
+      token:
+        type: string
+    type: object
+  types.SignUpInput:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      passwordConfirmation:
+        type: string
+      token:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - password
+    - passwordConfirmation
+    - token
+    type: object
+  types.SignUpInvitationInput:
+    properties:
+      firstName:
+        type: string
+      invitationToken:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      passwordConfirmation:
+        type: string
+    required:
+    - firstName
+    - invitationToken
+    - lastName
+    - password
+    - passwordConfirmation
+    type: object
+  types.SignUpWithGoogleInput:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      sessionToken:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - sessionToken
+    type: object
+  types.SignUpWithGoogleInvitationInput:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      sessionToken:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - sessionToken
+    type: object
+  types.SuccessPayload:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  types.UpdateAPIKeyInput:
+    properties:
+      name:
+        type: string
+    type: object
+  types.UpdateAPIKeyPayload:
+    properties:
+      apiKey:
+        $ref: '#/definitions/types.APIKeyPayload'
+    type: object
+  types.UpdateEnvironmentInput:
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+    required:
+    - color
+    - name
+    type: object
+  types.UpdateEnvironmentPayload:
+    properties:
+      environment:
+        $ref: '#/definitions/types.EnvironmentPayload'
+    type: object
+  types.UpdateGroupInput:
+    properties:
+      name:
+        type: string
+      userIds:
+        items:
+          type: string
+        type: array
+    required:
+    - name
+    - userIds
+    type: object
+  types.UpdateGroupPayload:
+    properties:
+      group:
+        $ref: '#/definitions/types.GroupPayload'
+    type: object
+  types.UpdateOrganizationUserInput:
+    properties:
+      groupIds:
+        items:
+          type: string
+        type: array
+      role:
+        enum:
+        - admin
+        - developer
+        - member
+        type: string
+    type: object
+  types.UpdateUserEmailInput:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  types.UpdateUserEmailPayload:
+    properties:
+      user:
+        $ref: '#/definitions/types.UserPayload'
+    type: object
+  types.UpdateUserInput:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+  types.UpdateUserPasswordInput:
+    properties:
+      currentPassword:
+        type: string
+      password:
+        type: string
+      passwordConfirmation:
+        type: string
+    required:
+    - currentPassword
+    - password
+    - passwordConfirmation
+    type: object
+  types.UpdateUserPasswordPayload:
+    properties:
+      user:
+        $ref: '#/definitions/types.UserPayload'
+    type: object
+  types.UpdateUserPayload:
+    properties:
+      user:
+        $ref: '#/definitions/types.UserPayload'
+    type: object
+  types.UserGroupPayload:
+    properties:
+      createdAt:
+        type: string
+      groupId:
+        type: string
+      id:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  types.UserInvitationPayload:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+    type: object
+  types.UserPayload:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      lastName:
+        type: string
+      organization:
+        $ref: '#/definitions/types.OrganizationPayload'
+      role:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+host: https://api.trysourcetool.com
+info:
+  contact: {}
+  description: Sourcetool's API documentation
+  termsOfService: http://swagger.io/terms/
+  title: Sourcetool API
+  version: "1.0"
+paths:
+  /apiKeys:
+    get:
+      consumes:
+      - application/json
+      operationId: list-apikeys
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListAPIKeysPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - apiKeys
+    post:
+      consumes:
+      - application/json
+      operationId: create-apikey
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateAPIKeyInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateAPIKeyPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - apiKeys
+  /apiKeys/{apiKeyID}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-apikey
+      parameters:
+      - description: API Key ID
+        in: path
+        name: apiKeyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DeleteAPIKeyPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - apiKeys
+    get:
+      consumes:
+      - application/json
+      operationId: get-apikey
+      parameters:
+      - description: API Key ID
+        in: path
+        name: apiKeyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetAPIKeyPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - apiKeys
+    put:
+      consumes:
+      - application/json
+      operationId: update-apikey
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateAPIKeyInput'
+      - description: API Key ID
+        in: path
+        name: apiKeyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateAPIKeyPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - apiKeys
+  /environments:
+    get:
+      consumes:
+      - application/json
+      operationId: list-environments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListEnvironmentsPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - environments
+    post:
+      consumes:
+      - application/json
+      operationId: create-environment
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateEnvironmentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateEnvironmentPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - environments
+  /environments/{environmentID}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-environment
+      parameters:
+      - description: Environment ID
+        in: path
+        name: environmentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DeleteEnvironmentPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - environments
+    get:
+      consumes:
+      - application/json
+      operationId: get-environment
+      parameters:
+      - description: Environment ID
+        in: path
+        name: environmentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetEnvironmentPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - environments
+    put:
+      consumes:
+      - application/json
+      operationId: update-environment
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateEnvironmentInput'
+      - description: Environment ID
+        in: path
+        name: environmentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateEnvironmentPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - environments
+  /groups:
+    get:
+      consumes:
+      - application/json
+      operationId: list-groups
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListGroupsPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      operationId: create-group
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateGroupInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateGroupPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - groups
+  /groups/{groupID}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-group
+      parameters:
+      - description: Group ID
+        in: path
+        name: groupID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DeleteGroupPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - groups
+    get:
+      consumes:
+      - application/json
+      operationId: get-group
+      parameters:
+      - description: Group ID
+        in: path
+        name: groupID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetGroupPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - groups
+    put:
+      consumes:
+      - application/json
+      operationId: update-group
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateGroupInput'
+      - description: Group ID
+        in: path
+        name: groupID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateGroupPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - groups
+  /hostInstances/ping:
+    get:
+      consumes:
+      - application/json
+      operationId: ping-host-instance
+      parameters:
+      - description: Page ID
+        in: query
+        name: pageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.PingHostInstancePayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - hostInstances
+  /organizations:
+    post:
+      consumes:
+      - application/json
+      operationId: create-organization
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateOrganizationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateOrganizationPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - organizations
+  /organizations/checkSubdomainAvailability:
+    get:
+      consumes:
+      - application/json
+      operationId: check-organization-subdomain-availability
+      parameters:
+      - description: ' '
+        in: query
+        name: subdomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - organizations
+  /organizations/users/{userID}:
+    put:
+      consumes:
+      - application/json
+      operationId: update-organization-user
+      parameters:
+      - description: ' '
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateOrganizationUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - organizations
+  /pages:
+    get:
+      consumes:
+      - application/json
+      operationId: list-pages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListPagesPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - pages
+  /users:
+    get:
+      consumes:
+      - application/json
+      operationId: list-users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListUsersPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      operationId: update-user
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateUserPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/email:
+    put:
+      consumes:
+      - application/json
+      operationId: update-user-email
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateUserEmailPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/oauth/google/authCodeUrl:
+    post:
+      consumes:
+      - application/json
+      operationId: get-google-auth-code-url-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.GetGoogleAuthCodeURLInvitationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetGoogleAuthCodeURLInvitationPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/oauth/google/signin:
+    post:
+      consumes:
+      - application/json
+      operationId: signin-with-google-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignInWithGoogleInvitationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/oauth/google/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: signup-with-google-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignUpWithGoogleInvitationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/signin:
+    post:
+      consumes:
+      - application/json
+      operationId: signin-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignInInvitationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: signup-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignUpInvitationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invite:
+    post:
+      consumes:
+      - application/json
+      operationId: invite-users
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.InviteUsersInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.InviteUsersPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      operationId: get-me
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetMePayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/oauth/google/authCodeUrl:
+    post:
+      consumes:
+      - application/json
+      operationId: get-google-auth-code-url
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.GetGoogleAuthCodeURLPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/oauth/google/signin:
+    post:
+      consumes:
+      - application/json
+      operationId: signin-with-google
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignInWithGoogleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SignInWithGooglePayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/oauth/google/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: signup-with-google
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignUpWithGoogleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/obtainAuthToken:
+    post:
+      consumes:
+      - application/json
+      operationId: obtain-auth-token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ObtainAuthTokenPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/password:
+    put:
+      consumes:
+      - application/json
+      operationId: update-user-password
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UpdateUserPasswordPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/refreshToken:
+    post:
+      consumes:
+      - application/json
+      operationId: refresh-token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.RefreshTokenPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/saveAuth:
+    post:
+      consumes:
+      - application/json
+      operationId: save-auth
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SaveAuthInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SaveAuthPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/sendUpdateEmailInstructions:
+    post:
+      consumes:
+      - application/json
+      operationId: send-update-email-instructions
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SendUpdateUserEmailInstructionsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/signin:
+    post:
+      consumes:
+      - application/json
+      operationId: signin
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/signout:
+    post:
+      consumes:
+      - application/json
+      operationId: sign-out
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: signup
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignUpInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SuccessPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/signup/instructions:
+    post:
+      consumes:
+      - application/json
+      operationId: signup-instructions
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/types.SendSignUpInstructionsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SendSignUpInstructionsPayload'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+swagger: "2.0"

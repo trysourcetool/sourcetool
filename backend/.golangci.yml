@@ -1,0 +1,62 @@
+run:
+  timeout: 5m
+  issues:
+    exclude-dirs:
+      - graph/generated
+      - testdata
+    exclude-files:
+      - config/config.go
+      - graph/model/models_gen.go
+
+linters:
+  enable:
+    - asciicheck
+    - exportloopref
+    - gci
+    - godot
+    - gofmt
+    - gofumpt
+    - goimports
+    - gomodguard
+    - goprintffuncname
+    - gosimple
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - nolintlint
+    - sqlclosecheck
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
+    - whitespace
+  disable:
+    - depguard
+    - errcheck
+    - funlen
+    - err113
+    - gochecknoglobals
+    - gocognit
+    - goconst
+    - gocyclo
+    - godox
+    - gomnd
+    - lll
+    - nestif
+    - nlreturn
+    - noctx
+    - testpackage
+    - wsl
+
+linters-settings:
+  gofumpt:
+    extra-rules: true
+  misspell:
+    locale: US
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/trysourcetool/sourcetool/backend

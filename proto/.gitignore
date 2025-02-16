@@ -1,0 +1,13 @@
+# Node.js
+ts/node_modules/
+ts/dist/
+*.tgz
+npm-debug.log*
+.npm
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

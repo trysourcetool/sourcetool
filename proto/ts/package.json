@@ -1,0 +1,42 @@
+{
+  "type": "module",
+  "name": "@trysourcetool/proto",
+  "version": "0.1.12",
+  "license": "MIT",
+  "description": "Protocol Buffers definitions for sourcetool",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trysourcetool/sourcetool/proto.git"
+  },
+  "keywords": [
+    "protobuf",
+    "sourcetool",
+    "typescript"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.d.ts",
+    "**/*.js.map"
+  ],
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    "./websocket/*/message": "./dist/websocket/*/message_pb.js",
+    "./widget/*/widget": "./dist/widget/*/widget_pb.js",
+    "./page/*/page": "./dist/page/*/page_pb.js",
+    "./exception/*/exception": "./dist/exception/*/exception_pb.js"
+  }
+}
