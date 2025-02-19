@@ -73,6 +73,8 @@ func main() {
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
+	ws.InitWebSocketConns(ctx, dep.Store)
+
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
