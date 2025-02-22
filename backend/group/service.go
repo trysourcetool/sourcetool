@@ -72,6 +72,21 @@ func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListGroupsPayload, err
 		return nil, err
 	}
 
+	userIDs := make([]uuid.UUID, 0, len(users))
+	for _, user := range users {
+		userIDs = append(userIDs, user.ID)
+	}
+
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, model.UserOrganizationAccessByUserIDs(userIDs))
+	if err != nil {
+		return nil, err
+	}
+
+	orgAccessesMap := make(map[uuid.UUID]*model.UserOrganizationAccess)
+	for _, orgAccess := range orgAccesses {
+		orgAccessesMap[orgAccess.UserID] = orgAccess
+	}
+
 	groupsRes := make([]*types.GroupPayload, 0, len(groups))
 	for _, group := range groups {
 		groupsRes = append(groupsRes, &types.GroupPayload{
@@ -85,11 +100,17 @@ func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListGroupsPayload, err
 
 	usersRes := make([]*types.UserPayload, 0, len(users))
 	for _, user := range users {
+		var role string
+		orgAccess, ok := orgAccessesMap[user.ID]
+		if ok {
+			role = orgAccess.Role.String()
+		}
 		usersRes = append(usersRes, &types.UserPayload{
 			ID:        user.ID.String(),
 			Email:     user.Email,
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
+			Role:      role,
 			CreatedAt: strconv.FormatInt(user.CreatedAt.Unix(), 10),
 			UpdatedAt: strconv.FormatInt(user.UpdatedAt.Unix(), 10),
 		})
