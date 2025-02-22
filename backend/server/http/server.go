@@ -88,6 +88,10 @@ func (s *ServerCE) Router() chi.Router {
 				r.Use(s.middleware.AuthUser)
 				r.Post("/", s.organization.Create)
 				r.Get("/checkSubdomainAvailability", s.organization.CheckSubdomainAvailability)
+			})
+
+			r.Group(func(r chi.Router) {
+				r.Use(s.middleware.AuthUserWithOrganization)
 
 				r.Route("/users", func(r chi.Router) {
 					r.Put("/{userID}", s.organization.UpdateUser)
