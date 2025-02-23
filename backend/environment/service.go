@@ -16,7 +16,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type ServiceCE interface {
+type Service interface {
 	Get(context.Context, types.GetEnvironmentInput) (*types.GetEnvironmentPayload, error)
 	List(context.Context) (*types.ListEnvironmentsPayload, error)
 	Create(context.Context, types.CreateEnvironmentInput) (*types.CreateEnvironmentPayload, error)
@@ -24,15 +24,15 @@ type ServiceCE interface {
 	Delete(context.Context, types.DeleteEnvironmentInput) (*types.DeleteEnvironmentPayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetEnvironmentInput) (*types.GetEnvironmentPayload, error) {
+func (s *ServiceCE) Get(ctx context.Context, in types.GetEnvironmentInput) (*types.GetEnvironmentPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetEnvironmentInput) (
 	}, nil
 }
 
-func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListEnvironmentsPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*types.ListEnvironmentsPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	envs, err := s.Store.Environment().List(ctx, model.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -80,7 +80,7 @@ func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListEnvironmentsPayloa
 	}, nil
 }
 
-func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateEnvironmentInput) (*types.CreateEnvironmentPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in types.CreateEnvironmentInput) (*types.CreateEnvironmentPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateEnvironmentIn
 	}, nil
 }
 
-func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateEnvironmentInput) (*types.UpdateEnvironmentPayload, error) {
+func (s *ServiceCE) Update(ctx context.Context, in types.UpdateEnvironmentInput) (*types.UpdateEnvironmentPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -186,7 +186,7 @@ func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateEnvironmentIn
 	}, nil
 }
 
-func (s *ServiceCEImpl) Delete(ctx context.Context, in types.DeleteEnvironmentInput) (*types.DeleteEnvironmentPayload, error) {
+func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteEnvironmentInput) (*types.DeleteEnvironmentPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err

@@ -6,28 +6,28 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/handlers"
 )
 
-type ServerCE struct {
-	middleware   MiddlewareCE
-	apikey       handlers.APIKeyHandlerCE
-	environment  handlers.EnvironmentHandlerCE
-	group        handlers.GroupHandlerCE
-	hostInstance handlers.HostInstanceHandlerCE
-	organization handlers.OrganizationHandlerCE
-	page         handlers.PageHandlerCE
-	user         handlers.UserHandlerCE
+type Server struct {
+	middleware   Middleware
+	apikey       handlers.APIKeyHandler
+	environment  handlers.EnvironmentHandler
+	group        handlers.GroupHandler
+	hostInstance handlers.HostInstanceHandler
+	organization handlers.OrganizationHandler
+	page         handlers.PageHandler
+	user         handlers.UserHandler
 }
 
-func NewServerCE(
-	middleware MiddlewareCE,
-	apiKeyHandler handlers.APIKeyHandlerCE,
-	environmentHandler handlers.EnvironmentHandlerCE,
-	groupHandler handlers.GroupHandlerCE,
-	hostInstanceHandler handlers.HostInstanceHandlerCE,
-	organizationHandler handlers.OrganizationHandlerCE,
-	pageHandler handlers.PageHandlerCE,
-	userHandler handlers.UserHandlerCE,
-) *ServerCE {
-	return &ServerCE{
+func NewServer(
+	middleware Middleware,
+	apiKeyHandler handlers.APIKeyHandler,
+	environmentHandler handlers.EnvironmentHandler,
+	groupHandler handlers.GroupHandler,
+	hostInstanceHandler handlers.HostInstanceHandler,
+	organizationHandler handlers.OrganizationHandler,
+	pageHandler handlers.PageHandler,
+	userHandler handlers.UserHandler,
+) *Server {
+	return &Server{
 		middleware:   middleware,
 		apikey:       apiKeyHandler,
 		environment:  environmentHandler,
@@ -39,7 +39,7 @@ func NewServerCE(
 	}
 }
 
-func (s *ServerCE) Router() chi.Router {
+func (s *Server) Router() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(s.middleware.SetHTTPHeader)

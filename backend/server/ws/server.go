@@ -6,19 +6,19 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/ws/handlers"
 )
 
-type ServerCE struct {
-	middleware MiddlewareCE
-	wsHandler  handlers.WebSocketHandlerCE
+type Server struct {
+	middleware Middleware
+	wsHandler  handlers.WebSocketHandler
 }
 
-func NewServerCE(middleware MiddlewareCE, wsHandler handlers.WebSocketHandlerCE) *ServerCE {
-	return &ServerCE{
+func NewServer(middleware Middleware, wsHandler handlers.WebSocketHandler) *Server {
+	return &Server{
 		middleware: middleware,
 		wsHandler:  wsHandler,
 	}
 }
 
-func (s *ServerCE) Router() chi.Router {
+func (s *Server) Router() chi.Router {
 	r := chi.NewRouter()
 	r.With(s.middleware.Auth).HandleFunc("/", s.wsHandler.Handle)
 	return r

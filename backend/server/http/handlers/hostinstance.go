@@ -9,16 +9,16 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type HostInstanceHandlerCE interface {
+type HostInstanceHandler interface {
 	Ping(w http.ResponseWriter, r *http.Request)
 }
 
-type HostInstanceHandlerCEImpl struct {
-	service hostinstance.ServiceCE
+type HostInstanceHandlerCE struct {
+	service hostinstance.Service
 }
 
-func NewHostInstanceHandlerCE(service hostinstance.ServiceCE) *HostInstanceHandlerCEImpl {
-	return &HostInstanceHandlerCEImpl{service}
+func NewHostInstanceHandlerCE(service hostinstance.Service) *HostInstanceHandlerCE {
+	return &HostInstanceHandlerCE{service}
 }
 
 // Ping godoc
@@ -30,7 +30,7 @@ func NewHostInstanceHandlerCE(service hostinstance.ServiceCE) *HostInstanceHandl
 // @Success 200 {object} types.PingHostInstancePayload
 // @Failure default {object} errdefs.Error
 // @Router /hostInstances/ping [get].
-func (h *HostInstanceHandlerCEImpl) Ping(w http.ResponseWriter, r *http.Request) {
+func (h *HostInstanceHandlerCE) Ping(w http.ResponseWriter, r *http.Request) {
 	in := types.PingHostInstanceInput{
 		PageID: conv.NilValue(r.URL.Query().Get("pageId")),
 	}

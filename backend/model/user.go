@@ -159,7 +159,7 @@ type (
 	UserInvitationByEmail          string
 )
 
-type UserStoreCE interface {
+type UserStore interface {
 	Get(context.Context, ...any) (*User, error)
 	List(context.Context, ...any) ([]*User, error)
 	Create(context.Context, *User) error
@@ -220,7 +220,7 @@ type UserGoogleAuthRequestClaims struct {
 	jwt.RegisteredClaims
 }
 
-type UserSignerCE interface {
+type UserSigner interface {
 	SignedString(context.Context, *UserClaims) (string, error)
 	SignedStringFromEmail(context.Context, *UserEmailClaims) (string, error)
 	SignedStringGoogleAuthRequest(context.Context, *UserGoogleAuthRequestClaims) (string, error)
@@ -249,7 +249,7 @@ type SendInvitationEmail struct {
 	URLs     map[string]string // email -> url
 }
 
-type UserMailerCE interface {
+type UserMailer interface {
 	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
 	SendWelcomeEmail(context.Context, *SendWelcomeEmail) error

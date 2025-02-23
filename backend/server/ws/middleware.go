@@ -17,23 +17,23 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-type MiddlewareCE interface {
+type Middleware interface {
 	Auth(next http.Handler) http.Handler
 }
 
-type MiddlewareCEImpl struct {
+type MiddlewareCE struct {
 	infra.Store
 }
 
-func NewMiddlewareCE(s infra.Store) *MiddlewareCEImpl {
-	return &MiddlewareCEImpl{s}
+func NewMiddlewareCE(s infra.Store) *MiddlewareCE {
+	return &MiddlewareCE{s}
 }
 
 type ClientHeader struct {
 	Token string `json:"Authorization"`
 }
 
-func (m *MiddlewareCEImpl) Auth(next http.Handler) http.Handler {
+func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		subdomain := strings.Split(r.Host, ".")[0]
@@ -80,7 +80,7 @@ func (m *MiddlewareCEImpl) Auth(next http.Handler) http.Handler {
 	})
 }
 
-func (m *MiddlewareCEImpl) getCurrentUser(ctx context.Context, r *http.Request, token string) (*model.User, error) {
+func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, token string) (*model.User, error) {
 	c, err := m.validateUserToken(token)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (m *MiddlewareCEImpl) getCurrentUser(ctx context.Context, r *http.Request, 
 	return u, nil
 }
 
-func (m *MiddlewareCEImpl) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
+func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
 	o, err := m.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (m *MiddlewareCEImpl) getCurrentOrganization(ctx context.Context, subdomain
 	return o, nil
 }
 
-func (m *MiddlewareCEImpl) validateUserToken(token string) (*model.UserClaims, error) {
+func (m *MiddlewareCE) validateUserToken(token string) (*model.UserClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
@@ -119,7 +119,7 @@ func (m *MiddlewareCEImpl) validateUserToken(token string) (*model.UserClaims, e
 	return claims, nil
 }
 
-func (m *MiddlewareCEImpl) extractIncomingToken(headerValue string) (string, error) {
+func (m *MiddlewareCE) extractIncomingToken(headerValue string) (string, error) {
 	if !strings.HasPrefix(strings.ToLower(headerValue), "bearer ") {
 		return "", fmt.Errorf("invalid or malformed %q header, expected 'Bearer JWT-token...'", headerValue)
 	}

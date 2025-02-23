@@ -32,7 +32,7 @@ type (
 	EnvironmentBySlug           string
 )
 
-type EnvironmentStoreCE interface {
+type EnvironmentStore interface {
 	Get(context.Context, ...any) (*Environment, error)
 	List(context.Context, ...any) ([]*Environment, error)
 	Create(context.Context, *Environment) error

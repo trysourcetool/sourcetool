@@ -17,21 +17,21 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type ServiceCE interface {
+type Service interface {
 	Create(ctx context.Context, in types.CreateOrganizationInput) (*types.CreateOrganizationPayload, error)
 	CheckSubdomainAvailability(ctx context.Context, in types.CheckSubdomainAvailablityInput) (*types.SuccessPayload, error)
 	UpdateUser(ctx context.Context, in types.UpdateOrganizationUserInput) (*types.UserPayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateOrganizationInput) (*types.CreateOrganizationPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in types.CreateOrganizationInput) (*types.CreateOrganizationPayload, error) {
 	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateOrganizationI
 	}, nil
 }
 
-func (s *ServiceCEImpl) CheckSubdomainAvailability(ctx context.Context, in types.CheckSubdomainAvailablityInput) (*types.SuccessPayload, error) {
+func (s *ServiceCE) CheckSubdomainAvailability(ctx context.Context, in types.CheckSubdomainAvailablityInput) (*types.SuccessPayload, error) {
 	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (s *ServiceCEImpl) CheckSubdomainAvailability(ctx context.Context, in types
 	}, nil
 }
 
-func (s *ServiceCEImpl) UpdateUser(ctx context.Context, in types.UpdateOrganizationUserInput) (*types.UserPayload, error) {
+func (s *ServiceCE) UpdateUser(ctx context.Context, in types.UpdateOrganizationUserInput) (*types.UserPayload, error) {
 	userID, err := uuid.FromString(in.UserID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)

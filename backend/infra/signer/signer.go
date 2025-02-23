@@ -5,12 +5,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
-type SignerCE struct{}
+type signerCE struct{}
 
-func NewCE() *SignerCE {
-	return &SignerCE{}
+func NewCE() *signerCE {
+	return &signerCE{}
 }
 
-func (s *SignerCE) User() model.UserSignerCE {
+func (s *signerCE) User() model.UserSigner {
 	return user.NewSignerCE()
 }

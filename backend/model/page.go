@@ -27,7 +27,7 @@ type (
 	PageBySessionID      uuid.UUID
 )
 
-type PageStoreCE interface {
+type PageStore interface {
 	Get(context.Context, ...any) (*Page, error)
 	List(context.Context, ...any) ([]*Page, error)
 	BulkInsert(context.Context, []*Page) error

@@ -13,13 +13,13 @@ import (
 
 type ModelStore interface {
 	APIKey() model.APIKeyStore
-	Environment() model.EnvironmentStoreCE
-	Group() model.GroupStoreCE
-	HostInstance() model.HostInstanceStoreCE
-	Organization() model.OrganizationStoreCE
-	Page() model.PageStoreCE
-	Session() model.SessionStoreCE
-	User() model.UserStoreCE
+	Environment() model.EnvironmentStore
+	Group() model.GroupStore
+	HostInstance() model.HostInstanceStore
+	Organization() model.OrganizationStore
+	Page() model.PageStore
+	Session() model.SessionStore
+	User() model.UserStore
 }
 
 type Store interface {

@@ -28,8 +28,8 @@ import (
 )
 
 type Server struct {
-	wsServer   *ws.ServerCE
-	httpServer *httpserver.ServerCE
+	wsServer   *ws.Server
+	httpServer *httpserver.Server
 }
 
 func New(d *infra.Dependency) *Server {
@@ -54,8 +54,8 @@ func New(d *infra.Dependency) *Server {
 		},
 	)
 	return &Server{
-		wsServer: ws.NewServerCE(wsMiddle, wsHandler),
-		httpServer: httpserver.NewServerCE(
+		wsServer: ws.NewServer(wsMiddle, wsHandler),
+		httpServer: httpserver.NewServer(
 			httpMiddle,
 			apiKeyHandler,
 			environmentHandler,

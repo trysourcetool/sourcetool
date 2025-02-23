@@ -7,16 +7,16 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/page"
 )
 
-type PageHandlerCE interface {
+type PageHandler interface {
 	List(w http.ResponseWriter, r *http.Request)
 }
 
-type PageHandlerCEImpl struct {
-	service page.ServiceCE
+type PageHandlerCE struct {
+	service page.Service
 }
 
-func NewPageHandlerCE(service page.ServiceCE) *PageHandlerCEImpl {
-	return &PageHandlerCEImpl{service}
+func NewPageHandlerCE(service page.Service) *PageHandlerCE {
+	return &PageHandlerCE{service}
 }
 
 // List godoc
@@ -27,7 +27,7 @@ func NewPageHandlerCE(service page.ServiceCE) *PageHandlerCEImpl {
 // @Success 200 {object} types.ListPagesPayload
 // @Failure default {object} errdefs.Error
 // @Router /pages [get].
-func (h *PageHandlerCEImpl) List(w http.ResponseWriter, r *http.Request) {
+func (h *PageHandlerCE) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)

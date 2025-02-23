@@ -21,7 +21,7 @@ type (
 	SessionByID uuid.UUID
 )
 
-type SessionStoreCE interface {
+type SessionStore interface {
 	Get(context.Context, ...any) (*Session, error)
 	Create(context.Context, *Session) error
 	Delete(context.Context, *Session) error

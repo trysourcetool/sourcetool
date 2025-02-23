@@ -10,19 +10,19 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type ServiceCE interface {
+type Service interface {
 	List(context.Context) (*types.ListPagesPayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListPagesPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*types.ListPagesPayload, error) {
 	o := ctxutils.CurrentOrganization(ctx)
 
 	pages, err := s.Store.Page().List(ctx, model.PageByOrganizationID(o.ID), infra.OrderBy(`array_length(p."path", 1), "path"`))

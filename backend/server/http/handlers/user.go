@@ -15,7 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
-type UserHandlerCE interface {
+type UserHandler interface {
 	GetMe(w http.ResponseWriter, r *http.Request)
 	List(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
@@ -41,12 +41,12 @@ type UserHandlerCE interface {
 	SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.Request)
 }
 
-type UserHandlerCEImpl struct {
-	service user.ServiceCE
+type UserHandlerCE struct {
+	service user.Service
 }
 
-func NewUserHandlerCE(service user.ServiceCE) *UserHandlerCEImpl {
-	return &UserHandlerCEImpl{service}
+func NewUserHandlerCE(service user.Service) *UserHandlerCE {
+	return &UserHandlerCE{service}
 }
 
 // GetMe godoc
@@ -57,7 +57,7 @@ func NewUserHandlerCE(service user.ServiceCE) *UserHandlerCEImpl {
 // @Success 200 {object} types.GetMePayload
 // @Failure default {object} errdefs.Error
 // @Router /users/me [get].
-func (h *UserHandlerCEImpl) GetMe(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) GetMe(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.GetMe(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -78,7 +78,7 @@ func (h *UserHandlerCEImpl) GetMe(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.ListUsersPayload
 // @Failure default {object} errdefs.Error
 // @Router /users [get].
-func (h *UserHandlerCEImpl) List(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -100,7 +100,7 @@ func (h *UserHandlerCEImpl) List(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.UpdateUserPayload
 // @Failure default {object} errdefs.Error
 // @Router /users [put].
-func (h *UserHandlerCEImpl) Update(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
 	var in types.UpdateUserInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -133,7 +133,7 @@ func (h *UserHandlerCEImpl) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/sendUpdateEmailInstructions [post].
-func (h *UserHandlerCEImpl) SendUpdateEmailInstructions(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SendUpdateEmailInstructions(w http.ResponseWriter, r *http.Request) {
 	var in types.SendUpdateUserEmailInstructionsInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -168,7 +168,7 @@ func (h *UserHandlerCEImpl) SendUpdateEmailInstructions(w http.ResponseWriter, r
 // @Success 200 {object} types.UpdateUserEmailPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/email [put].
-func (h *UserHandlerCEImpl) UpdateEmail(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 	var in types.UpdateUserEmailInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -201,7 +201,7 @@ func (h *UserHandlerCEImpl) UpdateEmail(w http.ResponseWriter, r *http.Request) 
 // @Success 200 {object} types.UpdateUserPasswordPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/password [put].
-func (h *UserHandlerCEImpl) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	var in types.UpdateUserPasswordInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -233,7 +233,7 @@ func (h *UserHandlerCEImpl) UpdatePassword(w http.ResponseWriter, r *http.Reques
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/signin [post].
-func (h *UserHandlerCEImpl) SignIn(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignIn(w http.ResponseWriter, r *http.Request) {
 	var in types.SignInInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -271,7 +271,7 @@ func (h *UserHandlerCEImpl) SignIn(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.SignInWithGooglePayload
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/signin [post].
-func (h *UserHandlerCEImpl) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var in types.SignInWithGoogleInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -309,7 +309,7 @@ func (h *UserHandlerCEImpl) SignInWithGoogle(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} types.SendSignUpInstructionsPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/signup/instructions [post].
-func (h *UserHandlerCEImpl) SendSignUpInstructions(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SendSignUpInstructions(w http.ResponseWriter, r *http.Request) {
 	var in types.SendSignUpInstructionsInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -342,7 +342,7 @@ func (h *UserHandlerCEImpl) SendSignUpInstructions(w http.ResponseWriter, r *htt
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/signup [post].
-func (h *UserHandlerCEImpl) SignUp(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignUp(w http.ResponseWriter, r *http.Request) {
 	var in types.SignUpInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -380,7 +380,7 @@ func (h *UserHandlerCEImpl) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/signup [post].
-func (h *UserHandlerCEImpl) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var in types.SignUpWithGoogleInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -417,7 +417,7 @@ func (h *UserHandlerCEImpl) SignUpWithGoogle(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} types.RefreshTokenPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/refreshToken [post].
-func (h *UserHandlerCEImpl) RefreshToken(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
 	if xsrfTokenHeader == "" {
 		httputils.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
@@ -469,7 +469,7 @@ func (h *UserHandlerCEImpl) RefreshToken(w http.ResponseWriter, r *http.Request)
 // @Success 200 {object} types.SaveAuthPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/saveAuth [post].
-func (h *UserHandlerCEImpl) SaveAuth(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SaveAuth(w http.ResponseWriter, r *http.Request) {
 	var in types.SaveAuthInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -503,7 +503,7 @@ func (h *UserHandlerCEImpl) SaveAuth(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.ObtainAuthTokenPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/obtainAuthToken [post].
-func (h *UserHandlerCEImpl) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.ObtainAuthToken(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -526,7 +526,7 @@ func (h *UserHandlerCEImpl) ObtainAuthToken(w http.ResponseWriter, r *http.Reque
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/signout [post].
-func (h *UserHandlerCEImpl) SignOut(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignOut(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.SignOut(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -553,7 +553,7 @@ func (h *UserHandlerCEImpl) SignOut(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.InviteUsersPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invite [post].
-func (h *UserHandlerCEImpl) Invite(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) Invite(w http.ResponseWriter, r *http.Request) {
 	var in types.InviteUsersInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -586,7 +586,7 @@ func (h *UserHandlerCEImpl) Invite(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/signin [post].
-func (h *UserHandlerCEImpl) SignInInvitation(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 	var in types.SignInInvitationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -624,7 +624,7 @@ func (h *UserHandlerCEImpl) SignInInvitation(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/signup [post].
-func (h *UserHandlerCEImpl) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 	var in types.SignUpInvitationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -661,7 +661,7 @@ func (h *UserHandlerCEImpl) SignUpInvitation(w http.ResponseWriter, r *http.Requ
 // @Success 200 {object} types.GetGoogleAuthCodeURLPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/authCodeUrl [post].
-func (h *UserHandlerCEImpl) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.GetGoogleAuthCodeURL(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -674,7 +674,7 @@ func (h *UserHandlerCEImpl) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.
 	}
 }
 
-func (h *UserHandlerCEImpl) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	in := types.GoogleOAuthCallbackInput{
 		State: r.URL.Query().Get("state"),
 		Code:  r.URL.Query().Get("code"),
@@ -717,7 +717,7 @@ func (h *UserHandlerCEImpl) GoogleOAuthCallback(w http.ResponseWriter, r *http.R
 // @Success 200 {object} types.GetGoogleAuthCodeURLInvitationPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/authCodeUrl [post].
-func (h *UserHandlerCEImpl) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *http.Request) {
 	var in types.GetGoogleAuthCodeURLInvitationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -750,7 +750,7 @@ func (h *UserHandlerCEImpl) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/signin [post].
-func (h *UserHandlerCEImpl) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
 	var in types.SignInWithGoogleInvitationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -788,7 +788,7 @@ func (h *UserHandlerCEImpl) SignInWithGoogleInvitation(w http.ResponseWriter, r 
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/signup [post].
-func (h *UserHandlerCEImpl) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
 	var in types.SignUpWithGoogleInvitationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -817,7 +817,7 @@ func (h *UserHandlerCEImpl) SignUpWithGoogleInvitation(w http.ResponseWriter, r 
 	}
 }
 
-func (h *UserHandlerCEImpl) setTmpAuthCookie(w http.ResponseWriter, token, xsrfToken string) {
+func (h *UserHandlerCE) setTmpAuthCookie(w http.ResponseWriter, token, xsrfToken string) {
 	xsrfTokenSameSite := http.SameSiteNoneMode
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
@@ -856,7 +856,7 @@ func (h *UserHandlerCEImpl) setTmpAuthCookie(w http.ResponseWriter, token, xsrfT
 	})
 }
 
-func (h *UserHandlerCEImpl) deleteTmpAuthCookie(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandlerCE) deleteTmpAuthCookie(w http.ResponseWriter, r *http.Request) {
 	xsrfTokenSameSite := http.SameSiteNoneMode
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
@@ -894,7 +894,7 @@ func (h *UserHandlerCEImpl) deleteTmpAuthCookie(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (h *UserHandlerCEImpl) setAuthCookie(w http.ResponseWriter, domain, token, secret, xsrfToken string, tokenMaxAge, secretMaxAge, xsrfTokenMaxAge int) {
+func (h *UserHandlerCE) setAuthCookie(w http.ResponseWriter, domain, token, secret, xsrfToken string, tokenMaxAge, secretMaxAge, xsrfTokenMaxAge int) {
 	xsrfTokenSameSite := http.SameSiteNoneMode
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
@@ -941,7 +941,7 @@ func (h *UserHandlerCEImpl) setAuthCookie(w http.ResponseWriter, domain, token, 
 	})
 }
 
-func (h *UserHandlerCEImpl) deleteAuthCookie(w http.ResponseWriter, r *http.Request, domain string) {
+func (h *UserHandlerCE) deleteAuthCookie(w http.ResponseWriter, r *http.Request, domain string) {
 	xsrfTokenSameSite := http.SameSiteNoneMode
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode

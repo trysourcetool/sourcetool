@@ -15,27 +15,27 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
-type StoreCE struct {
+type storeCE struct {
 	db *sqlx.DB
 }
 
-func NewCE(db *sqlx.DB) *StoreCE {
-	return &StoreCE{
+func NewCE(db *sqlx.DB) *storeCE {
+	return &storeCE{
 		db: db,
 	}
 }
 
-func (s *StoreCE) Close() error {
+func (s *storeCE) Close() error {
 	return s.db.Close()
 }
 
-func (s *StoreCE) RunTransaction(f func(infra.Transaction) error) error {
+func (s *storeCE) RunTransaction(f func(infra.Transaction) error) error {
 	tx, err := s.db.Beginx()
 	if err != nil {
 		return err
 	}
 
-	t := &transaction{db: tx}
+	t := &transactionCE{db: tx}
 	if err := f(t); err != nil {
 		if err := tx.Rollback(); err != nil {
 			return err
@@ -50,70 +50,70 @@ func (s *StoreCE) RunTransaction(f func(infra.Transaction) error) error {
 	return nil
 }
 
-func (s *StoreCE) APIKey() model.APIKeyStore {
+func (s *storeCE) APIKey() model.APIKeyStore {
 	return apikey.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) Environment() model.EnvironmentStoreCE {
+func (s *storeCE) Environment() model.EnvironmentStore {
 	return environment.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) Group() model.GroupStoreCE {
+func (s *storeCE) Group() model.GroupStore {
 	return group.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) HostInstance() model.HostInstanceStoreCE {
+func (s *storeCE) HostInstance() model.HostInstanceStore {
 	return hostinstance.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) Organization() model.OrganizationStoreCE {
+func (s *storeCE) Organization() model.OrganizationStore {
 	return organization.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) Page() model.PageStoreCE {
+func (s *storeCE) Page() model.PageStore {
 	return page.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) Session() model.SessionStoreCE {
+func (s *storeCE) Session() model.SessionStore {
 	return session.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-func (s *StoreCE) User() model.UserStoreCE {
+func (s *storeCE) User() model.UserStore {
 	return user.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
-type transaction struct {
+type transactionCE struct {
 	db *sqlx.Tx
 }
 
-func (t *transaction) APIKey() model.APIKeyStore {
+func (t *transactionCE) APIKey() model.APIKeyStore {
 	return apikey.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) Environment() model.EnvironmentStoreCE {
+func (t *transactionCE) Environment() model.EnvironmentStore {
 	return environment.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) Group() model.GroupStoreCE {
+func (t *transactionCE) Group() model.GroupStore {
 	return group.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) HostInstance() model.HostInstanceStoreCE {
+func (t *transactionCE) HostInstance() model.HostInstanceStore {
 	return hostinstance.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) Organization() model.OrganizationStoreCE {
+func (t *transactionCE) Organization() model.OrganizationStore {
 	return organization.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) Page() model.PageStoreCE {
+func (t *transactionCE) Page() model.PageStore {
 	return page.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) Session() model.SessionStoreCE {
+func (t *transactionCE) Session() model.SessionStore {
 	return session.NewStoreCE(infra.NewQueryLogger(t.db))
 }
 
-func (t *transaction) User() model.UserStoreCE {
+func (t *transactionCE) User() model.UserStore {
 	return user.NewStoreCE(infra.NewQueryLogger(t.db))
 }

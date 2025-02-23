@@ -5,12 +5,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
-type MailerCE struct{}
+type mailerCE struct{}
 
-func NewCE() *MailerCE {
-	return &MailerCE{}
+func NewCE() *mailerCE {
+	return &mailerCE{}
 }
 
-func (m *MailerCE) User() model.UserMailerCE {
+func (m *mailerCE) User() model.UserMailer {
 	return user.NewMailerCE()
 }

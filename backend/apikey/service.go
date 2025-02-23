@@ -16,7 +16,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type ServiceCE interface {
+type Service interface {
 	Get(context.Context, types.GetAPIKeyInput) (*types.GetAPIKeyPayload, error)
 	List(context.Context) (*types.ListAPIKeysPayload, error)
 	Create(context.Context, types.CreateAPIKeyInput) (*types.CreateAPIKeyPayload, error)
@@ -24,15 +24,15 @@ type ServiceCE interface {
 	Delete(context.Context, types.DeleteAPIKeyInput) (*types.DeleteAPIKeyPayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetAPIKeyInput) (*types.GetAPIKeyPayload, error) {
+func (s *ServiceCE) Get(ctx context.Context, in types.GetAPIKeyInput) (*types.GetAPIKeyPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
@@ -67,7 +67,7 @@ func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetAPIKeyInput) (*type
 	}, nil
 }
 
-func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListAPIKeysPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*types.ListAPIKeysPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	currentUser := ctxutils.CurrentUser(ctx)
 
@@ -154,7 +154,7 @@ func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListAPIKeysPayload, er
 	}, nil
 }
 
-func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateAPIKeyInput) (*types.CreateAPIKeyPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in types.CreateAPIKeyInput) (*types.CreateAPIKeyPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
@@ -218,7 +218,7 @@ func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateAPIKeyInput) 
 	}, nil
 }
 
-func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateAPIKeyInput) (*types.UpdateAPIKeyPayload, error) {
+func (s *ServiceCE) Update(ctx context.Context, in types.UpdateAPIKeyInput) (*types.UpdateAPIKeyPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
@@ -271,7 +271,7 @@ func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateAPIKeyInput) 
 	}, nil
 }
 
-func (s *ServiceCEImpl) Delete(ctx context.Context, in types.DeleteAPIKeyInput) (*types.DeleteAPIKeyPayload, error) {
+func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteAPIKeyInput) (*types.DeleteAPIKeyPayload, error) {
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)

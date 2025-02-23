@@ -16,7 +16,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type ServiceCE interface {
+type Service interface {
 	Get(context.Context, types.GetGroupInput) (*types.GetGroupPayload, error)
 	List(context.Context) (*types.ListGroupsPayload, error)
 	Create(context.Context, types.CreateGroupInput) (*types.CreateGroupPayload, error)
@@ -24,15 +24,15 @@ type ServiceCE interface {
 	Delete(context.Context, types.DeleteGroupInput) (*types.DeleteGroupPayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetGroupInput) (*types.GetGroupPayload, error) {
+func (s *ServiceCE) Get(ctx context.Context, in types.GetGroupInput) (*types.GetGroupPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	groupID, err := uuid.FromString(in.GroupID)
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *ServiceCEImpl) Get(ctx context.Context, in types.GetGroupInput) (*types
 	}, nil
 }
 
-func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListGroupsPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*types.ListGroupsPayload, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	groups, err := s.Store.Group().List(ctx, model.GroupByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -134,7 +134,7 @@ func (s *ServiceCEImpl) List(ctx context.Context) (*types.ListGroupsPayload, err
 	}, nil
 }
 
-func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateGroupInput) (*types.CreateGroupPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in types.CreateGroupInput) (*types.CreateGroupPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (s *ServiceCEImpl) Create(ctx context.Context, in types.CreateGroupInput) (
 	}, nil
 }
 
-func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateGroupInput) (*types.UpdateGroupPayload, error) {
+func (s *ServiceCE) Update(ctx context.Context, in types.UpdateGroupInput) (*types.UpdateGroupPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
 		return nil, err
@@ -287,7 +287,7 @@ func (s *ServiceCEImpl) Update(ctx context.Context, in types.UpdateGroupInput) (
 	}, nil
 }
 
-func (s *ServiceCEImpl) Delete(ctx context.Context, in types.DeleteGroupInput) (*types.DeleteGroupPayload, error) {
+func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteGroupInput) (*types.DeleteGroupPayload, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
 		return nil, err

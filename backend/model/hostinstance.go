@@ -71,7 +71,7 @@ type (
 	HostInstanceByAPIKey         string
 )
 
-type HostInstanceStoreCE interface {
+type HostInstanceStore interface {
 	Get(context.Context, ...any) (*HostInstance, error)
 	List(context.Context, ...any) ([]*HostInstance, error)
 	Create(context.Context, *HostInstance) error

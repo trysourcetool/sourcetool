@@ -33,7 +33,7 @@ type (
 	GroupPageByPageIDs        []uuid.UUID
 )
 
-type GroupStoreCE interface {
+type GroupStore interface {
 	Get(context.Context, ...any) (*Group, error)
 	List(context.Context, ...any) ([]*Group, error)
 	Create(context.Context, *Group) error

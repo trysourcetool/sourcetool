@@ -17,19 +17,19 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
-type ServiceCE interface {
+type Service interface {
 	Ping(context.Context, types.PingHostInstanceInput) (*types.PingHostInstancePayload, error)
 }
 
-type ServiceCEImpl struct {
+type ServiceCE struct {
 	*infra.Dependency
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCEImpl {
-	return &ServiceCEImpl{Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCEImpl) Ping(ctx context.Context, in types.PingHostInstanceInput) (*types.PingHostInstancePayload, error) {
+func (s *ServiceCE) Ping(ctx context.Context, in types.PingHostInstanceInput) (*types.PingHostInstancePayload, error) {
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 
 	o, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))

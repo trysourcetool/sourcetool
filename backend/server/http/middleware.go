@@ -17,22 +17,22 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-type MiddlewareCE interface {
+type Middleware interface {
 	AuthUser(next http.Handler) http.Handler
 	AuthOrganization(next http.Handler) http.Handler
 	AuthUserWithOrganization(next http.Handler) http.Handler
 	SetHTTPHeader(next http.Handler) http.Handler
 }
 
-type MiddlewareCEImpl struct {
+type MiddlewareCE struct {
 	infra.Store
 }
 
-func NewMiddlewareCE(s infra.Store) *MiddlewareCEImpl {
-	return &MiddlewareCEImpl{s}
+func NewMiddlewareCE(s infra.Store) *MiddlewareCE {
+	return &MiddlewareCE{s}
 }
 
-func (m *MiddlewareCEImpl) AuthUser(next http.Handler) http.Handler {
+func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -78,7 +78,7 @@ func (m *MiddlewareCEImpl) AuthUser(next http.Handler) http.Handler {
 	})
 }
 
-func (m *MiddlewareCEImpl) AuthOrganization(next http.Handler) http.Handler {
+func (m *MiddlewareCE) AuthOrganization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -96,7 +96,7 @@ func (m *MiddlewareCEImpl) AuthOrganization(next http.Handler) http.Handler {
 	})
 }
 
-func (m *MiddlewareCEImpl) AuthUserWithOrganization(next http.Handler) http.Handler {
+func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -158,7 +158,7 @@ func (m *MiddlewareCEImpl) AuthUserWithOrganization(next http.Handler) http.Hand
 	})
 }
 
-func (m *MiddlewareCEImpl) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
+func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
 	o, err := m.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (m *MiddlewareCEImpl) getCurrentOrganization(ctx context.Context, subdomain
 	return o, nil
 }
 
-func (m *MiddlewareCEImpl) validateUserToken(token string) (*model.UserClaims, error) {
+func (m *MiddlewareCE) validateUserToken(token string) (*model.UserClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
@@ -183,7 +183,7 @@ func (m *MiddlewareCEImpl) validateUserToken(token string) (*model.UserClaims, e
 	return claims, nil
 }
 
-func (m *MiddlewareCEImpl) SetHTTPHeader(next http.Handler) http.Handler {
+func (m *MiddlewareCE) SetHTTPHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
 		ctx := context.WithValue(r.Context(), ctxutils.HTTPHostCtxKey, host)

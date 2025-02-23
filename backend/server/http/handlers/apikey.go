@@ -11,7 +11,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type APIKeyHandlerCE interface {
+type APIKeyHandler interface {
 	Get(w http.ResponseWriter, r *http.Request)
 	List(w http.ResponseWriter, r *http.Request)
 	Create(w http.ResponseWriter, r *http.Request)
@@ -19,12 +19,12 @@ type APIKeyHandlerCE interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 }
 
-type APIKeyHandlerCEImpl struct {
-	service apikey.ServiceCE
+type APIKeyHandlerCE struct {
+	service apikey.Service
 }
 
-func NewAPIKeyHandlerCE(service apikey.ServiceCE) *APIKeyHandlerCEImpl {
-	return &APIKeyHandlerCEImpl{service}
+func NewAPIKeyHandlerCE(service apikey.Service) *APIKeyHandlerCE {
+	return &APIKeyHandlerCE{service}
 }
 
 // Get godoc
@@ -36,7 +36,7 @@ func NewAPIKeyHandlerCE(service apikey.ServiceCE) *APIKeyHandlerCEImpl {
 // @Success 200 {object} types.GetAPIKeyPayload
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [get].
-func (h *APIKeyHandlerCEImpl) Get(w http.ResponseWriter, r *http.Request) {
+func (h *APIKeyHandlerCE) Get(w http.ResponseWriter, r *http.Request) {
 	in := types.GetAPIKeyInput{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
@@ -66,7 +66,7 @@ func (h *APIKeyHandlerCEImpl) Get(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.ListAPIKeysPayload
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys [get].
-func (h *APIKeyHandlerCEImpl) List(w http.ResponseWriter, r *http.Request) {
+func (h *APIKeyHandlerCE) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -88,7 +88,7 @@ func (h *APIKeyHandlerCEImpl) List(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.CreateAPIKeyPayload
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys [post].
-func (h *APIKeyHandlerCEImpl) Create(w http.ResponseWriter, r *http.Request) {
+func (h *APIKeyHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
 	var in types.CreateAPIKeyInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -122,7 +122,7 @@ func (h *APIKeyHandlerCEImpl) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.UpdateAPIKeyPayload
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [put].
-func (h *APIKeyHandlerCEImpl) Update(w http.ResponseWriter, r *http.Request) {
+func (h *APIKeyHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
 	in := types.UpdateAPIKeyInput{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
@@ -157,7 +157,7 @@ func (h *APIKeyHandlerCEImpl) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.DeleteAPIKeyPayload
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [delete].
-func (h *APIKeyHandlerCEImpl) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *APIKeyHandlerCE) Delete(w http.ResponseWriter, r *http.Request) {
 	in := types.DeleteAPIKeyInput{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}

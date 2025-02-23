@@ -20,7 +20,7 @@ type (
 	OrganizationByUserID    uuid.UUID
 )
 
-type OrganizationStoreCE interface {
+type OrganizationStore interface {
 	Get(context.Context, ...any) (*Organization, error)
 	Create(context.Context, *Organization) error
 	IsSubdomainExists(context.Context, string) (bool, error)
