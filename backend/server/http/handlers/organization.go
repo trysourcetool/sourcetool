@@ -11,18 +11,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type OrganizationHandler interface {
-	Create(w http.ResponseWriter, r *http.Request)
-	CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request)
-	UpdateUser(w http.ResponseWriter, r *http.Request)
-}
-
-type OrganizationHandlerCE struct {
+type OrganizationHandler struct {
 	service organization.Service
 }
 
-func NewOrganizationHandlerCE(service organization.Service) *OrganizationHandlerCE {
-	return &OrganizationHandlerCE{service}
+func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
+	return &OrganizationHandler{service}
 }
 
 // Create godoc
@@ -34,7 +28,7 @@ func NewOrganizationHandlerCE(service organization.Service) *OrganizationHandler
 // @Success 200 {object} types.CreateOrganizationPayload
 // @Failure default {object} errdefs.Error
 // @Router /organizations [post].
-func (h *OrganizationHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
+func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var in types.CreateOrganizationInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -67,7 +61,7 @@ func (h *OrganizationHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.SuccessPayload
 // @Failure default {object} errdefs.Error
 // @Router /organizations/checkSubdomainAvailability [get].
-func (h *OrganizationHandlerCE) CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request) {
+func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request) {
 	in := types.CheckSubdomainAvailablityInput{
 		Subdomain: r.URL.Query().Get("subdomain"),
 	}
@@ -98,7 +92,7 @@ func (h *OrganizationHandlerCE) CheckSubdomainAvailability(w http.ResponseWriter
 // @Success 200 {object} types.UserPayload
 // @Failure default {object} errdefs.Error
 // @Router /organizations/users/{userID} [put].
-func (h *OrganizationHandlerCE) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (h *OrganizationHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	in := types.UpdateOrganizationUserInput{
 		UserID: chi.URLParam(r, "userID"),
 	}

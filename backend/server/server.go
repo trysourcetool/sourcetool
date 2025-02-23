@@ -34,16 +34,16 @@ type Server struct {
 
 func New(d *infra.Dependency) *Server {
 	httpMiddle := httpserver.NewMiddlewareCE(d.Store)
-	apiKeyHandler := httphandlers.NewAPIKeyHandlerCE(apikey.NewServiceCE(d))
-	environmentHandler := httphandlers.NewEnvironmentHandlerCE(environment.NewServiceCE(d))
-	groupHandler := httphandlers.NewGroupHandlerCE(group.NewServiceCE(d))
-	hostInstanceHandler := httphandlers.NewHostInstanceHandlerCE(hostinstance.NewServiceCE(d))
-	organizationHandler := httphandlers.NewOrganizationHandlerCE(organization.NewServiceCE(d))
-	pageHandler := httphandlers.NewPageHandlerCE(page.NewServiceCE(d))
-	userHandler := httphandlers.NewUserHandlerCE(user.NewServiceCE(d))
+	apiKeyHandler := httphandlers.NewAPIKeyHandler(apikey.NewServiceCE(d))
+	environmentHandler := httphandlers.NewEnvironmentHandler(environment.NewServiceCE(d))
+	groupHandler := httphandlers.NewGroupHandler(group.NewServiceCE(d))
+	hostInstanceHandler := httphandlers.NewHostInstanceHandler(hostinstance.NewServiceCE(d))
+	organizationHandler := httphandlers.NewOrganizationHandler(organization.NewServiceCE(d))
+	pageHandler := httphandlers.NewPageHandler(page.NewServiceCE(d))
+	userHandler := httphandlers.NewUserHandler(user.NewServiceCE(d))
 
 	wsMiddle := ws.NewMiddlewareCE(d.Store)
-	wsHandler := wshandlers.NewWebSocketHandlerCE(
+	wsHandler := wshandlers.NewWebSocketHandler(
 		d,
 		websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {

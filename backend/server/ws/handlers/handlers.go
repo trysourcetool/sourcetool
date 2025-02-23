@@ -35,24 +35,20 @@ const (
 	maxRecoveryWait = 6 * time.Hour
 )
 
-type WebSocketHandler interface {
-	Handle(w http.ResponseWriter, r *http.Request)
-}
-
-type WebSocketHandlerCE struct {
+type WebSocketHandler struct {
 	upgrader websocket.Upgrader
 	dep      *infra.Dependency
 	service  ws.Service
 }
 
-func NewWebSocketHandlerCE(d *infra.Dependency, upgrader websocket.Upgrader) *WebSocketHandlerCE {
-	return &WebSocketHandlerCE{
+func NewWebSocketHandler(d *infra.Dependency, upgrader websocket.Upgrader) *WebSocketHandler {
+	return &WebSocketHandler{
 		upgrader: upgrader,
 		dep:      d,
 	}
 }
 
-func (h *WebSocketHandlerCE) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Logger.Sugar().Errorf("Failed to upgrade connection: %v", err)
@@ -137,7 +133,7 @@ func (h *WebSocketHandlerCE) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WebSocketHandlerCE) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status model.HostInstanceStatus) error {
+func (h *WebSocketHandler) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status model.HostInstanceStatus) error {
 	if _, err := h.service.UpdateStatus(ctx, types.UpdateHostInstanceStatusInput{
 		ID:     hostInstanceID.String(),
 		Status: status,
@@ -148,7 +144,7 @@ func (h *WebSocketHandlerCE) updateHostInstanceStatus(ctx context.Context, hostI
 	return nil
 }
 
-func (h *WebSocketHandlerCE) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.Conn, done chan struct{}, hostInstance *model.HostInstance) {
+func (h *WebSocketHandler) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.Conn, done chan struct{}, hostInstance *model.HostInstance) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		logger.Logger.Info("Stopped ping ticker")

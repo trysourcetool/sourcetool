@@ -11,20 +11,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type GroupHandler interface {
-	Get(w http.ResponseWriter, r *http.Request)
-	List(w http.ResponseWriter, r *http.Request)
-	Create(w http.ResponseWriter, r *http.Request)
-	Update(w http.ResponseWriter, r *http.Request)
-	Delete(w http.ResponseWriter, r *http.Request)
-}
-
-type GroupHandlerCE struct {
+type GroupHandler struct {
 	service group.Service
 }
 
-func NewGroupHandlerCE(service group.Service) *GroupHandlerCE {
-	return &GroupHandlerCE{service}
+func NewGroupHandler(service group.Service) *GroupHandler {
+	return &GroupHandler{service}
 }
 
 // Get godoc
@@ -36,7 +28,7 @@ func NewGroupHandlerCE(service group.Service) *GroupHandlerCE {
 // @Success 200 {object} types.GetGroupPayload
 // @Failure default {object} errdefs.Error
 // @Router /groups/{groupID} [get].
-func (h *GroupHandlerCE) Get(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	in := types.GetGroupInput{
 		GroupID: chi.URLParam(r, "groupID"),
 	}
@@ -66,7 +58,7 @@ func (h *GroupHandlerCE) Get(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.ListGroupsPayload
 // @Failure default {object} errdefs.Error
 // @Router /groups [get].
-func (h *GroupHandlerCE) List(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -88,7 +80,7 @@ func (h *GroupHandlerCE) List(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.CreateGroupPayload
 // @Failure default {object} errdefs.Error
 // @Router /groups [post].
-func (h *GroupHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var in types.CreateGroupInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -122,7 +114,7 @@ func (h *GroupHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.UpdateGroupPayload
 // @Failure default {object} errdefs.Error
 // @Router /groups/{groupID} [put].
-func (h *GroupHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) Update(w http.ResponseWriter, r *http.Request) {
 	in := types.UpdateGroupInput{
 		GroupID: chi.URLParam(r, "groupID"),
 	}
@@ -157,7 +149,7 @@ func (h *GroupHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.DeleteGroupPayload
 // @Failure default {object} errdefs.Error
 // @Router /groups/{groupID} [delete].
-func (h *GroupHandlerCE) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	in := types.DeleteGroupInput{
 		GroupID: chi.URLParam(r, "groupID"),
 	}

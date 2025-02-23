@@ -11,20 +11,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
-type EnvironmentHandler interface {
-	Get(w http.ResponseWriter, r *http.Request)
-	List(w http.ResponseWriter, r *http.Request)
-	Create(w http.ResponseWriter, r *http.Request)
-	Update(w http.ResponseWriter, r *http.Request)
-	Delete(w http.ResponseWriter, r *http.Request)
-}
-
-type EnvironmentHandlerCE struct {
+type EnvironmentHandler struct {
 	service environment.Service
 }
 
-func NewEnvironmentHandlerCE(service environment.Service) *EnvironmentHandlerCE {
-	return &EnvironmentHandlerCE{service}
+func NewEnvironmentHandler(service environment.Service) *EnvironmentHandler {
+	return &EnvironmentHandler{service}
 }
 
 // Get godoc
@@ -36,7 +28,7 @@ func NewEnvironmentHandlerCE(service environment.Service) *EnvironmentHandlerCE 
 // @Success 200 {object} types.GetEnvironmentPayload
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [get].
-func (h *EnvironmentHandlerCE) Get(w http.ResponseWriter, r *http.Request) {
+func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 	in := types.GetEnvironmentInput{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
@@ -66,7 +58,7 @@ func (h *EnvironmentHandlerCE) Get(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.ListEnvironmentsPayload
 // @Failure default {object} errdefs.Error
 // @Router /environments [get].
-func (h *EnvironmentHandlerCE) List(w http.ResponseWriter, r *http.Request) {
+func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -88,7 +80,7 @@ func (h *EnvironmentHandlerCE) List(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.CreateEnvironmentPayload
 // @Failure default {object} errdefs.Error
 // @Router /environments [post].
-func (h *EnvironmentHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
+func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var in types.CreateEnvironmentInput
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
@@ -122,7 +114,7 @@ func (h *EnvironmentHandlerCE) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.UpdateEnvironmentPayload
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [put].
-func (h *EnvironmentHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
+func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 	in := types.UpdateEnvironmentInput{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
@@ -157,7 +149,7 @@ func (h *EnvironmentHandlerCE) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} types.DeleteEnvironmentPayload
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [delete].
-func (h *EnvironmentHandlerCE) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *EnvironmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	in := types.DeleteEnvironmentInput{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}

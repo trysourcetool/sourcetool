@@ -8,24 +8,24 @@ import (
 
 type Server struct {
 	middleware   Middleware
-	apikey       handlers.APIKeyHandler
-	environment  handlers.EnvironmentHandler
-	group        handlers.GroupHandler
-	hostInstance handlers.HostInstanceHandler
-	organization handlers.OrganizationHandler
-	page         handlers.PageHandler
-	user         handlers.UserHandler
+	apikey       *handlers.APIKeyHandler
+	environment  *handlers.EnvironmentHandler
+	group        *handlers.GroupHandler
+	hostInstance *handlers.HostInstanceHandler
+	organization *handlers.OrganizationHandler
+	page         *handlers.PageHandler
+	user         *handlers.UserHandler
 }
 
 func NewServer(
 	middleware Middleware,
-	apiKeyHandler handlers.APIKeyHandler,
-	environmentHandler handlers.EnvironmentHandler,
-	groupHandler handlers.GroupHandler,
-	hostInstanceHandler handlers.HostInstanceHandler,
-	organizationHandler handlers.OrganizationHandler,
-	pageHandler handlers.PageHandler,
-	userHandler handlers.UserHandler,
+	apiKeyHandler *handlers.APIKeyHandler,
+	environmentHandler *handlers.EnvironmentHandler,
+	groupHandler *handlers.GroupHandler,
+	hostInstanceHandler *handlers.HostInstanceHandler,
+	organizationHandler *handlers.OrganizationHandler,
+	pageHandler *handlers.PageHandler,
+	userHandler *handlers.UserHandler,
 ) *Server {
 	return &Server{
 		middleware:   middleware,

@@ -8,10 +8,10 @@ import (
 
 type Server struct {
 	middleware Middleware
-	wsHandler  handlers.WebSocketHandler
+	wsHandler  *handlers.WebSocketHandler
 }
 
-func NewServer(middleware Middleware, wsHandler handlers.WebSocketHandler) *Server {
+func NewServer(middleware Middleware, wsHandler *handlers.WebSocketHandler) *Server {
 	return &Server{
 		middleware: middleware,
 		wsHandler:  wsHandler,
