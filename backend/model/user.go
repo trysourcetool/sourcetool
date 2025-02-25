@@ -252,6 +252,5 @@ type SendInvitationEmail struct {
 type UserMailer interface {
 	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
-	SendWelcomeEmail(context.Context, *SendWelcomeEmail) error
 	SendInvitationEmail(context.Context, *SendInvitationEmail) error
 }

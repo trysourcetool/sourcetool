@@ -692,12 +692,6 @@ func (s *ServiceCE) SignUp(ctx context.Context, in types.SignUpInput) (*types.Si
 		return nil, err
 	}
 
-	if !(config.Config.Env == config.EnvLocal) {
-		s.Mailer.User().SendWelcomeEmail(ctx, &model.SendWelcomeEmail{
-			To: u.Email,
-		})
-	}
-
 	return &types.SignUpPayload{
 		Token:     token,
 		XSRFToken: xsrfToken,

@@ -1,22 +1,16 @@
 package user
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
-	"embed"
 	"fmt"
 	"net/smtp"
-	"text/template"
 
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
-
-//go:embed templates/*
-var f embed.FS
 
 type MailerCE struct {
 	auth    smtp.Auth
@@ -98,26 +92,6 @@ Sourcetool Team`,
 	return nil
 }
 
-func (m *MailerCE) SendWelcomeEmail(ctx context.Context, in *model.SendWelcomeEmail) error {
-	content, err := generateTemplateByTemplateName("welcome.tmpl", nil)
-	if err != nil {
-		return err
-	}
-
-	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
-		"To: %s\r\n"+
-		"Subject: Welcome to Sourcetool!\r\n"+
-		"Content-Type: text/html; charset=UTF-8\r\n"+
-		"\r\n"+
-		"%s\r\n", m.from, in.To, content)
-
-	if err := m.sendMail([]string{in.To}, []byte(msg)); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	return nil
-}
-
 func (m *MailerCE) SendInvitationEmail(ctx context.Context, in *model.SendInvitationEmail) error {
 	subject := "You've been invited to join Sourcetool!"
 	baseContent := `You've been invited to join Sourcetool!
@@ -151,21 +125,6 @@ To accept the invitation, please create your account by clicking the URL below w
 	}
 
 	return nil
-}
-
-func generateTemplateByTemplateName(tName string, input any) (string, error) {
-	templatePath := fmt.Sprintf("templates/%s", tName)
-	tmpl, err := template.ParseFS(f, templatePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse template path %s, %w", templatePath, err)
-	}
-
-	buf := &bytes.Buffer{}
-	if err = tmpl.Execute(buf, input); err != nil {
-		return "", fmt.Errorf("failed to execute template with input = %v, tName %s, %w", input, tName, err)
-	}
-
-	return buf.String(), nil
 }
 
 func (m *MailerCE) sendMail(to []string, msg []byte) error {
