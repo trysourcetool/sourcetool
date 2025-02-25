@@ -1,29 +1,30 @@
 package postgres
 
 import (
-	"fmt"
-
-	migrate "github.com/rubenv/sql-migrate"
-
-	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func Migrate() error {
-	migrations := &migrate.FileMigrationSource{
-		Dir: "postgres/ddl",
-	}
-
 	db, err := New()
 	if err != nil {
 		return err
 	}
 
-	n, err := migrate.Exec(db.DB, "postgres", migrations, migrate.Up)
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
 
-	logger.Logger.Info(fmt.Sprintf("Applied %d migrations!", n))
+	m, err := migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
 
 	return nil
 }

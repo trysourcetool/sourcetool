@@ -49,11 +49,5 @@ dist/
 # Local development
 tmp/
 
-# DB data
-/postgres/data
-
-# Build binary
-/sourcetool/backend
-
 # Debug
 cookies.txt
