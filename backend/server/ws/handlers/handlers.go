@@ -10,7 +10,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
-	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/ws/types"
@@ -37,14 +36,13 @@ const (
 
 type WebSocketHandler struct {
 	upgrader websocket.Upgrader
-	dep      *infra.Dependency
 	service  ws.Service
 }
 
-func NewWebSocketHandler(d *infra.Dependency, upgrader websocket.Upgrader) *WebSocketHandler {
+func NewWebSocketHandler(upgrader websocket.Upgrader, service ws.Service) *WebSocketHandler {
 	return &WebSocketHandler{
 		upgrader: upgrader,
-		dep:      d,
+		service:  service,
 	}
 }
 
@@ -54,8 +52,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.Sugar().Errorf("Failed to upgrade connection: %v", err)
 		return
 	}
-
-	h.service = ws.NewService(conn, h.dep)
+	h.service.SetConn(conn)
 
 	conn.SetReadLimit(maxMessageSize)
 	conn.SetPongHandler(func(string) error {

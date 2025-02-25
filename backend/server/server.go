@@ -22,13 +22,14 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/page"
 	httpserver "github.com/trysourcetool/sourcetool/backend/server/http"
 	httphandlers "github.com/trysourcetool/sourcetool/backend/server/http/handlers"
-	"github.com/trysourcetool/sourcetool/backend/server/ws"
+	wsserver "github.com/trysourcetool/sourcetool/backend/server/ws"
 	wshandlers "github.com/trysourcetool/sourcetool/backend/server/ws/handlers"
 	"github.com/trysourcetool/sourcetool/backend/user"
+	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
 type Server struct {
-	wsServer   *ws.Server
+	wsServer   *wsserver.Server
 	httpServer *httpserver.Server
 }
 
@@ -42,9 +43,8 @@ func New(d *infra.Dependency) *Server {
 	pageHandler := httphandlers.NewPageHandler(page.NewServiceCE(d))
 	userHandler := httphandlers.NewUserHandler(user.NewServiceCE(d))
 
-	wsMiddle := ws.NewMiddlewareCE(d.Store)
+	wsMiddle := wsserver.NewMiddlewareCE(d.Store)
 	wsHandler := wshandlers.NewWebSocketHandler(
-		d,
 		websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -52,9 +52,10 @@ func New(d *infra.Dependency) *Server {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		ws.NewServiceCE(d),
 	)
 	return &Server{
-		wsServer: ws.NewServer(wsMiddle, wsHandler),
+		wsServer: wsserver.NewServer(wsMiddle, wsHandler),
 		httpServer: httpserver.NewServer(
 			httpMiddle,
 			apiKeyHandler,

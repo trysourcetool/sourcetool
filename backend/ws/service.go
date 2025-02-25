@@ -26,18 +26,21 @@ type Service interface {
 	CloseSession(context.Context, *websocketv1.Message) error
 	ScriptFinished(context.Context, *websocketv1.Message) error
 	UpdateStatus(context.Context, types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error)
+
+	GetConn() *websocket.Conn
+	SetConn(conn *websocket.Conn)
 }
 
-type service struct {
+type ServiceCE struct {
 	conn *websocket.Conn
 	*infra.Dependency
 }
 
-func NewService(conn *websocket.Conn, d *infra.Dependency) Service {
-	return &service{conn: conn, Dependency: d}
+func NewServiceCE(d *infra.Dependency) *ServiceCE {
+	return &ServiceCE{Dependency: d}
 }
 
-func (s *service) InitializeClient(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Message) error {
 	in := msg.GetInitializeClient()
 	if in == nil {
 		return errors.New("invalid message")
@@ -162,7 +165,7 @@ func (s *service) InitializeClient(ctx context.Context, msg *websocketv1.Message
 	return nil
 }
 
-func (s *service) InitializeHost(ctx context.Context, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
+func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
 		return nil, errors.New("invalid message")
@@ -205,19 +208,6 @@ func (s *service) InitializeHost(ctx context.Context, instanceID string, msg *we
 	existingPageMap := make(map[string]*model.Page)
 	for _, p := range existingPages {
 		existingPageMap[p.ID.String()] = p
-	}
-
-	var allGroupSlugs []string
-	for _, p := range in.Pages {
-		allGroupSlugs = append(allGroupSlugs, p.Groups...)
-	}
-	groups, err := s.Store.Group().List(ctx, model.GroupByOrganizationID(apikey.OrganizationID), model.GroupBySlugs(allGroupSlugs))
-	if err != nil {
-		return nil, err
-	}
-	groupMap := make(map[string]*model.Group)
-	for _, g := range groups {
-		groupMap[g.Slug] = g
 	}
 
 	requestPageIDs := make(map[string]struct{})
@@ -285,49 +275,6 @@ func (s *service) InitializeHost(ctx context.Context, instanceID string, msg *we
 			}
 		}
 
-		var pageIDs []uuid.UUID
-		pageGroupMap := make(map[uuid.UUID][]string) // pageID -> group slugs
-		for _, reqPage := range in.Pages {
-			pageID, err := uuid.FromString(reqPage.Id)
-			if err != nil {
-				return err
-			}
-			pageIDs = append(pageIDs, pageID)
-			pageGroupMap[pageID] = reqPage.Groups
-		}
-
-		existingGroupPages, err := tx.Group().ListPages(ctx, model.GroupPageByPageIDs(pageIDs))
-		if err != nil {
-			return err
-		}
-
-		if len(existingGroupPages) > 0 {
-			if err := tx.Group().BulkDeletePages(ctx, existingGroupPages); err != nil {
-				return err
-			}
-		}
-
-		var newGroupPages []*model.GroupPage
-		for pageID, groupSlugs := range pageGroupMap {
-			for _, slug := range groupSlugs {
-				group, ok := groupMap[slug]
-				if !ok {
-					continue
-				}
-				newGroupPages = append(newGroupPages, &model.GroupPage{
-					ID:      uuid.Must(uuid.NewV4()),
-					GroupID: group.ID,
-					PageID:  pageID,
-				})
-			}
-		}
-
-		if len(newGroupPages) > 0 {
-			if err := tx.Group().BulkInsertPages(ctx, newGroupPages); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}); err != nil {
 		return nil, err
@@ -349,7 +296,7 @@ func (s *service) InitializeHost(ctx context.Context, instanceID string, msg *we
 	return hostInstance, nil
 }
 
-func (s *service) RerunPage(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) RerunPage(ctx context.Context, msg *websocketv1.Message) error {
 	in := msg.GetRerunPage()
 	if in == nil {
 		return errors.New("invalid message")
@@ -391,7 +338,7 @@ func (s *service) RerunPage(ctx context.Context, msg *websocketv1.Message) error
 	return nil
 }
 
-func (s *service) RenderWidget(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) RenderWidget(ctx context.Context, msg *websocketv1.Message) error {
 	in := msg.GetRenderWidget()
 	if in == nil {
 		return errors.New("invalid message")
@@ -414,7 +361,7 @@ func (s *service) RenderWidget(ctx context.Context, msg *websocketv1.Message) er
 	return nil
 }
 
-func (s *service) CloseSession(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) CloseSession(ctx context.Context, msg *websocketv1.Message) error {
 	in := msg.GetCloseSession()
 	if in == nil {
 		return errors.New("invalid message")
@@ -462,7 +409,7 @@ func (s *service) CloseSession(ctx context.Context, msg *websocketv1.Message) er
 	return nil
 }
 
-func (s *service) ScriptFinished(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) ScriptFinished(ctx context.Context, msg *websocketv1.Message) error {
 	in := msg.GetScriptFinished()
 	if in == nil {
 		return errors.New("invalid message")
@@ -487,7 +434,7 @@ func (s *service) ScriptFinished(ctx context.Context, msg *websocketv1.Message) 
 	return nil
 }
 
-func (s *service) UpdateStatus(ctx context.Context, in types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error) {
+func (s *ServiceCE) UpdateStatus(ctx context.Context, in types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error) {
 	hostInstanceID, err := uuid.FromString(in.ID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -519,4 +466,12 @@ func (s *service) UpdateStatus(ctx context.Context, in types.UpdateHostInstanceS
 			UpdatedAt:  strconv.FormatInt(host.UpdatedAt.Unix(), 10),
 		},
 	}, nil
+}
+
+func (s *ServiceCE) GetConn() *websocket.Conn {
+	return s.conn
+}
+
+func (s *ServiceCE) SetConn(conn *websocket.Conn) {
+	s.conn = conn
 }

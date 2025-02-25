@@ -30,16 +30,6 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListPagesPayload, error) {
 		return nil, err
 	}
 
-	groups, err := s.Store.Group().List(ctx, model.GroupByOrganizationID(o.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	groupPages, err := s.Store.Group().ListPages(ctx, model.GroupPageByOrganizationID(o.ID))
-	if err != nil {
-		return nil, err
-	}
-
 	users, err := s.Store.User().List(ctx, model.UserByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
@@ -58,28 +48,6 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListPagesPayload, error) {
 			Route:     page.Route,
 			CreatedAt: strconv.FormatInt(page.CreatedAt.Unix(), 10),
 			UpdatedAt: strconv.FormatInt(page.UpdatedAt.Unix(), 10),
-		})
-	}
-
-	groupsRes := make([]*types.GroupPayload, 0, len(groups))
-	for _, group := range groups {
-		groupsRes = append(groupsRes, &types.GroupPayload{
-			ID:        group.ID.String(),
-			Name:      group.Name,
-			Slug:      group.Slug,
-			CreatedAt: strconv.FormatInt(group.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(group.UpdatedAt.Unix(), 10),
-		})
-	}
-
-	groupPagesRes := make([]*types.GroupPagePayload, 0, len(groupPages))
-	for _, groupPage := range groupPages {
-		groupPagesRes = append(groupPagesRes, &types.GroupPagePayload{
-			ID:        groupPage.ID.String(),
-			GroupID:   groupPage.GroupID.String(),
-			PageID:    groupPage.PageID.String(),
-			CreatedAt: strconv.FormatInt(groupPage.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(groupPage.UpdatedAt.Unix(), 10),
 		})
 	}
 
@@ -108,8 +76,8 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListPagesPayload, error) {
 
 	return &types.ListPagesPayload{
 		Pages:      pagesRes,
-		Groups:     groupsRes,
-		GroupPages: groupPagesRes,
+		Groups:     make([]*types.GroupPayload, 0),
+		GroupPages: make([]*types.GroupPagePayload, 0),
 		Users:      usersRes,
 		UserGroups: userGroupsRes,
 	}, nil
