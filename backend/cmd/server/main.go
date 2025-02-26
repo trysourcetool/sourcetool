@@ -49,10 +49,6 @@ func main() {
 	dep := infra.NewDependency(store.NewCE(db), signer.NewCE(), mailer.NewCE())
 
 	if config.Config.Env == config.EnvLocal {
-		if err := postgres.Migrate(); err != nil {
-			logger.Logger.Fatal(err.Error())
-		}
-
 		if err := fixtures.Load(ctx, dep.Store); err != nil {
 			logger.Logger.Fatal(err.Error())
 		}

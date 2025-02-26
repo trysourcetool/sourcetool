@@ -21,13 +21,13 @@ func init() {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "usage: db [cmd]\n")
-		fmt.Fprintf(flag.CommandLine.Output(), "  migrate: runs all migrations \n")
-		flag.PrintDefaults()
+		fmt.Fprintf(flag.CommandLine.Output(), "usage: db [cmd] [args...]\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Commands:\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "  migrate [dir]: runs all migrations (default dir: migrations)\n")
 	}
 
 	flag.Parse()
-	if flag.NArg() != 1 {
+	if flag.NArg() < 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -41,12 +41,16 @@ func main() {
 func run(ctx context.Context, cmd string) error {
 	switch cmd {
 	case "migrate":
-		return migrate()
+		dir := "migrations"
+		if flag.NArg() > 1 {
+			dir = flag.Arg(1)
+		}
+		return migrate(dir)
 	default:
 		return fmt.Errorf("unsupported arg: %q", cmd)
 	}
 }
 
-func migrate() error {
-	return postgres.Migrate()
+func migrate(dir string) error {
+	return postgres.Migrate(dir)
 }

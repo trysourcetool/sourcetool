@@ -6,7 +6,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Migrate() error {
+func Migrate(dir string) error {
 	db, err := New()
 	if err != nil {
 		return err
@@ -17,7 +17,7 @@ func Migrate() error {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://"+dir, "postgres", driver)
 	if err != nil {
 		return err
 	}
