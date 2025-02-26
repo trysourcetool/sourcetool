@@ -7,8 +7,8 @@ import (
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/selectbox"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool-proto/go/widget/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func (b *uiBuilder) Selectbox(label string, opts ...selectbox.Option) *selectbox.Value {

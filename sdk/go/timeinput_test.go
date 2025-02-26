@@ -12,7 +12,7 @@ import (
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
 	"github.com/trysourcetool/sourcetool-go/timeinput"
-	widgetv1 "github.com/trysourcetool/sourcetool-proto/go/widget/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func TestConvertStateToTimeInputProto(t *testing.T) {

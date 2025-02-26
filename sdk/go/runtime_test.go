@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"

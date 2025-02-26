@@ -10,7 +10,7 @@ import (
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
-	widgetv1 "github.com/trysourcetool/sourcetool-proto/go/widget/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func TestConvertStateToButtonProto(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 )
 

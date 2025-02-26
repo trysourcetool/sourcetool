@@ -2,8 +2,8 @@ package websocket
 
 import (
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
-	exceptionv1 "github.com/trysourcetool/sourcetool-proto/go/exception/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
+	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 )
 
 func (c *client) sendException(id string, err error) {

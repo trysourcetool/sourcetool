@@ -14,9 +14,9 @@ import (
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
-	pagev1 "github.com/trysourcetool/sourcetool-proto/go/page/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool-proto/go/widget/v1"
+	pagev1 "github.com/trysourcetool/sourcetool/proto/go/page/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 type runtime struct {

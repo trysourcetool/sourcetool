@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
-	websocketv1 "github.com/trysourcetool/sourcetool-proto/go/websocket/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 )
 
