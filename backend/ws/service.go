@@ -25,6 +25,7 @@ type Service interface {
 	RenderWidget(context.Context, *websocketv1.Message) error
 	CloseSession(context.Context, *websocketv1.Message) error
 	ScriptFinished(context.Context, *websocketv1.Message) error
+	Exception(context.Context, *websocketv1.Message) error
 	UpdateStatus(context.Context, types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error)
 
 	GetConn() *websocket.Conn
@@ -259,8 +260,8 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 			}
 		}
 
-		if len(insertPages) > 0 {
-			if err := tx.Page().BulkInsert(ctx, insertPages); err != nil {
+		if len(deletePages) > 0 {
+			if err := tx.Page().BulkDelete(ctx, deletePages); err != nil {
 				return err
 			}
 		}
@@ -269,8 +270,8 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 				return err
 			}
 		}
-		if len(deletePages) > 0 {
-			if err := tx.Page().BulkDelete(ctx, deletePages); err != nil {
+		if len(insertPages) > 0 {
+			if err := tx.Page().BulkInsert(ctx, insertPages); err != nil {
 				return err
 			}
 		}
@@ -416,6 +417,29 @@ func (s *ServiceCE) ScriptFinished(ctx context.Context, msg *websocketv1.Message
 	}
 
 	logger.Logger.Sugar().Debug("Payload: ", in)
+
+	sessionID, err := uuid.FromString(in.SessionId)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	if err != nil {
+		return err
+	}
+
+	if err := GetConnManager().SendToClient(ctx, sessionID, msg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ServiceCE) Exception(ctx context.Context, msg *websocketv1.Message) error {
+	in := msg.GetException()
+	if in == nil {
+		return errors.New("invalid message")
+	}
 
 	sessionID, err := uuid.FromString(in.SessionId)
 	if err != nil {

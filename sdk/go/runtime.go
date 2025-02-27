@@ -14,6 +14,7 @@ import (
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
+	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
 	pagev1 "github.com/trysourcetool/sourcetool/proto/go/page/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
@@ -53,11 +54,20 @@ func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime,
 	wsClient.RegisterHandler(func(msg *websocketv1.Message) error {
 		switch t := msg.Type.(type) {
 		case *websocketv1.Message_InitializeClient:
-			return r.handleInitializeClient(t.InitializeClient)
+			if err := r.handleInitializeClient(t.InitializeClient); err != nil {
+				r.sendException(msg.Id, *t.InitializeClient.SessionId, err)
+			}
+			return nil
 		case *websocketv1.Message_RerunPage:
-			return r.handleRerunPage(t.RerunPage)
+			if err := r.handleRerunPage(t.RerunPage); err != nil {
+				r.sendException(msg.Id, t.RerunPage.SessionId, err)
+			}
+			return nil
 		case *websocketv1.Message_CloseSession:
-			return r.handleCloseSession(t.CloseSession)
+			if err := r.handleCloseSession(t.CloseSession); err != nil {
+				r.sendException(msg.Id, t.CloseSession.SessionId, err)
+			}
+			return nil
 		default:
 			return fmt.Errorf("unknown message type: %T", t)
 		}
@@ -105,11 +115,11 @@ func (r *runtime) handleInitializeClient(msg *websocketv1.InitializeClient) erro
 	}
 	sessionID, err := uuid.FromString(conv.SafeValue(msg.SessionId))
 	if err != nil {
-		return err
+		return errdefs.ErrInvalidParameter(err)
 	}
 	pageID, err := uuid.FromString(msg.PageId)
 	if err != nil {
-		return err
+		return errdefs.ErrInvalidParameter(err)
 	}
 
 	session := session.New(sessionID, pageID)
@@ -134,7 +144,7 @@ func (r *runtime) handleInitializeClient(msg *websocketv1.InitializeClient) erro
 			Status:    websocketv1.ScriptFinished_STATUS_FAILURE,
 		})
 
-		return errdefs.ErrRunPage(fmt.Errorf("failed to run page: %v", err))
+		return errdefs.ErrRunPage(err)
 	}
 
 	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), &websocketv1.ScriptFinished{
@@ -242,7 +252,7 @@ func (r *runtime) handleRerunPage(msg *websocketv1.RerunPage) error {
 			Status:    websocketv1.ScriptFinished_STATUS_FAILURE,
 		})
 
-		return errdefs.ErrRunPage(fmt.Errorf("failed to run page: %v", err))
+		return errdefs.ErrRunPage(err)
 	}
 
 	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), &websocketv1.ScriptFinished{
@@ -264,4 +274,21 @@ func (r *runtime) handleCloseSession(msg *websocketv1.CloseSession) error {
 	r.sessionManager.DisconnectSession(sessionID)
 
 	return nil
+}
+
+func (r *runtime) sendException(id, sessionID string, err error) {
+	e, ok := err.(*errdefs.Error)
+	if !ok {
+		v := errdefs.ErrInternal(err)
+		e = v.(*errdefs.Error)
+	}
+
+	exception := &exceptionv1.Exception{
+		Title:      e.Title,
+		Message:    e.Message,
+		StackTrace: e.StackTrace(),
+		SessionId:  sessionID,
+	}
+
+	r.wsClient.Enqueue(id, exception)
 }

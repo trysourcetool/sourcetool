@@ -123,6 +123,11 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
+		case *websocketv1.Message_Exception:
+			if err := h.service.Exception(ctx, &msg); err != nil {
+				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				continue
+			}
 		default:
 			logger.Logger.Sugar().Errorf("Unknown method: %s", msg.Type)
 			continue

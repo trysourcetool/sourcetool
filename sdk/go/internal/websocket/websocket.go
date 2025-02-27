@@ -220,7 +220,6 @@ func (c *client) readMessages() {
 
 		if err := c.handleMessage(msg); err != nil {
 			logger.Log.Error("error handling message", zap.Error(err))
-			c.sendException(msg.Id, err)
 		}
 	}
 }

@@ -60,7 +60,6 @@ message CloseSession {
   string session_id = 1;
 }
 
-
 message ScriptFinished {
   enum Status {
     STATUS_UNSPECIFIED = 0;

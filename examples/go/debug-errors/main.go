@@ -127,7 +127,7 @@ func errorDemoPage(ui sourcetool.UIBuilder) error {
 	ui.Markdown("## Form with Validation Errors")
 	ui.Markdown("Submit this form to return validation errors from the page function:")
 
-	form, submitted := ui.Form("Submit Form", nil)
+	form, submitted := ui.Form("Submit Form")
 
 	username := form.TextInput("Username", textinput.Placeholder("Enter username"))
 	email := form.TextInput("Email", textinput.Placeholder("Enter email"))
@@ -211,7 +211,7 @@ func main() {
 	s := sourcetool.New("your_development_api_key")
 
 	// Register the error demo page
-	s.Page("/", "Error Demo", errorDemoPage)
+	s.AccessGroups("admin").Page("/error-demo", "Error Demo", errorDemoPage)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()

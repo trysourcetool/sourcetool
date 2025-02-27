@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file exception/v1/exception.proto.
  */
 export const file_exception_v1_exception: GenFile = /*@__PURE__*/
-  fileDesc("ChxleGNlcHRpb24vdjEvZXhjZXB0aW9uLnByb3RvEhdzb3VyY2V0b29sLmV4Y2VwdGlvbi52MSJACglFeGNlcHRpb24SDQoFdGl0bGUYASABKAkSDwoHbWVzc2FnZRgCIAEoCRITCgtzdGFja190cmFjZRgDIAMoCUL0AQobY29tLnNvdXJjZXRvb2wuZXhjZXB0aW9uLnYxQg5FeGNlcHRpb25Qcm90b1ABWkVnaXRodWIuY29tL3RyeXNvdXJjZXRvb2wvc291cmNldG9vbC9wcm90by9nby9leGNlcHRpb24vdjE7ZXhjZXB0aW9udjGiAgNTRViqAhdTb3VyY2V0b29sLkV4Y2VwdGlvbi5WMcoCGFNvdXJjZXRvb2xcRXhjZXB0aW9uX1xWMeICJFNvdXJjZXRvb2xcRXhjZXB0aW9uX1xWMVxHUEJNZXRhZGF0YeoCGVNvdXJjZXRvb2w6OkV4Y2VwdGlvbjo6VjFiBnByb3RvMw");
+  fileDesc("ChxleGNlcHRpb24vdjEvZXhjZXB0aW9uLnByb3RvEhdzb3VyY2V0b29sLmV4Y2VwdGlvbi52MSJUCglFeGNlcHRpb24SDQoFdGl0bGUYASABKAkSDwoHbWVzc2FnZRgCIAEoCRITCgtzdGFja190cmFjZRgDIAMoCRISCgpzZXNzaW9uX2lkGAQgASgJQvQBChtjb20uc291cmNldG9vbC5leGNlcHRpb24udjFCDkV4Y2VwdGlvblByb3RvUAFaRWdpdGh1Yi5jb20vdHJ5c291cmNldG9vbC9zb3VyY2V0b29sL3Byb3RvL2dvL2V4Y2VwdGlvbi92MTtleGNlcHRpb252MaICA1NFWKoCF1NvdXJjZXRvb2wuRXhjZXB0aW9uLlYxygIYU291cmNldG9vbFxFeGNlcHRpb25fXFYx4gIkU291cmNldG9vbFxFeGNlcHRpb25fXFYxXEdQQk1ldGFkYXRh6gIZU291cmNldG9vbDo6RXhjZXB0aW9uOjpWMWIGcHJvdG8z");
 
 /**
  * @generated from message sourcetool.exception.v1.Exception
@@ -30,6 +30,11 @@ export type Exception = Message<"sourcetool.exception.v1.Exception"> & {
    * @generated from field: repeated string stack_trace = 3;
    */
   stackTrace: string[];
+
+  /**
+   * @generated from field: string session_id = 4;
+   */
+  sessionId: string;
 };
 
 /**
@@ -50,6 +55,11 @@ export type ExceptionJson = {
    * @generated from field: repeated string stack_trace = 3;
    */
   stackTrace?: string[];
+
+  /**
+   * @generated from field: string session_id = 4;
+   */
+  sessionId?: string;
 };
 
 /**
