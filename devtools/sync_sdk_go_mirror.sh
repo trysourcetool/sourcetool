@@ -8,10 +8,29 @@ set -e
 GH_PAT=$1
 MIRROR_REPO_URL=$2
 
-if [ -z "$GH_PAT" ] || [ -z "$MIRROR_REPO_URL" ]; then
-  echo "Error: GitHub PAT and mirror repository URL are required"
+# Check if the GitHub PAT is provided
+if [ -z "$GH_PAT" ]; then
+  echo "Error: GitHub PAT is not provided or is empty"
+  echo "Please ensure the GH_PAT secret is properly configured in your repository settings"
+  exit 1
+fi
+
+# Check if the mirror repository URL is provided
+if [ -z "$MIRROR_REPO_URL" ]; then
+  echo "Error: Mirror repository URL is not provided"
   echo "Usage: ./sync_sdk_go_mirror.sh <github_pat> <mirror_repo_url>"
   exit 1
+fi
+
+# Get the latest commit message that affected sdk/go from the source repository
+# Do this before changing directories
+LATEST_COMMIT_MSG=$(git log -1 --pretty=%B -- sdk/go | head -n 1)
+echo "Latest commit message: $LATEST_COMMIT_MSG"
+
+# If commit message is empty, use a default message
+if [ -z "$LATEST_COMMIT_MSG" ]; then
+  LATEST_COMMIT_MSG="Update SDK Go files"
+  echo "Using default commit message: $LATEST_COMMIT_MSG"
 fi
 
 # Create a temporary directory
@@ -45,13 +64,10 @@ if [[ -z $(git status --porcelain) ]]; then
   exit 0
 fi
 
-# Get the latest commit message that affected sdk/go
-LATEST_COMMIT_MSG=$(git log -1 --pretty=%B -- sdk/go | head -n 1)
-
 # Add and commit the changes
 echo "Committing changes..."
 git add .
-git commit -m "$LATEST_COMMIT_MSG"
+git commit -m "$LATEST_COMMIT_MSG" || git commit -m "Update SDK Go files"
 
 # Push the changes
 echo "Pushing changes to mirror repository..."
