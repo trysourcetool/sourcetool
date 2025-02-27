@@ -1,0 +1,91 @@
+name: NPM Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'proto/ts/package.json'
+
+jobs:
+  check-version-change:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.version_changed }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if version changed
+        id: check
+        run: |
+          # Check if the version line in package.json has changed
+          git diff HEAD^ HEAD -- proto/ts/package.json | grep '"version":' || echo "No version change detected"
+          
+          # If the version has changed, set the output variable to true and capture the new version
+          if git diff HEAD^ HEAD -- proto/ts/package.json | grep '"version":'; then
+            # Set output variable for use in the conditional for the publish job
+            # This writes to the GitHub Actions output file which can be accessed by other steps/jobs
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            
+            # Extract the new version number
+            VERSION=$(grep '"version":' proto/ts/package.json | sed 's/.*"version": "\(.*\)",/\1/')
+            
+            # Set the version as an output variable (though we're not using it currently)
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            
+            # Log the new version for visibility in the workflow run
+            echo "Version changed to: $VERSION"
+          else
+            # If no version change, set output variable to false so publish job is skipped
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+    # This job depends on the check-version-change job
+    needs: check-version-change
+    
+    # Only run this job if the version_changed output from the previous job is 'true'
+    # This is how we conditionally run the publish job only when the version has changed
+    if: needs.check-version-change.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Generate code
+        working-directory: proto
+        run: make generate
+
+      - name: Install dependencies
+        working-directory: proto/ts
+        run: npm ci
+
+      - name: Build package
+        working-directory: proto/ts
+        run: npm run build
+
+      - name: Create package tarball
+        working-directory: proto/ts
+        run: npm pack
+
+      - name: Publish to npm
+        working-directory: proto/ts
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
