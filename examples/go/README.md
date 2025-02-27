@@ -20,6 +20,14 @@ A complete example of a user management application that demonstrates:
 - Setting up page routing
 - Handling user interactions
 
+### [Debug Errors](./debug-errors)
+
+An example focused on returning errors from page functions:
+- Demonstrates how to return different types of errors from page functions
+- Shows how Sourcetool handles and displays these errors
+- Includes custom error types and error handling patterns
+- Features panic recovery demonstrations and error middleware
+
 ## Adding New Examples
 
 To add a new example:
