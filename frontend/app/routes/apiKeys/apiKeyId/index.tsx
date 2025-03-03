@@ -1,0 +1,204 @@
+import { PageHeader } from '@/components/common/page-header';
+import { object, string } from 'zod';
+import type { z } from 'zod';
+import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from '@/store';
+import { useEffect, useRef } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+
+import { Button } from '@/components/ui/button';
+import { Link, useParams } from 'react-router';
+import { $path } from 'safe-routes';
+import { Copy, Loader2 } from 'lucide-react';
+import { apiKeysStore } from '@/store/modules/apiKeys';
+import { useToast } from '@/hooks/use-toast';
+import dayjs from 'dayjs';
+
+export default function ApiKeysEdit() {
+  const isInitialLoading = useRef(false);
+  const { toast } = useToast();
+  const dispatch = useDispatch();
+  const { apiKeyId } = useParams();
+  const { setBreadcrumbsState } = useBreadcrumbs();
+  const { t } = useTranslation('common');
+
+  const apiKey = useSelector((state) =>
+    apiKeysStore.selector.getApiKey(state, apiKeyId ?? ''),
+  );
+  const isUpdateApiKeyWaiting = useSelector(
+    (state) => state.apiKeys.isUpdateApiKeyWaiting,
+  );
+
+  const schema = object({
+    name: string({
+      required_error: t('zod_errors_name_required'),
+    })
+      .trim()
+      .min(1, t('zod_errors_name_required')),
+  });
+
+  type Schema = z.infer<typeof schema>;
+
+  const form = useForm<Schema>({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    console.log({ data });
+    if (isUpdateApiKeyWaiting || !apiKeyId) {
+      return;
+    }
+    const resultAction = await dispatch(
+      apiKeysStore.asyncActions.updateApiKey({ apiKeyId, data }),
+    );
+    if (apiKeysStore.asyncActions.updateApiKey.fulfilled.match(resultAction)) {
+      toast({
+        title: t('routes_apikeys_edit_toast_updated'),
+      });
+    } else {
+      toast({
+        title: t('routes_apikeys_edit_toast_update_failed'),
+        description: (resultAction.error as any)?.message ?? '',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const onCopy = async () => {
+    if (apiKey?.key) {
+      try {
+        await navigator.clipboard.writeText(apiKey.key);
+        toast({
+          title: t('routes_apikeys_edit_toast_copied'),
+        });
+      } catch (error) {
+        toast({
+          title: t('routes_apikeys_edit_toast_copy_failed'),
+          description: (error as any)?.message ?? '',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    setBreadcrumbsState?.([
+      { label: t('breadcrumbs_api_keys'), to: $path('/apiKeys') },
+      { label: t('breadcrumbs_edit_api_key') },
+    ]);
+  }, [setBreadcrumbsState, t]);
+
+  useEffect(() => {
+    if (!isInitialLoading.current) {
+      isInitialLoading.current = true;
+      if (apiKeyId) {
+        (async () => {
+          await dispatch(apiKeysStore.asyncActions.getApiKey({ apiKeyId }));
+          isInitialLoading.current = false;
+        })();
+      }
+    }
+  }, [dispatch, apiKeyId]);
+
+  useEffect(() => {
+    if (apiKey) {
+      form.reset({
+        name: apiKey.name,
+      });
+    }
+  }, [apiKey]);
+
+  return (
+    <div>
+      <PageHeader label={t('routes_apikeys_edit_page_header')} />
+      {apiKey && (
+        <Form {...form}>
+          <form className="flex flex-col gap-6 p-6" onSubmit={onSubmit}>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('routes_apikeys_edit_name_label')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t('routes_apikeys_edit_name_placeholder')}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormItem>
+              <FormLabel>
+                {t('routes_apikeys_edit_environment_label')}
+              </FormLabel>
+              <Input
+                type="text"
+                value={apiKey?.environment?.name ?? ''}
+                disabled
+              />
+            </FormItem>
+
+            <div className="flex justify-start gap-3">
+              <Button type="submit">
+                {isUpdateApiKeyWaiting && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
+                {t('routes_apikeys_edit_save_button')}
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to={$path('/apiKeys')}>
+                  {t('routes_apikeys_edit_cancel_button')}
+                </Link>
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-4 bg-muted px-6 py-4">
+              <div className="flex flex-col gap-1">
+                <p className="text-lg font-bold text-foreground">
+                  {t('routes_apikeys_edit_key_title')}
+                </p>
+                <p className="text-sm font-normal text-muted-foreground">
+                  {t('routes_apikeys_edit_created_on', {
+                    date: dayjs
+                      .unix(Number(apiKey?.createdAt))
+                      .format('MMM D, YYYY'),
+                  })}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 truncate rounded-md bg-input px-3 py-2.5 text-sm font-normal text-foreground">
+                  <p className="line-clamp-1 break-all whitespace-break-spaces">
+                    {apiKey?.key ?? ''}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  type="button"
+                  onClick={onCopy}
+                >
+                  <Copy />
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      )}
+    </div>
+  );
+}
