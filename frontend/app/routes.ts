@@ -1,0 +1,63 @@
+import {
+  type RouteConfig,
+  layout,
+  index,
+  route,
+} from '@react-router/dev/routes';
+
+export default [
+  layout('./routes/layout-default.tsx', [
+    route('/signin', './routes/signin/index.tsx'),
+    route('/signup', './routes/signup/index.tsx'),
+    route('/signup/followup', './routes/signup/followup/index.tsx'),
+    route('/signup/emailSent', './routes/signup/emailSent/index.tsx'),
+    route('/signup/activate', './routes/signup/activate/index.tsx'),
+    route('/resetPassword', './routes/resetPassword/index.tsx'),
+    route(
+      '/users/invitation/activate',
+      './routes/users/invitation/activate/index.tsx',
+    ),
+    route(
+      '/users/invitation/signup/followup',
+      './routes/users/invitation/signup/followup/index.tsx',
+    ),
+    route(
+      '/users/email/update/confirm',
+      './routes/users/email/update/confirm/index.tsx',
+    ),
+    route('/organizations/new', './routes/organizations/new/index.tsx'),
+    route(
+      '/users/oauth/google/callback',
+      './routes/users/oauth/google/callback/index.tsx',
+    ),
+    route('/onboarding', './routes/onboarding/index.tsx'),
+    route('/onboarding/complete', './routes/onboarding/complete/index.tsx'),
+    route(
+      '/error/hostInstancePingError',
+      './routes/error/hostInstancePingError/index.tsx',
+    ),
+  ]),
+  layout('./routes/layout-auth-external.tsx', [
+    index('./routes/pages/index.tsx'),
+    route('/users', './routes/users/index.tsx', [
+      route('/users/invite', './routes/users/invite/index.tsx'),
+    ]),
+    route('/users/:userId', './routes/users/userId/index.tsx'),
+    route('/apiKeys', './routes/apiKeys/index.tsx'),
+    route('/apiKeys/new', './routes/apiKeys/new/index.tsx'),
+    route('/apiKeys/:apiKeyId', './routes/apiKeys/apiKeyId/index.tsx'),
+    route('/groups', './routes/groups/index.tsx'),
+    route('/groups/new', './routes/groups/new/index.tsx'),
+    route('/groups/:groupId', './routes/groups/groupId/index.tsx'),
+    route('/environments', './routes/environments/index.tsx'),
+    route('/environments/new', './routes/environments/new/index.tsx'),
+    route(
+      '/environments/:environmentId',
+      './routes/environments/environmentId/index.tsx',
+    ),
+    route('/settings', './routes/settings/index.tsx'),
+  ]),
+  layout('./routes/layout-auth-preview.tsx', [
+    route('/pages/*', './routes/pages/pageId/index.tsx'),
+  ]),
+] satisfies RouteConfig;

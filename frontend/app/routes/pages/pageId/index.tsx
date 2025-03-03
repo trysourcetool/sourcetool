@@ -1,0 +1,24 @@
+import { useParams } from 'react-router';
+import { RenderWidgets } from './components/render-widgets';
+import { useSelector } from '@/store';
+import { pagesStore } from '@/store/modules/pages';
+import { PageHeader } from '@/components/common/page-header';
+import { ExceptionView } from './components/exception/exception-view';
+
+export default function Preview() {
+  const { '*': path } = useParams();
+  console.log({ path });
+  const page = useSelector((state) =>
+    pagesStore.selector.getPageFromPath(state, `/${path}`),
+  );
+  const exception = useSelector((state) => state.pages.exception);
+  return (
+    <div>
+      <PageHeader label={page?.name ?? ''} />
+      <div className="space-y-6 p-6">
+        {!exception && <RenderWidgets parentPath={[]} />}
+        {exception && <ExceptionView />}
+      </div>
+    </div>
+  );
+}
