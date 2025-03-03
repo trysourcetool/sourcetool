@@ -10,15 +10,12 @@ import (
 )
 
 var (
-	ErrInternal         = Status("internal_server_error", 500)
-	ErrDatabase         = Status("database_error", 500)
-	ErrPermissionDenied = Status("permission_denied", 403)
-	ErrInvalidArgument  = Status("invalid_argument", 400)
-	ErrAlreadyExists    = Status("already_exists", 409)
-	ErrUnauthenticated  = Status("unauthenticated", 401)
-
-	ErrSendgrid = Status("sendgrid_error", 500)
-
+	ErrInternal                           = Status("internal_server_error", 500)
+	ErrDatabase                           = Status("database_error", 500)
+	ErrPermissionDenied                   = Status("permission_denied", 403)
+	ErrInvalidArgument                    = Status("invalid_argument", 400)
+	ErrAlreadyExists                      = Status("already_exists", 409)
+	ErrUnauthenticated                    = Status("unauthenticated", 401)
 	ErrAPIKeyNotFound                     = Status("api_key_not_found", 404)
 	ErrEnvironmentNotFound                = Status("environment_not_found", 404)
 	ErrEnvironmentSlugAlreadyExists       = Status("environment_slug_already_exists", 409)
