@@ -143,8 +143,9 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
 
   useEffect(() => {
     (async () => {
-      if ((!pageId && !currentPageId.current) || isInitialLoading.current)
+      if ((!pageId && !currentPageId.current) || isInitialLoading.current) {
         return;
+      }
       isInitialLoading.current = true;
       if (pageId) {
         const resultAction = await dispatch(
@@ -286,7 +287,9 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
 
   useEffect(() => {
     (async () => {
-      if (!pageId || !currentPageId.current) return;
+      if (!pageId || !currentPageId.current) {
+        return;
+      }
       if (isVisibilityStatus && !exception) {
         const resultAction = await dispatch(
           hostInstancesStore.asyncActions.getHostInstancePing({

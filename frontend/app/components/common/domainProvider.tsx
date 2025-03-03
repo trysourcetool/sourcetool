@@ -32,7 +32,9 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
   };
 
   useEffect(() => {
-    if (isChecking.current) return;
+    if (isChecking.current) {
+      return;
+    }
     isChecking.current = true;
 
     if (subDomain && subDomain !== 'auth') {

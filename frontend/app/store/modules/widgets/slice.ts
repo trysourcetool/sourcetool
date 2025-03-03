@@ -54,10 +54,13 @@ export const getChildFormItemWidgetIds = (
         !widget ||
         widget.widget?.form ||
         !inputWidgetTypes.some((type) => widget.widget && type in widget.widget)
-      )
+      ) {
         return false;
+      }
       const widgetPath = widget.path;
-      if (!widgetPath || widgetPath.length <= path.length) return false;
+      if (!widgetPath || widgetPath.length <= path.length) {
+        return false;
+      }
       const slicedPath = widgetPath.slice(0, path.length);
 
       return slicedPath.every((p, index) => p === path[index]);

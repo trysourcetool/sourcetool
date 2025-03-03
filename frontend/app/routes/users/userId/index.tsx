@@ -105,7 +105,9 @@ export default function UsersUserId() {
   }, [selectedGroupIds, groups]);
 
   const onSubmit = form.handleSubmit(async (data) => {
-    if (isUpdateOrganizationUserWaiting || !user) return;
+    if (isUpdateOrganizationUserWaiting || !user) {
+      return;
+    }
     const resultAction = await dispatch(
       organizationsStore.asyncActions.updateOrganizationUser({
         userId: user.id,
