@@ -7,6 +7,7 @@ import (
 
 type PageOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isPageOption()
 }
 
 func PageByID(id uuid.UUID) PageOption {
@@ -16,6 +17,8 @@ func PageByID(id uuid.UUID) PageOption {
 type pageByIDOption struct {
 	id uuid.UUID
 }
+
+func (o pageByIDOption) isPageOption() {}
 
 func (o pageByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`p."id"`: o.id})
@@ -29,6 +32,8 @@ type pageByOrganizationIDOption struct {
 	id uuid.UUID
 }
 
+func (o pageByOrganizationIDOption) isPageOption() {}
+
 func (o pageByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`p."organization_id"`: o.id})
 }
@@ -41,6 +46,8 @@ type pageByAPIKeyIDOption struct {
 	id uuid.UUID
 }
 
+func (o pageByAPIKeyIDOption) isPageOption() {}
+
 func (o pageByAPIKeyIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`p."api_key_id"`: o.id})
 }
@@ -52,6 +59,8 @@ func PageBySessionID(id uuid.UUID) PageOption {
 type pageBySessionIDOption struct {
 	id uuid.UUID
 }
+
+func (o pageBySessionIDOption) isPageOption() {}
 
 func (o pageBySessionIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
@@ -67,6 +76,8 @@ type pageLimitOption struct {
 	limit uint64
 }
 
+func (o pageLimitOption) isPageOption() {}
+
 func (o pageLimitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Limit(o.limit)
 }
@@ -79,6 +90,8 @@ type pageOffsetOption struct {
 	offset uint64
 }
 
+func (o pageOffsetOption) isPageOption() {}
+
 func (o pageOffsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Offset(o.offset)
 }
@@ -90,6 +103,8 @@ func PageOrderBy(orderBy string) PageOption {
 type pageOrderByOption struct {
 	orderBy string
 }
+
+func (o pageOrderByOption) isPageOption() {}
 
 func (o pageOrderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.OrderBy(o.orderBy)

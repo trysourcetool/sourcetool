@@ -7,6 +7,7 @@ import (
 
 type GroupOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isGroupOption()
 }
 
 func GroupByID(id uuid.UUID) GroupOption {
@@ -16,6 +17,8 @@ func GroupByID(id uuid.UUID) GroupOption {
 type groupByIDOption struct {
 	id uuid.UUID
 }
+
+func (o groupByIDOption) isGroupOption() {}
 
 func (o groupByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`g."id"`: o.id})
@@ -29,6 +32,8 @@ type groupByOrganizationIDOption struct {
 	id uuid.UUID
 }
 
+func (o groupByOrganizationIDOption) isGroupOption() {}
+
 func (o groupByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`g."organization_id"`: o.id})
 }
@@ -40,6 +45,8 @@ func GroupBySlug(slug string) GroupOption {
 type groupBySlugOption struct {
 	slug string
 }
+
+func (o groupBySlugOption) isGroupOption() {}
 
 func (o groupBySlugOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`g."slug"`: o.slug})
@@ -53,12 +60,15 @@ type groupBySlugsOption struct {
 	slugs []string
 }
 
+func (o groupBySlugsOption) isGroupOption() {}
+
 func (o groupBySlugsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`g."slug"`: o.slugs})
 }
 
 type GroupPageOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isGroupPageOption()
 }
 
 func GroupPageByOrganizationID(id uuid.UUID) GroupPageOption {
@@ -68,6 +78,8 @@ func GroupPageByOrganizationID(id uuid.UUID) GroupPageOption {
 type groupPageByOrganizationIDOption struct {
 	id uuid.UUID
 }
+
+func (o groupPageByOrganizationIDOption) isGroupPageOption() {}
 
 func (o groupPageByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`g."organization_id"`: o.id})
@@ -80,6 +92,8 @@ func GroupPageByPageIDs(ids []uuid.UUID) GroupPageOption {
 type groupPageByPageIDsOption struct {
 	ids []uuid.UUID
 }
+
+func (o groupPageByPageIDsOption) isGroupPageOption() {}
 
 func (o groupPageByPageIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`gp."page_id"`: o.ids})

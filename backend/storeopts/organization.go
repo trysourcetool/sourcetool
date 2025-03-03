@@ -7,6 +7,7 @@ import (
 
 type OrganizationOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isOrganizationOption()
 }
 
 func OrganizationByID(id uuid.UUID) OrganizationOption {
@@ -16,6 +17,8 @@ func OrganizationByID(id uuid.UUID) OrganizationOption {
 type organizationByIDOption struct {
 	id uuid.UUID
 }
+
+func (o organizationByIDOption) isOrganizationOption() {}
 
 func (o organizationByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`o."id"`: o.id})
@@ -29,6 +32,8 @@ type organizationBySubdomainOption struct {
 	subdomain string
 }
 
+func (o organizationBySubdomainOption) isOrganizationOption() {}
+
 func (o organizationBySubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`o."subdomain"`: o.subdomain})
 }
@@ -40,6 +45,8 @@ func OrganizationByUserID(id uuid.UUID) OrganizationOption {
 type organizationByUserIDOption struct {
 	id uuid.UUID
 }
+
+func (o organizationByUserIDOption) isOrganizationOption() {}
 
 func (o organizationByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.

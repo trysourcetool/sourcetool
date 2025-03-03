@@ -7,6 +7,7 @@ import (
 
 type SessionOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isSessionOption()
 }
 
 func SessionByID(id uuid.UUID) SessionOption {
@@ -16,6 +17,8 @@ func SessionByID(id uuid.UUID) SessionOption {
 type sessionByIDOption struct {
 	id uuid.UUID
 }
+
+func (o sessionByIDOption) isSessionOption() {}
 
 func (o sessionByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`s."id"`: o.id})

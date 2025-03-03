@@ -7,6 +7,7 @@ import (
 
 type UserOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isUserOption()
 }
 
 func UserByID(id uuid.UUID) UserOption {
@@ -16,6 +17,8 @@ func UserByID(id uuid.UUID) UserOption {
 type userByIDOption struct {
 	id uuid.UUID
 }
+
+func (o userByIDOption) isUserOption() {}
 
 func (o userByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`u."id"`: o.id})
@@ -29,6 +32,8 @@ type userByEmailOption struct {
 	email string
 }
 
+func (o userByEmailOption) isUserOption() {}
+
 func (o userByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`u."email"`: o.email})
 }
@@ -41,6 +46,8 @@ type userBySecretOption struct {
 	secret string
 }
 
+func (o userBySecretOption) isUserOption() {}
+
 func (o userBySecretOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`u."secret"`: o.secret})
 }
@@ -52,6 +59,8 @@ func UserByOrganizationID(id uuid.UUID) UserOption {
 type userByOrganizationIDOption struct {
 	id uuid.UUID
 }
+
+func (o userByOrganizationIDOption) isUserOption() {}
 
 func (o userByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
@@ -67,6 +76,8 @@ type userLimitOption struct {
 	limit uint64
 }
 
+func (o userLimitOption) isUserOption() {}
+
 func (o userLimitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Limit(o.limit)
 }
@@ -78,6 +89,8 @@ func UserOffset(offset uint64) UserOption {
 type userOffsetOption struct {
 	offset uint64
 }
+
+func (o userOffsetOption) isUserOption() {}
 
 func (o userOffsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Offset(o.offset)
@@ -91,12 +104,15 @@ type userOrderByOption struct {
 	orderBy string
 }
 
+func (o userOrderByOption) isUserOption() {}
+
 func (o userOrderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.OrderBy(o.orderBy)
 }
 
 type UserRegistrationRequestOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isUserRegistrationRequestOption()
 }
 
 func UserRegistrationRequestByEmail(email string) UserRegistrationRequestOption {
@@ -107,12 +123,15 @@ type userRegistrationRequestByEmailOption struct {
 	email string
 }
 
+func (o userRegistrationRequestByEmailOption) isUserRegistrationRequestOption() {}
+
 func (o userRegistrationRequestByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`urr."email"`: o.email})
 }
 
 type UserOrganizationAccessOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isUserOrganizationAccessOption()
 }
 
 func UserOrganizationAccessByUserID(id uuid.UUID) UserOrganizationAccessOption {
@@ -122,6 +141,8 @@ func UserOrganizationAccessByUserID(id uuid.UUID) UserOrganizationAccessOption {
 type userOrganizationAccessByUserIDOption struct {
 	id uuid.UUID
 }
+
+func (o userOrganizationAccessByUserIDOption) isUserOrganizationAccessOption() {}
 
 func (o userOrganizationAccessByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`uoa."user_id"`: o.id})
@@ -135,6 +156,8 @@ type userOrganizationAccessByUserIDsOption struct {
 	ids []uuid.UUID
 }
 
+func (o userOrganizationAccessByUserIDsOption) isUserOrganizationAccessOption() {}
+
 func (o userOrganizationAccessByUserIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`uoa."user_id"`: o.ids})
 }
@@ -146,6 +169,8 @@ func UserOrganizationAccessByOrganizationID(id uuid.UUID) UserOrganizationAccess
 type userOrganizationAccessByOrganizationIDOption struct {
 	id uuid.UUID
 }
+
+func (o userOrganizationAccessByOrganizationIDOption) isUserOrganizationAccessOption() {}
 
 func (o userOrganizationAccessByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
@@ -161,6 +186,8 @@ type userOrganizationAccessByOrganizationSubdomainOption struct {
 	subdomain string
 }
 
+func (o userOrganizationAccessByOrganizationSubdomainOption) isUserOrganizationAccessOption() {}
+
 func (o userOrganizationAccessByOrganizationSubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
 		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
@@ -169,6 +196,7 @@ func (o userOrganizationAccessByOrganizationSubdomainOption) Apply(b sq.SelectBu
 
 type UserGroupOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isUserGroupOption()
 }
 
 func UserGroupByUserID(id uuid.UUID) UserGroupOption {
@@ -178,6 +206,8 @@ func UserGroupByUserID(id uuid.UUID) UserGroupOption {
 type userGroupByUserIDOption struct {
 	id uuid.UUID
 }
+
+func (o userGroupByUserIDOption) isUserGroupOption() {}
 
 func (o userGroupByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ug."user_id"`: o.id})
@@ -191,6 +221,8 @@ type userGroupByGroupIDOption struct {
 	id uuid.UUID
 }
 
+func (o userGroupByGroupIDOption) isUserGroupOption() {}
+
 func (o userGroupByGroupIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ug."group_id"`: o.id})
 }
@@ -203,6 +235,8 @@ type userGroupByOrganizationIDOption struct {
 	id uuid.UUID
 }
 
+func (o userGroupByOrganizationIDOption) isUserGroupOption() {}
+
 func (o userGroupByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
 		InnerJoin(`"group" g ON g."id" = ug."group_id"`).
@@ -211,6 +245,7 @@ func (o userGroupByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuil
 
 type UserInvitationOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isUserInvitationOption()
 }
 
 func UserInvitationByOrganizationID(id uuid.UUID) UserInvitationOption {
@@ -220,6 +255,8 @@ func UserInvitationByOrganizationID(id uuid.UUID) UserInvitationOption {
 type userInvitationByOrganizationIDOption struct {
 	id uuid.UUID
 }
+
+func (o userInvitationByOrganizationIDOption) isUserInvitationOption() {}
 
 func (o userInvitationByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ui."organization_id"`: o.id})
@@ -232,6 +269,8 @@ func UserInvitationByEmail(email string) UserInvitationOption {
 type userInvitationByEmailOption struct {
 	email string
 }
+
+func (o userInvitationByEmailOption) isUserInvitationOption() {}
 
 func (o userInvitationByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ui."email"`: o.email})
