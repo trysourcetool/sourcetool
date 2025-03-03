@@ -85,24 +85,6 @@ func (s *StoreCE) Create(ctx context.Context, m *model.Organization) error {
 	return nil
 }
 
-func (s *StoreCE) limit(in infra.Limit) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Limit(uint64(in))
-	}
-}
-
-func (s *StoreCE) offset(in infra.Offset) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Offset(uint64(in))
-	}
-}
-
-func (s *StoreCE) orderBy(in infra.OrderBy) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.OrderBy(string(in))
-	}
-}
-
 func (s *StoreCE) IsSubdomainExists(ctx context.Context, subdomain string) (bool, error) {
 	if _, err := s.Get(ctx, storeopts.OrganizationBySubdomain(subdomain)); err != nil {
 		if errdefs.IsOrganizationNotFound(err) {
