@@ -8,7 +8,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
+	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 )
 
 type APIKeyHandler struct {
@@ -25,26 +26,26 @@ func NewAPIKeyHandler(service apikey.Service) *APIKeyHandler {
 // @Produce json
 // @Tags apiKeys
 // @Param apiKeyID path string true "API Key ID"
-// @Success 200 {object} types.GetAPIKeyPayload
+// @Success 200 {object} responses.GetAPIKeyResponse
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [get].
 func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
-	in := types.GetAPIKeyInput{
+	req := requests.GetAPIKeyRequest{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Get(r.Context(), in)
+	out, err := h.service.Get(r.Context(), adapters.GetAPIKeyRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetAPIKeyOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -55,7 +56,7 @@ func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags apiKeys
-// @Success 200 {object} types.ListAPIKeysPayload
+// @Success 200 {object} responses.ListAPIKeysResponse
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys [get].
 func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListAPIKeysOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -76,29 +77,29 @@ func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags apiKeys
-// @Param Body body types.CreateAPIKeyInput true " "
-// @Success 200 {object} types.CreateAPIKeyPayload
+// @Param Body body requests.CreateAPIKeyRequest true " "
+// @Success 200 {object} responses.CreateAPIKeyResponse
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys [post].
 func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var in types.CreateAPIKeyInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.CreateAPIKeyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), in)
+	out, err := h.service.Create(r.Context(), adapters.CreateAPIKeyRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateAPIKeyOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -109,32 +110,32 @@ func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags apiKeys
-// @Param Body body types.UpdateAPIKeyInput true " "
+// @Param Body body requests.UpdateAPIKeyRequest true " "
 // @Param apiKeyID path string true "API Key ID"
-// @Success 200 {object} types.UpdateAPIKeyPayload
+// @Success 200 {object} responses.UpdateAPIKeyResponse
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [put].
 func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
-	in := types.UpdateAPIKeyInput{
+	req := requests.UpdateAPIKeyRequest{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), in)
+	out, err := h.service.Update(r.Context(), adapters.UpdateAPIKeyRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateAPIKeyOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -146,26 +147,26 @@ func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Tags apiKeys
 // @Param apiKeyID path string true "API Key ID"
-// @Success 200 {object} types.DeleteAPIKeyPayload
+// @Success 200 {object} responses.DeleteAPIKeyResponse
 // @Failure default {object} errdefs.Error
 // @Router /apiKeys/{apiKeyID} [delete].
 func (h *APIKeyHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	in := types.DeleteAPIKeyInput{
+	req := requests.DeleteAPIKeyRequest{
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Delete(r.Context(), in)
+	out, err := h.service.Delete(r.Context(), adapters.DeleteAPIKeyRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.DeleteAPIKeyOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}

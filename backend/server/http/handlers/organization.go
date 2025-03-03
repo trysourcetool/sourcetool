@@ -8,7 +8,9 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/organization"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
+	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
 type OrganizationHandler struct {
@@ -24,29 +26,29 @@ func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
 // @Accept json
 // @Produce json
 // @Tags organizations
-// @Param Body body types.CreateOrganizationInput true " "
-// @Success 200 {object} types.CreateOrganizationPayload
+// @Param Body body requests.CreateOrganizationRequest true " "
+// @Success 200 {object} responses.CreateOrganizationResponse
 // @Failure default {object} errdefs.Error
 // @Router /organizations [post].
 func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var in types.CreateOrganizationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.CreateOrganizationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), in)
+	out, err := h.service.Create(r.Context(), adapters.CreateOrganizationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateOrganizationOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -58,25 +60,30 @@ func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Tags organizations
 // @Param subdomain query string true " "
-// @Success 200 {object} types.SuccessPayload
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /organizations/checkSubdomainAvailability [get].
 func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request) {
-	in := types.CheckSubdomainAvailablityInput{
+	req := requests.CheckSubdomainAvailablityRequest{
 		Subdomain: r.URL.Query().Get("subdomain"),
 	}
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.CheckSubdomainAvailability(r.Context(), in)
+	err := h.service.CheckSubdomainAvailability(r.Context(), adapters.CheckSubdomainAvailabilityRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	response := &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Subdomain is available",
+	}
+
+	if err := httputils.WriteJSON(w, http.StatusOK, response); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -88,31 +95,31 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 // @Produce json
 // @Tags organizations
 // @Param userID path string true " "
-// @Param Body body types.UpdateOrganizationUserInput true " "
-// @Success 200 {object} types.UserPayload
+// @Param Body body requests.UpdateOrganizationUserRequest true " "
+// @Success 200 {object} responses.UpdateUserResponse
 // @Failure default {object} errdefs.Error
 // @Router /organizations/users/{userID} [put].
 func (h *OrganizationHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	in := types.UpdateOrganizationUserInput{
+	req := requests.UpdateOrganizationUserRequest{
 		UserID: chi.URLParam(r, "userID"),
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.UpdateUser(r.Context(), in)
+	out, err := h.service.UpdateUser(r.Context(), adapters.UpdateOrganizationUserRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateOrganizationUserOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}

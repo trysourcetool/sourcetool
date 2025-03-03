@@ -11,7 +11,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
+	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
@@ -28,7 +30,7 @@ func NewUserHandler(service user.Service) *UserHandler {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.GetMePayload
+// @Success 200 {object} responses.GetMeResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/me [get].
 func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +40,7 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetMeOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -49,7 +51,7 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.ListUsersPayload
+// @Success 200 {object} responses.ListUsersResponse
 // @Failure default {object} errdefs.Error
 // @Router /users [get].
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +61,7 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListUsersOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -70,29 +72,29 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.UpdateUserInput true " "
-// @Success 200 {object} types.UpdateUserPayload
+// @Param Body body requests.UpdateUserRequest true " "
+// @Success 200 {object} responses.UpdateUserResponse
 // @Failure default {object} errdefs.Error
 // @Router /users [put].
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var in types.UpdateUserInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.UpdateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), in)
+	out, err := h.service.Update(r.Context(), adapters.UpdateUserRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -103,28 +105,28 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SendUpdateUserEmailInstructionsInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SendUpdateUserEmailInstructionsRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/sendUpdateEmailInstructions [post].
 func (h *UserHandler) SendUpdateEmailInstructions(w http.ResponseWriter, r *http.Request) {
-	var in types.SendUpdateUserEmailInstructionsInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SendUpdateUserEmailInstructionsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := h.service.SendUpdateEmailInstructions(r.Context(), in); err != nil {
+	if err := h.service.SendUpdateEmailInstructions(r.Context(), adapters.SendUpdateUserEmailInstructionsRequestToDTOInput(req)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully sent update email instructions",
 	}); err != nil {
@@ -138,29 +140,29 @@ func (h *UserHandler) SendUpdateEmailInstructions(w http.ResponseWriter, r *http
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.UpdateUserEmailInput true " "
-// @Success 200 {object} types.UpdateUserEmailPayload
+// @Param Body body requests.UpdateUserEmailRequest true " "
+// @Success 200 {object} responses.UpdateUserEmailResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/email [put].
 func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
-	var in types.UpdateUserEmailInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.UpdateUserEmailRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.UpdateEmail(r.Context(), in)
+	out, err := h.service.UpdateEmail(r.Context(), adapters.UpdateUserEmailRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserEmailOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -171,29 +173,29 @@ func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.UpdateUserPasswordInput true " "
-// @Success 200 {object} types.UpdateUserPasswordPayload
+// @Param Body body requests.UpdateUserPasswordRequest true " "
+// @Success 200 {object} responses.UpdateUserPasswordResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/password [put].
 func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	var in types.UpdateUserPasswordInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.UpdateUserPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.UpdatePassword(r.Context(), in)
+	out, err := h.service.UpdatePassword(r.Context(), adapters.UpdateUserPasswordRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserPasswordOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -204,22 +206,23 @@ func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignInRequest true " "
+// @Success 200 {object} responses.SignInResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/signin [post].
 func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	var in types.SignInInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignInRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignIn(r.Context(), in)
+	out, err := h.service.SignIn(r.Context(), adapters.SignInRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -230,7 +233,7 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SignInOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -241,23 +244,23 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignInWithGoogleInput true " "
-// @Success 200 {object} types.SignInWithGooglePayload
+// @Param Body body requests.SignInWithGoogleRequest true " "
+// @Success 200 {object} responses.SignInWithGoogleResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/signin [post].
 func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var in types.SignInWithGoogleInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignInWithGoogleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignInWithGoogle(r.Context(), in)
+	out, err := h.service.SignInWithGoogle(r.Context(), adapters.SignInWithGoogleRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -268,7 +271,7 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -279,29 +282,29 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SendSignUpInstructionsInput true " "
-// @Success 200 {object} types.SendSignUpInstructionsPayload
+// @Param Body body requests.SendSignUpInstructionsRequest true " "
+// @Success 200 {object} responses.SendSignUpInstructionsResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/signup/instructions [post].
 func (h *UserHandler) SendSignUpInstructions(w http.ResponseWriter, r *http.Request) {
-	var in types.SendSignUpInstructionsInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SendSignUpInstructionsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SendSignUpInstructions(r.Context(), in)
+	out, err := h.service.SendSignUpInstructions(r.Context(), adapters.SendSignUpInstructionsRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SendSignUpInstructionsOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -312,23 +315,23 @@ func (h *UserHandler) SendSignUpInstructions(w http.ResponseWriter, r *http.Requ
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignUpInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignUpRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/signup [post].
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var in types.SignUpInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignUpRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignUp(r.Context(), in)
+	out, err := h.service.SignUp(r.Context(), adapters.SignUpRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -336,7 +339,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
 	}); err != nil {
@@ -350,23 +353,23 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignUpWithGoogleInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignUpWithGoogleRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/signup [post].
 func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var in types.SignUpWithGoogleInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignUpWithGoogleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignUpWithGoogle(r.Context(), in)
+	out, err := h.service.SignUpWithGoogle(r.Context(), adapters.SignUpWithGoogleRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -374,7 +377,7 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 
 	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up with Google",
 	}); err != nil {
@@ -388,7 +391,7 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.RefreshTokenPayload
+// @Success 200 {object} responses.RefreshTokenResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/refreshToken [post].
 func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -410,17 +413,17 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	in := types.RefreshTokenInput{
+	req := requests.RefreshTokenRequest{
 		Secret:          secretCookie.Value,
 		XSRFTokenHeader: xsrfTokenHeader,
 		XSRFTokenCookie: xsrfTokenCookie.Value,
 	}
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.RefreshToken(r.Context(), in)
+	out, err := h.service.RefreshToken(r.Context(), adapters.RefreshTokenRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -428,7 +431,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -439,23 +442,23 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SaveAuthInput true " "
-// @Success 200 {object} types.SaveAuthPayload
+// @Param Body body requests.SaveAuthRequest true " "
+// @Success 200 {object} responses.SaveAuthResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/saveAuth [post].
 func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
-	var in types.SaveAuthInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SaveAuthRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SaveAuth(r.Context(), in)
+	out, err := h.service.SaveAuth(r.Context(), adapters.SaveAuthRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -463,7 +466,7 @@ func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -474,7 +477,7 @@ func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.ObtainAuthTokenPayload
+// @Success 200 {object} responses.ObtainAuthTokenResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/obtainAuthToken [post].
 func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
@@ -497,7 +500,7 @@ func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.SuccessPayload
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/signout [post].
 func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
@@ -509,7 +512,7 @@ func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 
 	h.deleteAuthCookie(w, r, out.Domain)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed out",
 	}); err != nil {
@@ -523,29 +526,29 @@ func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.InviteUsersInput true " "
-// @Success 200 {object} types.InviteUsersPayload
+// @Param Body body requests.InviteUsersRequest true " "
+// @Success 200 {object} responses.InviteUsersResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invite [post].
 func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
-	var in types.InviteUsersInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.InviteUsersRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Invite(r.Context(), in)
+	out, err := h.service.Invite(r.Context(), adapters.InviteUsersRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.InviteUsersOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -556,23 +559,23 @@ func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignInInvitationInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignInInvitationRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/signin [post].
 func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
-	var in types.SignInInvitationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignInInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignInInvitation(r.Context(), in)
+	out, err := h.service.SignInInvitation(r.Context(), adapters.SignInInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -580,7 +583,7 @@ func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed in",
 	}); err != nil {
@@ -594,23 +597,23 @@ func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignUpInvitationInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignUpInvitationRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/signup [post].
 func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
-	var in types.SignUpInvitationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignUpInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignUpInvitation(r.Context(), in)
+	out, err := h.service.SignUpInvitation(r.Context(), adapters.SignUpInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -618,7 +621,7 @@ func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
 	}); err != nil {
@@ -632,7 +635,7 @@ func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} types.GetGoogleAuthCodeURLPayload
+// @Success 200 {object} responses.GetGoogleAuthCodeURLResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/oauth/google/authCodeUrl [post].
 func (h *UserHandler) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Request) {
@@ -649,16 +652,16 @@ func (h *UserHandler) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request) {
-	in := types.GoogleOAuthCallbackInput{
+	req := requests.GoogleOAuthCallbackRequest{
 		State: r.URL.Query().Get("state"),
 		Code:  r.URL.Query().Get("code"),
 	}
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	out, err := h.service.GoogleOAuthCallback(r.Context(), in)
+	out, err := h.service.GoogleOAuthCallback(r.Context(), adapters.GoogleOAuthCallbackRequestToDTOInput(req))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -687,29 +690,29 @@ func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.GetGoogleAuthCodeURLInvitationInput true " "
-// @Success 200 {object} types.GetGoogleAuthCodeURLInvitationPayload
+// @Param Body body requests.GetGoogleAuthCodeURLInvitationRequest true " "
+// @Success 200 {object} responses.GetGoogleAuthCodeURLInvitationResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/authCodeUrl [post].
 func (h *UserHandler) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *http.Request) {
-	var in types.GetGoogleAuthCodeURLInvitationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.GetGoogleAuthCodeURLInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.GetGoogleAuthCodeURLInvitation(r.Context(), in)
+	out, err := h.service.GetGoogleAuthCodeURLInvitation(r.Context(), adapters.GetGoogleAuthCodeURLInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetGoogleAuthCodeURLInvitationOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -720,23 +723,23 @@ func (h *UserHandler) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *h
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignInWithGoogleInvitationInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignInWithGoogleInvitationRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/signin [post].
 func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
-	var in types.SignInWithGoogleInvitationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignInWithGoogleInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignInWithGoogleInvitation(r.Context(), in)
+	out, err := h.service.SignInWithGoogleInvitation(r.Context(), adapters.SignInWithGoogleInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -744,7 +747,7 @@ func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed in with Google",
 	}); err != nil {
@@ -758,23 +761,23 @@ func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body types.SignUpWithGoogleInvitationInput true " "
-// @Success 200 {object} types.SuccessPayload
+// @Param Body body requests.SignUpWithGoogleInvitationRequest true " "
+// @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/oauth/google/signup [post].
 func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
-	var in types.SignUpWithGoogleInvitationInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.SignUpWithGoogleInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.SignUpWithGoogleInvitation(r.Context(), in)
+	out, err := h.service.SignUpWithGoogleInvitation(r.Context(), adapters.SignUpWithGoogleInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
@@ -782,7 +785,7 @@ func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &types.SuccessPayload{
+	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up with Google",
 	}); err != nil {

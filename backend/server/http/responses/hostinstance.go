@@ -1,6 +1,6 @@
-package types
+package responses
 
-type HostInstancePayload struct {
+type HostInstanceResponse struct {
 	ID         string `json:"id"`
 	SDKName    string `json:"sdkName"`
 	SDKVersion string `json:"sdkVersion"`
@@ -9,10 +9,6 @@ type HostInstancePayload struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-type PingHostInstanceInput struct {
-	PageID *string `validate:"-"`
-}
-
-type PingHostInstancePayload struct {
-	HostInstance *HostInstancePayload `json:"hostInstance"`
+type PingHostInstanceResponse struct {
+	HostInstance *HostInstanceResponse `json:"hostInstance"`
 }
