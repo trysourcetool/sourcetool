@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -29,8 +28,8 @@ import (
 )
 
 type Server struct {
-	wsServer   *wsserver.Server
-	httpServer *httpserver.Server
+	wsRouter   *wsserver.Router
+	httpRouter *httpserver.Router
 }
 
 func New(d *infra.Dependency) *Server {
@@ -55,8 +54,8 @@ func New(d *infra.Dependency) *Server {
 		ws.NewServiceCE(d),
 	)
 	return &Server{
-		wsServer: wsserver.NewServer(wsMiddle, wsHandler),
-		httpServer: httpserver.NewServer(
+		wsRouter: wsserver.NewRouter(wsMiddle, wsHandler),
+		httpRouter: httpserver.NewRouter(
 			httpMiddle,
 			apiKeyHandler,
 			environmentHandler,
@@ -77,25 +76,8 @@ func (s *Server) router() chi.Router {
 	r.Use(middleware.Timeout(time.Duration(600) * time.Second))
 	r.Use(cors.New(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
-			var pattern string
-
-			switch config.Config.Env {
-			case config.EnvProd:
-				pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
-			case config.EnvStg:
-				pattern = `^https://[a-zA-Z0-9-]+\.stg\.trysourcetool\.com$`
-			case config.EnvLocal:
-				pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`
-			default:
-				return false
-			}
-
-			matched, err := regexp.MatchString(pattern, origin)
-			if err != nil {
-				return false
-			}
-
-			return matched
+			// TODO: check origin from environment variable
+			return true
 		},
 		AllowedMethods: []string{
 			http.MethodGet,
@@ -117,8 +99,8 @@ func (s *Server) router() chi.Router {
 		))
 	}
 
-	r.Mount("/ws", s.wsServer.Router())
-	r.Mount("/api", s.httpServer.Router())
+	r.Mount("/ws", s.wsRouter.Build())
+	r.Mount("/api", s.httpRouter.Build())
 
 	return r
 }
