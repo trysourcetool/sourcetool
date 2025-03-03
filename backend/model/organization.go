@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Organization struct {
@@ -14,14 +16,8 @@ type Organization struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-type (
-	OrganizationByID        uuid.UUID
-	OrganizationBySubdomain string
-	OrganizationByUserID    uuid.UUID
-)
-
 type OrganizationStore interface {
-	Get(context.Context, ...any) (*Organization, error)
+	Get(context.Context, ...storeopts.OrganizationOption) (*Organization, error)
 	Create(context.Context, *Organization) error
 	IsSubdomainExists(context.Context, string) (bool, error)
 }

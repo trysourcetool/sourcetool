@@ -13,6 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
@@ -37,12 +38,12 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPI
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID), model.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	currentUser := ctxutils.CurrentUser(ctx)
 
-	envs, err := s.Store.Environment().List(ctx, model.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +72,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 		}
 	}
 
-	devKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByOrganizationID(currentOrg.ID), model.APIKeyByEnvironmentID(devEnv.ID), model.APIKeyByUserID(currentUser.ID))
+	devKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentID(devEnv.ID), storeopts.APIKeyByUserID(currentUser.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 	for _, env := range liveEnvs {
 		liveEnvIDs = append(liveEnvIDs, env.ID)
 	}
-	liveKeys, err := s.Store.APIKey().List(ctx, model.APIKeyByOrganizationID(currentOrg.ID), model.APIKeyByEnvironmentIDs(liveEnvIDs))
+	liveKeys, err := s.Store.APIKey().List(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentIDs(liveEnvIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(envID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID))
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 		return nil, err
 	}
 
-	apiKey, err = s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKey.ID))
+	apiKey, err = s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKey.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -176,12 +177,12 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID), model.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -221,12 +222,12 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}

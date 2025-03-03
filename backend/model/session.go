@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Session struct {
@@ -17,12 +19,8 @@ type Session struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-type (
-	SessionByID uuid.UUID
-)
-
 type SessionStore interface {
-	Get(context.Context, ...any) (*Session, error)
+	Get(context.Context, ...storeopts.SessionOption) (*Session, error)
 	Create(context.Context, *Session) error
 	Delete(context.Context, *Session) error
 }

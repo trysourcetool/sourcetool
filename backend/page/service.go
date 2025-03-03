@@ -7,6 +7,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
@@ -24,17 +25,17 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
 	o := ctxutils.CurrentOrganization(ctx)
 
-	pages, err := s.Store.Page().List(ctx, model.PageByOrganizationID(o.ID), infra.OrderBy(`array_length(p."path", 1), "path"`))
+	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {
 		return nil, err
 	}
 
-	users, err := s.Store.User().List(ctx, model.UserByOrganizationID(o.ID))
+	users, err := s.Store.User().List(ctx, storeopts.UserByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	userGroups, err := s.Store.User().ListGroups(ctx, model.UserGroupByOrganizationID(o.ID))
+	userGroups, err := s.Store.User().ListGroups(ctx, storeopts.UserGroupByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 const (
@@ -138,51 +139,30 @@ func ValidatePassword(p string) error {
 	return nil
 }
 
-type (
-	UserByID             uuid.UUID
-	UserByEmail          string
-	UserBySecret         string
-	UserByOrganizationID uuid.UUID
-
-	UserRegistrationRequestByEmail string
-
-	UserOrganizationAccessByUserID                uuid.UUID
-	UserOrganizationAccessByUserIDs               []uuid.UUID
-	UserOrganizationAccessByOrganizationID        uuid.UUID
-	UserOrganizationAccessByOrganizationSubdomain string
-
-	UserGroupByUserID         uuid.UUID
-	UserGroupByGroupID        uuid.UUID
-	UserGroupByOrganizationID uuid.UUID
-
-	UserInvitationByOrganizationID uuid.UUID
-	UserInvitationByEmail          string
-)
-
 type UserStore interface {
-	Get(context.Context, ...any) (*User, error)
-	List(context.Context, ...any) ([]*User, error)
+	Get(context.Context, ...storeopts.UserOption) (*User, error)
+	List(context.Context, ...storeopts.UserOption) ([]*User, error)
 	Create(context.Context, *User) error
 	Update(context.Context, *User) error
 	IsEmailExists(context.Context, string) (bool, error)
 
-	GetRegistrationRequest(context.Context, ...any) (*UserRegistrationRequest, error)
+	GetRegistrationRequest(context.Context, ...storeopts.UserRegistrationRequestOption) (*UserRegistrationRequest, error)
 	CreateRegistrationRequest(context.Context, *UserRegistrationRequest) error
 	DeleteRegistrationRequest(context.Context, *UserRegistrationRequest) error
 	IsRegistrationRequestExists(context.Context, string) (bool, error)
 
-	GetOrganizationAccess(context.Context, ...any) (*UserOrganizationAccess, error)
-	ListOrganizationAccesses(context.Context, ...any) ([]*UserOrganizationAccess, error)
+	GetOrganizationAccess(context.Context, ...storeopts.UserOrganizationAccessOption) (*UserOrganizationAccess, error)
+	ListOrganizationAccesses(context.Context, ...storeopts.UserOrganizationAccessOption) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 	UpdateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 
-	GetGroup(context.Context, ...any) (*UserGroup, error)
-	ListGroups(context.Context, ...any) ([]*UserGroup, error)
+	GetGroup(context.Context, ...storeopts.UserGroupOption) (*UserGroup, error)
+	ListGroups(context.Context, ...storeopts.UserGroupOption) ([]*UserGroup, error)
 	BulkInsertGroups(context.Context, []*UserGroup) error
 	BulkDeleteGroups(context.Context, []*UserGroup) error
 
-	GetInvitation(context.Context, ...any) (*UserInvitation, error)
-	ListInvitations(context.Context, ...any) ([]*UserInvitation, error)
+	GetInvitation(context.Context, ...storeopts.UserInvitationOption) (*UserInvitation, error)
+	ListInvitations(context.Context, ...storeopts.UserInvitationOption) ([]*UserInvitation, error)
 	DeleteInvitation(context.Context, *UserInvitation) error
 	BulkInsertInvitations(context.Context, []*UserInvitation) error
 	IsInvitationEmailExists(context.Context, uuid.UUID, string) (bool, error)

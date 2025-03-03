@@ -14,6 +14,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
@@ -109,7 +110,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		return nil, err
 	}
 
-	o, err = s.Store.Organization().Get(ctx, model.OrganizationByID(o.ID))
+	o, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(o.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -140,18 +141,18 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	u, err := s.Store.User().Get(ctx, model.UserByID(userID))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	o, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByOrganizationID(o.ID), model.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(o.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +180,7 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 				})
 			}
 
-			existingGroups, err := tx.User().ListGroups(ctx, model.UserGroupByUserID(u.ID))
+			existingGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(u.ID))
 			if err != nil {
 				return err
 			}

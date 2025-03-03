@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type HostInstanceStatus int
@@ -64,16 +66,9 @@ type HostInstance struct {
 	UpdatedAt      time.Time          `db:"updated_at"`
 }
 
-type (
-	HostInstanceByID             uuid.UUID
-	HostInstanceByOrganizationID uuid.UUID
-	HostInstanceByAPIKeyID       uuid.UUID
-	HostInstanceByAPIKey         string
-)
-
 type HostInstanceStore interface {
-	Get(context.Context, ...any) (*HostInstance, error)
-	List(context.Context, ...any) ([]*HostInstance, error)
+	Get(context.Context, ...storeopts.HostInstanceOption) (*HostInstance, error)
+	List(context.Context, ...storeopts.HostInstanceOption) ([]*HostInstance, error)
 	Create(context.Context, *HostInstance) error
 	Update(context.Context, *HostInstance) error
 }

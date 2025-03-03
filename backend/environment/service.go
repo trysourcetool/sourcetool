@@ -13,6 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
@@ -38,7 +39,7 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.G
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByOrganizationID(currentOrg.ID), model.EnvironmentByID(envID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID), storeopts.EnvironmentByID(envID))
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.G
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
-	envs, err := s.Store.Environment().List(ctx, model.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +104,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (
 		return nil, err
 	}
 
-	env, err = s.Store.Environment().Get(ctx, model.EnvironmentByID(env.ID))
+	env, err = s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(env.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +126,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(envID), model.EnvironmentByOrganizationID(currentOrg.ID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID), storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +148,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 		return nil, err
 	}
 
-	env, err = s.Store.Environment().Get(ctx, model.EnvironmentByID(env.ID))
+	env, err = s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(env.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +170,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(envID), model.EnvironmentByOrganizationID(currentOrg.ID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID), storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +179,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot delete development or production environment"))
 	}
 
-	apiKeys, err := s.Store.APIKey().List(ctx, model.APIKeyByEnvironmentID(env.ID))
+	apiKeys, err := s.Store.APIKey().List(ctx, storeopts.APIKeyByEnvironmentID(env.ID))
 	if err != nil {
 		return nil, err
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/ws/types"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 )
 
@@ -52,7 +53,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	page, err := s.Store.Page().Get(ctx, model.PageByID(pageID))
+	page, err := s.Store.Page().Get(ctx, storeopts.PageByID(pageID))
 	if err != nil {
 		return err
 	}
@@ -62,12 +63,12 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
 
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(page.APIKeyID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(page.APIKeyID))
 	if err != nil {
 		return err
 	}
 
-	hostInstances, err := s.Store.HostInstance().List(ctx, model.HostInstanceByAPIKeyID(apiKey.ID))
+	hostInstances, err := s.Store.HostInstance().List(ctx, storeopts.HostInstanceByAPIKeyID(apiKey.ID))
 	if err != nil {
 		return err
 	}
@@ -103,7 +104,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 			return errdefs.ErrSessionNotFound(err)
 		}
 
-		sess, err = s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+		sess, err = s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 		if err != nil {
 			return err
 		}
@@ -130,7 +131,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return err
 	}
 
-	sess, err = s.Store.Session().Get(ctx, model.SessionByID(sess.ID))
+	sess, err = s.Store.Session().Get(ctx, storeopts.SessionByID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -172,7 +173,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 		return nil, errors.New("invalid message")
 	}
 
-	apikey, err := s.Store.APIKey().Get(ctx, model.APIKeyByKey(in.ApiKey))
+	apikey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByKey(in.ApiKey))
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +183,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	hostInstance, err := s.Store.HostInstance().Get(ctx, model.HostInstanceByID(hostInstanceID))
+	hostInstance, err := s.Store.HostInstance().Get(ctx, storeopts.HostInstanceByID(hostInstanceID))
 	if err != nil && !errdefs.IsHostInstanceNotFound(err) {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 	hostInstance.SDKVersion = in.SdkVersion
 	hostInstance.Status = model.HostInstanceStatusOnline
 
-	existingPages, err := s.Store.Page().List(ctx, model.PageByAPIKeyID(apikey.ID))
+	existingPages, err := s.Store.Page().List(ctx, storeopts.PageByAPIKeyID(apikey.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +309,7 @@ func (s *ServiceCE) RerunPage(ctx context.Context, msg *websocketv1.Message) err
 		return err
 	}
 
-	sess, err := s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	sess, err := s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -318,7 +319,7 @@ func (s *ServiceCE) RerunPage(ctx context.Context, msg *websocketv1.Message) err
 		return err
 	}
 
-	page, err := s.Store.Page().Get(ctx, model.PageByID(pageID), model.PageBySessionID(sess.ID))
+	page, err := s.Store.Page().Get(ctx, storeopts.PageByID(pageID), storeopts.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -350,7 +351,7 @@ func (s *ServiceCE) RenderWidget(ctx context.Context, msg *websocketv1.Message) 
 		return err
 	}
 
-	_, err = s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	_, err = s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -373,12 +374,12 @@ func (s *ServiceCE) CloseSession(ctx context.Context, msg *websocketv1.Message) 
 		return errdefs.ErrAPIKeyNotFound(err)
 	}
 
-	sess, err := s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	sess, err := s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Store.Page().Get(ctx, model.PageByID(sess.PageID), model.PageBySessionID(sess.ID))
+	_, err = s.Store.Page().Get(ctx, storeopts.PageByID(sess.PageID), storeopts.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -423,7 +424,7 @@ func (s *ServiceCE) ScriptFinished(ctx context.Context, msg *websocketv1.Message
 		return err
 	}
 
-	_, err = s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	_, err = s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -446,7 +447,7 @@ func (s *ServiceCE) Exception(ctx context.Context, msg *websocketv1.Message) err
 		return err
 	}
 
-	_, err = s.Store.Session().Get(ctx, model.SessionByID(sessionID))
+	_, err = s.Store.Session().Get(ctx, storeopts.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -464,7 +465,7 @@ func (s *ServiceCE) UpdateStatus(ctx context.Context, in types.UpdateHostInstanc
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	host, err := s.Store.HostInstance().Get(ctx, model.HostInstanceByID(hostInstanceID))
+	host, err := s.Store.HostInstance().Get(ctx, storeopts.HostInstanceByID(hostInstanceID))
 	if err != nil {
 		return nil, err
 	}

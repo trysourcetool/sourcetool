@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -14,6 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -28,8 +28,8 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.User, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.UserOption) (*model.User, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.User, erro
 	return &m, nil
 }
 
-func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.User, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.UserOption) ([]*model.User, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.User, e
 	return m, nil
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOption) (string, []any, error) {
 	q := s.builder.Select(
 		`u."id"`,
 		`u."created_at"`,
@@ -73,13 +73,8 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	).
 		From(`"user" u`)
 
-	opts, err := s.toSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -88,76 +83,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.UserByID:
-			options[i] = s.byID(v)
-		case model.UserByEmail:
-			options[i] = s.byEmail(v)
-		case model.UserBySecret:
-			options[i] = s.bySecret(v)
-		case model.UserByOrganizationID:
-			options[i] = s.byOrganizationID(v)
-		case infra.Limit:
-			options[i] = s.limit(v)
-		case infra.Offset:
-			options[i] = s.offset(v)
-		case infra.OrderBy:
-			options[i] = s.orderBy(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) byID(in model.UserByID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`u."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byEmail(in model.UserByEmail) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`u."email"`: in})
-	}
-}
-
-func (s *StoreCE) bySecret(in model.UserBySecret) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`u."secret"`: in})
-	}
-}
-
-func (s *StoreCE) byOrganizationID(in model.UserByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
-			Where(sq.Eq{`uoa."organization_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) limit(in infra.Limit) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Limit(uint64(in))
-	}
-}
-
-func (s *StoreCE) offset(in infra.Offset) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Offset(uint64(in))
-	}
-}
-
-func (s *StoreCE) orderBy(in infra.OrderBy) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.OrderBy(string(in))
-	}
 }
 
 func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
@@ -214,7 +139,7 @@ func (s *StoreCE) Update(ctx context.Context, m *model.User) error {
 }
 
 func (s *StoreCE) IsEmailExists(ctx context.Context, email string) (bool, error) {
-	if _, err := s.Get(ctx, model.UserByEmail(email)); err != nil {
+	if _, err := s.Get(ctx, storeopts.UserByEmail(email)); err != nil {
 		if errdefs.IsUserNotFound(err) {
 			return false, nil
 		}
@@ -223,8 +148,8 @@ func (s *StoreCE) IsEmailExists(ctx context.Context, email string) (bool, error)
 	return true, nil
 }
 
-func (s *StoreCE) GetRegistrationRequest(ctx context.Context, conditions ...any) (*model.UserRegistrationRequest, error) {
-	query, args, err := s.buildRegistrationRequestQuery(ctx, conditions...)
+func (s *StoreCE) GetRegistrationRequest(ctx context.Context, opts ...storeopts.UserRegistrationRequestOption) (*model.UserRegistrationRequest, error) {
+	query, args, err := s.buildRegistrationRequestQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +165,7 @@ func (s *StoreCE) GetRegistrationRequest(ctx context.Context, conditions ...any)
 	return &m, nil
 }
 
-func (s *StoreCE) buildRegistrationRequestQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildRegistrationRequestQuery(ctx context.Context, opts ...storeopts.UserRegistrationRequestOption) (string, []any, error) {
 	q := s.builder.Select(
 		`urr."id"`,
 		`urr."email"`,
@@ -249,13 +174,8 @@ func (s *StoreCE) buildRegistrationRequestQuery(ctx context.Context, conditions 
 	).
 		From(`"user_registration_request" urr`)
 
-	opts, err := s.toRegistrationRequestSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -264,26 +184,6 @@ func (s *StoreCE) buildRegistrationRequestQuery(ctx context.Context, conditions 
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toRegistrationRequestSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.UserRegistrationRequestByEmail:
-			options[i] = s.registrationRequestByEmail(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) registrationRequestByEmail(in model.UserRegistrationRequestByEmail) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`urr."email"`: in})
-	}
 }
 
 func (s *StoreCE) CreateRegistrationRequest(ctx context.Context, m *model.UserRegistrationRequest) error {
@@ -315,7 +215,7 @@ func (s *StoreCE) DeleteRegistrationRequest(ctx context.Context, m *model.UserRe
 }
 
 func (s *StoreCE) IsRegistrationRequestExists(ctx context.Context, email string) (bool, error) {
-	if _, err := s.GetRegistrationRequest(ctx, model.UserRegistrationRequestByEmail(email)); err != nil {
+	if _, err := s.GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(email)); err != nil {
 		if errdefs.IsUserRegistrationRequestNotFound(err) {
 			return false, nil
 		}
@@ -324,8 +224,8 @@ func (s *StoreCE) IsRegistrationRequestExists(ctx context.Context, email string)
 	return true, nil
 }
 
-func (s *StoreCE) GetOrganizationAccess(ctx context.Context, conditions ...any) (*model.UserOrganizationAccess, error) {
-	query, args, err := s.buildOrganizationAccessQuery(ctx, conditions...)
+func (s *StoreCE) GetOrganizationAccess(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (*model.UserOrganizationAccess, error) {
+	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,8 +241,8 @@ func (s *StoreCE) GetOrganizationAccess(ctx context.Context, conditions ...any) 
 	return &m, nil
 }
 
-func (s *StoreCE) ListOrganizationAccesses(ctx context.Context, conditions ...any) ([]*model.UserOrganizationAccess, error) {
-	query, args, err := s.buildOrganizationAccessQuery(ctx, conditions...)
+func (s *StoreCE) ListOrganizationAccesses(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) ([]*model.UserOrganizationAccess, error) {
+	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -355,7 +255,7 @@ func (s *StoreCE) ListOrganizationAccesses(ctx context.Context, conditions ...an
 	return m, nil
 }
 
-func (s *StoreCE) buildOrganizationAccessQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildOrganizationAccessQuery(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (string, []any, error) {
 	q := s.builder.Select(
 		`uoa."id"`,
 		`uoa."user_id"`,
@@ -366,13 +266,8 @@ func (s *StoreCE) buildOrganizationAccessQuery(ctx context.Context, conditions .
 	).
 		From(`"user_organization_access" uoa`)
 
-	opts, err := s.toOrganizationAccessSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -381,54 +276,6 @@ func (s *StoreCE) buildOrganizationAccessQuery(ctx context.Context, conditions .
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toOrganizationAccessSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.UserOrganizationAccessByUserID:
-			options[i] = s.organizationAccessByUserID(v)
-		case model.UserOrganizationAccessByUserIDs:
-			options[i] = s.organizationAccessByUserIDs(v)
-		case model.UserOrganizationAccessByOrganizationID:
-			options[i] = s.organizationAccessByOrganizationID(v)
-		case model.UserOrganizationAccessByOrganizationSubdomain:
-			options[i] = s.organizationAccessByOrganizationSubdomain(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) organizationAccessByUserID(in model.UserOrganizationAccessByUserID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`uoa."user_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) organizationAccessByUserIDs(in model.UserOrganizationAccessByUserIDs) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`uoa."user_id"`: []uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) organizationAccessByOrganizationID(in model.UserOrganizationAccessByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-			Where(sq.Eq{`o."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) organizationAccessByOrganizationSubdomain(in model.UserOrganizationAccessByOrganizationSubdomain) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-			Where(sq.Eq{`o."subdomain"`: in})
-	}
 }
 
 func (s *StoreCE) CreateOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
@@ -467,8 +314,8 @@ func (s *StoreCE) UpdateOrganizationAccess(ctx context.Context, m *model.UserOrg
 	return nil
 }
 
-func (s *StoreCE) GetGroup(ctx context.Context, conditions ...any) (*model.UserGroup, error) {
-	query, args, err := s.buildGroupQuery(ctx, conditions...)
+func (s *StoreCE) GetGroup(ctx context.Context, opts ...storeopts.UserGroupOption) (*model.UserGroup, error) {
+	query, args, err := s.buildGroupQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -484,8 +331,8 @@ func (s *StoreCE) GetGroup(ctx context.Context, conditions ...any) (*model.UserG
 	return &m, nil
 }
 
-func (s *StoreCE) ListGroups(ctx context.Context, conditions ...any) ([]*model.UserGroup, error) {
-	query, args, err := s.buildGroupQuery(ctx, conditions...)
+func (s *StoreCE) ListGroups(ctx context.Context, opts ...storeopts.UserGroupOption) ([]*model.UserGroup, error) {
+	query, args, err := s.buildGroupQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +345,7 @@ func (s *StoreCE) ListGroups(ctx context.Context, conditions ...any) ([]*model.U
 	return m, nil
 }
 
-func (s *StoreCE) buildGroupQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildGroupQuery(ctx context.Context, opts ...storeopts.UserGroupOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ug."id"`,
 		`ug."user_id"`,
@@ -508,13 +355,8 @@ func (s *StoreCE) buildGroupQuery(ctx context.Context, conditions ...any) (strin
 	).
 		From(`"user_group" ug`)
 
-	opts, err := s.toGroupSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -523,44 +365,6 @@ func (s *StoreCE) buildGroupQuery(ctx context.Context, conditions ...any) (strin
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toGroupSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.UserGroupByUserID:
-			options[i] = s.groupByUserID(v)
-		case model.UserGroupByGroupID:
-			options[i] = s.groupByGroupID(v)
-		case model.UserGroupByOrganizationID:
-			options[i] = s.groupByOrganizationID(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) groupByUserID(in model.UserGroupByUserID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ug."user_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) groupByGroupID(in model.UserGroupByGroupID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ug."group_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) groupByOrganizationID(in model.UserGroupByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"group" g ON g."id" = ug."group_id"`).
-			Where(sq.Eq{`g."organization_id"`: uuid.UUID(in)})
-	}
 }
 
 func (s *StoreCE) BulkInsertGroups(ctx context.Context, m []*model.UserGroup) error {
@@ -605,8 +409,8 @@ func (s *StoreCE) BulkDeleteGroups(ctx context.Context, m []*model.UserGroup) er
 	return nil
 }
 
-func (s *StoreCE) GetInvitation(ctx context.Context, conditions ...any) (*model.UserInvitation, error) {
-	query, args, err := s.buildInvitationQuery(ctx, conditions...)
+func (s *StoreCE) GetInvitation(ctx context.Context, opts ...storeopts.UserInvitationOption) (*model.UserInvitation, error) {
+	query, args, err := s.buildInvitationQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -622,8 +426,8 @@ func (s *StoreCE) GetInvitation(ctx context.Context, conditions ...any) (*model.
 	return &m, nil
 }
 
-func (s *StoreCE) ListInvitations(ctx context.Context, conditions ...any) ([]*model.UserInvitation, error) {
-	query, args, err := s.buildInvitationQuery(ctx, conditions...)
+func (s *StoreCE) ListInvitations(ctx context.Context, opts ...storeopts.UserInvitationOption) ([]*model.UserInvitation, error) {
+	query, args, err := s.buildInvitationQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -636,7 +440,7 @@ func (s *StoreCE) ListInvitations(ctx context.Context, conditions ...any) ([]*mo
 	return m, nil
 }
 
-func (s *StoreCE) buildInvitationQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildInvitationQuery(ctx context.Context, opts ...storeopts.UserInvitationOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ui."id"`,
 		`ui."organization_id"`,
@@ -647,13 +451,8 @@ func (s *StoreCE) buildInvitationQuery(ctx context.Context, conditions ...any) (
 	).
 		From(`"user_invitation" ui`)
 
-	opts, err := s.toInvitationSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -662,34 +461,6 @@ func (s *StoreCE) buildInvitationQuery(ctx context.Context, conditions ...any) (
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toInvitationSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.UserInvitationByOrganizationID:
-			options[i] = s.invitationByOrganizationID(v)
-		case model.UserInvitationByEmail:
-			options[i] = s.invitationByEmail(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) invitationByOrganizationID(in model.UserInvitationByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ui."organization_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) invitationByEmail(in model.UserInvitationByEmail) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ui."email"`: in})
-	}
 }
 
 func (s *StoreCE) DeleteInvitation(ctx context.Context, m *model.UserInvitation) error {
@@ -727,7 +498,7 @@ func (s *StoreCE) BulkInsertInvitations(ctx context.Context, m []*model.UserInvi
 }
 
 func (s *StoreCE) IsInvitationEmailExists(ctx context.Context, orgID uuid.UUID, email string) (bool, error) {
-	if _, err := s.GetInvitation(ctx, model.UserInvitationByOrganizationID(orgID), model.UserInvitationByEmail(email)); err != nil {
+	if _, err := s.GetInvitation(ctx, storeopts.UserInvitationByOrganizationID(orgID), storeopts.UserInvitationByEmail(email)); err != nil {
 		if errdefs.IsUserInvitationNotFound(err) {
 			return false, nil
 		}

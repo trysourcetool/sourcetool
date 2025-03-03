@@ -10,6 +10,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type operation string
@@ -56,7 +57,7 @@ func (a *authorizer) AuthorizeOperation(ctx context.Context, o operation) error 
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}
 
-	orgAccess, err := a.store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(currentUser.ID), model.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccess, err := a.store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID), storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return errdefs.ErrPermissionDenied(err)
 	}

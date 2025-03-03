@@ -13,6 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
@@ -31,13 +32,13 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 
-	o, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
 
-	hostInstanceConds := []any{
-		model.HostInstanceByOrganizationID(o.ID),
+	hostInstanceOpts := []storeopts.HostInstanceOption{
+		storeopts.HostInstanceByOrganizationID(o.ID),
 	}
 	if in.PageID != nil {
 		pageID, err := uuid.FromString(conv.SafeValue(in.PageID))
@@ -45,20 +46,20 @@ func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dt
 			return nil, errdefs.ErrInvalidArgument(err)
 		}
 
-		page, err := s.Store.Page().Get(ctx, model.PageByID(pageID))
+		page, err := s.Store.Page().Get(ctx, storeopts.PageByID(pageID))
 		if err != nil {
 			return nil, err
 		}
 
-		apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(page.APIKeyID))
+		apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(page.APIKeyID))
 		if err != nil {
 			return nil, err
 		}
 
-		hostInstanceConds = append(hostInstanceConds, model.HostInstanceByAPIKeyID(apiKey.ID))
+		hostInstanceOpts = append(hostInstanceOpts, storeopts.HostInstanceByAPIKeyID(apiKey.ID))
 	}
 
-	hostInstances, err := s.Store.HostInstance().List(ctx, hostInstanceConds...)
+	hostInstances, err := s.Store.HostInstance().List(ctx, hostInstanceOpts...)
 	if err != nil {
 		return nil, err
 	}

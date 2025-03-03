@@ -3,14 +3,13 @@ package hostinstance
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -25,8 +24,8 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.HostInstance, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.HostInstanceOption) (*model.HostInstance, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +41,8 @@ func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.HostInstan
 	return &m, nil
 }
 
-func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.HostInstance, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.HostInstanceOption) ([]*model.HostInstance, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +55,7 @@ func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.HostIns
 	return m, nil
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.HostInstanceOption) (string, []any, error) {
 	q := s.builder.Select(
 		`hi."id"`,
 		`hi."organization_id"`,
@@ -69,13 +68,8 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	).
 		From(`"host_instance" hi`)
 
-	opts, err := s.toSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -84,52 +78,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.HostInstanceByID:
-			options[i] = s.byID(v)
-		case model.HostInstanceByOrganizationID:
-			options[i] = s.byOrganizationID(v)
-		case model.HostInstanceByAPIKeyID:
-			options[i] = s.byAPIKeyID(v)
-		case model.HostInstanceByAPIKey:
-			options[i] = s.byAPIKey(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) byID(in model.HostInstanceByID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`hi."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byOrganizationID(in model.HostInstanceByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`hi."organization_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byAPIKeyID(in model.HostInstanceByAPIKeyID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`hi."api_key_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byAPIKey(in model.HostInstanceByAPIKey) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
-			Where(sq.Eq{`ak."key"`: in})
-	}
 }
 
 func (s *StoreCE) Create(ctx context.Context, m *model.HostInstance) error {

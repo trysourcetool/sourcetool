@@ -21,6 +21,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
@@ -60,25 +61,25 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	u := ctxutils.CurrentUser(ctx)
 
-	conds := []any{
-		model.OrganizationByUserID(u.ID),
+	opts := []storeopts.OrganizationOption{
+		storeopts.OrganizationByUserID(u.ID),
 	}
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 	if subdomain != "auth" {
-		conds = append(conds, model.OrganizationBySubdomain(subdomain))
+		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
 	}
-	o, err := s.Store.Organization().Get(ctx, conds...)
+	o, err := s.Store.Organization().Get(ctx, opts...)
 	if err != nil && !errdefs.IsOrganizationNotFound(err) {
 		return nil, err
 	}
 
-	orgAccessConds := []any{
-		model.UserOrganizationAccessByUserID(u.ID),
+	orgAccessOpts := []storeopts.UserOrganizationAccessOption{
+		storeopts.UserOrganizationAccessByUserID(u.ID),
 	}
 	if o != nil {
-		orgAccessConds = append(orgAccessConds, model.UserOrganizationAccessByOrganizationID(o.ID))
+		orgAccessOpts = append(orgAccessOpts, storeopts.UserOrganizationAccessByOrganizationID(o.ID))
 	}
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, orgAccessConds...)
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return nil, err
 	}
@@ -96,17 +97,17 @@ func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) {
 	o := ctxutils.CurrentOrganization(ctx)
 
-	users, err := s.Store.User().List(ctx, model.UserByOrganizationID(o.ID))
+	users, err := s.Store.User().List(ctx, storeopts.UserByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	userInvitations, err := s.Store.User().ListInvitations(ctx, model.UserInvitationByOrganizationID(o.ID))
+	userInvitations, err := s.Store.User().ListInvitations(ctx, storeopts.UserInvitationByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, model.UserOrganizationAccessByOrganizationID(o.ID))
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +227,7 @@ func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	u, err := s.Store.User().Get(ctx, model.UserByID(userID))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +309,7 @@ func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswor
 }
 
 func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignInOutput, error) {
-	u, err := s.Store.User().Get(ctx, model.UserByEmail(in.Email))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -324,20 +325,20 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 	if subdomain != "auth" {
-		_, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return nil, err
 	}
 
 	orgSubdomain := "auth"
 	if orgAccess != nil {
-		org, err := s.Store.Organization().Get(ctx, model.OrganizationByID(orgAccess.OrganizationID))
+		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 		if err != nil {
 			return nil, err
 		}
@@ -409,27 +410,27 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
-	u, err := s.Store.User().Get(ctx, model.UserByEmail(googleAuthReq.Email))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 	if subdomain != "auth" {
-		_, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return nil, err
 	}
 
 	orgSubdomain := "auth"
 	if orgAccess != nil {
-		org, err := s.Store.Organization().Get(ctx, model.OrganizationByID(orgAccess.OrganizationID))
+		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 		if err != nil {
 			return nil, err
 		}
@@ -551,7 +552,7 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, model.UserRegistrationRequestByEmail(c.Email))
+	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
@@ -642,7 +643,7 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, model.UserRegistrationRequestByEmail(googleAuthReq.Email))
+	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, err
 	}
@@ -701,13 +702,13 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
 	}
 
-	u, err := s.Store.User().Get(ctx, model.UserBySecret(in.Secret))
+	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(in.Secret))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err = s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -744,13 +745,13 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, err
 	}
 
-	u, err := s.Store.User().Get(ctx, model.UserByEmail(c.Email))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err = s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -798,12 +799,12 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
 	u := ctxutils.CurrentUser(ctx)
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	o, err := s.Store.Organization().Get(ctx, model.OrganizationByID(orgAccess.OrganizationID))
+	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
@@ -930,18 +931,18 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, model.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	invitedOrg, err := s.Store.Organization().Get(ctx, model.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	hostOrg, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -950,7 +951,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 	}
 
-	u, err := s.Store.User().Get(ctx, model.UserByEmail(c.Email))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
@@ -1022,18 +1023,18 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, model.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	invitedOrg, err := s.Store.Organization().Get(ctx, model.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	hostOrg, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1210,7 +1211,7 @@ func (s *ServiceCE) GoogleOAuthCallback(ctx context.Context, in dto.GoogleOAuthC
 	}
 
 	if isUserExists {
-		u, err := s.Store.User().Get(ctx, model.UserByEmail(userInfo.email))
+		u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(userInfo.email))
 		if err != nil {
 			return nil, err
 		}
@@ -1288,18 +1289,18 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, model.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	invitedOrg, err := s.Store.Organization().Get(ctx, model.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	hostOrg, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1344,18 +1345,18 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, err
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, model.UserInvitationByEmail(googleAuthReq.Email))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	invitedOrg, err := s.Store.Organization().Get(ctx, model.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	hostOrg, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1372,7 +1373,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
-	u, err := s.Store.User().Get(ctx, model.UserByEmail(googleAuthReq.Email))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1450,18 +1451,18 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, err
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, model.UserInvitationByEmail(googleAuthReq.Email))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	invitedOrg, err := s.Store.Organization().Get(ctx, model.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return nil, err
 	}
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	hostOrg, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1478,7 +1479,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, model.UserRegistrationRequestByEmail(googleAuthReq.Email))
+	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, err
 	}
@@ -1558,7 +1559,7 @@ func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 	u := ctxutils.CurrentUser(ctx)
 
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1569,7 +1570,7 @@ func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 }
 
 func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transaction, u *model.User, org *model.Organization) error {
-	devEnv, err := s.Store.Environment().Get(ctx, model.EnvironmentByOrganizationID(org.ID), model.EnvironmentBySlug(model.EnvironmentSlugDevelopment))
+	devEnv, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByOrganizationID(org.ID), storeopts.EnvironmentBySlug(model.EnvironmentSlugDevelopment))
 	if err != nil {
 		return err
 	}
@@ -1595,12 +1596,12 @@ func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organiz
 	u := ctxutils.CurrentUser(ctx)
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 
-	o, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByOrganizationID(o.ID), model.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(o.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, nil, err
 	}

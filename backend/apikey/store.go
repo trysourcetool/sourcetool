@@ -3,15 +3,14 @@ package apikey
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid/v5"
 	"github.com/lib/pq"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -26,8 +25,8 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.APIKey, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.APIKeyOption) (*model.APIKey, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +42,8 @@ func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.APIKey, er
 	return &m, nil
 }
 
-func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.APIKey, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.APIKeyOption) ([]*model.APIKey, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +56,7 @@ func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.APIKey,
 	return m, nil
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.APIKeyOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ak."id"`,
 		`ak."organization_id"`,
@@ -70,13 +69,8 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	).
 		From(`"api_key" ak`)
 
-	opts, err := s.toSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	for _, o := range opts {
-		q = o(q)
+	for _, opt := range opts {
+		q = opt.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -85,66 +79,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.APIKeyByID:
-			options[i] = s.byID(v)
-		case model.APIKeyByOrganizationID:
-			options[i] = s.byOrganizationID(v)
-		case model.APIKeyByEnvironmentID:
-			options[i] = s.byEnvironmentID(v)
-		case model.APIKeyByEnvironmentIDs:
-			options[i] = s.byEnvironmentIDs(v)
-		case model.APIKeyByUserID:
-			options[i] = s.byUserID(v)
-		case model.APIKeyByKey:
-			options[i] = s.byKey(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) byID(in model.APIKeyByID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byOrganizationID(in model.APIKeyByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."organization_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byEnvironmentID(in model.APIKeyByEnvironmentID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."environment_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byEnvironmentIDs(in model.APIKeyByEnvironmentIDs) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."environment_id"`: []uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byUserID(in model.APIKeyByUserID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."user_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byKey(in model.APIKeyByKey) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`ak."key"`: in})
-	}
 }
 
 func (s *StoreCE) Create(ctx context.Context, m *model.APIKey) error {
