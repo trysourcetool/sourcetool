@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -38,11 +37,6 @@ func UserFromModel(user *model.User, org *model.Organization, role model.UserOrg
 	}
 
 	return result
-}
-
-// ToUserID converts string ID to uuid.UUID
-func ToUserID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // UserInvitation represents user invitation data in DTOs

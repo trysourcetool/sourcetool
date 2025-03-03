@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -31,9 +30,4 @@ func SessionFromModel(session *model.Session) *Session {
 		CreatedAt:      session.CreatedAt.Unix(),
 		UpdatedAt:      session.UpdatedAt.Unix(),
 	}
-}
-
-// ToSessionID converts string ID to uuid.UUID
-func ToSessionID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }

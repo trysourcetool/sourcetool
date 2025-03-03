@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -33,11 +32,6 @@ func HostInstanceFromModel(instance *model.HostInstance) *HostInstance {
 		CreatedAt:      instance.CreatedAt.Unix(),
 		UpdatedAt:      instance.UpdatedAt.Unix(),
 	}
-}
-
-// ToHostInstanceID converts string ID to uuid.UUID
-func ToHostInstanceID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // PingHostInstanceInput is the input for Ping operation

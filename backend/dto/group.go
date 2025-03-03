@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -29,11 +28,6 @@ func GroupFromModel(group *model.Group) *Group {
 		CreatedAt:      group.CreatedAt.Unix(),
 		UpdatedAt:      group.UpdatedAt.Unix(),
 	}
-}
-
-// ToGroupID converts string ID to uuid.UUID
-func ToGroupID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // GroupPage represents group page association in DTOs

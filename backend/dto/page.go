@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -35,11 +34,6 @@ func PageFromModel(page *model.Page) *Page {
 		CreatedAt:      page.CreatedAt.Unix(),
 		UpdatedAt:      page.UpdatedAt.Unix(),
 	}
-}
-
-// ToPageID converts string ID to uuid.UUID
-func ToPageID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // ListPagesInput is the input for List operation

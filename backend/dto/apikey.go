@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -34,11 +33,6 @@ func APIKeyFromModel(apiKey *model.APIKey, env *model.Environment) *APIKey {
 	}
 
 	return result
-}
-
-// ToAPIKeyID converts string ID to uuid.UUID
-func ToAPIKeyID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // GetAPIKeyInput is the input for Get operation

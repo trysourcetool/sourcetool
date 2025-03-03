@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -25,11 +24,6 @@ func OrganizationFromModel(org *model.Organization) *Organization {
 		CreatedAt: org.CreatedAt.Unix(),
 		UpdatedAt: org.UpdatedAt.Unix(),
 	}
-}
-
-// ToOrganizationID converts string ID to uuid.UUID
-func ToOrganizationID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // CreateOrganizationInput is the input for Create operation

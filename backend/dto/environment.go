@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/gofrs/uuid/v5"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -29,11 +28,6 @@ func EnvironmentFromModel(env *model.Environment) *Environment {
 		CreatedAt: env.CreatedAt.Unix(),
 		UpdatedAt: env.UpdatedAt.Unix(),
 	}
-}
-
-// ToEnvironmentID converts string ID to uuid.UUID
-func ToEnvironmentID(id string) (uuid.UUID, error) {
-	return uuid.FromString(id)
 }
 
 // GetEnvironmentInput is the input for Get operation
