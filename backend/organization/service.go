@@ -3,7 +3,6 @@ package organization
 import (
 	"context"
 	"errors"
-	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid/v5"
@@ -11,16 +10,16 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
 type Service interface {
-	Create(ctx context.Context, in types.CreateOrganizationInput) (*types.CreateOrganizationPayload, error)
-	CheckSubdomainAvailability(ctx context.Context, in types.CheckSubdomainAvailablityInput) (*types.SuccessPayload, error)
-	UpdateUser(ctx context.Context, in types.UpdateOrganizationUserInput) (*types.UserPayload, error)
+	Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error)
+	CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error
+	UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error)
 }
 
 type ServiceCE struct {
@@ -31,7 +30,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) Create(ctx context.Context, in types.CreateOrganizationInput) (*types.CreateOrganizationPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error) {
 	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
 	if err != nil {
 		return nil, err
@@ -115,36 +114,28 @@ func (s *ServiceCE) Create(ctx context.Context, in types.CreateOrganizationInput
 		return nil, err
 	}
 
-	return &types.CreateOrganizationPayload{
-		Organization: &types.OrganizationPayload{
-			ID:        o.ID.String(),
-			Subdomain: o.Subdomain,
-			CreatedAt: strconv.FormatInt(o.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(o.UpdatedAt.Unix(), 10),
-		},
+	return &dto.CreateOrganizationOutput{
+		Organization: dto.OrganizationFromModel(o),
 	}, nil
 }
 
-func (s *ServiceCE) CheckSubdomainAvailability(ctx context.Context, in types.CheckSubdomainAvailablityInput) (*types.SuccessPayload, error) {
+func (s *ServiceCE) CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error {
 	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if exists {
-		return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
+		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
 	}
 
 	if lo.Contains(reservedSubdomains, in.Subdomain) {
-		return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
+		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 	}
 
-	return &types.SuccessPayload{
-		Code:    200,
-		Message: "Subdomain is available",
-	}, nil
+	return nil
 }
 
-func (s *ServiceCE) UpdateUser(ctx context.Context, in types.UpdateOrganizationUserInput) (*types.UserPayload, error) {
+func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error) {
 	userID, err := uuid.FromString(in.UserID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -207,21 +198,7 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in types.UpdateOrganizationU
 		return nil, err
 	}
 
-	userPayload := &types.UserPayload{
-		ID:        u.ID.String(),
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
-		Role:      orgAccess.Role.String(),
-		CreatedAt: strconv.FormatInt(u.CreatedAt.Unix(), 10),
-		UpdatedAt: strconv.FormatInt(u.UpdatedAt.Unix(), 10),
-		Organization: &types.OrganizationPayload{
-			ID:        o.ID.String(),
-			Subdomain: o.Subdomain,
-			CreatedAt: strconv.FormatInt(o.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(o.UpdatedAt.Unix(), 10),
-		},
-	}
-
-	return userPayload, nil
+	return &dto.UpdateOrganizationUserOutput{
+		User: dto.UserFromModel(u, o, orgAccess.Role),
+	}, nil
 }

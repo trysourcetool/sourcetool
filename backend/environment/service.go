@@ -3,25 +3,24 @@ package environment
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
 )
 
 type Service interface {
-	Get(context.Context, types.GetEnvironmentInput) (*types.GetEnvironmentPayload, error)
-	List(context.Context) (*types.ListEnvironmentsPayload, error)
-	Create(context.Context, types.CreateEnvironmentInput) (*types.CreateEnvironmentPayload, error)
-	Update(context.Context, types.UpdateEnvironmentInput) (*types.UpdateEnvironmentPayload, error)
-	Delete(context.Context, types.DeleteEnvironmentInput) (*types.DeleteEnvironmentPayload, error)
+	Get(context.Context, dto.GetEnvironmentInput) (*dto.GetEnvironmentOutput, error)
+	List(context.Context) (*dto.ListEnvironmentsOutput, error)
+	Create(context.Context, dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error)
+	Update(context.Context, dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error)
+	Delete(context.Context, dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error)
 }
 
 type ServiceCE struct {
@@ -32,7 +31,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) Get(ctx context.Context, in types.GetEnvironmentInput) (*types.GetEnvironmentPayload, error) {
+func (s *ServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.GetEnvironmentOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
@@ -44,43 +43,29 @@ func (s *ServiceCE) Get(ctx context.Context, in types.GetEnvironmentInput) (*typ
 		return nil, err
 	}
 
-	return &types.GetEnvironmentPayload{
-		Environment: &types.EnvironmentPayload{
-			ID:        env.ID.String(),
-			Name:      env.Name,
-			Slug:      env.Slug,
-			Color:     env.Color,
-			CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-		},
+	return &dto.GetEnvironmentOutput{
+		Environment: dto.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *ServiceCE) List(ctx context.Context) (*types.ListEnvironmentsPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	envs, err := s.Store.Environment().List(ctx, model.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	envsRes := make([]*types.EnvironmentPayload, 0, len(envs))
+	envsOut := make([]*dto.Environment, 0, len(envs))
 	for _, env := range envs {
-		envsRes = append(envsRes, &types.EnvironmentPayload{
-			ID:        env.ID.String(),
-			Name:      env.Name,
-			Slug:      env.Slug,
-			Color:     env.Color,
-			CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-		})
+		envsOut = append(envsOut, dto.EnvironmentFromModel(env))
 	}
 
-	return &types.ListEnvironmentsPayload{
-		Environments: envsRes,
+	return &dto.ListEnvironmentsOutput{
+		Environments: envsOut,
 	}, nil
 }
 
-func (s *ServiceCE) Create(ctx context.Context, in types.CreateEnvironmentInput) (*types.CreateEnvironmentPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -123,19 +108,12 @@ func (s *ServiceCE) Create(ctx context.Context, in types.CreateEnvironmentInput)
 		return nil, err
 	}
 
-	return &types.CreateEnvironmentPayload{
-		Environment: &types.EnvironmentPayload{
-			ID:        env.ID.String(),
-			Name:      env.Name,
-			Slug:      env.Slug,
-			Color:     env.Color,
-			CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-		},
+	return &dto.CreateEnvironmentOutput{
+		Environment: dto.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *ServiceCE) Update(ctx context.Context, in types.UpdateEnvironmentInput) (*types.UpdateEnvironmentPayload, error) {
+func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -174,19 +152,12 @@ func (s *ServiceCE) Update(ctx context.Context, in types.UpdateEnvironmentInput)
 		return nil, err
 	}
 
-	return &types.UpdateEnvironmentPayload{
-		Environment: &types.EnvironmentPayload{
-			ID:        env.ID.String(),
-			Name:      env.Name,
-			Slug:      env.Slug,
-			Color:     env.Color,
-			CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-		},
+	return &dto.UpdateEnvironmentOutput{
+		Environment: dto.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteEnvironmentInput) (*types.DeleteEnvironmentPayload, error) {
+func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error) {
 	authorizer := authz.NewAuthorizer(s.Store)
 	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -226,14 +197,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteEnvironmentInput)
 		return nil, err
 	}
 
-	return &types.DeleteEnvironmentPayload{
-		Environment: &types.EnvironmentPayload{
-			ID:        env.ID.String(),
-			Name:      env.Name,
-			Slug:      env.Slug,
-			Color:     env.Color,
-			CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-		},
+	return &dto.DeleteEnvironmentOutput{
+		Environment: dto.EnvironmentFromModel(env),
 	}, nil
 }

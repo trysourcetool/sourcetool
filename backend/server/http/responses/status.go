@@ -1,6 +1,6 @@
-package types
+package responses
 
-type SuccessPayload struct {
+type StatusResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
