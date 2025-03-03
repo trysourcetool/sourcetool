@@ -3,18 +3,17 @@ package ws
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/ws/types"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 )
@@ -27,7 +26,7 @@ type Service interface {
 	CloseSession(context.Context, *websocketv1.Message) error
 	ScriptFinished(context.Context, *websocketv1.Message) error
 	Exception(context.Context, *websocketv1.Message) error
-	UpdateStatus(context.Context, types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error)
+	UpdateStatus(context.Context, dto.UpdateHostInstanceStatusInput) (*dto.UpdateHostInstanceStatusOutput, error)
 
 	GetConn() *websocket.Conn
 	SetConn(conn *websocket.Conn)
@@ -459,7 +458,7 @@ func (s *ServiceCE) Exception(ctx context.Context, msg *websocketv1.Message) err
 	return nil
 }
 
-func (s *ServiceCE) UpdateStatus(ctx context.Context, in types.UpdateHostInstanceStatusInput) (*types.UpdateHostInstanceStatusPayload, error) {
+func (s *ServiceCE) UpdateStatus(ctx context.Context, in dto.UpdateHostInstanceStatusInput) (*dto.UpdateHostInstanceStatusOutput, error) {
 	hostInstanceID, err := uuid.FromString(in.ID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -481,15 +480,8 @@ func (s *ServiceCE) UpdateStatus(ctx context.Context, in types.UpdateHostInstanc
 		return nil, err
 	}
 
-	return &types.UpdateHostInstanceStatusPayload{
-		HostInstance: &types.HostInstancePayload{
-			ID:         host.ID.String(),
-			SDKName:    host.SDKName,
-			SDKVersion: host.SDKVersion,
-			Status:     host.Status.String(),
-			CreatedAt:  strconv.FormatInt(host.CreatedAt.Unix(), 10),
-			UpdatedAt:  strconv.FormatInt(host.UpdatedAt.Unix(), 10),
-		},
+	return &dto.UpdateHostInstanceStatusOutput{
+		HostInstance: dto.HostInstanceFromModel(host),
 	}, nil
 }
 
