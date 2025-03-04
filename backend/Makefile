@@ -1,9 +1,4 @@
-SERVER_OUTPUT   =sourcetool/backend
 SERVER_BUILD_DIR=./cmd/server
-
-.PHONY: dc-build
-dc-build:
-	@docker compose build
 
 .PHONY: dc-up
 dc-up:

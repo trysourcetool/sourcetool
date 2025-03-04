@@ -1,33 +1,37 @@
-# Sourcetool API
+# Sourcetool Backend API
 
-## Setup hosts
-```
-127.0.0.1 auth.local.trysourcetool.com
-127.0.0.1 acme.local.trysourcetool.com
-```
+A Go-based backend service for the Sourcetool project.
 
-## Setup server
-```
-$ docker network create sourcetool_server_default
-$ make dc-build
-$ make dc-up
-```
+## Quick Start
 
-## Reset server
-```
-$ make remove-postgres-data
-$ make dc-build
-$ make dc-up
-```
+1. Copy the sample environment file:
+   ```
+   cp .env.example .env
+   ```
 
-## Cleanup Docker
-```
-$ make remove-docker-images
-$ make remove-docker-builder
-```
+2. Generate required keys:
+   ```
+   make gen-encryption-key  # Add to .env
+   make gen-jwt-key         # Add to .env
+   ```
 
+3. Start the development server:
+   ```
+   make dc-up
+   ```
 
-## Swagger
-```
-$ make open-swagger
-```
+4. Access:
+   - API: http://localhost:8080
+   - API Documentation: http://localhost:8080/swagger/index.html
+
+## Technology
+
+- Go 1.22
+- PostgreSQL 15
+- Redis 7
+- Docker
+
+## Useful Commands
+
+- `make gen-swagger` - Update API documentation
+- `make run-lint` - Run linters
