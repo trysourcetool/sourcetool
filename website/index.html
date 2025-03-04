@@ -191,9 +191,9 @@
     <div class="links-container">
       <a href="#about">[about]</a><span class="separator">|</span>
       <a href="#features">[features]</a><span class="separator">|</span>
+      <a href="#architecture">[architecture]</a><span class="separator">|</span>
       <a href="#components">[components]</a><span class="separator">|</span>
       <a href="#started">[get_started]</a><span class="separator">|</span>
-      <a href="#examples">[examples]</a><span class="separator">|</span>
       <a href="#faq">[faq]</a>
     </div>
   </div>
@@ -226,8 +226,38 @@
       <td>Easily switch between different environments (development, staging, production)</td>
     </tr>
   </table>
+<hr>
+<h2 id="architecture">> architecture</h2>
+<p>Sourcetool connects your Go backend code directly to web browsers, eliminating the need for frontend development:</p>
 
-  <hr>
+<div style="text-align: center; margin: 30px 0;">
+  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
+    <strong>Your Go Code</strong><br>
+    (Backend only)
+  </div>
+  <span style="font-size: 24px; margin: 0 10px;">⟷</span>
+  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
+    <strong>Sourcetool Server</strong><br>
+    (WebSocket)
+  </div>
+  <span style="font-size: 24px; margin: 0 10px;">⟷</span>
+  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
+    <strong>Sourcetool Web</strong><br>
+    (Auto-generated UI)
+  </div>
+</div>
+
+<pre><code><span class="code-comment">// Your Go code defines UI and handles business logic</span>
+<span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
+    ui.Markdown(<span class="code-string">"## Users"</span>)
+    users, _ := listUsers()
+    ui.Table(users)
+    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
+}</code></pre>
+
+<p>This architecture allows you to create complete internal tools while writing only Go code. The Sourcetool server handles all WebSocket communication, UI rendering, and user interactions.</p>
+
+<hr>
   <h2 id="components">> components</h2>
   <p>Sourcetool provides UI components you can use directly from Go code:</p>
 
@@ -268,7 +298,7 @@
   <h2 id="started">> get_started</h2>
 
   <h4>$ Get your API key</p>
-  <p>Sign up at <a href="https://trysourcetool.com">Sourcetool Dashboard</a></p>
+  <p>Sign up at <a href="https://auth.trysourcetool.com">Sourcetool Dashboard</a></p>
 
   <h4>$ Install the Sourcetool SDK</p>
   <pre><code><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
@@ -310,54 +340,8 @@
     }
 }</code></pre>
 
-  <hr>
-  <h2 id="examples">> examples</h2>
-  <h4>$ Complex Form Example</p>
-  <pre><code><span class="code-keyword">func</span> createUserPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
-    form, submitted := ui.Form(<span class="code-string">"Create User"</span>, form.ClearOnSubmit(<span class="code-keyword">true</span>))
-    
-    name := form.TextInput(<span class="code-string">"Name"</span>,
-        textinput.Required(<span class="code-keyword">true</span>),
-        textinput.MinLength(2),
-        textinput.MaxLength(50),
-    )
-    
-    email := form.TextInput(<span class="code-string">"Email"</span>,
-        textinput.Required(<span class="code-keyword">true</span>),
-        textinput.Placeholder(<span class="code-string">"user@example.com"</span>),
-    )
-    
-    role := form.Selectbox(<span class="code-string">"Role"</span>,
-        selectbox.Options(<span class="code-string">"Admin"</span>, <span class="code-string">"User"</span>, <span class="code-string">"Guest"</span>),
-        selectbox.Required(<span class="code-keyword">true</span>),
-    )
-    
-    <span class="code-keyword">if</span> submitted {
-        user := User{
-            Name: name,
-            Email: email,
-            Role: role.Value,
-        }
-        <span class="code-keyword">if</span> err := createUser(&user); err != <span class="code-keyword">nil</span> {
-            <span class="code-keyword">return</span> err
-        }
-    }
-    
-    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
-}</code></pre>
-
-  <h4>$ Error Handling Example</p>
-  <pre><code><span class="code-keyword">func</span> userProfilePage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
-    user, err := fetchUserProfile()
-    <span class="code-keyword">if</span> err != <span class="code-keyword">nil</span> {
-        <span class="code-comment">// Display error message to the user</span>
-        ui.Markdown(<span class="code-string">"⚠️ Error: Failed to load user profile"</span>)
-        <span class="code-keyword">return</span> err
-    }
-    
-    ui.Markdown(fmt.Sprintf(<span class="code-string">"## Welcome, %s!"</span>, user.Name))
-    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
-}</code></pre>
+  <h4>$ More examples</h4>
+  <p>Check out our <a href="https://github.com/trysourcetool/sourcetool/tree/main/examples/go">GitHub repository examples</a> for more complex implementations and advanced usage patterns.</p>
 
   <hr>
   <h2 id="faq">> faq</h2>
