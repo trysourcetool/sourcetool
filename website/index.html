@@ -189,34 +189,30 @@
 
   <hr>
   <h2 id="about">> sourcetool</h2>
-  <p>We develop <a href="https://github.com/trysourcetool/sourcetool-go">Sourcetool</a>, a Go SDK for building internal tools with just backend code.</p>
+  <p>We develop <a href="https://github.com/trysourcetool/sourcetool">Sourcetool</a>, an open-source internal tool builder with just backend code.</p>
 
-  <p>Sourcetool provides UI components and handles all frontend complexities, allowing developers to focus on business logic implementation.</p>
+  <p>Sourcetool handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.</p>
 
-  <p>Type-safe, flexible, build internal tools without writing any frontend code.</p>
+  <p>Type-safe, flexible, build complete internal tools without writing any frontend code.</p>
 
   <hr>
   <h2 id="features">> features</h2>
   <table>
     <tr>
-      <td>Backend-Only Development</td>
-      <td>Build full-featured internal tools without writing any frontend code</td>
+      <td>Backend-Only, Code-First Development</td>
+      <td>Build full-featured internal tools using only Go code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
     </tr>
     <tr>
       <td>Rich UI Components</td>
       <td>Pre-built components (forms, tables, inputs, etc.)</td>
     </tr>
     <tr>
-      <td>Real-time Updates</td>
-      <td>WebSocket support for live data synchronization</td>
+      <td>Group-Based Permission Control</td>
+      <td>Manage access to your internal tools with flexible group-based permissions</td>
     </tr>
     <tr>
-      <td>Type-Safe</td>
-      <td>Fully typed API for reliable development</td>
-    </tr>
-    <tr>
-      <td>Flexible Backend</td>
-      <td>Freedom to implement any business logic in pure Go</td>
+      <td>Multiple Environment Support</td>
+      <td>Easily switch between different environments (development, staging, production)</td>
     </tr>
   </table>
 
@@ -263,7 +259,7 @@
   <h4>$ Get your API key</p>
   <p>Sign up at <a href="https://trysourcetool.com">Sourcetool Dashboard</a></p>
 
-  <h4>$ Install the SDK</p>
+  <h4>$ Install the Sourcetool SDK</p>
   <pre><code><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
 
   <h4>$ Write your first internal tool</p>
@@ -356,28 +352,34 @@
   <h2 id="faq">> faq</h2>
   <dl class="faqtable">
     <dt>$ What is Sourcetool?</dt>
-    <dd>Sourcetool is a Go SDK that enables you to build full-featured internal tools without writing any frontend code. It provides UI components and handles frontend complexities, allowing you to focus on implementing business logic in Go.</dd>
+    <dd>Sourcetool is an open-source internal tool builder that enables you to build full-featured internal tools without writing any frontend code. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
 
     <dt>$ Do I need frontend skills to use Sourcetool?</dt>
-    <dd>No. You can create internal tools using only Go. The SDK automatically handles UI rendering and interactions.</dd>
+    <dd>No. As an internal tool builder, Sourcetool lets you create complete applications using only Go. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
 
     <dt>$ What types of applications can I build with Sourcetool?</dt>
     <dd>Admin panels, dashboards, data management systems, monitoring tools, and any application where development speed is more important than custom UI/UX.</dd>
 
-    <dt>$ How does Sourcetool handle data binding?</dt>
-    <dd>Automatically. When you update data in your Go code, the changes are reflected in the UI automatically.</dd>
-
     <dt>$ Is Sourcetool compatible with existing Go code?</dt>
     <dd>Yes. Sourcetool works alongside your existing Go code and libraries.</dd>
 
+    <dt>$ How does Sourcetool work behind the scenes?</dt>
+    <dd>Sourcetool connects browsers to your backend code through WebSockets via the Sourcetool server. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
+
     <dt>$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
-    <dd>React/Vue gives you more UI customization options, but Sourcetool lets you build functional internal tools faster, with a single language (Go), without the complexity of managing a separate frontend codebase.</dd>
+    <dd>React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool eliminates the need for frontend code entirely. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
+    
+    <dt>$ How does Sourcetool differ from Retool?</dt>
+    <dd>While Retool uses a GUI-based approach where you drag and drop components, Sourcetool is code-first. This code-first approach is significantly advantageous in the AI era, as AI tools can more easily understand, modify, and generate code than manipulate visual interfaces. Your Sourcetool applications are expressed in pure Go code, making them version-controllable, testable, and seamlessly integratable with modern AI-assisted development workflows. This allows you to leverage AI coding assistants to build and iterate on internal tools much more efficiently.</dd>
+
+    <dt>$ Is Sourcetool secure?</dt>
+    <dd>Yes, Sourcetool is designed with security in mind. You deploy and run Sourcetool applications on your own infrastructure, keeping your code and sensitive data within your control. By design, the Sourcetool server cannot access your code or secrets, ensuring your internal tools remain private and secure.</dd>
 
     <dt>$ Is Sourcetool free to use?</dt>
     <dd>Check out the <a href="https://trysourcetool.com">Sourcetool website</a> for pricing information. The SDK is open source under the MIT license.</dd>
 
     <dt>$ How can I contribute to Sourcetool?</dt>
-    <dd>Check out our <a href="https://github.com/trysourcetool/sourcetool-go">GitHub repository</a> and review the contribution guidelines.</dd>
+    <dd>Check out our <a href="https://github.com/trysourcetool/sourcetool">GitHub repository</a> and review the contribution guidelines.</dd>
 
     <dt>$ Where can I find more documentation?</dt>
     <dd>Visit our <a href="https://docs.trysourcetool.com">documentation site</a> for detailed guides, API reference, and more examples.</dd>
