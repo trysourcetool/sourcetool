@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sourcetool</title>
+  <style>
+    body {
+      /* font-family: 'Courier New', monospace; */
+      font-family: 'Lucida Console', monospace;
+      font-size: 16px;
+      color: #333333;
+      background-color: white;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      box-sizing: border-box;
+      line-height: 1.4;
+    }
+    .landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height:80vh;
+      text-align: center;
+    }
+    svg { width: 100%; height: auto; }
+    .svg-container { width: 100%; max-width: 750px; display: inline-block; }
+    .separator { 
+      color: #777;
+      margin: 0 8px;
+    }
+    hr { 
+      border: none; 
+      height: 1px; 
+      background-color: #ddd; 
+      margin: 30px 0; 
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 20px 0;
+    }
+    td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      vertical-align: top;
+      font-weight: 400;
+      font-size: 16.5px;
+      line-height: 1.5;
+    }
+    .links-container { 
+      font-size: 16px; 
+      margin: 15px 0;
+    }
+    .links-container a { 
+      text-decoration: none; 
+      margin: 0 5px; 
+      color: #6b46c1; /* Dark purple */
+    }
+    .links-container a:hover {
+      text-decoration: underline;
+    }
+    .faqtable dt { 
+      margin-top: 15px; 
+      color: #6b46c1; /* Dark purple */
+      font-weight: 700;
+    }
+    .faqtable dd { 
+      margin-left: 0; 
+      margin-bottom: 15px;
+    }
+    pre {
+      background-color: #f8f7fc; /* Light purple background matching theme */
+      padding: 16px;
+      overflow-x: auto;
+      border: 1px solid #e6deff; /* Light purple border */
+      border-radius: 6px;
+      margin: 15px 0;
+      line-height: 1.45;
+      box-shadow: 0 2px 4px rgba(107, 70, 193, 0.05); /* Very subtle purple shadow */
+    }
+    code {
+      font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace; /* GitHub-like font stack */
+      font-size: 14px;
+      color: #6b46c1; /* Purple for inline code to match site theme */
+    }
+    pre code {
+      color: #333; /* Regular text color for code blocks */
+      padding: 0;
+      font-size: 13.6px;
+      font-weight: 300; /* Lighter font weight for code blocks */
+    }
+    .code-keyword {
+      color: #6b46c1; /* Purple keywords matching theme */
+      font-weight: 400;
+    }
+    .code-string {
+      color: #2e7d32; /* Keep green for strings (good contrast) */
+    }
+    .code-comment {
+      color: #786d96; /* Purplish gray for comments */
+      font-style: italic;
+    }
+    h1, h2 {
+      color: #6b46c1; /* Dark purple */
+    }
+    a {
+      color: #6b46c1; /* Dark purple */
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    p, ul, ol {
+      margin: 10px 0;
+      font-weight: 400;
+      font-size: 17px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="svg-container">
+      <svg viewBox="-20 0 380 60" xmlns="http://www.w3.org/2000/svg">
+        <!-- s -->
+        <rect x="15" y="15" width="20" height="8" fill="#6b46c1" />
+        <rect x="15" y="15" width="8" height="16" fill="#6b46c1" />
+        <rect x="15" y="31" width="20" height="8" fill="#6b46c1" />
+        <rect x="35" y="31" width="8" height="16" fill="#6b46c1" />
+        <rect x="15" y="47" width="20" height="8" fill="#6b46c1" />
+        
+        <!-- o -->
+        <rect x="53" y="23" width="20" height="8" fill="#6b46c1" />
+        <rect x="53" y="47" width="20" height="8" fill="#6b46c1" />
+        <rect x="53" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="73" y="23" width="8" height="32" fill="#6b46c1" />
+        
+        <!-- u -->
+        <rect x="91" y="23" width="8" height="24" fill="#6b46c1" />
+        <rect x="111" y="23" width="8" height="24" fill="#6b46c1" />
+        <rect x="91" y="47" width="28" height="8" fill="#6b46c1" />
+        
+        <!-- r -->
+        <rect x="129" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="129" y="23" width="16" height="8" fill="#6b46c1" />
+        
+        <!-- c -->
+        <rect x="155" y="23" width="20" height="8" fill="#6b46c1" />
+        <rect x="155" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="155" y="47" width="20" height="8" fill="#6b46c1" />
+        
+        <!-- e -->
+        <rect x="185" y="23" width="20" height="8" fill="#6b46c1" />
+        <rect x="185" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="185" y="35" width="16" height="8" fill="#6b46c1" />
+        <rect x="185" y="47" width="20" height="8" fill="#6b46c1" />
+        
+        <!-- t -->
+        <rect x="215" y="10" width="8" height="45" fill="#6b46c1" />
+        <rect x="207" y="23" width="24" height="8" fill="#6b46c1" />
+        
+        <!-- o -->
+        <rect x="241" y="23" width="20" height="8" fill="#6b46c1" />
+        <rect x="241" y="47" width="20" height="8" fill="#6b46c1" />
+        <rect x="241" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="261" y="23" width="8" height="32" fill="#6b46c1" />
+        
+        <!-- o -->
+        <rect x="279" y="23" width="20" height="8" fill="#6b46c1" />
+        <rect x="279" y="47" width="20" height="8" fill="#6b46c1" />
+        <rect x="279" y="23" width="8" height="32" fill="#6b46c1" />
+        <rect x="299" y="23" width="8" height="32" fill="#6b46c1" />
+        
+        <!-- l -->
+        <rect x="317" y="10" width="8" height="45" fill="#6b46c1" />
+      </svg>
+    </div>
+    <div class="links-container">
+      <a href="#about">[about]</a><span class="separator">|</span>
+      <a href="#features">[features]</a><span class="separator">|</span>
+      <a href="#components">[components]</a><span class="separator">|</span>
+      <a href="#started">[get_started]</a><span class="separator">|</span>
+      <a href="#examples">[examples]</a><span class="separator">|</span>
+      <a href="#faq">[faq]</a>
+    </div>
+  </div>
+
+  <hr>
+  <h2 id="about">> sourcetool</h2>
+  <p>We develop <a href="https://github.com/trysourcetool/sourcetool-go">Sourcetool</a>, a Go SDK for building internal tools with just backend code.</p>
+
+  <p>Sourcetool provides UI components and handles all frontend complexities, allowing developers to focus on business logic implementation.</p>
+
+  <p>Type-safe, flexible, build internal tools without writing any frontend code.</p>
+
+  <hr>
+  <h2 id="features">> features</h2>
+  <table>
+    <tr>
+      <td>Backend-Only Development</td>
+      <td>Build full-featured internal tools without writing any frontend code</td>
+    </tr>
+    <tr>
+      <td>Rich UI Components</td>
+      <td>Pre-built components (forms, tables, inputs, etc.)</td>
+    </tr>
+    <tr>
+      <td>Real-time Updates</td>
+      <td>WebSocket support for live data synchronization</td>
+    </tr>
+    <tr>
+      <td>Type-Safe</td>
+      <td>Fully typed API for reliable development</td>
+    </tr>
+    <tr>
+      <td>Flexible Backend</td>
+      <td>Freedom to implement any business logic in pure Go</td>
+    </tr>
+  </table>
+
+  <hr>
+  <h2 id="components">> components</h2>
+  <p>Sourcetool provides UI components you can use directly from Go code:</p>
+
+  <table>
+    <tr>
+      <td>Input Components</td>
+      <td>
+        TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput
+      </td>
+    </tr>
+    <tr>
+      <td>Selection Components</td>
+      <td>
+        Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup
+      </td>
+    </tr>
+    <tr>
+      <td>Layout Components</td>
+      <td>
+        Columns, Form, Table
+      </td>
+    </tr>
+    <tr>
+      <td>Display Components</td>
+      <td>
+        Markdown
+      </td>
+    </tr>
+    <tr>
+      <td>Interactive Components</td>
+      <td>
+        Button
+      </td>
+    </tr>
+  </table>
+
+  <hr>
+  <h2 id="started">> get_started</h2>
+
+  <h4>$ Get your API key</p>
+  <p>Sign up at <a href="https://trysourcetool.com">Sourcetool Dashboard</a></p>
+
+  <h4>$ Install the SDK</p>
+  <pre><code><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
+
+  <h4>$ Write your first internal tool</p>
+  <pre><code><span class="code-keyword">package</span> main
+
+<span class="code-keyword">import</span> (
+    <span class="code-string">"github.com/trysourcetool/sourcetool-go"</span>
+    <span class="code-string">"github.com/trysourcetool/sourcetool-go/textinput"</span>
+    <span class="code-string">"github.com/trysourcetool/sourcetool-go/table"</span>
+)
+
+<span class="code-keyword">func</span> listUsersPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
+    ui.Markdown(<span class="code-string">"## Users"</span>)
+
+    <span class="code-comment">// Search form</span>
+    name := ui.TextInput(<span class="code-string">"Name"</span>, textinput.Placeholder(<span class="code-string">"Enter name to search"</span>))
+    
+    <span class="code-comment">// Display users table</span>
+    users, err := listUsers(name)
+    <span class="code-keyword">if</span> err != <span class="code-keyword">nil</span> {
+        <span class="code-keyword">return</span> err
+    }
+    
+    ui.Table(users, table.Header(<span class="code-string">"Users List"</span>))
+    
+    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
+}
+
+<span class="code-keyword">func</span> main() {
+    st := sourcetool.New(<span class="code-string">"your-api-key"</span>)
+    
+    <span class="code-comment">// Register pages</span>
+    st.Page(<span class="code-string">"/users"</span>, <span class="code-string">"Users List"</span>, listUsersPage)
+    
+    <span class="code-keyword">if</span> err := st.Listen(); err != <span class="code-keyword">nil</span> {
+        log.Fatal(err)
+    }
+}</code></pre>
+
+  <hr>
+  <h2 id="examples">> examples</h2>
+  <h4>$ Complex Form Example</p>
+  <pre><code><span class="code-keyword">func</span> createUserPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
+    form, submitted := ui.Form(<span class="code-string">"Create User"</span>, form.ClearOnSubmit(<span class="code-keyword">true</span>))
+    
+    name := form.TextInput(<span class="code-string">"Name"</span>,
+        textinput.Required(<span class="code-keyword">true</span>),
+        textinput.MinLength(2),
+        textinput.MaxLength(50),
+    )
+    
+    email := form.TextInput(<span class="code-string">"Email"</span>,
+        textinput.Required(<span class="code-keyword">true</span>),
+        textinput.Placeholder(<span class="code-string">"user@example.com"</span>),
+    )
+    
+    role := form.Selectbox(<span class="code-string">"Role"</span>,
+        selectbox.Options(<span class="code-string">"Admin"</span>, <span class="code-string">"User"</span>, <span class="code-string">"Guest"</span>),
+        selectbox.Required(<span class="code-keyword">true</span>),
+    )
+    
+    <span class="code-keyword">if</span> submitted {
+        user := User{
+            Name: name,
+            Email: email,
+            Role: role.Value,
+        }
+        <span class="code-keyword">if</span> err := createUser(&user); err != <span class="code-keyword">nil</span> {
+            <span class="code-keyword">return</span> err
+        }
+    }
+    
+    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
+}</code></pre>
+
+  <h4>$ Error Handling Example</p>
+  <pre><code><span class="code-keyword">func</span> userProfilePage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
+    user, err := fetchUserProfile()
+    <span class="code-keyword">if</span> err != <span class="code-keyword">nil</span> {
+        <span class="code-comment">// Display error message to the user</span>
+        ui.Markdown(<span class="code-string">"⚠️ Error: Failed to load user profile"</span>)
+        <span class="code-keyword">return</span> err
+    }
+    
+    ui.Markdown(fmt.Sprintf(<span class="code-string">"## Welcome, %s!"</span>, user.Name))
+    <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
+}</code></pre>
+
+  <hr>
+  <h2 id="faq">> faq</h2>
+  <dl class="faqtable">
+    <dt>$ What is Sourcetool?</dt>
+    <dd>Sourcetool is a Go SDK that enables you to build full-featured internal tools without writing any frontend code. It provides UI components and handles frontend complexities, allowing you to focus on implementing business logic in Go.</dd>
+
+    <dt>$ Do I need frontend skills to use Sourcetool?</dt>
+    <dd>No. You can create internal tools using only Go. The SDK automatically handles UI rendering and interactions.</dd>
+
+    <dt>$ What types of applications can I build with Sourcetool?</dt>
+    <dd>Admin panels, dashboards, data management systems, monitoring tools, and any application where development speed is more important than custom UI/UX.</dd>
+
+    <dt>$ How does Sourcetool handle data binding?</dt>
+    <dd>Automatically. When you update data in your Go code, the changes are reflected in the UI automatically.</dd>
+
+    <dt>$ Is Sourcetool compatible with existing Go code?</dt>
+    <dd>Yes. Sourcetool works alongside your existing Go code and libraries.</dd>
+
+    <dt>$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
+    <dd>React/Vue gives you more UI customization options, but Sourcetool lets you build functional internal tools faster, with a single language (Go), without the complexity of managing a separate frontend codebase.</dd>
+
+    <dt>$ Is Sourcetool free to use?</dt>
+    <dd>Check out the <a href="https://trysourcetool.com">Sourcetool website</a> for pricing information. The SDK is open source under the MIT license.</dd>
+
+    <dt>$ How can I contribute to Sourcetool?</dt>
+    <dd>Check out our <a href="https://github.com/trysourcetool/sourcetool-go">GitHub repository</a> and review the contribution guidelines.</dd>
+
+    <dt>$ Where can I find more documentation?</dt>
+    <dd>Visit our <a href="https://docs.trysourcetool.com">documentation site</a> for detailed guides, API reference, and more examples.</dd>
+  </dl>
+</body>
+</html>
