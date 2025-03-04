@@ -61,7 +61,8 @@ export const getPermissionPages = createSelector(
     return pages.pages.ids
       .filter(
         (id) =>
-          !groupPages.length || groupPages.some((page) => page.pageId === id),
+          !groups.groups.ids.length ||
+          groupPages.some((page) => page.pageId === id),
       )
       .map((id) => pages.pages.entities[id]);
   },

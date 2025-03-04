@@ -344,7 +344,7 @@ export const slice = createSlice({
       if (!hasClearOnSubmit) {
         state.isWidgetWaiting = false;
       } else {
-        // 同一の時間を生成する可能性があるため、1秒後の時間で更新する
+        // Update with 1 second later to avoid generating the same timestamp
         state.updateAt = dayjs().add(1, 'second').unix();
       }
     },
