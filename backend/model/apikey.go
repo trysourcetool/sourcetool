@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type APIKey struct {
@@ -40,18 +42,9 @@ func GenerateAPIKey(orgSubdomain, envSlug string) (string, error) {
 	return key[:length], nil
 }
 
-type (
-	APIKeyByID             uuid.UUID
-	APIKeyByOrganizationID uuid.UUID
-	APIKeyByEnvironmentID  uuid.UUID
-	APIKeyByEnvironmentIDs []uuid.UUID
-	APIKeyByUserID         uuid.UUID
-	APIKeyByKey            string
-)
-
 type APIKeyStore interface {
-	Get(context.Context, ...any) (*APIKey, error)
-	List(context.Context, ...any) ([]*APIKey, error)
+	Get(context.Context, ...storeopts.APIKeyOption) (*APIKey, error)
+	List(context.Context, ...storeopts.APIKeyOption) ([]*APIKey, error)
 	Create(context.Context, *APIKey) error
 	Update(context.Context, *APIKey) error
 	Delete(context.Context, *APIKey) error

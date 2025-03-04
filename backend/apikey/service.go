@@ -3,25 +3,25 @@ package apikey
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
-	Get(context.Context, types.GetAPIKeyInput) (*types.GetAPIKeyPayload, error)
-	List(context.Context) (*types.ListAPIKeysPayload, error)
-	Create(context.Context, types.CreateAPIKeyInput) (*types.CreateAPIKeyPayload, error)
-	Update(context.Context, types.UpdateAPIKeyInput) (*types.UpdateAPIKeyPayload, error)
-	Delete(context.Context, types.DeleteAPIKeyInput) (*types.DeleteAPIKeyPayload, error)
+	Get(context.Context, dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error)
+	List(context.Context) (*dto.ListAPIKeysOutput, error)
+	Create(context.Context, dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error)
+	Update(context.Context, dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error)
+	Delete(context.Context, dto.DeleteAPIKeyInput) (*dto.DeleteAPIKeyOutput, error)
 }
 
 type ServiceCE struct {
@@ -32,46 +32,32 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) Get(ctx context.Context, in types.GetAPIKeyInput) (*types.GetAPIKeyPayload, error) {
+func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID), model.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.GetAPIKeyPayload{
-		APIKey: &types.APIKeyPayload{
-			ID:        apiKey.ID.String(),
-			Name:      apiKey.Name,
-			Key:       apiKey.Key,
-			CreatedAt: strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-			Environment: &types.EnvironmentPayload{
-				ID:        env.ID.String(),
-				Name:      env.Name,
-				Slug:      env.Slug,
-				Color:     env.Color,
-				CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-				UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-			},
-		},
+	return &dto.GetAPIKeyOutput{
+		APIKey: dto.APIKeyFromModel(apiKey, env),
 	}, nil
 }
 
-func (s *ServiceCE) List(ctx context.Context) (*types.ListAPIKeysPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	currentUser := ctxutils.CurrentUser(ctx)
 
-	envs, err := s.Store.Environment().List(ctx, model.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +72,7 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListAPIKeysPayload, error)
 		}
 	}
 
-	devKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByOrganizationID(currentOrg.ID), model.APIKeyByEnvironmentID(devEnv.ID), model.APIKeyByUserID(currentUser.ID))
+	devKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentID(devEnv.ID), storeopts.APIKeyByUserID(currentUser.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +81,7 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListAPIKeysPayload, error)
 	for _, env := range liveEnvs {
 		liveEnvIDs = append(liveEnvIDs, env.ID)
 	}
-	liveKeys, err := s.Store.APIKey().List(ctx, model.APIKeyByOrganizationID(currentOrg.ID), model.APIKeyByEnvironmentIDs(liveEnvIDs))
+	liveKeys, err := s.Store.APIKey().List(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentIDs(liveEnvIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -110,58 +96,30 @@ func (s *ServiceCE) List(ctx context.Context) (*types.ListAPIKeysPayload, error)
 		return nil, err
 	}
 
-	liveKeysRes := make([]*types.APIKeyPayload, 0, len(liveKeys))
+	liveKeysOut := make([]*dto.APIKey, 0, len(liveKeys))
 	for _, apiKey := range liveKeys {
 		env, ok := environments[apiKey.ID]
 		if !ok {
 			return nil, errdefs.ErrEnvironmentNotFound(errors.New("environment not found"))
 		}
 
-		liveKeysRes = append(liveKeysRes, &types.APIKeyPayload{
-			ID:        apiKey.ID.String(),
-			Name:      apiKey.Name,
-			Key:       apiKey.Key,
-			CreatedAt: strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-			Environment: &types.EnvironmentPayload{
-				ID:        env.ID.String(),
-				Name:      env.Name,
-				Slug:      env.Slug,
-				Color:     env.Color,
-				CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
-				UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
-			},
-		})
+		liveKeysOut = append(liveKeysOut, dto.APIKeyFromModel(apiKey, env))
 	}
 
-	return &types.ListAPIKeysPayload{
-		DevKey: &types.APIKeyPayload{
-			ID:        devKey.ID.String(),
-			Name:      devKey.Name,
-			Key:       devKey.Key,
-			CreatedAt: strconv.FormatInt(devKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(devKey.UpdatedAt.Unix(), 10),
-			Environment: &types.EnvironmentPayload{
-				ID:        devEnv.ID.String(),
-				Name:      devEnv.Name,
-				Slug:      devEnv.Slug,
-				Color:     devEnv.Color,
-				CreatedAt: strconv.FormatInt(devEnv.CreatedAt.Unix(), 10),
-				UpdatedAt: strconv.FormatInt(devEnv.UpdatedAt.Unix(), 10),
-			},
-		},
-		LiveKeys: liveKeysRes,
+	return &dto.ListAPIKeysOutput{
+		DevKey:   dto.APIKeyFromModel(devKey, devEnv),
+		LiveKeys: liveKeysOut,
 	}, nil
 }
 
-func (s *ServiceCE) Create(ctx context.Context, in types.CreateAPIKeyInput) (*types.CreateAPIKeyPayload, error) {
+func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(envID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID))
 	if err != nil {
 		return nil, err
 	}
@@ -202,35 +160,29 @@ func (s *ServiceCE) Create(ctx context.Context, in types.CreateAPIKeyInput) (*ty
 		return nil, err
 	}
 
-	apiKey, err = s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKey.ID))
+	apiKey, err = s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKey.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.CreateAPIKeyPayload{
-		APIKey: &types.APIKeyPayload{
-			ID:        apiKey.ID.String(),
-			Name:      apiKey.Name,
-			Key:       apiKey.Key,
-			CreatedAt: strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-		},
+	return &dto.CreateAPIKeyOutput{
+		APIKey: dto.APIKeyFromModel(apiKey, nil),
 	}, nil
 }
 
-func (s *ServiceCE) Update(ctx context.Context, in types.UpdateAPIKeyInput) (*types.UpdateAPIKeyPayload, error) {
+func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error) {
 	currentOrg := ctxutils.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID), model.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -260,28 +212,22 @@ func (s *ServiceCE) Update(ctx context.Context, in types.UpdateAPIKeyInput) (*ty
 		return nil, err
 	}
 
-	return &types.UpdateAPIKeyPayload{
-		APIKey: &types.APIKeyPayload{
-			ID:        apiKey.ID.String(),
-			Name:      apiKey.Name,
-			Key:       apiKey.Key,
-			CreatedAt: strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-		},
+	return &dto.UpdateAPIKeyOutput{
+		APIKey: dto.APIKeyFromModel(apiKey, nil),
 	}, nil
 }
 
-func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteAPIKeyInput) (*types.DeleteAPIKeyPayload, error) {
+func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.DeleteAPIKeyOutput, error) {
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(apiKeyID))
+	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, model.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -307,13 +253,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in types.DeleteAPIKeyInput) (*ty
 		return nil, err
 	}
 
-	return &types.DeleteAPIKeyPayload{
-		APIKey: &types.APIKeyPayload{
-			ID:        apiKey.ID.String(),
-			Name:      apiKey.Name,
-			Key:       apiKey.Key,
-			CreatedAt: strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-		},
+	return &dto.DeleteAPIKeyOutput{
+		APIKey: dto.APIKeyFromModel(apiKey, nil),
 	}, nil
 }

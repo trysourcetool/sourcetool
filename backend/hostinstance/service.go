@@ -3,22 +3,22 @@ package hostinstance
 import (
 	"context"
 	"errors"
-	"strconv"
 	"strings"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
 type Service interface {
-	Ping(context.Context, types.PingHostInstanceInput) (*types.PingHostInstancePayload, error)
+	Ping(context.Context, dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error)
 }
 
 type ServiceCE struct {
@@ -29,16 +29,16 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) Ping(ctx context.Context, in types.PingHostInstanceInput) (*types.PingHostInstancePayload, error) {
+func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
 	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
 
-	o, err := s.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}
 
-	hostInstanceConds := []any{
-		model.HostInstanceByOrganizationID(o.ID),
+	hostInstanceOpts := []storeopts.HostInstanceOption{
+		storeopts.HostInstanceByOrganizationID(o.ID),
 	}
 	if in.PageID != nil {
 		pageID, err := uuid.FromString(conv.SafeValue(in.PageID))
@@ -46,20 +46,20 @@ func (s *ServiceCE) Ping(ctx context.Context, in types.PingHostInstanceInput) (*
 			return nil, errdefs.ErrInvalidArgument(err)
 		}
 
-		page, err := s.Store.Page().Get(ctx, model.PageByID(pageID))
+		page, err := s.Store.Page().Get(ctx, storeopts.PageByID(pageID))
 		if err != nil {
 			return nil, err
 		}
 
-		apiKey, err := s.Store.APIKey().Get(ctx, model.APIKeyByID(page.APIKeyID))
+		apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(page.APIKeyID))
 		if err != nil {
 			return nil, err
 		}
 
-		hostInstanceConds = append(hostInstanceConds, model.HostInstanceByAPIKeyID(apiKey.ID))
+		hostInstanceOpts = append(hostInstanceOpts, storeopts.HostInstanceByAPIKeyID(apiKey.ID))
 	}
 
-	hostInstances, err := s.Store.HostInstance().List(ctx, hostInstanceConds...)
+	hostInstances, err := s.Store.HostInstance().List(ctx, hostInstanceOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +85,7 @@ func (s *ServiceCE) Ping(ctx context.Context, in types.PingHostInstanceInput) (*
 		return nil, errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
 	}
 
-	return &types.PingHostInstancePayload{
-		HostInstance: &types.HostInstancePayload{
-			ID:         onlineHostInstance.ID.String(),
-			SDKName:    onlineHostInstance.SDKName,
-			SDKVersion: onlineHostInstance.SDKVersion,
-			Status:     onlineHostInstance.Status.String(),
-			CreatedAt:  strconv.FormatInt(onlineHostInstance.CreatedAt.Unix(), 10),
-			UpdatedAt:  strconv.FormatInt(onlineHostInstance.UpdatedAt.Unix(), 10),
-		},
+	return &dto.PingHostInstanceOutput{
+		HostInstance: dto.HostInstanceFromModel(onlineHostInstance),
 	}, nil
 }

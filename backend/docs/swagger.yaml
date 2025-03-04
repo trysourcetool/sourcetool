@@ -14,37 +14,7 @@ definitions:
       title:
         type: string
     type: object
-  server_http_types.HostInstancePayload:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: string
-      sdkName:
-        type: string
-      sdkVersion:
-        type: string
-      status:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.APIKeyPayload:
-    properties:
-      createdAt:
-        type: string
-      environment:
-        $ref: '#/definitions/types.EnvironmentPayload'
-      id:
-        type: string
-      key:
-        type: string
-      name:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.CreateAPIKeyInput:
+  requests.CreateAPIKeyRequest:
     properties:
       environmentId:
         type: string
@@ -54,12 +24,7 @@ definitions:
     - environmentId
     - name
     type: object
-  types.CreateAPIKeyPayload:
-    properties:
-      apiKey:
-        $ref: '#/definitions/types.APIKeyPayload'
-    type: object
-  types.CreateEnvironmentInput:
+  requests.CreateEnvironmentRequest:
     properties:
       color:
         type: string
@@ -72,12 +37,7 @@ definitions:
     - name
     - slug
     type: object
-  types.CreateEnvironmentPayload:
-    properties:
-      environment:
-        $ref: '#/definitions/types.EnvironmentPayload'
-    type: object
-  types.CreateGroupInput:
+  requests.CreateGroupRequest:
     properties:
       name:
         type: string
@@ -92,115 +52,19 @@ definitions:
     - slug
     - userIds
     type: object
-  types.CreateGroupPayload:
-    properties:
-      group:
-        $ref: '#/definitions/types.GroupPayload'
-    type: object
-  types.CreateOrganizationInput:
+  requests.CreateOrganizationRequest:
     properties:
       subdomain:
         type: string
     type: object
-  types.CreateOrganizationPayload:
-    properties:
-      organization:
-        $ref: '#/definitions/types.OrganizationPayload'
-    type: object
-  types.DeleteAPIKeyPayload:
-    properties:
-      apiKey:
-        $ref: '#/definitions/types.APIKeyPayload'
-    type: object
-  types.DeleteEnvironmentPayload:
-    properties:
-      environment:
-        $ref: '#/definitions/types.EnvironmentPayload'
-    type: object
-  types.DeleteGroupPayload:
-    properties:
-      group:
-        $ref: '#/definitions/types.GroupPayload'
-    type: object
-  types.EnvironmentPayload:
-    properties:
-      color:
-        type: string
-      createdAt:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      slug:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.GetAPIKeyPayload:
-    properties:
-      apiKey:
-        $ref: '#/definitions/types.APIKeyPayload'
-    type: object
-  types.GetEnvironmentPayload:
-    properties:
-      environment:
-        $ref: '#/definitions/types.EnvironmentPayload'
-    type: object
-  types.GetGoogleAuthCodeURLInvitationInput:
+  requests.GetGoogleAuthCodeURLInvitationRequest:
     properties:
       invitationToken:
         type: string
     required:
     - invitationToken
     type: object
-  types.GetGoogleAuthCodeURLInvitationPayload:
-    properties:
-      url:
-        type: string
-    type: object
-  types.GetGoogleAuthCodeURLPayload:
-    properties:
-      url:
-        type: string
-    type: object
-  types.GetGroupPayload:
-    properties:
-      group:
-        $ref: '#/definitions/types.GroupPayload'
-    type: object
-  types.GetMePayload:
-    properties:
-      user:
-        $ref: '#/definitions/types.UserPayload'
-    type: object
-  types.GroupPagePayload:
-    properties:
-      createdAt:
-        type: string
-      groupId:
-        type: string
-      id:
-        type: string
-      pageId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.GroupPayload:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      slug:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.InviteUsersInput:
+  requests.InviteUsersRequest:
     properties:
       emails:
         items:
@@ -216,146 +80,21 @@ definitions:
     - emails
     - role
     type: object
-  types.InviteUsersPayload:
-    properties:
-      userInvitations:
-        items:
-          $ref: '#/definitions/types.UserInvitationPayload'
-        type: array
-    type: object
-  types.ListAPIKeysPayload:
-    properties:
-      devKey:
-        $ref: '#/definitions/types.APIKeyPayload'
-      liveKeys:
-        items:
-          $ref: '#/definitions/types.APIKeyPayload'
-        type: array
-    type: object
-  types.ListEnvironmentsPayload:
-    properties:
-      environments:
-        items:
-          $ref: '#/definitions/types.EnvironmentPayload'
-        type: array
-    type: object
-  types.ListGroupsPayload:
-    properties:
-      groups:
-        items:
-          $ref: '#/definitions/types.GroupPayload'
-        type: array
-      userGroups:
-        items:
-          $ref: '#/definitions/types.UserGroupPayload'
-        type: array
-      users:
-        items:
-          $ref: '#/definitions/types.UserPayload'
-        type: array
-    type: object
-  types.ListPagesPayload:
-    properties:
-      groupPages:
-        items:
-          $ref: '#/definitions/types.GroupPagePayload'
-        type: array
-      groups:
-        items:
-          $ref: '#/definitions/types.GroupPayload'
-        type: array
-      pages:
-        items:
-          $ref: '#/definitions/types.PagePayload'
-        type: array
-      userGroups:
-        items:
-          $ref: '#/definitions/types.UserGroupPayload'
-        type: array
-      users:
-        items:
-          $ref: '#/definitions/types.UserPayload'
-        type: array
-    type: object
-  types.ListUsersPayload:
-    properties:
-      userInvitations:
-        items:
-          $ref: '#/definitions/types.UserInvitationPayload'
-        type: array
-      users:
-        items:
-          $ref: '#/definitions/types.UserPayload'
-        type: array
-    type: object
-  types.ObtainAuthTokenPayload:
-    properties:
-      authUrl:
-        type: string
-      token:
-        type: string
-    type: object
-  types.OrganizationPayload:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: string
-      subdomain:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.PagePayload:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      route:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  types.PingHostInstancePayload:
-    properties:
-      hostInstance:
-        $ref: '#/definitions/server_http_types.HostInstancePayload'
-    type: object
-  types.RefreshTokenPayload:
-    properties:
-      expiresAt:
-        type: string
-    type: object
-  types.SaveAuthInput:
+  requests.SaveAuthRequest:
     properties:
       token:
         type: string
     required:
     - token
     type: object
-  types.SaveAuthPayload:
-    properties:
-      expiresAt:
-        type: string
-      redirectUrl:
-        type: string
-    type: object
-  types.SendSignUpInstructionsInput:
+  requests.SendSignUpInstructionsRequest:
     properties:
       email:
         type: string
     required:
     - email
     type: object
-  types.SendSignUpInstructionsPayload:
-    properties:
-      email:
-        type: string
-    type: object
-  types.SendUpdateUserEmailInstructionsInput:
+  requests.SendUpdateUserEmailInstructionsRequest:
     properties:
       email:
         type: string
@@ -365,7 +104,7 @@ definitions:
     - email
     - emailConfirmation
     type: object
-  types.SignInInvitationInput:
+  requests.SignInInvitationRequest:
     properties:
       invitationToken:
         type: string
@@ -375,30 +114,50 @@ definitions:
     - invitationToken
     - password
     type: object
-  types.SignInWithGoogleInput:
+  requests.SignInRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  requests.SignInWithGoogleInvitationRequest:
     properties:
       sessionToken:
         type: string
     required:
     - sessionToken
     type: object
-  types.SignInWithGoogleInvitationInput:
+  requests.SignInWithGoogleRequest:
     properties:
       sessionToken:
         type: string
     required:
     - sessionToken
     type: object
-  types.SignInWithGooglePayload:
+  requests.SignUpInvitationRequest:
     properties:
-      authUrl:
+      firstName:
         type: string
-      isOrganizationExists:
-        type: boolean
-      token:
+      invitationToken:
         type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      passwordConfirmation:
+        type: string
+    required:
+    - firstName
+    - invitationToken
+    - lastName
+    - password
+    - passwordConfirmation
     type: object
-  types.SignUpInput:
+  requests.SignUpRequest:
     properties:
       firstName:
         type: string
@@ -417,26 +176,7 @@ definitions:
     - passwordConfirmation
     - token
     type: object
-  types.SignUpInvitationInput:
-    properties:
-      firstName:
-        type: string
-      invitationToken:
-        type: string
-      lastName:
-        type: string
-      password:
-        type: string
-      passwordConfirmation:
-        type: string
-    required:
-    - firstName
-    - invitationToken
-    - lastName
-    - password
-    - passwordConfirmation
-    type: object
-  types.SignUpWithGoogleInput:
+  requests.SignUpWithGoogleInvitationRequest:
     properties:
       firstName:
         type: string
@@ -449,7 +189,7 @@ definitions:
     - lastName
     - sessionToken
     type: object
-  types.SignUpWithGoogleInvitationInput:
+  requests.SignUpWithGoogleRequest:
     properties:
       firstName:
         type: string
@@ -462,24 +202,12 @@ definitions:
     - lastName
     - sessionToken
     type: object
-  types.SuccessPayload:
-    properties:
-      code:
-        type: integer
-      message:
-        type: string
-    type: object
-  types.UpdateAPIKeyInput:
+  requests.UpdateAPIKeyRequest:
     properties:
       name:
         type: string
     type: object
-  types.UpdateAPIKeyPayload:
-    properties:
-      apiKey:
-        $ref: '#/definitions/types.APIKeyPayload'
-    type: object
-  types.UpdateEnvironmentInput:
+  requests.UpdateEnvironmentRequest:
     properties:
       color:
         type: string
@@ -489,12 +217,7 @@ definitions:
     - color
     - name
     type: object
-  types.UpdateEnvironmentPayload:
-    properties:
-      environment:
-        $ref: '#/definitions/types.EnvironmentPayload'
-    type: object
-  types.UpdateGroupInput:
+  requests.UpdateGroupRequest:
     properties:
       name:
         type: string
@@ -506,12 +229,7 @@ definitions:
     - name
     - userIds
     type: object
-  types.UpdateGroupPayload:
-    properties:
-      group:
-        $ref: '#/definitions/types.GroupPayload'
-    type: object
-  types.UpdateOrganizationUserInput:
+  requests.UpdateOrganizationUserRequest:
     properties:
       groupIds:
         items:
@@ -524,26 +242,14 @@ definitions:
         - member
         type: string
     type: object
-  types.UpdateUserEmailInput:
+  requests.UpdateUserEmailRequest:
     properties:
       token:
         type: string
     required:
     - token
     type: object
-  types.UpdateUserEmailPayload:
-    properties:
-      user:
-        $ref: '#/definitions/types.UserPayload'
-    type: object
-  types.UpdateUserInput:
-    properties:
-      firstName:
-        type: string
-      lastName:
-        type: string
-    type: object
-  types.UpdateUserPasswordInput:
+  requests.UpdateUserPasswordRequest:
     properties:
       currentPassword:
         type: string
@@ -556,17 +262,330 @@ definitions:
     - password
     - passwordConfirmation
     type: object
-  types.UpdateUserPasswordPayload:
+  requests.UpdateUserRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+  responses.APIKeyResponse:
+    properties:
+      createdAt:
+        type: string
+      environment:
+        $ref: '#/definitions/responses.EnvironmentResponse'
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.CreateAPIKeyResponse:
+    properties:
+      apiKey:
+        $ref: '#/definitions/responses.APIKeyResponse'
+    type: object
+  responses.CreateEnvironmentResponse:
+    properties:
+      environment:
+        $ref: '#/definitions/responses.EnvironmentResponse'
+    type: object
+  responses.CreateGroupResponse:
+    properties:
+      group:
+        $ref: '#/definitions/responses.GroupResponse'
+    type: object
+  responses.CreateOrganizationResponse:
+    properties:
+      organization:
+        $ref: '#/definitions/responses.OrganizationResponse'
+    type: object
+  responses.DeleteAPIKeyResponse:
+    properties:
+      apiKey:
+        $ref: '#/definitions/responses.APIKeyResponse'
+    type: object
+  responses.DeleteEnvironmentResponse:
+    properties:
+      environment:
+        $ref: '#/definitions/responses.EnvironmentResponse'
+    type: object
+  responses.DeleteGroupResponse:
+    properties:
+      group:
+        $ref: '#/definitions/responses.GroupResponse'
+    type: object
+  responses.EnvironmentResponse:
+    properties:
+      color:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.GetAPIKeyResponse:
+    properties:
+      apiKey:
+        $ref: '#/definitions/responses.APIKeyResponse'
+    type: object
+  responses.GetEnvironmentResponse:
+    properties:
+      environment:
+        $ref: '#/definitions/responses.EnvironmentResponse'
+    type: object
+  responses.GetGoogleAuthCodeURLInvitationResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  responses.GetGoogleAuthCodeURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  responses.GetGroupResponse:
+    properties:
+      group:
+        $ref: '#/definitions/responses.GroupResponse'
+    type: object
+  responses.GetMeResponse:
     properties:
       user:
-        $ref: '#/definitions/types.UserPayload'
+        $ref: '#/definitions/responses.UserResponse'
     type: object
-  types.UpdateUserPayload:
+  responses.GroupPageResponse:
+    properties:
+      createdAt:
+        type: string
+      groupId:
+        type: string
+      id:
+        type: string
+      pageId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.GroupResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.HostInstanceResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      sdkName:
+        type: string
+      sdkVersion:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.InviteUsersResponse:
+    properties:
+      userInvitations:
+        items:
+          $ref: '#/definitions/responses.UserInvitationResponse'
+        type: array
+    type: object
+  responses.ListAPIKeysResponse:
+    properties:
+      devKey:
+        $ref: '#/definitions/responses.APIKeyResponse'
+      liveKeys:
+        items:
+          $ref: '#/definitions/responses.APIKeyResponse'
+        type: array
+    type: object
+  responses.ListEnvironmentsResponse:
+    properties:
+      environments:
+        items:
+          $ref: '#/definitions/responses.EnvironmentResponse'
+        type: array
+    type: object
+  responses.ListGroupsResponse:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/responses.GroupResponse'
+        type: array
+      userGroups:
+        items:
+          $ref: '#/definitions/responses.UserGroupResponse'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/responses.UserResponse'
+        type: array
+    type: object
+  responses.ListPagesResponse:
+    properties:
+      groupPages:
+        items:
+          $ref: '#/definitions/responses.GroupPageResponse'
+        type: array
+      groups:
+        items:
+          $ref: '#/definitions/responses.GroupResponse'
+        type: array
+      pages:
+        items:
+          $ref: '#/definitions/responses.PageResponse'
+        type: array
+      userGroups:
+        items:
+          $ref: '#/definitions/responses.UserGroupResponse'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/responses.UserResponse'
+        type: array
+    type: object
+  responses.ListUsersResponse:
+    properties:
+      userInvitations:
+        items:
+          $ref: '#/definitions/responses.UserInvitationResponse'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/responses.UserResponse'
+        type: array
+    type: object
+  responses.ObtainAuthTokenResponse:
+    properties:
+      authUrl:
+        type: string
+      token:
+        type: string
+    type: object
+  responses.OrganizationResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      subdomain:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PageResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      route:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  responses.PingHostInstanceResponse:
+    properties:
+      hostInstance:
+        $ref: '#/definitions/responses.HostInstanceResponse'
+    type: object
+  responses.RefreshTokenResponse:
+    properties:
+      expiresAt:
+        type: string
+    type: object
+  responses.SaveAuthResponse:
+    properties:
+      expiresAt:
+        type: string
+      redirectUrl:
+        type: string
+    type: object
+  responses.SendSignUpInstructionsResponse:
+    properties:
+      email:
+        type: string
+    type: object
+  responses.SignInResponse:
+    properties:
+      authUrl:
+        type: string
+      isOrganizationExists:
+        type: boolean
+      token:
+        type: string
+    type: object
+  responses.SignInWithGoogleResponse:
+    properties:
+      authUrl:
+        type: string
+      isOrganizationExists:
+        type: boolean
+      token:
+        type: string
+    type: object
+  responses.StatusResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  responses.UpdateAPIKeyResponse:
+    properties:
+      apiKey:
+        $ref: '#/definitions/responses.APIKeyResponse'
+    type: object
+  responses.UpdateEnvironmentResponse:
+    properties:
+      environment:
+        $ref: '#/definitions/responses.EnvironmentResponse'
+    type: object
+  responses.UpdateGroupResponse:
+    properties:
+      group:
+        $ref: '#/definitions/responses.GroupResponse'
+    type: object
+  responses.UpdateUserEmailResponse:
     properties:
       user:
-        $ref: '#/definitions/types.UserPayload'
+        $ref: '#/definitions/responses.UserResponse'
     type: object
-  types.UserGroupPayload:
+  responses.UpdateUserPasswordResponse:
+    properties:
+      user:
+        $ref: '#/definitions/responses.UserResponse'
+    type: object
+  responses.UpdateUserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/responses.UserResponse'
+    type: object
+  responses.UserGroupResponse:
     properties:
       createdAt:
         type: string
@@ -579,7 +598,7 @@ definitions:
       userId:
         type: string
     type: object
-  types.UserInvitationPayload:
+  responses.UserInvitationResponse:
     properties:
       createdAt:
         type: string
@@ -588,7 +607,7 @@ definitions:
       id:
         type: string
     type: object
-  types.UserPayload:
+  responses.UserResponse:
     properties:
       createdAt:
         type: string
@@ -601,7 +620,7 @@ definitions:
       lastName:
         type: string
       organization:
-        $ref: '#/definitions/types.OrganizationPayload'
+        $ref: '#/definitions/responses.OrganizationResponse'
       role:
         type: string
       updatedAt:
@@ -626,7 +645,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListAPIKeysPayload'
+            $ref: '#/definitions/responses.ListAPIKeysResponse'
         default:
           description: ""
           schema:
@@ -643,14 +662,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.CreateAPIKeyInput'
+          $ref: '#/definitions/requests.CreateAPIKeyRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.CreateAPIKeyPayload'
+            $ref: '#/definitions/responses.CreateAPIKeyResponse'
         default:
           description: ""
           schema:
@@ -674,7 +693,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.DeleteAPIKeyPayload'
+            $ref: '#/definitions/responses.DeleteAPIKeyResponse'
         default:
           description: ""
           schema:
@@ -697,7 +716,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetAPIKeyPayload'
+            $ref: '#/definitions/responses.GetAPIKeyResponse'
         default:
           description: ""
           schema:
@@ -714,7 +733,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateAPIKeyInput'
+          $ref: '#/definitions/requests.UpdateAPIKeyRequest'
       - description: API Key ID
         in: path
         name: apiKeyID
@@ -726,7 +745,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateAPIKeyPayload'
+            $ref: '#/definitions/responses.UpdateAPIKeyResponse'
         default:
           description: ""
           schema:
@@ -744,7 +763,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListEnvironmentsPayload'
+            $ref: '#/definitions/responses.ListEnvironmentsResponse'
         default:
           description: ""
           schema:
@@ -761,14 +780,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.CreateEnvironmentInput'
+          $ref: '#/definitions/requests.CreateEnvironmentRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.CreateEnvironmentPayload'
+            $ref: '#/definitions/responses.CreateEnvironmentResponse'
         default:
           description: ""
           schema:
@@ -792,7 +811,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.DeleteEnvironmentPayload'
+            $ref: '#/definitions/responses.DeleteEnvironmentResponse'
         default:
           description: ""
           schema:
@@ -815,7 +834,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetEnvironmentPayload'
+            $ref: '#/definitions/responses.GetEnvironmentResponse'
         default:
           description: ""
           schema:
@@ -832,7 +851,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateEnvironmentInput'
+          $ref: '#/definitions/requests.UpdateEnvironmentRequest'
       - description: Environment ID
         in: path
         name: environmentID
@@ -844,7 +863,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateEnvironmentPayload'
+            $ref: '#/definitions/responses.UpdateEnvironmentResponse'
         default:
           description: ""
           schema:
@@ -862,7 +881,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListGroupsPayload'
+            $ref: '#/definitions/responses.ListGroupsResponse'
         default:
           description: ""
           schema:
@@ -879,14 +898,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.CreateGroupInput'
+          $ref: '#/definitions/requests.CreateGroupRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.CreateGroupPayload'
+            $ref: '#/definitions/responses.CreateGroupResponse'
         default:
           description: ""
           schema:
@@ -910,7 +929,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.DeleteGroupPayload'
+            $ref: '#/definitions/responses.DeleteGroupResponse'
         default:
           description: ""
           schema:
@@ -933,7 +952,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetGroupPayload'
+            $ref: '#/definitions/responses.GetGroupResponse'
         default:
           description: ""
           schema:
@@ -950,7 +969,7 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateGroupInput'
+          $ref: '#/definitions/requests.UpdateGroupRequest'
       - description: Group ID
         in: path
         name: groupID
@@ -962,7 +981,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateGroupPayload'
+            $ref: '#/definitions/responses.UpdateGroupResponse'
         default:
           description: ""
           schema:
@@ -986,7 +1005,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.PingHostInstancePayload'
+            $ref: '#/definitions/responses.PingHostInstanceResponse'
         default:
           description: ""
           schema:
@@ -1004,14 +1023,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.CreateOrganizationInput'
+          $ref: '#/definitions/requests.CreateOrganizationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.CreateOrganizationPayload'
+            $ref: '#/definitions/responses.CreateOrganizationResponse'
         default:
           description: ""
           schema:
@@ -1035,7 +1054,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1058,14 +1077,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateOrganizationUserInput'
+          $ref: '#/definitions/requests.UpdateOrganizationUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UserPayload'
+            $ref: '#/definitions/responses.UpdateUserResponse'
         default:
           description: ""
           schema:
@@ -1083,7 +1102,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListPagesPayload'
+            $ref: '#/definitions/responses.ListPagesResponse'
         default:
           description: ""
           schema:
@@ -1101,7 +1120,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ListUsersPayload'
+            $ref: '#/definitions/responses.ListUsersResponse'
         default:
           description: ""
           schema:
@@ -1118,14 +1137,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateUserInput'
+          $ref: '#/definitions/requests.UpdateUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateUserPayload'
+            $ref: '#/definitions/responses.UpdateUserResponse'
         default:
           description: ""
           schema:
@@ -1143,14 +1162,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateUserEmailInput'
+          $ref: '#/definitions/requests.UpdateUserEmailRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateUserEmailPayload'
+            $ref: '#/definitions/responses.UpdateUserEmailResponse'
         default:
           description: ""
           schema:
@@ -1168,14 +1187,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.GetGoogleAuthCodeURLInvitationInput'
+          $ref: '#/definitions/requests.GetGoogleAuthCodeURLInvitationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetGoogleAuthCodeURLInvitationPayload'
+            $ref: '#/definitions/responses.GetGoogleAuthCodeURLInvitationResponse'
         default:
           description: ""
           schema:
@@ -1193,14 +1212,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignInWithGoogleInvitationInput'
+          $ref: '#/definitions/requests.SignInWithGoogleInvitationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1218,14 +1237,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignUpWithGoogleInvitationInput'
+          $ref: '#/definitions/requests.SignUpWithGoogleInvitationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1243,14 +1262,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignInInvitationInput'
+          $ref: '#/definitions/requests.SignInInvitationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1268,14 +1287,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignUpInvitationInput'
+          $ref: '#/definitions/requests.SignUpInvitationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1293,14 +1312,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.InviteUsersInput'
+          $ref: '#/definitions/requests.InviteUsersRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.InviteUsersPayload'
+            $ref: '#/definitions/responses.InviteUsersResponse'
         default:
           description: ""
           schema:
@@ -1318,7 +1337,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetMePayload'
+            $ref: '#/definitions/responses.GetMeResponse'
         default:
           description: ""
           schema:
@@ -1336,7 +1355,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.GetGoogleAuthCodeURLPayload'
+            $ref: '#/definitions/responses.GetGoogleAuthCodeURLResponse'
         default:
           description: ""
           schema:
@@ -1354,14 +1373,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignInWithGoogleInput'
+          $ref: '#/definitions/requests.SignInWithGoogleRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SignInWithGooglePayload'
+            $ref: '#/definitions/responses.SignInWithGoogleResponse'
         default:
           description: ""
           schema:
@@ -1379,14 +1398,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignUpWithGoogleInput'
+          $ref: '#/definitions/requests.SignUpWithGoogleRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1404,7 +1423,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ObtainAuthTokenPayload'
+            $ref: '#/definitions/responses.ObtainAuthTokenResponse'
         default:
           description: ""
           schema:
@@ -1422,14 +1441,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.UpdateUserPasswordInput'
+          $ref: '#/definitions/requests.UpdateUserPasswordRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.UpdateUserPasswordPayload'
+            $ref: '#/definitions/responses.UpdateUserPasswordResponse'
         default:
           description: ""
           schema:
@@ -1447,7 +1466,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.RefreshTokenPayload'
+            $ref: '#/definitions/responses.RefreshTokenResponse'
         default:
           description: ""
           schema:
@@ -1465,14 +1484,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SaveAuthInput'
+          $ref: '#/definitions/requests.SaveAuthRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SaveAuthPayload'
+            $ref: '#/definitions/responses.SaveAuthResponse'
         default:
           description: ""
           schema:
@@ -1490,14 +1509,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SendUpdateUserEmailInstructionsInput'
+          $ref: '#/definitions/requests.SendUpdateUserEmailInstructionsRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1509,13 +1528,20 @@ paths:
       consumes:
       - application/json
       operationId: signin
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SignInRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.SignInResponse'
         default:
           description: ""
           schema:
@@ -1533,7 +1559,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1551,14 +1577,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SignUpInput'
+          $ref: '#/definitions/requests.SignUpRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SuccessPayload'
+            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1576,14 +1602,14 @@ paths:
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/types.SendSignUpInstructionsInput'
+          $ref: '#/definitions/requests.SendSignUpInstructionsRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.SendSignUpInstructionsPayload'
+            $ref: '#/definitions/responses.SendSignUpInstructionsResponse'
         default:
           description: ""
           schema:

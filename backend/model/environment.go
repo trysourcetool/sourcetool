@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 const (
@@ -26,15 +28,9 @@ type Environment struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-type (
-	EnvironmentByID             uuid.UUID
-	EnvironmentByOrganizationID uuid.UUID
-	EnvironmentBySlug           string
-)
-
 type EnvironmentStore interface {
-	Get(context.Context, ...any) (*Environment, error)
-	List(context.Context, ...any) ([]*Environment, error)
+	Get(context.Context, ...storeopts.EnvironmentOption) (*Environment, error)
+	List(context.Context, ...storeopts.EnvironmentOption) ([]*Environment, error)
 	Create(context.Context, *Environment) error
 	Update(context.Context, *Environment) error
 	Delete(context.Context, *Environment) error

@@ -3,14 +3,13 @@ package session
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -25,8 +24,8 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.Session, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.SessionOption) (*model.Session, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +41,7 @@ func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.Session, e
 	return &m, nil
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.SessionOption) (string, []any, error) {
 	q := s.builder.Select(
 		`s."id"`,
 		`s."organization_id"`,
@@ -54,13 +53,8 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	).
 		From(`"session" s`)
 
-	opts, err := s.toSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -69,26 +63,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.SessionByID:
-			options[i] = s.byID(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) byID(in model.SessionByID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`s."id"`: uuid.UUID(in)})
-	}
 }
 
 func (s *StoreCE) Create(ctx context.Context, m *model.Session) error {

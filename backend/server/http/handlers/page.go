@@ -5,6 +5,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/page"
+	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 )
 
 type PageHandler struct {
@@ -20,7 +21,7 @@ func NewPageHandler(service page.Service) *PageHandler {
 // @Accept json
 // @Produce json
 // @Tags pages
-// @Success 200 {object} types.ListPagesPayload
+// @Success 200 {object} responses.ListPagesResponse
 // @Failure default {object} errdefs.Error
 // @Router /pages [get].
 func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,7 @@ func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListPagesOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}

@@ -8,7 +8,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
+	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 )
 
 type EnvironmentHandler struct {
@@ -25,26 +26,26 @@ func NewEnvironmentHandler(service environment.Service) *EnvironmentHandler {
 // @Produce json
 // @Tags environments
 // @Param environmentID path string true "Environment ID"
-// @Success 200 {object} types.GetEnvironmentPayload
+// @Success 200 {object} responses.GetEnvironmentResponse
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [get].
 func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
-	in := types.GetEnvironmentInput{
+	req := requests.GetEnvironmentRequest{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Get(r.Context(), in)
+	out, err := h.service.Get(r.Context(), adapters.GetEnvironmentRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetEnvironmentOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -55,7 +56,7 @@ func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags environments
-// @Success 200 {object} types.ListEnvironmentsPayload
+// @Success 200 {object} responses.ListEnvironmentsResponse
 // @Failure default {object} errdefs.Error
 // @Router /environments [get].
 func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListEnvironmentsOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -76,29 +77,29 @@ func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags environments
-// @Param Body body types.CreateEnvironmentInput true " "
-// @Success 200 {object} types.CreateEnvironmentPayload
+// @Param Body body requests.CreateEnvironmentRequest true " "
+// @Success 200 {object} responses.CreateEnvironmentResponse
 // @Failure default {object} errdefs.Error
 // @Router /environments [post].
 func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var in types.CreateEnvironmentInput
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	var req requests.CreateEnvironmentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), in)
+	out, err := h.service.Create(r.Context(), adapters.CreateEnvironmentRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateEnvironmentOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -109,32 +110,32 @@ func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags environments
-// @Param Body body types.UpdateEnvironmentInput true " "
+// @Param Body body requests.UpdateEnvironmentRequest true " "
 // @Param environmentID path string true "Environment ID"
-// @Success 200 {object} types.UpdateEnvironmentPayload
+// @Success 200 {object} responses.UpdateEnvironmentResponse
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [put].
 func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
-	in := types.UpdateEnvironmentInput{
+	req := requests.UpdateEnvironmentRequest{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
-	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), in)
+	out, err := h.service.Update(r.Context(), adapters.UpdateEnvironmentRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateEnvironmentOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -146,26 +147,26 @@ func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Tags environments
 // @Param environmentID path string true "Environment ID"
-// @Success 200 {object} types.DeleteEnvironmentPayload
+// @Success 200 {object} responses.DeleteEnvironmentResponse
 // @Failure default {object} errdefs.Error
 // @Router /environments/{environmentID} [delete].
 func (h *EnvironmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	in := types.DeleteEnvironmentInput{
+	req := requests.DeleteEnvironmentRequest{
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
 
-	if err := httputils.ValidateRequest(in); err != nil {
+	if err := httputils.ValidateRequest(req); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	out, err := h.service.Delete(r.Context(), in)
+	out, err := h.service.Delete(r.Context(), adapters.DeleteEnvironmentRequestToDTOInput(req))
 	if err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.DeleteEnvironmentOutputToResponse(out)); err != nil {
 		httputils.WriteErrJSON(r.Context(), w, err)
 		return
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Middleware interface {
@@ -65,7 +66,7 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 			return
 		}
 
-		u, err := m.Store.User().Get(ctx, model.UserByEmail(c.Email))
+		u, err := m.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
@@ -129,7 +130,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		u, err := m.Store.User().Get(ctx, model.UserByEmail(c.Email))
+		u, err := m.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
@@ -145,7 +146,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		_, err = m.Store.User().GetOrganizationAccess(ctx, model.UserOrganizationAccessByUserID(u.ID), model.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		_, err = m.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
@@ -159,7 +160,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	o, err := m.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := m.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}

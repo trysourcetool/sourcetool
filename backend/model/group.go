@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Group struct {
@@ -24,24 +26,15 @@ type GroupPage struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-type (
-	GroupByID                 uuid.UUID
-	GroupByOrganizationID     uuid.UUID
-	GroupBySlug               string
-	GroupBySlugs              []string
-	GroupPageByOrganizationID uuid.UUID
-	GroupPageByPageIDs        []uuid.UUID
-)
-
 type GroupStore interface {
-	Get(context.Context, ...any) (*Group, error)
-	List(context.Context, ...any) ([]*Group, error)
+	Get(context.Context, ...storeopts.GroupOption) (*Group, error)
+	List(context.Context, ...storeopts.GroupOption) ([]*Group, error)
 	Create(context.Context, *Group) error
 	Update(context.Context, *Group) error
 	Delete(context.Context, *Group) error
 	IsSlugExistsInOrganization(context.Context, uuid.UUID, string) (bool, error)
 
-	ListPages(context.Context, ...any) ([]*GroupPage, error)
+	ListPages(context.Context, ...storeopts.GroupPageOption) ([]*GroupPage, error)
 	BulkInsertPages(context.Context, []*GroupPage) error
 	BulkUpdatePages(context.Context, []*GroupPage) error
 	BulkDeletePages(context.Context, []*GroupPage) error

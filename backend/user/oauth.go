@@ -17,16 +17,10 @@ var oauthScopes = []string{
 	"https://www.googleapis.com/auth/userinfo.profile",
 }
 
-type googleOAuthClient interface {
-	getGoogleAuthCodeURL(ctx context.Context, state string) (string, error)
-	getGoogleToken(ctx context.Context, code string) (*googleToken, error)
-	getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error)
-}
+type googleOAuthClient struct{}
 
-type googleOAuthClientImpl struct{}
-
-func newGoogleOAuthClient() googleOAuthClient {
-	return &googleOAuthClientImpl{}
+func newGoogleOAuthClient() *googleOAuthClient {
+	return &googleOAuthClient{}
 }
 
 type googleUserInfo struct {
@@ -43,7 +37,7 @@ type googleToken struct {
 	expiry       time.Time
 }
 
-func (c *googleOAuthClientImpl) getGoogleAuthCodeURL(ctx context.Context, state string) (string, error) {
+func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string) (string, error) {
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
@@ -60,7 +54,7 @@ func (c *googleOAuthClientImpl) getGoogleAuthCodeURL(ctx context.Context, state 
 	return conf.AuthCodeURL(state, opts...), nil
 }
 
-func (c *googleOAuthClientImpl) getGoogleToken(ctx context.Context, code string) (*googleToken, error) {
+func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*googleToken, error) {
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
@@ -82,7 +76,7 @@ func (c *googleOAuthClientImpl) getGoogleToken(ctx context.Context, code string)
 	}, nil
 }
 
-func (c *googleOAuthClientImpl) getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error) {
+func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error) {
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,

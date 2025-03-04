@@ -32,7 +32,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ListAPIKeysPayload"
+                            "$ref": "#/definitions/responses.ListAPIKeysResponse"
                         }
                     },
                     "default": {
@@ -61,7 +61,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.CreateAPIKeyInput"
+                            "$ref": "#/definitions/requests.CreateAPIKeyRequest"
                         }
                     }
                 ],
@@ -69,7 +69,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.CreateAPIKeyPayload"
+                            "$ref": "#/definitions/responses.CreateAPIKeyResponse"
                         }
                     },
                     "default": {
@@ -106,7 +106,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetAPIKeyPayload"
+                            "$ref": "#/definitions/responses.GetAPIKeyResponse"
                         }
                     },
                     "default": {
@@ -135,7 +135,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateAPIKeyInput"
+                            "$ref": "#/definitions/requests.UpdateAPIKeyRequest"
                         }
                     },
                     {
@@ -150,7 +150,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateAPIKeyPayload"
+                            "$ref": "#/definitions/responses.UpdateAPIKeyResponse"
                         }
                     },
                     "default": {
@@ -185,7 +185,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.DeleteAPIKeyPayload"
+                            "$ref": "#/definitions/responses.DeleteAPIKeyResponse"
                         }
                     },
                     "default": {
@@ -213,7 +213,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ListEnvironmentsPayload"
+                            "$ref": "#/definitions/responses.ListEnvironmentsResponse"
                         }
                     },
                     "default": {
@@ -242,7 +242,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.CreateEnvironmentInput"
+                            "$ref": "#/definitions/requests.CreateEnvironmentRequest"
                         }
                     }
                 ],
@@ -250,7 +250,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.CreateEnvironmentPayload"
+                            "$ref": "#/definitions/responses.CreateEnvironmentResponse"
                         }
                     },
                     "default": {
@@ -287,7 +287,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetEnvironmentPayload"
+                            "$ref": "#/definitions/responses.GetEnvironmentResponse"
                         }
                     },
                     "default": {
@@ -316,7 +316,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateEnvironmentInput"
+                            "$ref": "#/definitions/requests.UpdateEnvironmentRequest"
                         }
                     },
                     {
@@ -331,7 +331,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateEnvironmentPayload"
+                            "$ref": "#/definitions/responses.UpdateEnvironmentResponse"
                         }
                     },
                     "default": {
@@ -366,7 +366,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.DeleteEnvironmentPayload"
+                            "$ref": "#/definitions/responses.DeleteEnvironmentResponse"
                         }
                     },
                     "default": {
@@ -394,7 +394,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ListGroupsPayload"
+                            "$ref": "#/definitions/responses.ListGroupsResponse"
                         }
                     },
                     "default": {
@@ -423,7 +423,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.CreateGroupInput"
+                            "$ref": "#/definitions/requests.CreateGroupRequest"
                         }
                     }
                 ],
@@ -431,7 +431,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.CreateGroupPayload"
+                            "$ref": "#/definitions/responses.CreateGroupResponse"
                         }
                     },
                     "default": {
@@ -468,7 +468,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetGroupPayload"
+                            "$ref": "#/definitions/responses.GetGroupResponse"
                         }
                     },
                     "default": {
@@ -497,7 +497,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateGroupInput"
+                            "$ref": "#/definitions/requests.UpdateGroupRequest"
                         }
                     },
                     {
@@ -512,7 +512,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateGroupPayload"
+                            "$ref": "#/definitions/responses.UpdateGroupResponse"
                         }
                     },
                     "default": {
@@ -547,7 +547,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.DeleteGroupPayload"
+                            "$ref": "#/definitions/responses.DeleteGroupResponse"
                         }
                     },
                     "default": {
@@ -584,7 +584,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.PingHostInstancePayload"
+                            "$ref": "#/definitions/responses.PingHostInstanceResponse"
                         }
                     },
                     "default": {
@@ -615,7 +615,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.CreateOrganizationInput"
+                            "$ref": "#/definitions/requests.CreateOrganizationRequest"
                         }
                     }
                 ],
@@ -623,7 +623,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.CreateOrganizationPayload"
+                            "$ref": "#/definitions/responses.CreateOrganizationResponse"
                         }
                     },
                     "default": {
@@ -660,7 +660,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -698,7 +698,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateOrganizationUserInput"
+                            "$ref": "#/definitions/requests.UpdateOrganizationUserRequest"
                         }
                     }
                 ],
@@ -706,7 +706,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UserPayload"
+                            "$ref": "#/definitions/responses.UpdateUserResponse"
                         }
                     },
                     "default": {
@@ -734,7 +734,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ListPagesPayload"
+                            "$ref": "#/definitions/responses.ListPagesResponse"
                         }
                     },
                     "default": {
@@ -762,7 +762,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ListUsersPayload"
+                            "$ref": "#/definitions/responses.ListUsersResponse"
                         }
                     },
                     "default": {
@@ -791,7 +791,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserInput"
+                            "$ref": "#/definitions/requests.UpdateUserRequest"
                         }
                     }
                 ],
@@ -799,7 +799,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserPayload"
+                            "$ref": "#/definitions/responses.UpdateUserResponse"
                         }
                     },
                     "default": {
@@ -830,7 +830,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserEmailInput"
+                            "$ref": "#/definitions/requests.UpdateUserEmailRequest"
                         }
                     }
                 ],
@@ -838,7 +838,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserEmailPayload"
+                            "$ref": "#/definitions/responses.UpdateUserEmailResponse"
                         }
                     },
                     "default": {
@@ -869,7 +869,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.GetGoogleAuthCodeURLInvitationInput"
+                            "$ref": "#/definitions/requests.GetGoogleAuthCodeURLInvitationRequest"
                         }
                     }
                 ],
@@ -877,7 +877,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetGoogleAuthCodeURLInvitationPayload"
+                            "$ref": "#/definitions/responses.GetGoogleAuthCodeURLInvitationResponse"
                         }
                     },
                     "default": {
@@ -908,7 +908,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignInWithGoogleInvitationInput"
+                            "$ref": "#/definitions/requests.SignInWithGoogleInvitationRequest"
                         }
                     }
                 ],
@@ -916,7 +916,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -947,7 +947,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignUpWithGoogleInvitationInput"
+                            "$ref": "#/definitions/requests.SignUpWithGoogleInvitationRequest"
                         }
                     }
                 ],
@@ -955,7 +955,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -986,7 +986,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignInInvitationInput"
+                            "$ref": "#/definitions/requests.SignInInvitationRequest"
                         }
                     }
                 ],
@@ -994,7 +994,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1025,7 +1025,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignUpInvitationInput"
+                            "$ref": "#/definitions/requests.SignUpInvitationRequest"
                         }
                     }
                 ],
@@ -1033,7 +1033,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1064,7 +1064,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.InviteUsersInput"
+                            "$ref": "#/definitions/requests.InviteUsersRequest"
                         }
                     }
                 ],
@@ -1072,7 +1072,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.InviteUsersPayload"
+                            "$ref": "#/definitions/responses.InviteUsersResponse"
                         }
                     },
                     "default": {
@@ -1100,7 +1100,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetMePayload"
+                            "$ref": "#/definitions/responses.GetMeResponse"
                         }
                     },
                     "default": {
@@ -1128,7 +1128,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.GetGoogleAuthCodeURLPayload"
+                            "$ref": "#/definitions/responses.GetGoogleAuthCodeURLResponse"
                         }
                     },
                     "default": {
@@ -1159,7 +1159,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignInWithGoogleInput"
+                            "$ref": "#/definitions/requests.SignInWithGoogleRequest"
                         }
                     }
                 ],
@@ -1167,7 +1167,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SignInWithGooglePayload"
+                            "$ref": "#/definitions/responses.SignInWithGoogleResponse"
                         }
                     },
                     "default": {
@@ -1198,7 +1198,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignUpWithGoogleInput"
+                            "$ref": "#/definitions/requests.SignUpWithGoogleRequest"
                         }
                     }
                 ],
@@ -1206,7 +1206,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1234,7 +1234,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ObtainAuthTokenPayload"
+                            "$ref": "#/definitions/responses.ObtainAuthTokenResponse"
                         }
                     },
                     "default": {
@@ -1265,7 +1265,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserPasswordInput"
+                            "$ref": "#/definitions/requests.UpdateUserPasswordRequest"
                         }
                     }
                 ],
@@ -1273,7 +1273,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.UpdateUserPasswordPayload"
+                            "$ref": "#/definitions/responses.UpdateUserPasswordResponse"
                         }
                     },
                     "default": {
@@ -1301,7 +1301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.RefreshTokenPayload"
+                            "$ref": "#/definitions/responses.RefreshTokenResponse"
                         }
                     },
                     "default": {
@@ -1332,7 +1332,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SaveAuthInput"
+                            "$ref": "#/definitions/requests.SaveAuthRequest"
                         }
                     }
                 ],
@@ -1340,7 +1340,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SaveAuthPayload"
+                            "$ref": "#/definitions/responses.SaveAuthResponse"
                         }
                     },
                     "default": {
@@ -1371,7 +1371,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SendUpdateUserEmailInstructionsInput"
+                            "$ref": "#/definitions/requests.SendUpdateUserEmailInstructionsRequest"
                         }
                     }
                 ],
@@ -1379,7 +1379,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1403,11 +1403,22 @@ const docTemplate = `{
                     "users"
                 ],
                 "operationId": "signin",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SignInRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.SignInResponse"
                         }
                     },
                     "default": {
@@ -1435,7 +1446,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1466,7 +1477,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SignUpInput"
+                            "$ref": "#/definitions/requests.SignUpRequest"
                         }
                     }
                 ],
@@ -1474,7 +1485,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SuccessPayload"
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1505,7 +1516,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.SendSignUpInstructionsInput"
+                            "$ref": "#/definitions/requests.SendSignUpInstructionsRequest"
                         }
                     }
                 ],
@@ -1513,7 +1524,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.SendSignUpInstructionsPayload"
+                            "$ref": "#/definitions/responses.SendSignUpInstructionsResponse"
                         }
                     },
                     "default": {
@@ -1548,53 +1559,7 @@ const docTemplate = `{
                 }
             }
         },
-        "server_http_types.HostInstancePayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "sdkName": {
-                    "type": "string"
-                },
-                "sdkVersion": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.APIKeyPayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "environment": {
-                    "$ref": "#/definitions/types.EnvironmentPayload"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreateAPIKeyInput": {
+        "requests.CreateAPIKeyRequest": {
             "type": "object",
             "required": [
                 "environmentId",
@@ -1609,15 +1574,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.CreateAPIKeyPayload": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "$ref": "#/definitions/types.APIKeyPayload"
-                }
-            }
-        },
-        "types.CreateEnvironmentInput": {
+        "requests.CreateEnvironmentRequest": {
             "type": "object",
             "required": [
                 "color",
@@ -1636,15 +1593,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.CreateEnvironmentPayload": {
-            "type": "object",
-            "properties": {
-                "environment": {
-                    "$ref": "#/definitions/types.EnvironmentPayload"
-                }
-            }
-        },
-        "types.CreateGroupInput": {
+        "requests.CreateGroupRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -1666,15 +1615,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.CreateGroupPayload": {
-            "type": "object",
-            "properties": {
-                "group": {
-                    "$ref": "#/definitions/types.GroupPayload"
-                }
-            }
-        },
-        "types.CreateOrganizationInput": {
+        "requests.CreateOrganizationRequest": {
             "type": "object",
             "properties": {
                 "subdomain": {
@@ -1682,78 +1623,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.CreateOrganizationPayload": {
-            "type": "object",
-            "properties": {
-                "organization": {
-                    "$ref": "#/definitions/types.OrganizationPayload"
-                }
-            }
-        },
-        "types.DeleteAPIKeyPayload": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "$ref": "#/definitions/types.APIKeyPayload"
-                }
-            }
-        },
-        "types.DeleteEnvironmentPayload": {
-            "type": "object",
-            "properties": {
-                "environment": {
-                    "$ref": "#/definitions/types.EnvironmentPayload"
-                }
-            }
-        },
-        "types.DeleteGroupPayload": {
-            "type": "object",
-            "properties": {
-                "group": {
-                    "$ref": "#/definitions/types.GroupPayload"
-                }
-            }
-        },
-        "types.EnvironmentPayload": {
-            "type": "object",
-            "properties": {
-                "color": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetAPIKeyPayload": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "$ref": "#/definitions/types.APIKeyPayload"
-                }
-            }
-        },
-        "types.GetEnvironmentPayload": {
-            "type": "object",
-            "properties": {
-                "environment": {
-                    "$ref": "#/definitions/types.EnvironmentPayload"
-                }
-            }
-        },
-        "types.GetGoogleAuthCodeURLInvitationInput": {
+        "requests.GetGoogleAuthCodeURLInvitationRequest": {
             "type": "object",
             "required": [
                 "invitationToken"
@@ -1764,79 +1634,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.GetGoogleAuthCodeURLInvitationPayload": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetGoogleAuthCodeURLPayload": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetGroupPayload": {
-            "type": "object",
-            "properties": {
-                "group": {
-                    "$ref": "#/definitions/types.GroupPayload"
-                }
-            }
-        },
-        "types.GetMePayload": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/types.UserPayload"
-                }
-            }
-        },
-        "types.GroupPagePayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "groupId": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "pageId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.GroupPayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.InviteUsersInput": {
+        "requests.InviteUsersRequest": {
             "type": "object",
             "required": [
                 "emails",
@@ -1859,182 +1657,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.InviteUsersPayload": {
-            "type": "object",
-            "properties": {
-                "userInvitations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserInvitationPayload"
-                    }
-                }
-            }
-        },
-        "types.ListAPIKeysPayload": {
-            "type": "object",
-            "properties": {
-                "devKey": {
-                    "$ref": "#/definitions/types.APIKeyPayload"
-                },
-                "liveKeys": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.APIKeyPayload"
-                    }
-                }
-            }
-        },
-        "types.ListEnvironmentsPayload": {
-            "type": "object",
-            "properties": {
-                "environments": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.EnvironmentPayload"
-                    }
-                }
-            }
-        },
-        "types.ListGroupsPayload": {
-            "type": "object",
-            "properties": {
-                "groups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.GroupPayload"
-                    }
-                },
-                "userGroups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserGroupPayload"
-                    }
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserPayload"
-                    }
-                }
-            }
-        },
-        "types.ListPagesPayload": {
-            "type": "object",
-            "properties": {
-                "groupPages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.GroupPagePayload"
-                    }
-                },
-                "groups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.GroupPayload"
-                    }
-                },
-                "pages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.PagePayload"
-                    }
-                },
-                "userGroups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserGroupPayload"
-                    }
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserPayload"
-                    }
-                }
-            }
-        },
-        "types.ListUsersPayload": {
-            "type": "object",
-            "properties": {
-                "userInvitations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserInvitationPayload"
-                    }
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserPayload"
-                    }
-                }
-            }
-        },
-        "types.ObtainAuthTokenPayload": {
-            "type": "object",
-            "properties": {
-                "authUrl": {
-                    "type": "string"
-                },
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.OrganizationPayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "subdomain": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.PagePayload": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "route": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.PingHostInstancePayload": {
-            "type": "object",
-            "properties": {
-                "hostInstance": {
-                    "$ref": "#/definitions/server_http_types.HostInstancePayload"
-                }
-            }
-        },
-        "types.RefreshTokenPayload": {
-            "type": "object",
-            "properties": {
-                "expiresAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SaveAuthInput": {
+        "requests.SaveAuthRequest": {
             "type": "object",
             "required": [
                 "token"
@@ -2045,18 +1668,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SaveAuthPayload": {
-            "type": "object",
-            "properties": {
-                "expiresAt": {
-                    "type": "string"
-                },
-                "redirectUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SendSignUpInstructionsInput": {
+        "requests.SendSignUpInstructionsRequest": {
             "type": "object",
             "required": [
                 "email"
@@ -2067,15 +1679,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SendSignUpInstructionsPayload": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SendUpdateUserEmailInstructionsInput": {
+        "requests.SendUpdateUserEmailInstructionsRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -2090,7 +1694,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignInInvitationInput": {
+        "requests.SignInInvitationRequest": {
             "type": "object",
             "required": [
                 "invitationToken",
@@ -2105,7 +1709,22 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignInWithGoogleInput": {
+        "requests.SignInRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.SignInWithGoogleInvitationRequest": {
             "type": "object",
             "required": [
                 "sessionToken"
@@ -2116,7 +1735,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignInWithGoogleInvitationInput": {
+        "requests.SignInWithGoogleRequest": {
             "type": "object",
             "required": [
                 "sessionToken"
@@ -2127,21 +1746,34 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignInWithGooglePayload": {
+        "requests.SignUpInvitationRequest": {
             "type": "object",
+            "required": [
+                "firstName",
+                "invitationToken",
+                "lastName",
+                "password",
+                "passwordConfirmation"
+            ],
             "properties": {
-                "authUrl": {
+                "firstName": {
                     "type": "string"
                 },
-                "isOrganizationExists": {
-                    "type": "boolean"
+                "invitationToken": {
+                    "type": "string"
                 },
-                "token": {
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "passwordConfirmation": {
                     "type": "string"
                 }
             }
         },
-        "types.SignUpInput": {
+        "requests.SignUpRequest": {
             "type": "object",
             "required": [
                 "firstName",
@@ -2168,34 +1800,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignUpInvitationInput": {
-            "type": "object",
-            "required": [
-                "firstName",
-                "invitationToken",
-                "lastName",
-                "password",
-                "passwordConfirmation"
-            ],
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "invitationToken": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "passwordConfirmation": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.SignUpWithGoogleInput": {
+        "requests.SignUpWithGoogleInvitationRequest": {
             "type": "object",
             "required": [
                 "firstName",
@@ -2214,7 +1819,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SignUpWithGoogleInvitationInput": {
+        "requests.SignUpWithGoogleRequest": {
             "type": "object",
             "required": [
                 "firstName",
@@ -2233,18 +1838,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.SuccessPayload": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.UpdateAPIKeyInput": {
+        "requests.UpdateAPIKeyRequest": {
             "type": "object",
             "properties": {
                 "name": {
@@ -2252,15 +1846,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateAPIKeyPayload": {
-            "type": "object",
-            "properties": {
-                "apiKey": {
-                    "$ref": "#/definitions/types.APIKeyPayload"
-                }
-            }
-        },
-        "types.UpdateEnvironmentInput": {
+        "requests.UpdateEnvironmentRequest": {
             "type": "object",
             "required": [
                 "color",
@@ -2275,15 +1861,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateEnvironmentPayload": {
-            "type": "object",
-            "properties": {
-                "environment": {
-                    "$ref": "#/definitions/types.EnvironmentPayload"
-                }
-            }
-        },
-        "types.UpdateGroupInput": {
+        "requests.UpdateGroupRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -2301,15 +1879,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateGroupPayload": {
-            "type": "object",
-            "properties": {
-                "group": {
-                    "$ref": "#/definitions/types.GroupPayload"
-                }
-            }
-        },
-        "types.UpdateOrganizationUserInput": {
+        "requests.UpdateOrganizationUserRequest": {
             "type": "object",
             "properties": {
                 "groupIds": {
@@ -2328,7 +1898,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateUserEmailInput": {
+        "requests.UpdateUserEmailRequest": {
             "type": "object",
             "required": [
                 "token"
@@ -2339,26 +1909,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateUserEmailPayload": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/types.UserPayload"
-                }
-            }
-        },
-        "types.UpdateUserInput": {
-            "type": "object",
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.UpdateUserPasswordInput": {
+        "requests.UpdateUserPasswordRequest": {
             "type": "object",
             "required": [
                 "currentPassword",
@@ -2377,23 +1928,512 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UpdateUserPasswordPayload": {
+        "requests.UpdateUserRequest": {
             "type": "object",
             "properties": {
-                "user": {
-                    "$ref": "#/definitions/types.UserPayload"
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
                 }
             }
         },
-        "types.UpdateUserPayload": {
+        "responses.APIKeyResponse": {
             "type": "object",
             "properties": {
-                "user": {
-                    "$ref": "#/definitions/types.UserPayload"
+                "createdAt": {
+                    "type": "string"
+                },
+                "environment": {
+                    "$ref": "#/definitions/responses.EnvironmentResponse"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
-        "types.UserGroupPayload": {
+        "responses.CreateAPIKeyResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "$ref": "#/definitions/responses.APIKeyResponse"
+                }
+            }
+        },
+        "responses.CreateEnvironmentResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "$ref": "#/definitions/responses.EnvironmentResponse"
+                }
+            }
+        },
+        "responses.CreateGroupResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "$ref": "#/definitions/responses.GroupResponse"
+                }
+            }
+        },
+        "responses.CreateOrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "organization": {
+                    "$ref": "#/definitions/responses.OrganizationResponse"
+                }
+            }
+        },
+        "responses.DeleteAPIKeyResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "$ref": "#/definitions/responses.APIKeyResponse"
+                }
+            }
+        },
+        "responses.DeleteEnvironmentResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "$ref": "#/definitions/responses.EnvironmentResponse"
+                }
+            }
+        },
+        "responses.DeleteGroupResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "$ref": "#/definitions/responses.GroupResponse"
+                }
+            }
+        },
+        "responses.EnvironmentResponse": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GetAPIKeyResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "$ref": "#/definitions/responses.APIKeyResponse"
+                }
+            }
+        },
+        "responses.GetEnvironmentResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "$ref": "#/definitions/responses.EnvironmentResponse"
+                }
+            }
+        },
+        "responses.GetGoogleAuthCodeURLInvitationResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GetGoogleAuthCodeURLResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GetGroupResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "$ref": "#/definitions/responses.GroupResponse"
+                }
+            }
+        },
+        "responses.GetMeResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/responses.UserResponse"
+                }
+            }
+        },
+        "responses.GroupPageResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "groupId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pageId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GroupResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.HostInstanceResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "sdkName": {
+                    "type": "string"
+                },
+                "sdkVersion": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.InviteUsersResponse": {
+            "type": "object",
+            "properties": {
+                "userInvitations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserInvitationResponse"
+                    }
+                }
+            }
+        },
+        "responses.ListAPIKeysResponse": {
+            "type": "object",
+            "properties": {
+                "devKey": {
+                    "$ref": "#/definitions/responses.APIKeyResponse"
+                },
+                "liveKeys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.APIKeyResponse"
+                    }
+                }
+            }
+        },
+        "responses.ListEnvironmentsResponse": {
+            "type": "object",
+            "properties": {
+                "environments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.EnvironmentResponse"
+                    }
+                }
+            }
+        },
+        "responses.ListGroupsResponse": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.GroupResponse"
+                    }
+                },
+                "userGroups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserGroupResponse"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserResponse"
+                    }
+                }
+            }
+        },
+        "responses.ListPagesResponse": {
+            "type": "object",
+            "properties": {
+                "groupPages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.GroupPageResponse"
+                    }
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.GroupResponse"
+                    }
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.PageResponse"
+                    }
+                },
+                "userGroups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserGroupResponse"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserResponse"
+                    }
+                }
+            }
+        },
+        "responses.ListUsersResponse": {
+            "type": "object",
+            "properties": {
+                "userInvitations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserInvitationResponse"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserResponse"
+                    }
+                }
+            }
+        },
+        "responses.ObtainAuthTokenResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "subdomain": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PageResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "route": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.PingHostInstanceResponse": {
+            "type": "object",
+            "properties": {
+                "hostInstance": {
+                    "$ref": "#/definitions/responses.HostInstanceResponse"
+                }
+            }
+        },
+        "responses.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SaveAuthResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "redirectUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SendSignUpInstructionsResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SignInResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "isOrganizationExists": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.SignInWithGoogleResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "isOrganizationExists": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.UpdateAPIKeyResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "$ref": "#/definitions/responses.APIKeyResponse"
+                }
+            }
+        },
+        "responses.UpdateEnvironmentResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "$ref": "#/definitions/responses.EnvironmentResponse"
+                }
+            }
+        },
+        "responses.UpdateGroupResponse": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "$ref": "#/definitions/responses.GroupResponse"
+                }
+            }
+        },
+        "responses.UpdateUserEmailResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/responses.UserResponse"
+                }
+            }
+        },
+        "responses.UpdateUserPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/responses.UserResponse"
+                }
+            }
+        },
+        "responses.UpdateUserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/responses.UserResponse"
+                }
+            }
+        },
+        "responses.UserGroupResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2413,7 +2453,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UserInvitationPayload": {
+        "responses.UserInvitationResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2427,7 +2467,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.UserPayload": {
+        "responses.UserResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2446,7 +2486,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "organization": {
-                    "$ref": "#/definitions/types.OrganizationPayload"
+                    "$ref": "#/definitions/responses.OrganizationResponse"
                 },
                 "role": {
                     "type": "string"

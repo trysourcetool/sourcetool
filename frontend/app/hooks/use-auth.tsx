@@ -71,7 +71,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
             const user = resultUser.payload.user;
             const userOrganization = user.organization;
             if (userOrganization && userOrganization?.subdomain === subDomain) {
-              // TODO: redirect if outside authentication screen
+              // TODO: Redirect if outside the authentication screen
             } else if (userOrganization && subDomain === 'auth') {
               window.location.replace(
                 `${window.location.protocol}//${window.location.host.replace(

@@ -3,7 +3,6 @@ package page
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
@@ -12,6 +11,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -26,8 +26,8 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.Page, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.PageOption) (*model.Page, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.Page, erro
 	return &m, nil
 }
 
-func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.Page, error) {
-	query, args, err := s.buildQuery(ctx, conditions...)
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.PageOption) ([]*model.Page, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.Page, e
 	return m, nil
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []any, error) {
+func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.PageOption) (string, []any, error) {
 	q := s.builder.Select(
 		`p."id"`,
 		`p."organization_id"`,
@@ -71,13 +71,8 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	).
 		From(`"page" p`)
 
-	opts, err := s.toSelectOptions(ctx, conditions...)
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
 	for _, o := range opts {
-		q = o(q)
+		q = o.Apply(q)
 	}
 
 	query, args, err := q.ToSql()
@@ -86,76 +81,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, conditions ...any) (string, []
 	}
 
 	return query, args, err
-}
-
-func (s *StoreCE) toSelectOptions(ctx context.Context, conditions ...any) ([]infra.SelectOption, error) {
-	options := make([]infra.SelectOption, len(conditions))
-	for i, c := range conditions {
-		switch v := c.(type) {
-		case model.PageByID:
-			options[i] = s.byID(v)
-		case model.PageByOrganizationID:
-			options[i] = s.byOrganizationID(v)
-		case model.PageByAPIKeyID:
-			options[i] = s.byAPIKeyID(v)
-		case model.PageBySessionID:
-			options[i] = s.bySessionID(v)
-		case infra.Limit:
-			options[i] = s.limit(v)
-		case infra.Offset:
-			options[i] = s.offset(v)
-		case infra.OrderBy:
-			options[i] = s.orderBy(v)
-		default:
-			return nil, errdefs.ErrDatabase(errors.New("unsupported condition"))
-		}
-	}
-
-	return options, nil
-}
-
-func (s *StoreCE) byID(in model.PageByID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`p."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byOrganizationID(in model.PageByOrganizationID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`p."organization_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) byAPIKeyID(in model.PageByAPIKeyID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where(sq.Eq{`p."api_key_id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) bySessionID(in model.PageBySessionID) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.
-			InnerJoin(`"session" s ON s."page_id" = p."id"`).
-			Where(sq.Eq{`s."id"`: uuid.UUID(in)})
-	}
-}
-
-func (s *StoreCE) limit(in infra.Limit) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Limit(uint64(in))
-	}
-}
-
-func (s *StoreCE) offset(in infra.Offset) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Offset(uint64(in))
-	}
-}
-
-func (s *StoreCE) orderBy(in infra.OrderBy) infra.SelectOption {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.OrderBy(string(in))
-	}
 }
 
 func (s *StoreCE) BulkInsert(ctx context.Context, m []*model.Page) error {

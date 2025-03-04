@@ -15,6 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Middleware interface {
@@ -60,7 +61,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 				return
 			}
 
-			apikey, err := m.Store.APIKey().Get(ctx, model.APIKeyByKey(apikeyVal))
+			apikey, err := m.Store.APIKey().Get(ctx, storeopts.APIKeyByKey(apikeyVal))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
@@ -86,7 +87,7 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 		return nil, err
 	}
 
-	u, err := m.Store.User().Get(ctx, model.UserByEmail(c.Email))
+	u, err := m.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	o, err := m.Store.Organization().Get(ctx, model.OrganizationBySubdomain(subdomain))
+	o, err := m.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
 	}

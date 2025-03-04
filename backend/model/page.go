@@ -6,6 +6,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/lib/pq"
+
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Page struct {
@@ -20,16 +22,9 @@ type Page struct {
 	UpdatedAt      time.Time     `db:"updated_at"`
 }
 
-type (
-	PageByID             uuid.UUID
-	PageByOrganizationID uuid.UUID
-	PageByAPIKeyID       uuid.UUID
-	PageBySessionID      uuid.UUID
-)
-
 type PageStore interface {
-	Get(context.Context, ...any) (*Page, error)
-	List(context.Context, ...any) ([]*Page, error)
+	Get(context.Context, ...storeopts.PageOption) (*Page, error)
+	List(context.Context, ...storeopts.PageOption) ([]*Page, error)
 	BulkInsert(context.Context, []*Page) error
 	BulkUpdate(context.Context, []*Page) error
 	BulkDelete(context.Context, []*Page) error

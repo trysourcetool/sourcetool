@@ -2,16 +2,16 @@ package page
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/server/http/types"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type Service interface {
-	List(context.Context) (*types.ListPagesPayload, error)
+	List(context.Context) (*dto.ListPagesOutput, error)
 }
 
 type ServiceCE struct {
@@ -22,63 +22,44 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) List(ctx context.Context) (*types.ListPagesPayload, error) {
+func (s *ServiceCE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
 	o := ctxutils.CurrentOrganization(ctx)
 
-	pages, err := s.Store.Page().List(ctx, model.PageByOrganizationID(o.ID), infra.OrderBy(`array_length(p."path", 1), "path"`))
+	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {
 		return nil, err
 	}
 
-	users, err := s.Store.User().List(ctx, model.UserByOrganizationID(o.ID))
+	users, err := s.Store.User().List(ctx, storeopts.UserByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	userGroups, err := s.Store.User().ListGroups(ctx, model.UserGroupByOrganizationID(o.ID))
+	userGroups, err := s.Store.User().ListGroups(ctx, storeopts.UserGroupByOrganizationID(o.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	pagesRes := make([]*types.PagePayload, 0, len(pages))
+	pagesOut := make([]*dto.Page, 0, len(pages))
 	for _, page := range pages {
-		pagesRes = append(pagesRes, &types.PagePayload{
-			ID:        page.ID.String(),
-			Name:      page.Name,
-			Route:     page.Route,
-			CreatedAt: strconv.FormatInt(page.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(page.UpdatedAt.Unix(), 10),
-		})
+		pagesOut = append(pagesOut, dto.PageFromModel(page))
 	}
 
-	usersRes := make([]*types.UserPayload, 0, len(users))
+	usersOut := make([]*dto.User, 0, len(users))
 	for _, user := range users {
-		usersRes = append(usersRes, &types.UserPayload{
-			ID:        user.ID.String(),
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			CreatedAt: strconv.FormatInt(user.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(user.UpdatedAt.Unix(), 10),
-		})
+		usersOut = append(usersOut, dto.UserFromModel(user, nil, model.UserOrganizationRoleUnknown))
 	}
 
-	userGroupsRes := make([]*types.UserGroupPayload, 0, len(userGroups))
+	userGroupsOut := make([]*dto.UserGroup, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsRes = append(userGroupsRes, &types.UserGroupPayload{
-			ID:        userGroup.ID.String(),
-			UserID:    userGroup.UserID.String(),
-			GroupID:   userGroup.GroupID.String(),
-			CreatedAt: strconv.FormatInt(userGroup.CreatedAt.Unix(), 10),
-			UpdatedAt: strconv.FormatInt(userGroup.UpdatedAt.Unix(), 10),
-		})
+		userGroupsOut = append(userGroupsOut, dto.UserGroupFromModel(userGroup))
 	}
 
-	return &types.ListPagesPayload{
-		Pages:      pagesRes,
-		Groups:     make([]*types.GroupPayload, 0),
-		GroupPages: make([]*types.GroupPagePayload, 0),
-		Users:      usersRes,
-		UserGroups: userGroupsRes,
+	return &dto.ListPagesOutput{
+		Pages:      pagesOut,
+		Groups:     make([]*dto.Group, 0),
+		GroupPages: make([]*dto.GroupPage, 0),
+		Users:      usersOut,
+		UserGroups: userGroupsOut,
 	}, nil
 }

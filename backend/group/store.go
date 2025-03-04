@@ -9,6 +9,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type StoreCE struct {
@@ -23,11 +24,11 @@ func NewStoreCE(db infra.DB) *StoreCE {
 	}
 }
 
-func (s *StoreCE) Get(ctx context.Context, conditions ...any) (*model.Group, error) {
+func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.GroupOption) (*model.Group, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 
-func (s *StoreCE) List(ctx context.Context, conditions ...any) ([]*model.Group, error) {
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.GroupOption) ([]*model.Group, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 
@@ -47,7 +48,7 @@ func (s *StoreCE) IsSlugExistsInOrganization(ctx context.Context, orgID uuid.UUI
 	return false, errors.New("group functionality is not available in CE version")
 }
 
-func (s *StoreCE) ListPages(ctx context.Context, conditions ...any) ([]*model.GroupPage, error) {
+func (s *StoreCE) ListPages(ctx context.Context, opts ...storeopts.GroupPageOption) ([]*model.GroupPage, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 

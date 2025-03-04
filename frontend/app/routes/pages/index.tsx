@@ -41,7 +41,7 @@ export default function Pages() {
       <div className="p-6">
         <div className="rounded-md border p-4">
           <SidebarMenu>
-            {/* TODO: 再帰処理・フォルダー対応 */}
+            {/* TODO: Recursive processing and folder support */}
             {/* <Collapsible className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
