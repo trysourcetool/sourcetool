@@ -228,34 +228,81 @@
   </table>
 <hr>
 <h2 id="architecture">> architecture</h2>
-<p>Sourcetool connects your Go backend code directly to web browsers, eliminating the need for frontend development:</p>
+<p>Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development:</p>
 
 <div style="text-align: center; margin: 30px 0;">
-  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
-    <strong>Your Go Code</strong><br>
-    (Backend only)
-  </div>
-  <span style="font-size: 24px; margin: 0 10px;">⟷</span>
-  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
-    <strong>Sourcetool Server</strong><br>
-    (WebSocket)
-  </div>
-  <span style="font-size: 24px; margin: 0 10px;">⟷</span>
-  <div style="display: inline-block; border: 2px solid #6b46c1; padding: 15px; border-radius: 8px; margin: 10px; width: 180px;">
-    <strong>Sourcetool Web</strong><br>
-    (Auto-generated UI)
+  <!-- Simplified flow diagram -->
+  <div style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <!-- Step 1: Your Backend -->
+      <div style="position: relative; min-width: 220px; max-width: 250px;">
+        <div style="position: absolute; top: -10px; left: -10px; background-color: #6b46c1; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; z-index: 1;">1</div>
+        <div style="border: 2px solid #6b46c1; padding: 12px; border-radius: 8px; background-color: #f8f7fc;">
+          <strong style="font-size: 17px; display: block; margin-bottom: 5px;">Your Backend</strong>
+          <span style="font-size: 13px; color: #555; display: block; line-height: 1.3;">Backend logic & UI definitions</span>
+        </div>
+      </div>
+
+      <!-- Bidirectional Arrow -->
+      <div style="display: flex; flex-direction: column; align-items: center; margin: 0 2px;">
+        <span style="font-size: 22px; color: #6b46c1;">⟷</span>
+        <span style="font-size: 11px; color: #666;">WebSocket</span>
+      </div>
+
+      <!-- Step 2: Sourcetool Server -->
+      <div style="position: relative; min-width: 220px; max-width: 250px;">
+        <div style="position: absolute; top: -10px; left: -10px; background-color: #6b46c1; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; z-index: 1;">2</div>
+        <div style="border: 2px solid #6b46c1; padding: 12px; border-radius: 8px; background-color: #f8f7fc;">
+          <strong style="font-size: 17px; display: block; margin-bottom: 5px;">Sourcetool Server</strong>
+          <span style="font-size: 13px; color: #555; display: block; line-height: 1.3;">Authentication & Authorization</span>
+        </div>
+      </div>
+
+      <!-- Bidirectional Arrow -->
+      <div style="display: flex; flex-direction: column; align-items: center; margin: 0 2px;">
+        <span style="font-size: 22px; color: #6b46c1;">⟷</span>
+        <span style="font-size: 11px; color: #666;">WebSocket</span>
+      </div>
+
+      <!-- Step 3: Browser -->
+      <div style="position: relative; min-width: 220px; max-width: 250px;">
+        <div style="position: absolute; top: -10px; left: -10px; background-color: #6b46c1; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; z-index: 1;">3</div>
+        <div style="border: 2px solid #6b46c1; padding: 12px; border-radius: 8px; background-color: #f8f7fc;">
+          <strong style="font-size: 17px; display: block; margin-bottom: 5px;">Browser</strong>
+          <span style="font-size: 13px; color: #555; display: block; line-height: 1.3;">Auto-generates browser UI</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Note about bidirectional communication -->
+    <div style="text-align: center; margin-top: 10px;">
+      <span style="font-size: 12px; color: #666;">All components communicate bidirectionally in real-time</span>
+    </div>
   </div>
 </div>
 
-<pre><code><span class="code-comment">// Your Go code defines UI and handles business logic</span>
+<div style="display: flex; flex-wrap: wrap; margin: 20px 0; gap: 20px;">
+  <div style="flex: 1; min-width: 280px;">
+    <h4 style="color: #6b46c1; margin-top: 0;">How It Works:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>You define UI components in your backend code</li>
+      <li>Sourcetool Server handles auth & permissions</li>
+      <li>UI is automatically rendered in browser</li>
+      <li>User interactions return to your backend code</li>
+    </ol>
+  </div>
+  <div style="flex: 1; min-width: 280px;">
+    <pre style="margin-top: 0;"><code><span class="code-comment">// Your backend code defines UI and handles business logic</span>
 <span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
     ui.Markdown(<span class="code-string">"## Users"</span>)
     users, _ := listUsers()
     ui.Table(users)
     <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
 }</code></pre>
+  </div>
+</div>
 
-<p>This architecture allows you to create complete internal tools while writing only Go code. The Sourcetool server handles all WebSocket communication, UI rendering, and user interactions.</p>
+<p>This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="highlight">no frontend expertise required</span>.</p>
 
 <hr>
   <h2 id="components">> components</h2>
