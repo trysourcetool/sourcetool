@@ -70,7 +70,7 @@ const config: Config = {
     navbar: {
       title: 'My Site',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Sourcetool Logo',
         src: 'img/logo.png',
       },
       items: [
@@ -78,7 +78,7 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Docs',
         },
         { to: '/blog', label: 'Blog', position: 'left' },
         {
