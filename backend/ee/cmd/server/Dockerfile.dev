@@ -1,0 +1,20 @@
+FROM golang:1.22 AS build
+WORKDIR /go/src/github.com/trysourcetool/sourcetool-ee
+COPY sourcetool/backend /go/src/github.com/trysourcetool/sourcetool/backend/
+COPY sourcetool/proto /go/src/github.com/trysourcetool/sourcetool/proto/
+COPY sourcetool/backend/ee sourcetool/backend/ee/
+
+WORKDIR /go/src/github.com/trysourcetool/sourcetool/backend/ee
+COPY sourcetool/backend/ee/go.mod .
+COPY sourcetool/backend/ee/go.sum .
+RUN go mod download
+COPY sourcetool/backend/ee .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main -a -installsuffix cgo -ldflags="-s -w" cmd/server/*.go
+
+FROM scratch
+WORKDIR /root
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /go/src/github.com/trysourcetool/sourcetool/backend/ee/main main
+COPY --from=build /go/src/github.com/trysourcetool/sourcetool/backend/postgres/ddl postgres/ddl
+EXPOSE 8080
+CMD ["/root/main"]
