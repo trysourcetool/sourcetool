@@ -4,7 +4,7 @@ import {
   type EntityState,
 } from '@reduxjs/toolkit';
 import * as asyncActions from './asyncActions';
-import type { User } from '@/api/modules/users';
+import type { User, UserInvitation } from '@/api/modules/users';
 import { groupsStore } from '../groups';
 import { pagesStore } from '../pages';
 import { organizationsStore } from '../organizations';
@@ -16,12 +16,17 @@ const usersAdapter = createEntityAdapter<User, string>({
   selectId: (user) => user.id,
 });
 
+const userInvitationsAdapter = createEntityAdapter<UserInvitation, string>({
+  selectId: (userInvitation) => userInvitation.id,
+});
+
 // =============================================
 // State
 
 export type State = {
   me: User | null;
   users: EntityState<User, string>;
+  userInvitations: EntityState<UserInvitation, string>;
   isGetMeWaiting: boolean;
   isRefreshTokenWaiting: boolean;
   isListUsersWaiting: boolean;
@@ -40,11 +45,13 @@ export type State = {
   isUpdateUserPasswordWaiting: boolean;
   isUpdateUserEmailWaiting: boolean;
   isUsersSendUpdateEmailInstructionsWaiting: boolean;
+  isInvitationsResendWaiting: boolean;
 };
 
 const initialState: State = {
   me: null,
   users: usersAdapter.getInitialState(),
+  userInvitations: userInvitationsAdapter.getInitialState(),
   isGetMeWaiting: false,
   isRefreshTokenWaiting: false,
   isListUsersWaiting: false,
@@ -63,6 +70,7 @@ const initialState: State = {
   isUpdateUserPasswordWaiting: false,
   isUpdateUserEmailWaiting: false,
   isUsersSendUpdateEmailInstructionsWaiting: false,
+  isInvitationsResendWaiting: false,
 };
 // =============================================
 // slice
@@ -127,6 +135,10 @@ export const slice = createSlice({
       })
       .addCase(asyncActions.listUsers.fulfilled, (state, action) => {
         usersAdapter.setAll(state.users, action.payload.users);
+        userInvitationsAdapter.setAll(
+          state.userInvitations,
+          action.payload.userInvitations,
+        );
         state.isListUsersWaiting = false;
       })
       .addCase(asyncActions.listUsers.rejected, (state) => {
@@ -302,7 +314,18 @@ export const slice = createSlice({
       .addCase(
         organizationsStore.asyncActions.updateOrganizationUser.rejected,
         () => {},
-      );
+      )
+
+      // invitationsResend
+      .addCase(asyncActions.invitationsResend.pending, (state) => {
+        state.isInvitationsResendWaiting = true;
+      })
+      .addCase(asyncActions.invitationsResend.fulfilled, (state) => {
+        state.isInvitationsResendWaiting = false;
+      })
+      .addCase(asyncActions.invitationsResend.rejected, (state) => {
+        state.isInvitationsResendWaiting = false;
+      });
   },
   initialState,
   name: 'users',

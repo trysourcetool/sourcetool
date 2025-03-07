@@ -252,6 +252,23 @@ export const invite = createAsyncThunk(
   },
 );
 
+export const invitationsResend = createAsyncThunk(
+  'users/invitationsResend',
+  async (
+    params: { data: { invitationId: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersInvitationsResend(params);
+
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
 export const invitationsSignup = createAsyncThunk(
   'users/invitationsSignup',
   async (

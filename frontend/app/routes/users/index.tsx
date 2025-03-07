@@ -119,6 +119,7 @@ const InviteForm = () => {
         title: t('routes_users_toast_invited'),
         description: t('routes_users_toast_invited_description'),
       });
+      dispatch(usersStore.asyncActions.listUsers());
     } else {
       toast({
         title: t('routes_users_toast_invite_failed'),
@@ -201,9 +202,42 @@ export default function Users() {
   const { t } = useTranslation('common');
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const users = useSelector(usersStore.selector.getUsers);
+  const userInvitations = useSelector(usersStore.selector.getUserInvitations);
   const me = useSelector(usersStore.selector.getMe);
   const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
+  const isInvitationsResendWaiting = useSelector(
+    (state) => state.users.isInvitationsResendWaiting,
+  );
+
+  const handleResendInvitation = async (invitationId: string) => {
+    const resultAction = await dispatch(
+      usersStore.asyncActions.invitationsResend({
+        data: {
+          invitationId,
+        },
+      }),
+    );
+
+    if (
+      usersStore.asyncActions.invitationsResend.fulfilled.match(resultAction)
+    ) {
+      toast({
+        title: t('routes_users_toast_invitation_resent'),
+        description: t('routes_users_toast_invitation_resent_description'),
+      });
+    } else {
+      toast({
+        title: t('routes_users_toast_invitation_resend_failed'),
+        description: t(
+          'routes_users_toast_invitation_resend_failed_description',
+        ),
+        variant: 'destructive',
+      });
+    }
+  };
+
   useEffect(() => {
     setBreadcrumbsState?.([{ label: t('breadcrumbs_users') }]);
   }, [setBreadcrumbsState, t]);
@@ -242,10 +276,34 @@ export default function Users() {
                 <TableHead>{t('routes_users_table_name')}</TableHead>
                 <TableHead>{t('routes_users_table_email')}</TableHead>
                 <TableHead>{t('routes_users_table_permission')}</TableHead>
+                <TableHead></TableHead>
                 <TableHead className="w-16"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
+              {userInvitations.map((userInvitation) => (
+                <TableRow key={userInvitation.id}>
+                  <TableCell className="truncate font-normal text-muted-foreground">
+                    {t('routes_users_invitation_sent')}
+                  </TableCell>
+                  <TableCell className="truncate font-normal text-muted-foreground">
+                    {userInvitation.email}
+                  </TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>
+                    <Button
+                      variant={'outline'}
+                      type="button"
+                      className="cursor-pointer"
+                      onClick={() => handleResendInvitation(userInvitation.id)}
+                      disabled={isInvitationsResendWaiting}
+                    >
+                      {t('routes_users_resend_invitation')}
+                    </Button>
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              ))}
               {users.map((user) => (
                 <TableRow
                   key={user.id}
@@ -273,6 +331,7 @@ export default function Users() {
                       {user.role}
                     </Badge>
                   </TableCell>
+                  <TableCell></TableCell>
                   <TableCell align="right">
                     {me?.role === 'admin' && me?.id !== user.id && (
                       <DropdownMenu>

@@ -240,6 +240,22 @@ export const usersInvite = async (params: {
   return res;
 };
 
+export const usersInvitationsResend = async (params: {
+  data: {
+    invitationId: string;
+  };
+}) => {
+  const res = await api.post<{
+    userInvitation: UserInvitation;
+  }>({
+    path: '/users/invitations/resend',
+    data: params.data,
+    auth: true,
+  });
+
+  return res;
+};
+
 export const usersInvitationsSignup = async (params: {
   data: {
     firstName: string;

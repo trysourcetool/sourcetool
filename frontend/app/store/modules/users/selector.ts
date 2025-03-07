@@ -21,6 +21,12 @@ export const getUsers = createSelector(
   (values) => values.users.ids.map((id) => values.users.entities[id]),
 );
 
+export const getUserInvitations = createSelector(
+  (state: RootState) => state.users,
+  (values) =>
+    values.userInvitations.ids.map((id) => values.userInvitations.entities[id]),
+);
+
 export const getUser = createSelector(
   (state: RootState, userId: string) => ({
     users: state.users.users,

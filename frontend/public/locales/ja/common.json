@@ -336,5 +336,12 @@
 
   "routes_error_host_instance_ping_title": "問題が発生しました",
   "routes_error_host_instance_ping_description": "アプリケーションでエラーが発生し、応答できません。\nコードに問題がないか確認してください。",
-  "routes_error_host_instance_ping_support_button": "サポートに連絡"
+  "routes_error_host_instance_ping_support_button": "サポートに連絡",
+
+  "routes_users_invitation_sent": "(招待送信済み)",
+  "routes_users_resend_invitation": "招待を再送信",
+  "routes_users_toast_invitation_resent": "招待が再送信されました",
+  "routes_users_toast_invitation_resent_description": "招待がユーザーに再送信されました",
+  "routes_users_toast_invitation_resend_failed": "招待の再送信に失敗しました",
+  "routes_users_toast_invitation_resend_failed_description": "もう一度お試しください"
 }
