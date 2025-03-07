@@ -495,6 +495,39 @@ func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ResendInvitation godoc
+// @ID resend-invitation
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.ResendInvitationRequest true " "
+// @Success 200 {object} responses.ResendInvitationResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/invitations/resend [post].
+func (h *UserHandler) ResendInvitation(w http.ResponseWriter, r *http.Request) {
+	var req requests.ResendInvitationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputils.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputils.ValidateRequest(req); err != nil {
+		httputils.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.ResendInvitation(r.Context(), adapters.ResendInvitationRequestToDTOInput(req))
+	if err != nil {
+		httputils.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ResendInvitationOutputToResponse(out)); err != nil {
+		httputils.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
 // SignOut godoc
 // @ID sign-out
 // @Accept json

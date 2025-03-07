@@ -93,3 +93,7 @@ type SendUpdateUserEmailInstructionsRequest struct {
 type UpdateUserEmailRequest struct {
 	Token string `json:"token" validate:"required"`
 }
+
+type ResendInvitationRequest struct {
+	InvitationID string `json:"invitationId" validate:"required,uuid"`
+}

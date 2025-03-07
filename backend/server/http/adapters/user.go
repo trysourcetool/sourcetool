@@ -356,6 +356,20 @@ func SignUpWithGoogleInvitationOutputToResponse(out *dto.SignUpWithGoogleInvitat
 	}
 }
 
+// ResendInvitationRequestToDTOInput converts from requests.ResendInvitationRequest to dto.ResendInvitationInput
+func ResendInvitationRequestToDTOInput(in requests.ResendInvitationRequest) dto.ResendInvitationInput {
+	return dto.ResendInvitationInput{
+		InvitationID: in.InvitationID,
+	}
+}
+
+// ResendInvitationOutputToResponse converts from dto.ResendInvitationOutput to responses.ResendInvitationResponse
+func ResendInvitationOutputToResponse(out *dto.ResendInvitationOutput) *responses.ResendInvitationResponse {
+	return &responses.ResendInvitationResponse{
+		UserInvitation: UserInvitationDTOToResponse(out.UserInvitation),
+	}
+}
+
 // SignOutOutputToResponse converts from dto.SignOutOutput to responses.SignOutResponse
 func SignOutOutputToResponse(out *dto.SignOutOutput) *responses.SignOutResponse {
 	return &responses.SignOutResponse{

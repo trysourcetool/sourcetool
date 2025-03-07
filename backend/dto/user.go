@@ -351,3 +351,13 @@ type SignUpWithGoogleInvitationOutput struct {
 type SignOutOutput struct {
 	Domain string
 }
+
+// ResendInvitationInput is the input for Resend Invitation operation
+type ResendInvitationInput struct {
+	InvitationID string
+}
+
+// ResendInvitationOutput is the output for Resend Invitation operation
+type ResendInvitationOutput struct {
+	UserInvitation *UserInvitation
+}

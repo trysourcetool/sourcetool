@@ -262,6 +262,20 @@ func (o userInvitationByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.Selec
 	return b.Where(sq.Eq{`ui."organization_id"`: o.id})
 }
 
+func UserInvitationByID(id uuid.UUID) UserInvitationOption {
+	return userInvitationByIDOption{id: id}
+}
+
+type userInvitationByIDOption struct {
+	id uuid.UUID
+}
+
+func (o userInvitationByIDOption) isUserInvitationOption() {}
+
+func (o userInvitationByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."id"`: o.id})
+}
+
 func UserInvitationByEmail(email string) UserInvitationOption {
 	return userInvitationByEmailOption{email: email}
 }
