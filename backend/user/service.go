@@ -40,6 +40,7 @@ type Service interface {
 	SaveAuth(context.Context, dto.SaveAuthInput) (*dto.SaveAuthOutput, error)
 	ObtainAuthToken(context.Context) (*dto.ObtainAuthTokenOutput, error)
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
+	ResendInvitation(context.Context, dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error)
 	SignInInvitation(context.Context, dto.SignInInvitationInput) (*dto.SignInInvitationOutput, error)
 	SignUpInvitation(context.Context, dto.SignUpInvitationInput) (*dto.SignUpInvitationOutput, error)
 	GetGoogleAuthCodeURL(context.Context) (*dto.GetGoogleAuthCodeURLOutput, error)
@@ -1552,6 +1553,69 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
+	}, nil
+}
+
+func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error) {
+	authorizer := authz.NewAuthorizer(s.Store)
+	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditUser); err != nil {
+		return nil, err
+	}
+
+	invitationID, err := uuid.FromString(in.InvitationID)
+	if err != nil {
+		return nil, errdefs.ErrInvalidArgument(err)
+	}
+
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByID(invitationID))
+	if err != nil {
+		return nil, err
+	}
+
+	o := ctxutils.CurrentOrganization(ctx)
+	if userInvitation.OrganizationID != o.ID {
+		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+	}
+
+	u := ctxutils.CurrentUser(ctx)
+
+	userExists, err := s.Store.User().IsEmailExists(ctx, userInvitation.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	tok, err := s.Signer.User().SignedStringFromEmail(ctx, &model.UserEmailClaims{
+		Email: userInvitation.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   model.UserSignatureSubjectInvitation,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
+			Issuer:    model.JwtIssuer,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := buildInvitationURL(ctx, tok, userInvitation.Email, userExists)
+	if err != nil {
+		return nil, err
+	}
+
+	emailInput := &model.SendInvitationEmail{
+		Invitees: u.FullName(),
+		URLs:     map[string]string{userInvitation.Email: url},
+	}
+
+	logger.Logger.Sugar().Debug("================= URL =================")
+	logger.Logger.Sugar().Debug(url)
+	logger.Logger.Sugar().Debug("================= URL =================")
+
+	if err := s.Mailer.User().SendInvitationEmail(ctx, emailInput); err != nil {
+		return nil, err
+	}
+
+	return &dto.ResendInvitationOutput{
+		UserInvitation: dto.UserInvitationFromModel(userInvitation),
 	}, nil
 }
 

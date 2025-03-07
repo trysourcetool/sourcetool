@@ -110,6 +110,10 @@ type UpdateUserEmailResponse struct {
 	User *UserResponse `json:"user"`
 }
 
+type ResendInvitationResponse struct {
+	UserInvitation *UserInvitationResponse `json:"userInvitation"`
+}
+
 type UserGroupResponse struct {
 	ID        string `json:"id"`
 	UserID    string `json:"userId"`
