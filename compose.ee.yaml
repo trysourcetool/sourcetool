@@ -10,7 +10,7 @@ services:
   server:
     image: golang:1.23
     command: bash -c "
-        go run ./devtools/cmd/db/main.go migrate &&
+        go run ../devtools/cmd/db/main.go migrate ../migrations &&
         go run ./cmd/server"
     ports:
       - 8080:8080
@@ -22,10 +22,28 @@ services:
     env_file:
       - .env
     volumes:
-      - .:/go/src/github.com/trysourcetool/sourcetool/backend
-      - ../proto:/go/src/github.com/trysourcetool/sourcetool/proto
+      - ./backend/ee:/go/src/github.com/trysourcetool/sourcetool/backend/ee
+      - ./backend:/go/src/github.com/trysourcetool/sourcetool/backend
+      - ./proto:/go/src/github.com/trysourcetool/sourcetool/proto
       - gomodcache:/gomodcache
-    working_dir: /go/src/github.com/trysourcetool/sourcetool/backend
+    working_dir: /go/src/github.com/trysourcetool/sourcetool/backend/ee
+
+  frontend:
+    image: node:20-alpine
+    command: sh -c "yarn && yarn dev --host 0.0.0.0"
+    ports:
+      - 5173:5173
+    depends_on:
+      - server
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    working_dir: /app
 
   postgres:
     image: postgres:15
@@ -46,3 +64,4 @@ services:
 volumes:
   pgdata:
   gomodcache:
+  frontend_node_modules:

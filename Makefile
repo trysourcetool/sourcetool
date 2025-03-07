@@ -1,0 +1,164 @@
+.PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
+	gen-keys gen-encryption-key gen-jwt-key \
+	swagger swagger-open \
+	lint lint-clean remove-docker-images remove-docker-builder \
+	db-migrate \
+	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean
+
+# Default target
+help:
+	@echo "Available commands:"
+	@echo ""
+	@echo "Docker Compose Commands:"
+	@echo "  make up              - Start the Community Edition (CE) services"
+	@echo "  make up-ee           - Start the Enterprise Edition (EE) services"
+	@echo "  make down            - Stop the CE services"
+	@echo "  make down-ee         - Stop the EE services"
+	@echo "  make build           - Build the CE services"
+	@echo "  make build-ee        - Build the EE services"
+	@echo "  make clean           - Stop and remove CE containers, networks, volumes"
+	@echo "  make clean-ee        - Stop and remove EE containers, networks, volumes"
+	@echo "  make logs            - View logs for CE services"
+	@echo "  make logs-ee         - View logs for EE services"
+	@echo "  make ps              - List running CE services"
+	@echo "  make ps-ee           - List running EE services"
+	@echo ""
+	@echo "Development Commands:"
+	@echo "  make gen-keys        - Generate both encryption and JWT keys"
+	@echo "  make gen-encryption-key - Generate a random encryption key"
+	@echo "  make gen-jwt-key     - Generate a random JWT key"
+	@echo "  make swagger         - Generate Swagger documentation"
+	@echo "  make swagger-open    - Open Swagger UI in browser"
+	@echo "  make lint            - Run linters on the codebase"
+	@echo "  make lint-clean      - Clean linter cache"
+	@echo ""
+	@echo "Database Commands:"
+	@echo "  make db-migrate      - Run database migrations"
+	@echo ""
+	@echo "Protocol Buffer Commands:"
+	@echo "  make proto-generate  - Generate Go code from proto files"
+	@echo "  make proto-lint      - Lint proto files"
+	@echo "  make proto-format    - Format proto files"
+	@echo "  make proto-breaking  - Check for breaking changes"
+	@echo "  make proto-mod-update - Update buf dependencies"
+	@echo "  make proto-clean     - Clean generated proto files"
+	@echo ""
+	@echo "Maintenance Commands:"
+	@echo "  make remove-docker-images - Remove untagged Docker images"
+	@echo "  make remove-docker-builder - Prune Docker builder cache"
+
+# Community Edition (CE) commands
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+build:
+	docker compose build
+
+clean:
+	docker compose down -v
+
+logs:
+	docker compose logs -f
+
+ps:
+	docker compose ps
+
+# Enterprise Edition (EE) commands
+up-ee:
+	docker compose -f compose.ee.yaml up -d
+
+down-ee:
+	docker compose -f compose.ee.yaml down
+
+build-ee:
+	docker compose -f compose.ee.yaml build
+
+clean-ee:
+	docker compose -f compose.ee.yaml down -v
+
+logs-ee:
+	docker compose -f compose.ee.yaml logs -f
+
+ps-ee:
+	docker compose -f compose.ee.yaml ps
+
+# Key generation commands
+gen-keys: gen-encryption-key gen-jwt-key
+
+gen-encryption-key:
+	@echo "Generating encryption key..."
+	@cat /dev/urandom | base64 | head -c 32
+	@echo ""
+
+gen-jwt-key:
+	@echo "Generating JWT key..."
+	@cat /dev/urandom | base64 | head -c 256
+	@echo ""
+
+# Swagger commands
+swagger:
+	@echo "Generating Swagger documentation..."
+	@cd backend && swag init -g cmd/server/main.go
+
+swagger-open:
+	@echo "Opening Swagger UI in browser..."
+	@open http://localhost:8080/swagger/index.html
+
+# Linting commands
+lint:
+	@echo "Running linters on CE codebase..."
+	@cd backend && gofumpt -l -w . && \
+		golangci-lint cache clean && \
+		golangci-lint run --print-issued-lines --fix --go=1.22
+
+lint-ee:
+	@echo "Running linters on EE codebase..."
+	@cd backend/ee && gofumpt -l -w . && \
+		golangci-lint cache clean && \
+		golangci-lint run --print-issued-lines --fix --go=1.22
+
+lint-clean:
+	@echo "Cleaning linter cache..."
+	@cd backend && golangci-lint cache clean
+
+# Maintenance commands
+remove-docker-images:
+	@echo "Removing untagged Docker images..."
+	@cd backend && bash ./devtools/remove_untagged_docker_images.sh
+
+remove-docker-builder:
+	@echo "Pruning Docker builder cache..."
+	@docker builder prune
+
+# Database commands
+db-migrate:
+	@echo "Running database migrations..."
+	@cd backend && go run ./devtools/cmd/db/main.go migrate
+
+# Protocol Buffer commands
+proto-generate:
+	@echo "Generating Go code from proto files..."
+	@cd proto && buf generate
+
+proto-lint:
+	@echo "Linting proto files..."
+	@cd proto && buf lint
+
+proto-format:
+	@echo "Formatting proto files..."
+	@cd proto && buf format -w
+
+proto-breaking:
+	@echo "Checking for breaking changes in proto files..."
+	@cd proto && buf breaking --against '.git#branch=main'
+
+proto-mod-update:
+	@echo "Updating buf dependencies..."
+	@cd proto && buf mod update
+
+proto-clean:
+	@echo "Cleaning generated proto files..."
+	@cd proto && rm -rf go/

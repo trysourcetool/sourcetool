@@ -2,27 +2,19 @@
 
 A Go-based backend service for the Sourcetool project.
 
-## Quick Start
+> **Note:** This project now uses a consolidated setup with Docker Compose and a root Makefile.
+> See the [root README.md](../README.md) for instructions on how to start the entire application.
 
-1. Copy the sample environment file:
-   ```
-   cp .env.example .env
-   ```
+## Overview
 
-2. Generate required keys:
-   ```
-   make gen-encryption-key  # Add to .env
-   make gen-jwt-key         # Add to .env
-   ```
-
-3. Start the development server:
-   ```
-   make dc-up
-   ```
-
-4. Access:
-   - API: http://localhost:8080
-   - API Documentation: http://localhost:8080/swagger/index.html
+The backend provides the API for the Sourcetool application, handling:
+- User authentication and authorization
+- Organization management
+- Group management
+- Page management
+- Environment management
+- API key management
+- WebSocket connections
 
 ## Technology
 
@@ -31,7 +23,23 @@ A Go-based backend service for the Sourcetool project.
 - Redis 7
 - Docker
 
-## Useful Commands
+## Directory Structure
 
-- `make gen-swagger` - Update API documentation
-- `make run-lint` - Run linters
+- `/apikey` - API key management
+- `/authz` - Authorization logic
+- `/cmd` - Application entry points
+- `/config` - Configuration handling
+- `/devtools` - Development tools
+- `/docs` - API documentation (Swagger)
+- `/dto` - Data transfer objects
+- `/environment` - Environment management
+- `/group` - Group management
+- `/hostinstance` - Host instance management
+- `/infra` - Infrastructure components
+- `/migrations` - Database migrations
+- `/organization` - Organization management
+- `/page` - Page management
+- `/server` - HTTP server implementation
+- `/session` - Session management
+- `/user` - User management
+- `/ws` - WebSocket implementation
