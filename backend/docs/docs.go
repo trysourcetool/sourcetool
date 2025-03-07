@@ -967,6 +967,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/invitations/resend": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "resend-invitation",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ResendInvitationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ResendInvitationResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/users/invitations/signin": {
             "post": {
                 "consumes": [
@@ -1657,6 +1696,17 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.ResendInvitationRequest": {
+            "type": "object",
+            "required": [
+                "invitationId"
+            ],
+            "properties": {
+                "invitationId": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.SaveAuthRequest": {
             "type": "object",
             "required": [
@@ -2324,6 +2374,14 @@ const docTemplate = `{
             "properties": {
                 "expiresAt": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.ResendInvitationResponse": {
+            "type": "object",
+            "properties": {
+                "userInvitation": {
+                    "$ref": "#/definitions/responses.UserInvitationResponse"
                 }
             }
         },

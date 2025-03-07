@@ -80,6 +80,13 @@ definitions:
     - emails
     - role
     type: object
+  requests.ResendInvitationRequest:
+    properties:
+      invitationId:
+        type: string
+    required:
+    - invitationId
+    type: object
   requests.SaveAuthRequest:
     properties:
       token:
@@ -517,6 +524,11 @@ definitions:
     properties:
       expiresAt:
         type: string
+    type: object
+  responses.ResendInvitationResponse:
+    properties:
+      userInvitation:
+        $ref: '#/definitions/responses.UserInvitationResponse'
     type: object
   responses.SaveAuthResponse:
     properties:
@@ -1245,6 +1257,31 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.StatusResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/invitations/resend:
+    post:
+      consumes:
+      - application/json
+      operationId: resend-invitation
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ResendInvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ResendInvitationResponse'
         default:
           description: ""
           schema:
