@@ -7,7 +7,7 @@ x-go-variables: &go-variables
   GOMODCACHE: /gomodcache
 
 services:
-  server:
+  backend:
     image: golang:1.23
     command: bash -c "
         go run ./devtools/cmd/db/main.go migrate &&
@@ -33,7 +33,7 @@ services:
     ports:
       - 5173:5173
     depends_on:
-      - server
+      - backend
     env_file:
       - .env
     environment:
