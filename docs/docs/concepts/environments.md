@@ -45,27 +45,6 @@ Sourcetool supports three common environment types:
 - Changes are carefully reviewed and tested before deployment
 - Often has stricter access controls
 
-## Creating Environments
-
-You can create environments through the Sourcetool dashboard or API:
-
-```go
-// Using the Sourcetool API
-client := sourcetool.NewClient("your-api-key")
-
-// Create a new environment
-env, err := client.CreateEnvironment(context.Background(), &sourcetool.CreateEnvironmentInput{
-    Name: "Staging",
-    Slug: "staging",
-    Color: "#FFA500", // Orange color for staging
-})
-if err != nil {
-    log.Fatalf("Failed to create environment: %v", err)
-}
-
-fmt.Printf("Created environment: %s (ID: %s)\n", env.Name, env.ID)
-```
-
 ## Next Steps
 
 Now that you understand environments, learn about:
