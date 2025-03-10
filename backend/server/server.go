@@ -103,7 +103,6 @@ func (s *Server) router() chi.Router {
 	r.Mount("/ws", s.wsRouter.Build())
 	r.Mount("/api", s.httpRouter.Build())
 
-	// Serve static files for the frontend
 	staticDir := os.Getenv("STATIC_FILES_DIR")
 	ServeStaticFiles(r, staticDir)
 

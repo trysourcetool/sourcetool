@@ -9,7 +9,7 @@ FROM golang:1.23 AS backend-builder
 WORKDIR /go/src/github.com/trysourcetool/sourcetool
 COPY proto/ ./proto/
 COPY backend/ ./backend/
-WORKDIR /go/src/github.com/trysourcetool/sourcetool/backend
+WORKDIR /go/src/github.com/trysourcetool/sourcetool/backend/ee
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/server ./cmd/server
 
