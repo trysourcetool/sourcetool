@@ -1,0 +1,41 @@
+version: '3'
+
+x-database-variables: &database-variables
+  POSTGRES_DB: ${POSTGRES_DB:-sourcetool_development}
+  POSTGRES_USER: ${POSTGRES_USER:-postgres}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    # For debugging
+    volumes:
+      - ./debug_output:/debug_output
+
+  postgres:
+    image: postgres:15
+    platform: linux/amd64
+    ports:
+      - 5432:5432
+    environment:
+      <<: *database-variables
+    volumes:
+      - pgdata_debug:/var/lib/postgresql/data:cached
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    command: redis-server --requirepass password
+
+volumes:
+  pgdata_debug:
