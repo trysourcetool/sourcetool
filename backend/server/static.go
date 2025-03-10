@@ -13,6 +13,10 @@ import (
 // ServeStaticFiles configures the router to serve static files from the specified directory
 func ServeStaticFiles(r chi.Router, staticDir string) {
 	staticDir = getStaticDir(staticDir)
+	if staticDir == "" {
+		fmt.Println("Static file serving is disabled (local environment)")
+		return
+	}
 	fileServer := http.FileServer(http.Dir(staticDir))
 	indexPath := findIndexFile(staticDir)
 
@@ -33,7 +37,8 @@ func getStaticDir(staticDir string) string {
 	if staticDir == "" {
 		staticDir = os.Getenv("STATIC_FILES_DIR")
 		if staticDir == "" {
-			staticDir = "./static"
+			// In local environment, return empty string to disable static serving
+			return ""
 		}
 	}
 	return staticDir
