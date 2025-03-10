@@ -1,0 +1,14 @@
+project_id = "your-project-id"
+region     = "us-central1"
+
+environment = "prod"
+
+db_instance_name = "sourcetool-db"
+db_version      = "POSTGRES_15"
+db_tier         = "db-f1-micro"
+db_name         = "sourcetool"
+db_user         = "sourcetool_user"
+db_password     = "your-secure-password"
+
+cloud_run_service_name = "sourcetool"
+container_image       = "gcr.io/your-project-id/sourcetool:latest" 
