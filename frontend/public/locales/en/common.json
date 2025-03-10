@@ -38,6 +38,7 @@
 
   "routes_groups_page_header": "Permissions",
   "routes_groups_title": "Permission Groups",
+  "routes_groups_search_placeholder": "Search permission groups",
   "routes_groups_create_new": "Create new",
   "routes_groups_table_name": "Name",
   "routes_groups_table_slug": "Slug",
@@ -154,6 +155,7 @@
   "routes_apikeys_table_environment": "Environment",
   "routes_apikeys_live_mode_keys_title": "Live mode keys",
   "routes_apikeys_create_new": "Create new",
+  "routes_apikeys_search_placeholder": "Search API key",
   "routes_apikeys_table_name": "Name",
   "routes_apikeys_table_created_at": "Created at",
   "routes_apikeys_delete": "Delete",
@@ -178,6 +180,7 @@
   "routes_users_page_header": "Users",
   "routes_users_title": "Users in your organization",
   "routes_users_invite_button": "Invite Users",
+  "routes_users_search_placeholder": "Search users",
   "routes_users_table_name": "Name",
   "routes_users_table_email": "Email",
   "routes_users_table_permission": "Permission",
@@ -252,6 +255,7 @@
 
   "routes_environments_page_header": "Environment",
   "routes_environments_title": "Environments",
+  "routes_environments_search_placeholder": "Search environment",
   "routes_environments_create_new": "Create new",
   "routes_environments_table_name": "Name",
   "routes_environments_table_color": "Color",

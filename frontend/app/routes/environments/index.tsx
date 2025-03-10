@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
+import Fuse from 'fuse.js';
 import {
   Table,
   TableBody,
@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { ErrorResponse } from '@/api/instance';
+import { Input } from '@/components/ui/input';
 
 export default function Environments() {
   const isInitialLoading = useRef(false);
@@ -52,6 +53,7 @@ export default function Environments() {
   const { toast } = useToast();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
+  const [search, setSearch] = useState('');
   const environments = useSelector(environmentsStore.selector.getEnvironments);
   const isDeleteEnvironmentWaiting = useSelector(
     (state) => state.environments.isDeleteEnvironmentWaiting,
@@ -69,8 +71,19 @@ export default function Environments() {
 
   const pageCount = Math.ceil(environments.length / pageSize);
 
+  const filteredEnvironments = useMemo(() => {
+    if (!search) {
+      return environments;
+    }
+    const fuse = new Fuse(environments, {
+      keys: ['name'],
+    });
+
+    return fuse.search(search).map((result) => result.item);
+  }, [environments, search]);
+
   const slicedEnvironments = useMemo(() => {
-    return environments.slice(
+    return filteredEnvironments.slice(
       (page || 1) * pageSize - pageSize,
       (page || 1) * pageSize,
     );
@@ -130,7 +143,17 @@ export default function Environments() {
           <p className="text-xl font-bold text-foreground">
             {t('routes_environments_title')}
           </p>
-
+        </div>
+        <div className="flex justify-between gap-2">
+          <div className="hidden max-w-72 flex-1 md:block">
+            <Input
+              placeholder={t('routes_environments_search_placeholder')}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+          </div>
           <Button asChild>
             <Link to={$path('/environments/new')}>
               <Plus />
@@ -151,7 +174,7 @@ export default function Environments() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {slicedEnvironments.map((environment) => (
+              {filteredEnvironments.map((environment) => (
                 <TableRow
                   key={environment.id}
                   className="cursor-pointer"

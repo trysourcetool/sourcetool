@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
+import Fuse from 'fuse.js';
 import {
   Table,
   TableBody,
@@ -52,6 +52,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { ErrorResponse } from '@/api/instance';
+import { Input } from '@/components/ui/input';
 
 export default function ApiKeys() {
   const isInitialLoading = useRef(false);
@@ -60,6 +61,7 @@ export default function ApiKeys() {
   const dispatch = useDispatch();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
+  const [search, setSearch] = useState('');
   const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
   const [selectApiKeyId, setSelectApiKeyId] = useState<string | null>(null);
@@ -76,12 +78,23 @@ export default function ApiKeys() {
 
   const pageCount = Math.ceil(apiKeys.length / pageSize);
 
+  const filteredApiKeys = useMemo(() => {
+    if (!search) {
+      return apiKeys;
+    }
+    const fuse = new Fuse(apiKeys, {
+      keys: ['name'],
+    });
+
+    return fuse.search(search).map((result) => result.item);
+  }, [apiKeys, search]);
+
   const slicedApiKeys = useMemo(() => {
-    return apiKeys.slice(
+    return filteredApiKeys.slice(
       (page || 1) * pageSize - pageSize,
       (page || 1) * pageSize,
     );
-  }, [apiKeys, page]);
+  }, [filteredApiKeys, page]);
 
   const onCopy = async (apiKey: string) => {
     try {
@@ -194,7 +207,18 @@ export default function ApiKeys() {
           <p className="text-xl font-bold text-foreground">
             {t('routes_apikeys_live_mode_keys_title')}
           </p>
+        </div>
 
+        <div className="flex justify-between gap-2">
+          <div className="hidden max-w-72 flex-1 md:block">
+            <Input
+              placeholder={t('routes_apikeys_search_placeholder')}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+          </div>
           <Button asChild>
             <Link to={$path('/apiKeys/new')}>
               <Plus />
@@ -202,6 +226,7 @@ export default function ApiKeys() {
             </Link>
           </Button>
         </div>
+
         <div className="w-full overflow-auto rounded-md border">
           <Table className="md:table-fixed">
             <TableHeader>
@@ -332,7 +357,7 @@ export default function ApiKeys() {
                   );
                 })}
 
-                {page !== pageCount && pageCount !== 1 && (
+                {page !== pageCount && pageCount > 1 && pageCount !== 1 && (
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => {

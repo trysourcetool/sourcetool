@@ -38,6 +38,7 @@
 
   "routes_groups_page_header": "権限",
   "routes_groups_title": "権限グループ",
+  "routes_groups_search_placeholder": "権限グループを検索",
   "routes_groups_create_new": "新規作成",
   "routes_groups_table_name": "名前",
   "routes_groups_table_slug": "スラッグ",
@@ -154,6 +155,7 @@
   "routes_apikeys_table_environment": "環境",
   "routes_apikeys_live_mode_keys_title": "ライブモードキー",
   "routes_apikeys_create_new": "新規作成",
+  "routes_apikeys_search_placeholder": "APIキーを検索",
   "routes_apikeys_table_name": "名前",
   "routes_apikeys_table_created_at": "作成日",
   "routes_apikeys_delete": "削除",
@@ -178,6 +180,7 @@
   "routes_users_page_header": "ユーザー",
   "routes_users_title": "組織内のユーザー",
   "routes_users_invite_button": "ユーザーを招待",
+  "routes_users_search_placeholder": "ユーザーを検索",
   "routes_users_table_name": "名前",
   "routes_users_table_email": "メールアドレス",
   "routes_users_table_permission": "権限",
@@ -252,6 +255,7 @@
 
   "routes_environments_page_header": "環境",
   "routes_environments_title": "環境",
+  "routes_environments_search_placeholder": "環境を検索",
   "routes_environments_create_new": "新規作成",
   "routes_environments_table_name": "名前",
   "routes_environments_table_color": "色",

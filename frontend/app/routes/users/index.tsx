@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Fuse from 'fuse.js';
 import {
   Table,
   TableBody,
@@ -27,7 +28,7 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { Ellipsis, Loader2, Plus } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
 import { object, string } from 'zod';
@@ -45,7 +46,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { UserRole } from '@/api/modules/users';
+import type { User, UserInvitation, UserRole } from '@/api/modules/users';
 import {
   Select,
   SelectContent,
@@ -53,6 +54,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useQueryState } from 'nuqs';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import clsx from 'clsx';
 
 const InviteForm = () => {
   const dispatch = useDispatch();
@@ -203,6 +215,12 @@ export default function Users() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useQueryState('page', {
+    parse: (query: string) => parseInt(query, 10),
+    serialize: (value) => value.toString(),
+  });
+
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
   const me = useSelector(usersStore.selector.getMe);
@@ -210,6 +228,54 @@ export default function Users() {
   const isInvitationsResendWaiting = useSelector(
     (state) => state.users.isInvitationsResendWaiting,
   );
+
+  const filteredUsers = useMemo(() => {
+    if (!search) {
+      return users;
+    }
+    const fuse = new Fuse(users, {
+      keys: ['firstName', 'lastName', 'email'],
+    });
+
+    return fuse.search(search).map((result) => result.item);
+  }, [users, search]);
+
+  const filteredUserInvitations = useMemo(() => {
+    if (!search) {
+      return userInvitations;
+    }
+    const fuse = new Fuse(userInvitations, {
+      keys: ['email'],
+    });
+
+    return fuse.search(search).map((result) => result.item);
+  }, [userInvitations, search]);
+
+  const pageSize = 10;
+
+  const pageCount = Math.ceil(
+    (filteredUsers.length + filteredUserInvitations.length) / pageSize,
+  );
+
+  const slicedUsers = useMemo(() => {
+    return [
+      ...filteredUserInvitations.map((userInvitation) => ({
+        ...userInvitation,
+        type: 'invitation',
+      })),
+      ...filteredUsers.map((user) => ({
+        ...user,
+        type: 'active',
+      })),
+    ].slice((page || 1) * pageSize - pageSize, (page || 1) * pageSize) as (
+      | ({
+          type: 'invitation';
+        } & UserInvitation)
+      | ({
+          type: 'active';
+        } & User)
+    )[];
+  }, [filteredUsers, filteredUserInvitations, page]);
 
   const handleResendInvitation = async (invitationId: string) => {
     const resultAction = await dispatch(
@@ -260,7 +326,18 @@ export default function Users() {
           <p className="text-xl font-bold text-foreground">
             {t('routes_users_title')}
           </p>
+        </div>
 
+        <div className="flex justify-between gap-2">
+          <div className="hidden max-w-72 flex-1 md:block">
+            <Input
+              placeholder={t('routes_users_search_placeholder')}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+          </div>
           <Button asChild>
             <Link to={$path('/users/invite')}>
               <Plus />
@@ -281,77 +358,146 @@ export default function Users() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {userInvitations.map((userInvitation) => (
-                <TableRow key={userInvitation.id}>
-                  <TableCell className="truncate font-normal text-muted-foreground">
-                    {t('routes_users_invitation_sent')}
-                  </TableCell>
-                  <TableCell className="truncate font-normal text-muted-foreground">
-                    {userInvitation.email}
-                  </TableCell>
-                  <TableCell></TableCell>
-                  <TableCell>
-                    <Button
-                      variant={'outline'}
-                      type="button"
+              {slicedUsers.map((user) => {
+                if (user.type === 'invitation') {
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell className="truncate font-normal text-muted-foreground">
+                        {t('routes_users_invitation_sent')}
+                      </TableCell>
+                      <TableCell className="truncate font-normal text-muted-foreground">
+                        {user.email}
+                      </TableCell>
+                      <TableCell></TableCell>
+                      <TableCell>
+                        <Button
+                          variant={'outline'}
+                          type="button"
+                          className="cursor-pointer"
+                          onClick={() => handleResendInvitation(user.id)}
+                          disabled={isInvitationsResendWaiting}
+                        >
+                          {t('routes_users_resend_invitation')}
+                        </Button>
+                      </TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  );
+                }
+                if (user.type === 'active') {
+                  return (
+                    <TableRow
+                      key={user.id}
                       className="cursor-pointer"
-                      onClick={() => handleResendInvitation(userInvitation.id)}
-                      disabled={isInvitationsResendWaiting}
-                    >
-                      {t('routes_users_resend_invitation')}
-                    </Button>
-                  </TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              ))}
-              {users.map((user) => (
-                <TableRow
-                  key={user.id}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    navigate(
-                      $path('/users/:userId', {
-                        userId: user.id,
-                      }),
-                    );
-                  }}
-                >
-                  <TableCell className="truncate font-medium">
-                    {user.firstName} {user.lastName}
-                  </TableCell>
-                  <TableCell className="truncate">{user.email}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className="text-xs"
-                      style={{
-                        textTransform: 'capitalize',
+                      onClick={() => {
+                        navigate(
+                          $path('/users/:userId', {
+                            userId: user.id,
+                          }),
+                        );
                       }}
                     >
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell></TableCell>
-                  <TableCell align="right">
-                    {me?.role === 'admin' && me?.id !== user.id && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Ellipsis className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            {t('routes_users_remove')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell className="truncate font-medium">
+                        {user.firstName} {user.lastName}
+                      </TableCell>
+                      <TableCell className="truncate">{user.email}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs"
+                          style={{
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell></TableCell>
+                      <TableCell align="right">
+                        {me?.role === 'admin' && me?.id !== user.id && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Ellipsis className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                {t('routes_users_remove')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              })}
             </TableBody>
           </Table>
+          <div className="border-t bg-muted p-4">
+            <Pagination className="flex justify-end">
+              <PaginationContent>
+                {page !== 1 && page !== null && (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      className={clsx(
+                        (page !== 1 || page === null) && 'cursor-pointer',
+                      )}
+                      onClick={() => {
+                        if (page === 1 || page === null) {
+                          return;
+                        }
+                        setPage((page || 1) - 1);
+                      }}
+                    />
+                  </PaginationItem>
+                )}
+                {Array.from({ length: pageCount }).map((_, index) => {
+                  if (index > (page || 1) + 2 || index < (page || 1) - 3) {
+                    return null;
+                  }
+                  if (index === (page || 1) + 2 || index === (page || 1) - 3) {
+                    return (
+                      <PaginationItem key={index}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+                  return (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        onClick={() => setPage(index + 1)}
+                        className={clsx(
+                          page !== index + 1 && 'cursor-pointer',
+                          page === index + 1 && 'pointer-events-none',
+                        )}
+                        isActive={
+                          page === index + 1 || (index === 0 && page === null)
+                        }
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+
+                {page !== pageCount && pageCount > 1 && pageCount !== 1 && (
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => {
+                        if (page === pageCount) {
+                          return;
+                        }
+                        setPage((page || 1) + 1);
+                      }}
+                      className={clsx(page !== pageCount && 'cursor-pointer')}
+                    />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          </div>
         </div>
       </div>
       <Outlet />

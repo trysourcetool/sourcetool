@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
+import Fuse from 'fuse.js';
 import {
   Table,
   TableBody,
@@ -27,7 +27,7 @@ import { useDispatch, useSelector } from '@/store';
 import { groupsStore } from '@/store/modules/groups';
 import dayjs from 'dayjs';
 import { Ellipsis, Plus } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
 import { useQueryState } from 'nuqs';
@@ -42,6 +42,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import clsx from 'clsx';
+import { Input } from '@/components/ui/input';
 
 export default function Groups() {
   const isInitialLoading = useRef(false);
@@ -50,7 +51,7 @@ export default function Groups() {
   const dispatch = useDispatch();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
-
+  const [search, setSearch] = useState('');
   const groups = useSelector(groupsStore.selector.getGroups);
   const userGroups = useSelector(groupsStore.selector.getUserGroups);
   const isDeleteGroupWaiting = useSelector(
@@ -66,12 +67,22 @@ export default function Groups() {
 
   const pageCount = Math.ceil(groups.length / pageSize);
 
+  const filteredGroups = useMemo(() => {
+    if (!search) {
+      return groups;
+    }
+    const fuse = new Fuse(groups, {
+      keys: ['name'],
+    });
+    return fuse.search(search).map((result) => result.item);
+  }, [groups, search]);
+
   const slicedGroups = useMemo(() => {
-    return groups.slice(
+    return filteredGroups.slice(
       (page || 1) * pageSize - pageSize,
       (page || 1) * pageSize,
     );
-  }, [groups, page]);
+  }, [filteredGroups, page]);
 
   const countGroupUsers = (groupId: string) => {
     return userGroups.filter((userGroup) => userGroup.groupId === groupId)
@@ -120,7 +131,17 @@ export default function Groups() {
           <p className="text-xl font-bold text-foreground">
             {t('routes_groups_title')}
           </p>
-
+        </div>
+        <div className="flex justify-between gap-2">
+          <div className="hidden max-w-72 flex-1 md:block">
+            <Input
+              placeholder={t('routes_groups_search_placeholder')}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+            />
+          </div>
           <Button asChild>
             <Link to={$path('/groups/new')}>
               <Plus />
@@ -165,7 +186,7 @@ export default function Groups() {
                   <TableCell className="truncate">
                     {dayjs.unix(Number(group.createdAt)).format('DD MMM YYYY')}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="truncate">
                     {t('routes_groups_users_count', {
                       count: countGroupUsers(group.id),
                     })}
