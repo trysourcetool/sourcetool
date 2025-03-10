@@ -9,10 +9,11 @@ import {
   useRouteError,
 } from 'react-router';
 import type { LinksFunction } from 'react-router';
+import i18n from './i18n';
 
 import styles from './tailwind.css?url';
 import { ThemeProvider } from 'next-themes';
-import { useTranslation } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Provider } from 'react-redux';
 import { configureStore } from './store';
 import { Loader2 } from 'lucide-react';
@@ -101,7 +102,9 @@ It might have been moved, deleted, or never existed in the first place.`}</CardD
 export default function App() {
   return (
     <NuqsAdapter>
-      <Outlet />
+      <I18nextProvider i18n={i18n}>
+        <Outlet />
+      </I18nextProvider>
     </NuqsAdapter>
   );
 }

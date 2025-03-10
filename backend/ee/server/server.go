@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	httpserver "github.com/trysourcetool/sourcetool/backend/ee/server/http"
 	"github.com/trysourcetool/sourcetool/backend/ee/server/ws"
 	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/server"
 	cehttpserver "github.com/trysourcetool/sourcetool/backend/server/http"
 	cews "github.com/trysourcetool/sourcetool/backend/server/ws"
 )
@@ -81,6 +83,9 @@ func (s *Server) router() chi.Router {
 
 	r.Mount("/ws", s.wsRouter.Build())
 	r.Mount("/api", s.httpRouter.Build())
+
+	staticDir := os.Getenv("STATIC_FILES_DIR")
+	server.ServeStaticFiles(r, staticDir)
 
 	return r
 }

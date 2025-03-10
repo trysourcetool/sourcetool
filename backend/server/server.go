@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -101,6 +102,9 @@ func (s *Server) router() chi.Router {
 
 	r.Mount("/ws", s.wsRouter.Build())
 	r.Mount("/api", s.httpRouter.Build())
+
+	staticDir := os.Getenv("STATIC_FILES_DIR")
+	ServeStaticFiles(r, staticDir)
 
 	return r
 }
