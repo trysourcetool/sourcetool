@@ -7,9 +7,7 @@ x-database-variables: &database-variables
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "8080:8080"
     depends_on:
@@ -17,9 +15,6 @@ services:
       - redis
     env_file:
       - .env
-    # For debugging
-    volumes:
-      - ./debug_output:/debug_output
 
   postgres:
     image: postgres:15
