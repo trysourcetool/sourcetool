@@ -30,11 +30,15 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 
 # Serverless VPC Access connector
 resource "google_vpc_access_connector" "connector" {
-  name          = "sourcetool-vpc-connector-${var.environment}"
+  name          = "vpc-connector-${var.environment}"
   ip_cidr_range = "10.8.0.0/28"
-  network       = google_compute_subnetwork.subnet.name
+  network       = google_compute_network.vpc.self_link
   region        = var.region
-  machine_type  = "e2-micro"
-  min_instances = 0
-  max_instances = 3
+  machine_type  = var.vpc_connector_machine_type
+  min_instances = var.vpc_connector_min_instances
+  max_instances = var.vpc_connector_max_instances
+
+  depends_on = [
+    google_project_service.required_apis["vpcaccess.googleapis.com"]
+  ]
 } 

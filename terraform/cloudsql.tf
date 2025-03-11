@@ -2,33 +2,40 @@
 resource "google_sql_database_instance" "instance" {
   name             = var.db_instance_name
   database_version = var.db_version
-  region           = var.region
+  region          = var.region
+
+  depends_on = [
+    google_service_networking_connection.private_vpc_connection
+  ]
 
   settings {
     tier = var.db_tier
+
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.vpc.id
     }
+
     backup_configuration {
-      enabled = true
+      enabled = var.db_backup_enabled
     }
-    maintenance_window {
-      day  = 7
-      hour = 3
+
+    database_flags {
+      name  = "max_connections"
+      value = tostring(var.db_max_connections)
     }
   }
 
-  depends_on = [google_service_networking_connection.private_vpc_connection]
+  deletion_protection = true
 }
 
-# Database
+# Create database
 resource "google_sql_database" "database" {
   name     = var.db_name
   instance = google_sql_database_instance.instance.name
 }
 
-# Database user
+# Create user
 resource "google_sql_user" "user" {
   name     = var.db_user
   instance = google_sql_database_instance.instance.name
@@ -38,7 +45,7 @@ resource "google_sql_user" "user" {
 # Service account for Cloud Run
 resource "google_service_account" "cloud_run_sa" {
   account_id   = "sourcetool-cloudrun-${var.environment}"
-  display_name = "Service Account for SourceTool Cloud Run"
+  display_name = "Service Account for Sourcetool Cloud Run"
 }
 
 # IAM binding for Cloud Run service account to access Cloud SQL

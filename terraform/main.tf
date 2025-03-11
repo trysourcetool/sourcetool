@@ -27,7 +27,8 @@ resource "google_project_service" "required_apis" {
     "run.googleapis.com",
     "sqladmin.googleapis.com",
     "compute.googleapis.com",
-    "servicenetworking.googleapis.com"
+    "servicenetworking.googleapis.com",
+    "vpcaccess.googleapis.com"
   ])
 
   project = var.project_id
