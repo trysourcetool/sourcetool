@@ -1,0 +1,49 @@
+steps:
+  # Build both images in parallel
+  # Build the migration image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/sourcetool-migrate:$COMMIT_SHA', '-f', 'Dockerfile.migrate', '.']
+
+  # Build the main application image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA', '.']
+
+  # Push both images
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/sourcetool-migrate:$COMMIT_SHA']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA']
+
+  # Update and execute the migration job
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'jobs'
+      - 'update'
+      - 'sourcetool-migrate'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/sourcetool-migrate:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--execute-now'
+      - '--wait'
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'sourcetool'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+
+images:
+  - 'gcr.io/$PROJECT_ID/sourcetool-migrate:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA' 
