@@ -227,29 +227,33 @@ resource "google_secret_manager_secret_version" "smtp_from_email" {
 }
 
 # IAM policy for Secret Manager
-resource "google_secret_manager_secret_iam_member" "secret_access" {
-  for_each = toset([
-    google_secret_manager_secret.encryption_key.id,
-    google_secret_manager_secret.jwt_key.id,
-    google_secret_manager_secret.postgres_host.id,
-    google_secret_manager_secret.postgres_db.id,
-    google_secret_manager_secret.postgres_user.id,
-    google_secret_manager_secret.postgres_password.id,
-    google_secret_manager_secret.postgres_port.id,
-    google_secret_manager_secret.redis_host.id,
-    google_secret_manager_secret.redis_password.id,
-    google_secret_manager_secret.redis_port.id,
-    google_secret_manager_secret.google_oauth_client_id.id,
-    google_secret_manager_secret.google_oauth_client_secret.id,
-    google_secret_manager_secret.google_oauth_callback_url.id,
-    google_secret_manager_secret.smtp_host.id,
-    google_secret_manager_secret.smtp_port.id,
-    google_secret_manager_secret.smtp_username.id,
-    google_secret_manager_secret.smtp_password.id,
-    google_secret_manager_secret.smtp_from_email.id,
-  ])
+locals {
+  secrets = {
+    encryption_key              = google_secret_manager_secret.encryption_key.id
+    jwt_key                    = google_secret_manager_secret.jwt_key.id
+    postgres_host              = google_secret_manager_secret.postgres_host.id
+    postgres_db                = google_secret_manager_secret.postgres_db.id
+    postgres_user              = google_secret_manager_secret.postgres_user.id
+    postgres_password          = google_secret_manager_secret.postgres_password.id
+    postgres_port              = google_secret_manager_secret.postgres_port.id
+    redis_host                 = google_secret_manager_secret.redis_host.id
+    redis_password             = google_secret_manager_secret.redis_password.id
+    redis_port                 = google_secret_manager_secret.redis_port.id
+    google_oauth_client_id     = google_secret_manager_secret.google_oauth_client_id.id
+    google_oauth_client_secret = google_secret_manager_secret.google_oauth_client_secret.id
+    google_oauth_callback_url  = google_secret_manager_secret.google_oauth_callback_url.id
+    smtp_host                  = google_secret_manager_secret.smtp_host.id
+    smtp_port                  = google_secret_manager_secret.smtp_port.id
+    smtp_username              = google_secret_manager_secret.smtp_username.id
+    smtp_password              = google_secret_manager_secret.smtp_password.id
+    smtp_from_email           = google_secret_manager_secret.smtp_from_email.id
+  }
+}
 
-  secret_id = each.key
+resource "google_secret_manager_secret_iam_member" "secret_access" {
+  for_each = local.secrets
+
+  secret_id = each.value
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.cloud_run_sa.email}"
 } 

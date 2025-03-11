@@ -21,6 +21,10 @@ required_vars=(
   # Domain Configuration
   "DOMAIN_NAME"
   
+  # Common Configuration
+  "ENCRYPTION_KEY"
+  "JWT_KEY"
+  
   # Database Configuration
   "GCP_SQL_INSTANCE"
   "DB_NAME"
@@ -30,6 +34,23 @@ required_vars=(
   "DB_TIER"
   "DB_BACKUP_ENABLED"
   "DB_MAX_CONNECTIONS"
+  
+  # Redis Configuration
+  "REDIS_HOST"
+  "REDIS_PASSWORD"
+  "REDIS_PORT"
+  
+  # OAuth Configuration
+  "GOOGLE_OAUTH_CLIENT_ID"
+  "GOOGLE_OAUTH_CLIENT_SECRET"
+  "GOOGLE_OAUTH_CALLBACK_URL"
+  
+  # SMTP Configuration
+  "SMTP_HOST"
+  "SMTP_PORT"
+  "SMTP_USERNAME"
+  "SMTP_PASSWORD"
+  "SMTP_FROM_EMAIL"
   
   # Cloud Run Configuration
   "CLOUD_RUN_SERVICE_NAME"
@@ -93,6 +114,7 @@ required_apis=(
   "servicenetworking.googleapis.com" # Service Networking API
   "dns.googleapis.com"             # Cloud DNS API
   "secretmanager.googleapis.com"   # Secret Manager API
+  "certificatemanager.googleapis.com" # Certificate Manager API
 )
 
 for api in "${required_apis[@]}"; do
@@ -117,6 +139,10 @@ environment = "$GCP_ENVIRONMENT"
 # Domain Configuration
 domain_name = "$DOMAIN_NAME"
 
+# Common Configuration
+encryption_key = "$ENCRYPTION_KEY"
+jwt_key       = "$JWT_KEY"
+
 # Database Configuration
 db_instance_name    = "$GCP_SQL_INSTANCE"
 db_name            = "$DB_NAME"
@@ -126,6 +152,23 @@ db_version         = "$DB_VERSION"
 db_tier            = "$DB_TIER"
 db_backup_enabled  = $DB_BACKUP_ENABLED
 db_max_connections = $DB_MAX_CONNECTIONS
+
+# Redis Configuration
+redis_host     = "$REDIS_HOST"
+redis_password = "$REDIS_PASSWORD"
+redis_port     = "$REDIS_PORT"
+
+# OAuth Configuration
+google_oauth_client_id     = "$GOOGLE_OAUTH_CLIENT_ID"
+google_oauth_client_secret = "$GOOGLE_OAUTH_CLIENT_SECRET"
+google_oauth_callback_url  = "$GOOGLE_OAUTH_CALLBACK_URL"
+
+# SMTP Configuration
+smtp_host       = "$SMTP_HOST"
+smtp_port       = "$SMTP_PORT"
+smtp_username   = "$SMTP_USERNAME"
+smtp_password   = "$SMTP_PASSWORD"
+smtp_from_email = "$SMTP_FROM_EMAIL"
 
 # Cloud Run Configuration
 cloud_run_service_name   = "$CLOUD_RUN_SERVICE_NAME"
@@ -150,35 +193,6 @@ terraform plan -var-file="terraform.tfvars"
 # Apply the changes
 echo "Applying Terraform changes..."
 terraform apply -var-file="terraform.tfvars"
-
-# Get the Cloud Run service URL
-echo "Getting Cloud Run service URL..."
-SERVICE_URL=$(gcloud run services describe "$CLOUD_RUN_SERVICE_NAME" \
-  --region "$GCP_REGION" \
-  --format='value(status.url)')
-
-echo "Setup completed successfully!"
-echo "Cloud Run service URL: $SERVICE_URL"
-
-# Print next steps
-echo "
-Next steps:
-1. Set up GitHub repository secrets:
-   - GCP_PROJECT_ID: $GCP_PROJECT_ID
-   - GCP_REGION: $GCP_REGION
-   - GCP_SA_KEY: (Create a service account key with necessary permissions)
-   - GCP_SQL_INSTANCE: $GCP_SQL_INSTANCE
-   - DB_HOST: (Get from Cloud SQL instance)
-   - DB_USER: $DB_USER
-   - DB_PASSWORD: $DB_PASSWORD
-
-2. Enable required APIs in GCP:
-   - Cloud Run API
-   - Cloud SQL Admin API
-   - Compute Engine API
-   - Service Networking API
-   - Artifact Registry API
-"
 
 echo "Infrastructure setup completed!"
 echo "Important: After the setup is complete, check the nameservers output and update your domain registrar's nameserver settings accordingly."

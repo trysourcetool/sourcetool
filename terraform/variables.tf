@@ -204,9 +204,3 @@ variable "smtp_from_email" {
   description = "SMTP from email address"
   type        = string
 }
-
-locals {
-  domains = [
-    "*.${var.domain_name}"         # *.stg.trysourcetool.com
-  ]
-} 
