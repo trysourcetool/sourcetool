@@ -77,8 +77,8 @@ resource "google_compute_backend_service" "default" {
 resource "google_compute_region_network_endpoint_group" "default" {
   name                  = "neg-${var.environment}"
   network_endpoint_type = "SERVERLESS"
-  region               = var.region
+  region                = var.region
   cloud_run {
-    service = google_cloud_run_service.default.name
+    service = google_cloud_run_v2_service.default.name
   }
 } 

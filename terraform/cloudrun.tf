@@ -1,234 +1,236 @@
 # Cloud Run service
-resource "google_cloud_run_service" "default" {
+resource "google_cloud_run_v2_service" "default" {
   name     = var.cloud_run_service_name
   location = var.region
 
   template {
-    spec {
-      service_account_name = google_service_account.cloud_run_sa.email
-      containers {
-        image = var.container_image
-        
-        resources {
-          limits = {
-            cpu    = var.cloud_run_cpu
-            memory = var.cloud_run_memory
+    containers {
+      image = var.container_image
+
+      resources {
+        limits = {
+          cpu    = var.cloud_run_cpu
+          memory = var.cloud_run_memory
+        }
+      }
+
+      # Common configuration
+      env {
+        name  = "ENV"
+        value = var.environment
+      }
+
+      env {
+        name  = "DOMAIN"
+        value = var.domain_name
+      }
+
+      env {
+        name = "ENCRYPTION_KEY"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.encryption_key.secret_id
+            version = "latest"
           }
         }
+      }
 
-        # Common configuration
-        env {
-          name  = "ENV"
-          value = var.environment
-        }
-
-        env {
-          name  = "DOMAIN"
-          value = var.domain_name
-        }
-
-        env {
-          name = "ENCRYPTION_KEY"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.encryption_key.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "JWT_KEY"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.jwt_key.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "JWT_KEY"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.jwt_key.secret_id
-              key  = "latest"
-            }
+      # Database configuration
+      env {
+        name = "POSTGRES_HOST"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.postgres_host.secret_id
+            version = "latest"
           }
         }
+      }
 
-        # Database configuration
-        env {
-          name = "POSTGRES_HOST"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.postgres_host.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "POSTGRES_DB"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.postgres_db.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "POSTGRES_DB"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.postgres_db.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "POSTGRES_USER"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.postgres_user.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "POSTGRES_USER"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.postgres_user.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "POSTGRES_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.postgres_password.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "POSTGRES_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.postgres_password.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "POSTGRES_PORT"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.postgres_port.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "POSTGRES_PORT"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.postgres_port.secret_id
-              key  = "latest"
-            }
+      # Redis configuration
+      env {
+        name = "REDIS_HOST"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.redis_host.secret_id
+            version = "latest"
           }
         }
+      }
 
-        # Redis configuration
-        env {
-          name = "REDIS_HOST"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.redis_host.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "REDIS_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.redis_password.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "REDIS_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.redis_password.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "REDIS_PORT"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.redis_port.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "REDIS_PORT"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.redis_port.secret_id
-              key  = "latest"
-            }
+      # OAuth configuration
+      env {
+        name = "GOOGLE_OAUTH_CLIENT_ID"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.google_oauth_client_id.secret_id
+            version = "latest"
           }
         }
+      }
 
-        # OAuth configuration
-        env {
-          name = "GOOGLE_OAUTH_CLIENT_ID"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.google_oauth_client_id.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "GOOGLE_OAUTH_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.google_oauth_client_secret.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "GOOGLE_OAUTH_CLIENT_SECRET"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.google_oauth_client_secret.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "GOOGLE_OAUTH_CALLBACK_URL"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.google_oauth_callback_url.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "GOOGLE_OAUTH_CALLBACK_URL"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.google_oauth_callback_url.secret_id
-              key  = "latest"
-            }
+      # SMTP configuration
+      env {
+        name = "SMTP_HOST"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.smtp_host.secret_id
+            version = "latest"
           }
         }
+      }
 
-        # SMTP configuration
-        env {
-          name = "SMTP_HOST"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.smtp_host.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "SMTP_PORT"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.smtp_port.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "SMTP_PORT"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.smtp_port.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "SMTP_USERNAME"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.smtp_username.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "SMTP_USERNAME"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.smtp_username.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "SMTP_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.smtp_password.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "SMTP_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.smtp_password.secret_id
-              key  = "latest"
-            }
+      env {
+        name = "SMTP_FROM_EMAIL"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.smtp_from_email.secret_id
+            version = "latest"
           }
         }
+      }
 
-        env {
-          name = "SMTP_FROM_EMAIL"
-          value_from {
-            secret_key_ref {
-              name = google_secret_manager_secret.smtp_from_email.secret_id
-              key  = "latest"
-            }
-          }
+      startup_probe {
+        initial_delay_seconds = 0
+        timeout_seconds = 1
+        period_seconds = 3
+        failure_threshold = 1
+        tcp_socket {
+          port = 8080
         }
       }
     }
 
-    metadata {
-      annotations = {
-        "autoscaling.knative.dev/minScale"        = var.cloud_run_min_instances
-        "autoscaling.knative.dev/maxScale"        = var.cloud_run_max_instances
-        "run.googleapis.com/vpc-access-connector"  = google_vpc_access_connector.connector.name
-        "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
-        "run.googleapis.com/cloudsql-instances"   = google_sql_database_instance.instance.connection_name
-        "run.googleapis.com/cpu-throttling"       = "false"
-        "run.googleapis.com/execution-environment" = "gen2"
-      }
+    scaling {
+      min_instance_count = var.cloud_run_min_instances
+      max_instance_count = var.cloud_run_max_instances
     }
-  }
 
-  traffic {
-    percent         = 100
-    latest_revision = true
+    vpc_access {
+      connector = google_vpc_access_connector.connector.id
+      egress = "PRIVATE_RANGES_ONLY"
+    }
+
+    service_account = google_service_account.cloud_run_sa.email
   }
 
   depends_on = [
@@ -255,10 +257,10 @@ resource "google_cloud_run_service" "default" {
 }
 
 # IAM policy for Cloud Run service
-resource "google_cloud_run_service_iam_member" "default" {
-  location = google_cloud_run_service.default.location
-  project  = google_cloud_run_service.default.project
-  service  = google_cloud_run_service.default.name
+resource "google_cloud_run_v2_service_iam_member" "default" {
+  name     = google_cloud_run_v2_service.default.name
+  location = google_cloud_run_v2_service.default.location
+  project  = google_cloud_run_v2_service.default.project
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.cloud_run_sa.email}"
 } 
