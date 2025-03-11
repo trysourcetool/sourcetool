@@ -144,21 +144,10 @@ variable "jwt_key" {
 }
 
 # Redis Configuration
-variable "redis_host" {
-  description = "Redis host"
-  type        = string
-}
-
 variable "redis_password" {
   description = "Redis password"
   type        = string
   sensitive   = true
-}
-
-variable "redis_port" {
-  description = "Redis port"
-  type        = string
-  default     = "6379"
 }
 
 # OAuth Configuration

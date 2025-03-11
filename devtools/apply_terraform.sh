@@ -36,9 +36,7 @@ required_vars=(
   "DB_MAX_CONNECTIONS"
   
   # Redis Configuration
-  "REDIS_HOST"
   "REDIS_PASSWORD"
-  "REDIS_PORT"
   
   # OAuth Configuration
   "GOOGLE_OAUTH_CLIENT_ID"
@@ -154,9 +152,7 @@ db_backup_enabled  = $DB_BACKUP_ENABLED
 db_max_connections = $DB_MAX_CONNECTIONS
 
 # Redis Configuration
-redis_host     = "$REDIS_HOST"
 redis_password = "$REDIS_PASSWORD"
-redis_port     = "$REDIS_PORT"
 
 # OAuth Configuration
 google_oauth_client_id     = "$GOOGLE_OAUTH_CLIENT_ID"
