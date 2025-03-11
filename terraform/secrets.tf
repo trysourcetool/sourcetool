@@ -145,33 +145,33 @@ resource "google_secret_manager_secret_version" "jwt_key" {
 # Database configuration
 resource "google_secret_manager_secret_version" "postgres_host" {
   secret      = google_secret_manager_secret.postgres_host.id
-  secret_data = google_sql_database_instance.instance.connection_name
+  secret_data = google_sql_database_instance.instance.private_ip_address
 }
 
 resource "google_secret_manager_secret_version" "postgres_db" {
   secret      = google_secret_manager_secret.postgres_db.id
-  secret_data = var.db_name
+  secret_data = google_sql_database.database.name
 }
 
 resource "google_secret_manager_secret_version" "postgres_user" {
   secret      = google_secret_manager_secret.postgres_user.id
-  secret_data = var.db_user
+  secret_data = google_sql_user.user.name
 }
 
 resource "google_secret_manager_secret_version" "postgres_password" {
   secret      = google_secret_manager_secret.postgres_password.id
-  secret_data = var.db_password
+  secret_data = google_sql_user.user.password
 }
 
 resource "google_secret_manager_secret_version" "postgres_port" {
   secret      = google_secret_manager_secret.postgres_port.id
-  secret_data = "5432"
+  secret_data = "5432" 
 }
 
 # Redis configuration
 resource "google_secret_manager_secret_version" "redis_host" {
   secret      = google_secret_manager_secret.redis_host.id
-  secret_data = var.redis_host
+  secret_data = google_redis_instance.default.host
 }
 
 resource "google_secret_manager_secret_version" "redis_password" {
@@ -181,7 +181,7 @@ resource "google_secret_manager_secret_version" "redis_password" {
 
 resource "google_secret_manager_secret_version" "redis_port" {
   secret      = google_secret_manager_secret.redis_port.id
-  secret_data = var.redis_port
+  secret_data = google_redis_instance.default.port
 }
 
 # OAuth configuration
