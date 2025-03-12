@@ -1,12 +1,12 @@
 # VPC Network
 resource "google_compute_network" "vpc" {
-  name                    = "sourcetool-vpc-${var.environment}"
+  name                    = "vpc-${var.environment}"
   auto_create_subnetworks = false
 }
 
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
-  name          = "sourcetool-subnet-${var.environment}"
+  name          = "subnet-${var.environment}"
   ip_cidr_range = "10.0.0.0/24"
   network       = google_compute_network.vpc.id
   region        = var.region
@@ -14,7 +14,7 @@ resource "google_compute_subnetwork" "subnet" {
 
 # Cloud SQL private IP
 resource "google_compute_global_address" "private_ip_address" {
-  name          = "sourcetool-private-ip-${var.environment}"
+  name          = "private-ip-${var.environment}"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
