@@ -25,4 +25,4 @@ docker build -t "gcr.io/$PROJECT_ID/$SERVICE_NAME:$COMMIT_SHA" \
 log "Pushing main application image..."
 docker push "gcr.io/$PROJECT_ID/$SERVICE_NAME:$COMMIT_SHA"
 
-log "Build process completed successfully!" 
+log "Build process completed successfully!"

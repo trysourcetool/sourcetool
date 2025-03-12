@@ -16,4 +16,4 @@ check_required_vars() {
 # Log function
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
-} 
+}

@@ -34,4 +34,4 @@ gcloud run deploy "$SERVICE_NAME-$DEPLOY_ENV" \
     --region "$REGION" \
     --platform managed
 
-log "Deployment to $DEPLOY_ENV completed successfully!" 
+log "Deployment to $DEPLOY_ENV completed successfully!"
