@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/form"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func TestConvertStateToFormProto(t *testing.T) {

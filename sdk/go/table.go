@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid/v5"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/table"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func (b *uiBuilder) Table(data any, opts ...table.Option) table.Value {

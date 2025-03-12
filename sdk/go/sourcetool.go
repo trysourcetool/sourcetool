@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid/v5"
+
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 )
 

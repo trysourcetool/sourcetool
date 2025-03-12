@@ -56,4 +56,7 @@ linters-settings:
     sections:
       - standard
       - default
-      - prefix(github.com/trysourcetool/sourcetool/backend)
+      - prefix(github.com/trysourcetool/sourcetool-go)
+  gosec:
+    excludes:
+      - G115 # Suppress integer overflow conversion warnings
