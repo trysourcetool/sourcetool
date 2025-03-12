@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/trysourcetool/sourcetool/backend/ee/config"
+	"github.com/trysourcetool/sourcetool/backend/config"
 	httpserver "github.com/trysourcetool/sourcetool/backend/ee/server/http"
 	"github.com/trysourcetool/sourcetool/backend/ee/server/ws"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -46,7 +46,7 @@ func (s *Server) router() chi.Router {
 			switch config.Config.Env {
 			case config.EnvProd:
 				pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
-			case config.EnvStg:
+			case config.EnvStaging:
 				pattern = `^https://[a-zA-Z0-9-]+\.stg\.trysourcetool\.com$`
 			case config.EnvLocal:
 				pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`

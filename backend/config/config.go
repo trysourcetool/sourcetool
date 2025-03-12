@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"strings"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -9,16 +10,17 @@ import (
 var Config *ConfigCE
 
 const (
-	EnvLocal = "local"
-	EnvStg   = "stg"
-	EnvProd  = "prod"
+	EnvLocal   = "local"
+	EnvStaging = "staging"
+	EnvProd    = "prod"
 )
 
 type ConfigCE struct {
-	Env           string `env:"ENV"`
-	Domain        string `env:"DOMAIN"`
-	EncryptionKey string `env:"ENCRYPTION_KEY"`
-	Jwt           struct {
+	Env            string
+	IsCloudEdition bool
+	Domain         string `env:"DOMAIN"`
+	EncryptionKey  string `env:"ENCRYPTION_KEY"`
+	Jwt            struct {
 		Key string `env:"JWT_KEY"`
 	}
 	Postgres struct {
@@ -54,6 +56,24 @@ func Init() {
 	envOpts := env.Options{RequiredIfNoDef: true}
 	if err := env.ParseWithOptions(cfg, envOpts); err != nil {
 		log.Fatal("[INIT] config: ", err)
+	}
+
+	// Set Env and IsCloudEdition based on DOMAIN
+	if strings.Contains(cfg.Domain, "localhost") {
+		cfg.Env = EnvLocal
+		cfg.IsCloudEdition = false
+	} else if strings.HasSuffix(cfg.Domain, "trysourcetool.com") {
+		parts := strings.Split(cfg.Domain, ".")
+		if len(parts) > 2 {
+			cfg.Env = parts[0]
+			cfg.IsCloudEdition = true
+		} else {
+			cfg.Env = EnvProd
+			cfg.IsCloudEdition = true
+		}
+	} else {
+		cfg.Env = EnvProd
+		cfg.IsCloudEdition = false
 	}
 
 	Config = cfg
