@@ -20,10 +20,5 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Git
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-
       - name: Sync SDK Go to mirror repository
         run: ./devtools/sync_sdk_go_mirror.sh "${{ secrets.GH_PAT }}" "github.com/trysourcetool/sourcetool-go.git"

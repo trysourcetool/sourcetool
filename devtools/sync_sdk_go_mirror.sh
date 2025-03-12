@@ -25,7 +25,10 @@ fi
 # Get the latest commit message that affected sdk/go from the source repository
 # Do this before changing directories
 LATEST_COMMIT_MSG=$(git log -1 --pretty=%B -- sdk/go | head -n 1)
+COMMIT_AUTHOR_NAME=$(git log -1 --pretty="%an" -- sdk/go)
+COMMIT_AUTHOR_EMAIL=$(git log -1 --pretty="%ae" -- sdk/go)
 echo "Latest commit message: $LATEST_COMMIT_MSG"
+echo "Commit author: $COMMIT_AUTHOR_NAME <$COMMIT_AUTHOR_EMAIL>"
 
 # If commit message is empty, use a default message
 if [ -z "$LATEST_COMMIT_MSG" ]; then
@@ -57,6 +60,10 @@ fi
 
 # Change to the mirror repo directory
 cd "$TEMP_DIR"
+
+# Configure git with the original committer's information
+git config user.name "$COMMIT_AUTHOR_NAME"
+git config user.email "$COMMIT_AUTHOR_EMAIL"
 
 # Check if there are any changes
 if [[ -z $(git status --porcelain) ]]; then
