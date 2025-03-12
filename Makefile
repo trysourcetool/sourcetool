@@ -1,7 +1,7 @@
 .PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
 	swagger swagger-open \
-	backend-lint remove-docker-images remove-docker-builder \
+	backend-lint frontend-lint remove-docker-images remove-docker-builder \
 	db-migrate \
 	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean
 
@@ -30,6 +30,7 @@ help:
 	@echo "  make swagger         - Generate Swagger documentation"
 	@echo "  make swagger-open    - Open Swagger UI in browser"
 	@echo "  make backend-lint    - Run linters on both CE and EE codebases (includes cache clean)"
+	@echo "  make frontend-lint   - Run linters on frontend codebase"
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-migrate      - Run database migrations"
@@ -113,6 +114,10 @@ backend-lint:
 	@echo "Running linters on codebase..."
 	@cd backend && gofumpt -l -w . && \
 		golangci-lint run --print-issued-lines --fix --go=1.22
+
+frontend-lint:
+	@echo "Running frontend linters..."
+	@cd frontend && yarn lint
 
 # Maintenance commands
 remove-docker-images:
