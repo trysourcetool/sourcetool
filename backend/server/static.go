@@ -68,7 +68,7 @@ func shouldServeFile(path, filePath string) bool {
 
 	// Always handle API, WebSocket, and Swagger paths with the file server
 	// or if the file actually exists on disk and is not index.html
-	return strings.HasPrefix(path, "/api") ||
+	return strings.HasPrefix(path, "/api/") ||
 		strings.HasPrefix(path, "/ws") ||
 		strings.HasPrefix(path, "/swagger") ||
 		(fileExists && !strings.HasSuffix(filePath, "index.html"))
