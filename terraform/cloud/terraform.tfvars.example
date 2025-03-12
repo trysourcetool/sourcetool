@@ -1,0 +1,49 @@
+# GCP Project Configuration
+project_id  = "your-project-id"
+region      = "us-central1"
+environment = "prod"
+
+# Domain Configuration
+domain_name = "trysourcetool.com"
+
+# Common Configuration
+encryption_key = "your-encryption-key"
+jwt_key       = "your-jwt-key"
+
+# Database Configuration
+db_instance_name    = "sourcetool-db"
+db_version         = "POSTGRES_15"
+db_tier            = "db-f1-micro"
+db_name            = "sourcetool"
+db_user            = "sourcetool_user"
+db_password        = "your-secure-password"
+db_backup_enabled  = true
+db_max_connections = 100
+
+# OAuth Configuration
+google_oauth_client_id     = "your-google-oauth-client-id"
+google_oauth_client_secret = "your-google-oauth-client-secret"
+google_oauth_callback_url  = "your-google-oauth-callback-url"
+
+# SMTP Configuration
+smtp_host       = "smtp.gmail.com"
+smtp_port       = "465"
+smtp_username   = "your-smtp-username"
+smtp_password   = "your-smtp-password"
+smtp_from_email = "your-smtp-from-email"
+
+# Cloud Run Configuration
+cloud_run_service_name   = "sourcetool"
+container_image         = "gcr.io/your-project-id/sourcetool:latest"
+job_container_image     = "gcr.io/your-project-id/sourcetool:latest"
+cloud_run_cpu           = "1"
+cloud_run_memory        = "512Mi"
+cloud_run_min_instances = 0
+cloud_run_max_instances = 10
+cloud_run_concurrency   = 80
+cloud_run_timeout       = 300
+
+# Network Configuration
+vpc_connector_machine_type   = "e2-micro"
+vpc_connector_min_instances = 2
+vpc_connector_max_instances = 3 
