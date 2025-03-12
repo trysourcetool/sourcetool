@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// ServeStaticFiles configures the router to serve static files from the specified directory
+// ServeStaticFiles configures the router to serve static files from the specified directory.
 func ServeStaticFiles(r chi.Router, staticDir string) {
 	staticDir = getStaticDir(staticDir)
 	if staticDir == "" {

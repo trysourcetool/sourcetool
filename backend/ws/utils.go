@@ -6,13 +6,13 @@ import (
 
 	"github.com/blendle/zapdriver"
 	"github.com/gorilla/websocket"
+	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 )
 
 func SendResponse(conn *websocket.Conn, msg *websocketv1.Message) error {

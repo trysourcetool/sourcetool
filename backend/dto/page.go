@@ -4,7 +4,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-// Page represents page data in DTOs
+// Page represents page data in DTOs.
 type Page struct {
 	ID             string
 	OrganizationID string
@@ -17,7 +17,7 @@ type Page struct {
 	UpdatedAt      int64
 }
 
-// PageFromModel converts from model.Page to dto.Page
+// PageFromModel converts from model.Page to dto.Page.
 func PageFromModel(page *model.Page) *Page {
 	if page == nil {
 		return nil
@@ -36,12 +36,12 @@ func PageFromModel(page *model.Page) *Page {
 	}
 }
 
-// ListPagesInput is the input for List operation
+// ListPagesInput is the input for List operation.
 type ListPagesInput struct {
 	OrganizationID string
 }
 
-// ListPagesOutput is the output for List operation
+// ListPagesOutput is the output for List operation.
 type ListPagesOutput struct {
 	Pages      []*Page
 	Groups     []*Group

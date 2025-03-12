@@ -8,7 +8,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
-// GroupDTOToResponse converts from dto.Group to responses.GroupResponse
+// GroupDTOToResponse converts from dto.Group to responses.GroupResponse.
 func GroupDTOToResponse(group *dto.Group) *responses.GroupResponse {
 	if group == nil {
 		return nil
@@ -23,7 +23,7 @@ func GroupDTOToResponse(group *dto.Group) *responses.GroupResponse {
 	}
 }
 
-// GroupPageDTOToResponse converts from dto.GroupPage to responses.GroupPageResponse
+// GroupPageDTOToResponse converts from dto.GroupPage to responses.GroupPageResponse.
 func GroupPageDTOToResponse(groupPage *dto.GroupPage) *responses.GroupPageResponse {
 	if groupPage == nil {
 		return nil
@@ -38,21 +38,21 @@ func GroupPageDTOToResponse(groupPage *dto.GroupPage) *responses.GroupPageRespon
 	}
 }
 
-// GetGroupRequestToDTOInput converts from requests.GetGroupRequest to dto.GetGroupInput
+// GetGroupRequestToDTOInput converts from requests.GetGroupRequest to dto.GetGroupInput.
 func GetGroupRequestToDTOInput(in requests.GetGroupRequest) dto.GetGroupInput {
 	return dto.GetGroupInput{
 		GroupID: in.GroupID,
 	}
 }
 
-// GetGroupOutputToResponse converts from dto.GetGroupOutput to responses.GetGroupResponse
+// GetGroupOutputToResponse converts from dto.GetGroupOutput to responses.GetGroupResponse.
 func GetGroupOutputToResponse(out *dto.GetGroupOutput) *responses.GetGroupResponse {
 	return &responses.GetGroupResponse{
 		Group: GroupDTOToResponse(out.Group),
 	}
 }
 
-// ListGroupsOutputToResponse converts from dto.ListGroupsOutput to responses.ListGroupsResponse
+// ListGroupsOutputToResponse converts from dto.ListGroupsOutput to responses.ListGroupsResponse.
 func ListGroupsOutputToResponse(out *dto.ListGroupsOutput) *responses.ListGroupsResponse {
 	groups := make([]*responses.GroupResponse, 0, len(out.Groups))
 	for _, group := range out.Groups {
@@ -76,7 +76,7 @@ func ListGroupsOutputToResponse(out *dto.ListGroupsOutput) *responses.ListGroups
 	}
 }
 
-// CreateGroupRequestToDTOInput converts from requests.CreateGroupRequest to dto.CreateGroupInput
+// CreateGroupRequestToDTOInput converts from requests.CreateGroupRequest to dto.CreateGroupInput.
 func CreateGroupRequestToDTOInput(in requests.CreateGroupRequest) dto.CreateGroupInput {
 	return dto.CreateGroupInput{
 		Name:    in.Name,
@@ -85,14 +85,14 @@ func CreateGroupRequestToDTOInput(in requests.CreateGroupRequest) dto.CreateGrou
 	}
 }
 
-// CreateGroupOutputToResponse converts from dto.CreateGroupOutput to responses.CreateGroupResponse
+// CreateGroupOutputToResponse converts from dto.CreateGroupOutput to responses.CreateGroupResponse.
 func CreateGroupOutputToResponse(out *dto.CreateGroupOutput) *responses.CreateGroupResponse {
 	return &responses.CreateGroupResponse{
 		Group: GroupDTOToResponse(out.Group),
 	}
 }
 
-// UpdateGroupRequestToDTOInput converts from requests.UpdateGroupRequest to dto.UpdateGroupInput
+// UpdateGroupRequestToDTOInput converts from requests.UpdateGroupRequest to dto.UpdateGroupInput.
 func UpdateGroupRequestToDTOInput(in requests.UpdateGroupRequest) dto.UpdateGroupInput {
 	return dto.UpdateGroupInput{
 		GroupID: in.GroupID,
@@ -101,21 +101,21 @@ func UpdateGroupRequestToDTOInput(in requests.UpdateGroupRequest) dto.UpdateGrou
 	}
 }
 
-// UpdateGroupOutputToResponse converts from dto.UpdateGroupOutput to responses.UpdateGroupResponse
+// UpdateGroupOutputToResponse converts from dto.UpdateGroupOutput to responses.UpdateGroupResponse.
 func UpdateGroupOutputToResponse(out *dto.UpdateGroupOutput) *responses.UpdateGroupResponse {
 	return &responses.UpdateGroupResponse{
 		Group: GroupDTOToResponse(out.Group),
 	}
 }
 
-// DeleteGroupRequestToDTOInput converts from requests.DeleteGroupRequest to dto.DeleteGroupInput
+// DeleteGroupRequestToDTOInput converts from requests.DeleteGroupRequest to dto.DeleteGroupInput.
 func DeleteGroupRequestToDTOInput(in requests.DeleteGroupRequest) dto.DeleteGroupInput {
 	return dto.DeleteGroupInput{
 		GroupID: in.GroupID,
 	}
 }
 
-// DeleteGroupOutputToResponse converts from dto.DeleteGroupOutput to responses.DeleteGroupResponse
+// DeleteGroupOutputToResponse converts from dto.DeleteGroupOutput to responses.DeleteGroupResponse.
 func DeleteGroupOutputToResponse(out *dto.DeleteGroupOutput) *responses.DeleteGroupResponse {
 	return &responses.DeleteGroupResponse{
 		Group: GroupDTOToResponse(out.Group),

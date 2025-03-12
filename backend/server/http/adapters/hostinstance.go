@@ -8,7 +8,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
-// HostInstanceDTOToResponse converts from dto.HostInstance to responses.HostInstanceResponse
+// HostInstanceDTOToResponse converts from dto.HostInstance to responses.HostInstanceResponse.
 func HostInstanceDTOToResponse(instance *dto.HostInstance) *responses.HostInstanceResponse {
 	if instance == nil {
 		return nil
@@ -24,14 +24,14 @@ func HostInstanceDTOToResponse(instance *dto.HostInstance) *responses.HostInstan
 	}
 }
 
-// PingHostInstanceRequestToDTOInput converts from requests.PingHostInstanceRequest to dto.PingHostInstanceInput
+// PingHostInstanceRequestToDTOInput converts from requests.PingHostInstanceRequest to dto.PingHostInstanceInput.
 func PingHostInstanceRequestToDTOInput(in requests.PingHostInstanceRequest) dto.PingHostInstanceInput {
 	return dto.PingHostInstanceInput{
 		PageID: in.PageID,
 	}
 }
 
-// PingHostInstanceOutputToResponse converts from dto.PingHostInstanceOutput to responses.PingHostInstanceResponse
+// PingHostInstanceOutputToResponse converts from dto.PingHostInstanceOutput to responses.PingHostInstanceResponse.
 func PingHostInstanceOutputToResponse(out *dto.PingHostInstanceOutput) *responses.PingHostInstanceResponse {
 	return &responses.PingHostInstanceResponse{
 		HostInstance: HostInstanceDTOToResponse(out.HostInstance),
