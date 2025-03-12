@@ -6,7 +6,13 @@ steps:
 
   # Build the main application image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA', '.']
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/sourcetool:$COMMIT_SHA',
+      '--build-arg', 'VITE_API_BASE_URL=${_VITE_API_BASE_URL}',
+      '--build-arg', 'VITE_DOMAIN=${_VITE_DOMAIN}',
+      '.'
+    ]
 
   # Push both images
   - name: 'gcr.io/cloud-builders/docker'
