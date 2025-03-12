@@ -24,11 +24,13 @@ provider "google-beta" {
 # Enable required APIs
 resource "google_project_service" "required_apis" {
   for_each = toset([
-    "compute.googleapis.com",
-    "run.googleapis.com",
-    "vpcaccess.googleapis.com",
-    "servicenetworking.googleapis.com",
-    "sqladmin.googleapis.com"
+    "compute.googleapis.com",           # Compute Engine API
+    "run.googleapis.com",               # Cloud Run API
+    "vpcaccess.googleapis.com",         # Serverless VPC Access API
+    "servicenetworking.googleapis.com", # Service Networking API
+    "sqladmin.googleapis.com",          # Cloud SQL Admin API
+    "secretmanager.googleapis.com",     # Secret Manager API
+    "certificatemanager.googleapis.com" # Certificate Manager API
   ])
 
   project = var.project_id
