@@ -7,7 +7,11 @@ x-database-variables: &database-variables
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_DOMAIN: ${VITE_DOMAIN:-localhost}
     ports:
       - "8080:8080"
     depends_on:
