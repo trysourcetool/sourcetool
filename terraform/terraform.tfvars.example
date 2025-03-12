@@ -35,6 +35,7 @@ smtp_from_email = "your-smtp-from-email"
 # Cloud Run Configuration
 cloud_run_service_name   = "sourcetool"
 container_image         = "gcr.io/your-project-id/sourcetool:latest"
+job_container_image     = "gcr.io/your-project-id/sourcetool:latest"
 cloud_run_cpu           = "1"
 cloud_run_memory        = "512Mi"
 cloud_run_min_instances = 0

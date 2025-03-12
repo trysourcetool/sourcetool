@@ -69,6 +69,11 @@ variable "container_image" {
   type        = string
 }
 
+variable "job_container_image" {
+  description = "Container image to deploy for the job"
+  type        = string
+}
+
 variable "cloud_run_cpu" {
   description = "CPU allocation for Cloud Run service"
   type        = string

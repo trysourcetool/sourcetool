@@ -45,6 +45,24 @@ resource "google_compute_url_map" "default" {
   default_service = google_compute_backend_service.default.id
 }
 
+# URL map for HTTP to HTTPS redirect
+resource "google_compute_url_map" "https_redirect" {
+  name = "https-redirect-${var.environment}"
+
+  default_url_redirect {
+    https_redirect         = true
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    strip_query           = false
+    path_redirect         = "/"
+  }
+}
+
+# HTTP proxy for redirect
+resource "google_compute_target_http_proxy" "https_redirect" {
+  name    = "http-proxy-${var.environment}"
+  url_map = google_compute_url_map.https_redirect.id
+}
+
 # HTTPS proxy
 resource "google_compute_target_https_proxy" "default" {
   name             = "https-proxy-${var.environment}"
@@ -52,7 +70,15 @@ resource "google_compute_target_https_proxy" "default" {
   certificate_map  = "//certificatemanager.googleapis.com/${google_certificate_manager_certificate_map.default.id}"
 }
 
-# Forwarding rule
+# Forwarding rule for HTTP
+resource "google_compute_global_forwarding_rule" "http" {
+  name       = "http-lb-${var.environment}"
+  target     = google_compute_target_http_proxy.https_redirect.id
+  port_range = "80"
+  ip_address = google_compute_global_address.default.address
+}
+
+# Forwarding rule for HTTPS
 resource "google_compute_global_forwarding_rule" "https" {
   name       = "https-lb-${var.environment}"
   target     = google_compute_target_https_proxy.default.id
@@ -81,4 +107,4 @@ resource "google_compute_region_network_endpoint_group" "default" {
   cloud_run {
     service = google_cloud_run_v2_service.default.name
   }
-} 
+}

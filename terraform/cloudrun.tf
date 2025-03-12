@@ -2,6 +2,7 @@
 resource "google_cloud_run_v2_service" "default" {
   name     = var.cloud_run_service_name
   location = var.region
+  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
     containers {
@@ -262,5 +263,5 @@ resource "google_cloud_run_v2_service_iam_member" "default" {
   location = google_cloud_run_v2_service.default.location
   project  = google_cloud_run_v2_service.default.project
   role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+  member   = "allUsers"
 } 
