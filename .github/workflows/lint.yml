@@ -3,12 +3,15 @@ name: Lint
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
 
 jobs:
   backend-lint:
     name: Run backend linters
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.changed_files, 'backend/')
+    if: contains(github.event.path, 'backend/')
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +35,7 @@ jobs:
   frontend-lint:
     name: Run frontend linters
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.changed_files, 'frontend/')
+    if: contains(github.event.path, 'frontend/')
     steps:
       - uses: actions/checkout@v4
 
