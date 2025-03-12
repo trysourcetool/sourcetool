@@ -1,7 +1,7 @@
 .PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
 	swagger swagger-open \
-	lint lint-clean remove-docker-images remove-docker-builder \
+	backend-lint remove-docker-images remove-docker-builder \
 	db-migrate \
 	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean
 
@@ -29,8 +29,7 @@ help:
 	@echo "  make gen-jwt-key     - Generate a random JWT key"
 	@echo "  make swagger         - Generate Swagger documentation"
 	@echo "  make swagger-open    - Open Swagger UI in browser"
-	@echo "  make lint            - Run linters on the codebase"
-	@echo "  make lint-clean      - Clean linter cache"
+	@echo "  make backend-lint    - Run linters on both CE and EE codebases (includes cache clean)"
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-migrate      - Run database migrations"
@@ -108,21 +107,12 @@ swagger-open:
 	@open http://localhost:8080/swagger/index.html
 
 # Linting commands
-lint:
-	@echo "Running linters on CE codebase..."
-	@cd backend && gofumpt -l -w . && \
-		golangci-lint cache clean && \
-		golangci-lint run --print-issued-lines --fix --go=1.22
-
-lint-ee:
-	@echo "Running linters on EE codebase..."
-	@cd backend/ee && gofumpt -l -w . && \
-		golangci-lint cache clean && \
-		golangci-lint run --print-issued-lines --fix --go=1.22
-
-lint-clean:
+backend-lint:
 	@echo "Cleaning linter cache..."
 	@cd backend && golangci-lint cache clean
+	@echo "Running linters on codebase..."
+	@cd backend && gofumpt -l -w . && \
+		golangci-lint run --print-issued-lines --fix --go=1.22
 
 # Maintenance commands
 remove-docker-images:
