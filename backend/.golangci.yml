@@ -2,11 +2,9 @@ run:
   timeout: 5m
   issues:
     exclude-dirs:
-      - graph/generated
       - testdata
     exclude-files:
       - config/config.go
-      - graph/model/models_gen.go
 
 linters:
   enable:

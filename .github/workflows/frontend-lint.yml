@@ -1,0 +1,28 @@
+name: Frontend Lint
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+
+jobs:
+  lint:
+    name: Run frontend linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: 'frontend/yarn.lock'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          yarn install --frozen-lockfile
+
+      - name: Run frontend linters
+        run: make frontend-lint 
