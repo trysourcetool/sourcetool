@@ -165,7 +165,7 @@ resource "google_secret_manager_secret_version" "postgres_password" {
 
 resource "google_secret_manager_secret_version" "postgres_port" {
   secret      = google_secret_manager_secret.postgres_port.id
-  secret_data = "5432" 
+  secret_data = "5432"
 }
 
 # Redis configuration
