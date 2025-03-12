@@ -82,7 +82,9 @@ type groupPageByOrganizationIDOption struct {
 func (o groupPageByOrganizationIDOption) isGroupPageOption() {}
 
 func (o groupPageByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`gp."organization_id"`: o.id})
+	return b.
+		InnerJoin(`"group" g ON g."id" = gp."group_id"`).
+		Where(sq.Eq{`g."organization_id"`: o.id})
 }
 
 func GroupPageByPageIDs(ids []uuid.UUID) GroupPageOption {
