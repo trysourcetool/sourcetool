@@ -143,30 +143,6 @@ variable "jwt_key" {
   sensitive   = true
 }
 
-# Redis Configuration
-variable "redis_password" {
-  description = "Redis password"
-  type        = string
-  sensitive   = true
-}
-
-# OAuth Configuration
-variable "google_oauth_client_id" {
-  description = "Google OAuth client ID"
-  type        = string
-}
-
-variable "google_oauth_client_secret" {
-  description = "Google OAuth client secret"
-  type        = string
-  sensitive   = true
-}
-
-variable "google_oauth_callback_url" {
-  description = "Google OAuth callback URL"
-  type        = string
-}
-
 # SMTP Configuration
 variable "smtp_host" {
   description = "SMTP host"
@@ -191,5 +167,22 @@ variable "smtp_password" {
 
 variable "smtp_from_email" {
   description = "SMTP from email address"
+  type        = string
+}
+
+# OAuth Configuration
+variable "google_oauth_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+}
+
+variable "google_oauth_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "google_oauth_callback_url" {
+  description = "Google OAuth callback URL"
   type        = string
 }
