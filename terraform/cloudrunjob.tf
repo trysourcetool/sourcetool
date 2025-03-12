@@ -17,11 +17,6 @@ resource "google_cloud_run_v2_job" "migrate" {
 
         # Common configuration
         env {
-          name  = "ENV"
-          value = var.environment
-        }
-
-        env {
           name  = "DOMAIN"
           value = var.domain_name
         }
