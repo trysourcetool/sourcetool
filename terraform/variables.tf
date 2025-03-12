@@ -69,6 +69,11 @@ variable "container_image" {
   type        = string
 }
 
+variable "job_container_image" {
+  description = "Container image to deploy for the job"
+  type        = string
+}
+
 variable "cloud_run_cpu" {
   description = "CPU allocation for Cloud Run service"
   type        = string
@@ -143,41 +148,6 @@ variable "jwt_key" {
   sensitive   = true
 }
 
-# Redis Configuration
-variable "redis_host" {
-  description = "Redis host"
-  type        = string
-}
-
-variable "redis_password" {
-  description = "Redis password"
-  type        = string
-  sensitive   = true
-}
-
-variable "redis_port" {
-  description = "Redis port"
-  type        = string
-  default     = "6379"
-}
-
-# OAuth Configuration
-variable "google_oauth_client_id" {
-  description = "Google OAuth client ID"
-  type        = string
-}
-
-variable "google_oauth_client_secret" {
-  description = "Google OAuth client secret"
-  type        = string
-  sensitive   = true
-}
-
-variable "google_oauth_callback_url" {
-  description = "Google OAuth callback URL"
-  type        = string
-}
-
 # SMTP Configuration
 variable "smtp_host" {
   description = "SMTP host"
@@ -202,5 +172,22 @@ variable "smtp_password" {
 
 variable "smtp_from_email" {
   description = "SMTP from email address"
+  type        = string
+}
+
+# OAuth Configuration
+variable "google_oauth_client_id" {
+  description = "Google OAuth client ID"
+  type        = string
+}
+
+variable "google_oauth_client_secret" {
+  description = "Google OAuth client secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "google_oauth_callback_url" {
+  description = "Google OAuth callback URL"
   type        = string
 }

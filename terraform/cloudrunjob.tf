@@ -6,7 +6,7 @@ resource "google_cloud_run_v2_job" "migrate" {
   template {
     template {
       containers {
-        image = "gcr.io/google-samples/hello-app:1.0"
+        image = var.job_container_image
 
         resources {
           limits = {
