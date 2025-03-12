@@ -2,13 +2,13 @@ package sourcetool
 
 import (
 	"github.com/gofrs/uuid/v5"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/textinput"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func convertPathToInt32Slice(p path) []int32 {

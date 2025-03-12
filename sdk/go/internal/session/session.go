@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	// TTL for disconnected sessions
+	// TTL for disconnected sessions.
 	disconnectedSessionTTL = 2 * time.Minute
-	// Maximum number of disconnected sessions to keep
+	// Maximum number of disconnected sessions to keep.
 	maxDisconnectedSessions = 128
 )
 
@@ -25,7 +25,7 @@ type Session struct {
 	State  *State
 }
 
-func New(id uuid.UUID, pageID uuid.UUID) *Session {
+func New(id, pageID uuid.UUID) *Session {
 	return &Session{
 		ID:     id,
 		PageID: pageID,

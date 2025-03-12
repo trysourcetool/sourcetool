@@ -2,13 +2,13 @@ package sourcetool
 
 import (
 	"github.com/gofrs/uuid/v5"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/textarea"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 )
 
 func (b *uiBuilder) TextArea(label string, opts ...textarea.Option) string {
