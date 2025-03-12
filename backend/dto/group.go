@@ -4,7 +4,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-// Group represents group data in DTOs
+// Group represents group data in DTOs.
 type Group struct {
 	ID             string
 	OrganizationID string
@@ -14,7 +14,7 @@ type Group struct {
 	UpdatedAt      int64
 }
 
-// GroupFromModel converts from model.Group to dto.Group
+// GroupFromModel converts from model.Group to dto.Group.
 func GroupFromModel(group *model.Group) *Group {
 	if group == nil {
 		return nil
@@ -30,7 +30,7 @@ func GroupFromModel(group *model.Group) *Group {
 	}
 }
 
-// GroupPage represents group page association in DTOs
+// GroupPage represents group page association in DTOs.
 type GroupPage struct {
 	ID        string
 	GroupID   string
@@ -39,7 +39,7 @@ type GroupPage struct {
 	UpdatedAt int64
 }
 
-// GroupPageFromModel converts from model.GroupPage to dto.GroupPage
+// GroupPageFromModel converts from model.GroupPage to dto.GroupPage.
 func GroupPageFromModel(groupPage *model.GroupPage) *GroupPage {
 	if groupPage == nil {
 		return nil
@@ -54,53 +54,53 @@ func GroupPageFromModel(groupPage *model.GroupPage) *GroupPage {
 	}
 }
 
-// GetGroupInput is the input for Get operation
+// GetGroupInput is the input for Get operation.
 type GetGroupInput struct {
 	GroupID string
 }
 
-// GetGroupOutput is the output for Get operation
+// GetGroupOutput is the output for Get operation.
 type GetGroupOutput struct {
 	Group *Group
 }
 
-// ListGroupsOutput is the output for List operation
+// ListGroupsOutput is the output for List operation.
 type ListGroupsOutput struct {
 	Groups     []*Group
 	Users      []*User
 	UserGroups []*UserGroup
 }
 
-// CreateGroupInput is the input for Create operation
+// CreateGroupInput is the input for Create operation.
 type CreateGroupInput struct {
 	Name    string
 	Slug    string
 	UserIDs []string
 }
 
-// CreateGroupOutput is the output for Create operation
+// CreateGroupOutput is the output for Create operation.
 type CreateGroupOutput struct {
 	Group *Group
 }
 
-// UpdateGroupInput is the input for Update operation
+// UpdateGroupInput is the input for Update operation.
 type UpdateGroupInput struct {
 	GroupID string
 	Name    *string
 	UserIDs []string
 }
 
-// UpdateGroupOutput is the output for Update operation
+// UpdateGroupOutput is the output for Update operation.
 type UpdateGroupOutput struct {
 	Group *Group
 }
 
-// DeleteGroupInput is the input for Delete operation
+// DeleteGroupInput is the input for Delete operation.
 type DeleteGroupInput struct {
 	GroupID string
 }
 
-// DeleteGroupOutput is the output for Delete operation
+// DeleteGroupOutput is the output for Delete operation.
 type DeleteGroupOutput struct {
 	Group *Group
 }

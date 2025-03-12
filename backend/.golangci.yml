@@ -11,7 +11,7 @@ run:
 linters:
   enable:
     - asciicheck
-    - exportloopref
+    - copyloopvar
     - gci
     - godot
     - gofmt
@@ -42,7 +42,6 @@ linters:
     - goconst
     - gocyclo
     - godox
-    - gomnd
     - lll
     - nestif
     - nlreturn

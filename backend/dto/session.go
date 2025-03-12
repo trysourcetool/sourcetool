@@ -4,7 +4,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-// Session represents session data in DTOs
+// Session represents session data in DTOs.
 type Session struct {
 	ID             string
 	OrganizationID string
@@ -15,7 +15,7 @@ type Session struct {
 	UpdatedAt      int64
 }
 
-// SessionFromModel converts from model.Session to dto.Session
+// SessionFromModel converts from model.Session to dto.Session.
 func SessionFromModel(session *model.Session) *Session {
 	if session == nil {
 		return nil

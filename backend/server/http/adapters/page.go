@@ -7,7 +7,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
-// PageDTOToResponse converts from dto.Page to responses.PageResponse
+// PageDTOToResponse converts from dto.Page to responses.PageResponse.
 func PageDTOToResponse(page *dto.Page) *responses.PageResponse {
 	if page == nil {
 		return nil
@@ -22,7 +22,7 @@ func PageDTOToResponse(page *dto.Page) *responses.PageResponse {
 	}
 }
 
-// ListPagesOutputToResponse converts from dto.ListPagesOutput to responses.ListPagesResponse
+// ListPagesOutputToResponse converts from dto.ListPagesOutput to responses.ListPagesResponse.
 func ListPagesOutputToResponse(out *dto.ListPagesOutput) *responses.ListPagesResponse {
 	pages := make([]*responses.PageResponse, 0, len(out.Pages))
 	for _, page := range out.Pages {

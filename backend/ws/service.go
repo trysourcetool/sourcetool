@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
@@ -15,7 +16,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 )
 
 type Service interface {

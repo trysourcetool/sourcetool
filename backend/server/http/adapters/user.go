@@ -8,7 +8,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
-// UserDTOToResponse converts from dto.User to responses.UserResponse
+// UserDTOToResponse converts from dto.User to responses.UserResponse.
 func UserDTOToResponse(user *dto.User) *responses.UserResponse {
 	if user == nil {
 		return nil
@@ -31,7 +31,7 @@ func UserDTOToResponse(user *dto.User) *responses.UserResponse {
 	return result
 }
 
-// UserInvitationDTOToResponse converts from dto.UserInvitation to responses.UserInvitationResponse
+// UserInvitationDTOToResponse converts from dto.UserInvitation to responses.UserInvitationResponse.
 func UserInvitationDTOToResponse(invitation *dto.UserInvitation) *responses.UserInvitationResponse {
 	if invitation == nil {
 		return nil
@@ -44,7 +44,7 @@ func UserInvitationDTOToResponse(invitation *dto.UserInvitation) *responses.User
 	}
 }
 
-// UserGroupDTOToResponse converts from dto.UserGroup to responses.UserGroupResponse
+// UserGroupDTOToResponse converts from dto.UserGroup to responses.UserGroupResponse.
 func UserGroupDTOToResponse(group *dto.UserGroup) *responses.UserGroupResponse {
 	if group == nil {
 		return nil
@@ -59,14 +59,14 @@ func UserGroupDTOToResponse(group *dto.UserGroup) *responses.UserGroupResponse {
 	}
 }
 
-// GetMeOutputToResponse converts from dto.GetMeOutput to responses.GetMeResponse
+// GetMeOutputToResponse converts from dto.GetMeOutput to responses.GetMeResponse.
 func GetMeOutputToResponse(out *dto.GetMeOutput) *responses.GetMeResponse {
 	return &responses.GetMeResponse{
 		User: UserDTOToResponse(out.User),
 	}
 }
 
-// ListUsersOutputToResponse converts from dto.ListUsersOutput to responses.ListUsersResponse
+// ListUsersOutputToResponse converts from dto.ListUsersOutput to responses.ListUsersResponse.
 func ListUsersOutputToResponse(out *dto.ListUsersOutput) *responses.ListUsersResponse {
 	users := make([]*responses.UserResponse, 0, len(out.Users))
 	for _, user := range out.Users {
@@ -84,7 +84,7 @@ func ListUsersOutputToResponse(out *dto.ListUsersOutput) *responses.ListUsersRes
 	}
 }
 
-// UpdateUserRequestToDTOInput converts from requests.UpdateUserRequest to dto.UpdateUserInput
+// UpdateUserRequestToDTOInput converts from requests.UpdateUserRequest to dto.UpdateUserInput.
 func UpdateUserRequestToDTOInput(in requests.UpdateUserRequest) dto.UpdateUserInput {
 	return dto.UpdateUserInput{
 		FirstName: in.FirstName,
@@ -92,14 +92,14 @@ func UpdateUserRequestToDTOInput(in requests.UpdateUserRequest) dto.UpdateUserIn
 	}
 }
 
-// UpdateUserOutputToResponse converts from dto.UpdateUserOutput to responses.UpdateUserResponse
+// UpdateUserOutputToResponse converts from dto.UpdateUserOutput to responses.UpdateUserResponse.
 func UpdateUserOutputToResponse(out *dto.UpdateUserOutput) *responses.UpdateUserResponse {
 	return &responses.UpdateUserResponse{
 		User: UserDTOToResponse(out.User),
 	}
 }
 
-// SendUpdateUserEmailInstructionsRequestToDTOInput converts from requests.SendUpdateUserEmailInstructionsRequest to dto.SendUpdateUserEmailInstructionsInput
+// SendUpdateUserEmailInstructionsRequestToDTOInput converts from requests.SendUpdateUserEmailInstructionsRequest to dto.SendUpdateUserEmailInstructionsInput.
 func SendUpdateUserEmailInstructionsRequestToDTOInput(in requests.SendUpdateUserEmailInstructionsRequest) dto.SendUpdateUserEmailInstructionsInput {
 	return dto.SendUpdateUserEmailInstructionsInput{
 		Email:             in.Email,
@@ -107,21 +107,21 @@ func SendUpdateUserEmailInstructionsRequestToDTOInput(in requests.SendUpdateUser
 	}
 }
 
-// UpdateUserEmailRequestToDTOInput converts from requests.UpdateUserEmailRequest to dto.UpdateUserEmailInput
+// UpdateUserEmailRequestToDTOInput converts from requests.UpdateUserEmailRequest to dto.UpdateUserEmailInput.
 func UpdateUserEmailRequestToDTOInput(in requests.UpdateUserEmailRequest) dto.UpdateUserEmailInput {
 	return dto.UpdateUserEmailInput{
 		Token: in.Token,
 	}
 }
 
-// UpdateUserEmailOutputToResponse converts from dto.UpdateUserEmailOutput to responses.UpdateUserEmailResponse
+// UpdateUserEmailOutputToResponse converts from dto.UpdateUserEmailOutput to responses.UpdateUserEmailResponse.
 func UpdateUserEmailOutputToResponse(out *dto.UpdateUserEmailOutput) *responses.UpdateUserEmailResponse {
 	return &responses.UpdateUserEmailResponse{
 		User: UserDTOToResponse(out.User),
 	}
 }
 
-// UpdateUserPasswordRequestToDTOInput converts from requests.UpdateUserPasswordRequest to dto.UpdateUserPasswordInput
+// UpdateUserPasswordRequestToDTOInput converts from requests.UpdateUserPasswordRequest to dto.UpdateUserPasswordInput.
 func UpdateUserPasswordRequestToDTOInput(in requests.UpdateUserPasswordRequest) dto.UpdateUserPasswordInput {
 	return dto.UpdateUserPasswordInput{
 		CurrentPassword:      in.CurrentPassword,
@@ -130,14 +130,14 @@ func UpdateUserPasswordRequestToDTOInput(in requests.UpdateUserPasswordRequest) 
 	}
 }
 
-// UpdateUserPasswordOutputToResponse converts from dto.UpdateUserPasswordOutput to responses.UpdateUserPasswordResponse
+// UpdateUserPasswordOutputToResponse converts from dto.UpdateUserPasswordOutput to responses.UpdateUserPasswordResponse.
 func UpdateUserPasswordOutputToResponse(out *dto.UpdateUserPasswordOutput) *responses.UpdateUserPasswordResponse {
 	return &responses.UpdateUserPasswordResponse{
 		User: UserDTOToResponse(out.User),
 	}
 }
 
-// SignInRequestToDTOInput converts from requests.SignInRequest to dto.SignInInput
+// SignInRequestToDTOInput converts from requests.SignInRequest to dto.SignInInput.
 func SignInRequestToDTOInput(in requests.SignInRequest) dto.SignInInput {
 	return dto.SignInInput{
 		Email:    in.Email,
@@ -145,7 +145,7 @@ func SignInRequestToDTOInput(in requests.SignInRequest) dto.SignInInput {
 	}
 }
 
-// SignInOutputToResponse converts from dto.SignInOutput to responses.SignInResponse
+// SignInOutputToResponse converts from dto.SignInOutput to responses.SignInResponse.
 func SignInOutputToResponse(out *dto.SignInOutput) *responses.SignInResponse {
 	return &responses.SignInResponse{
 		AuthURL:              out.AuthURL,
@@ -154,14 +154,14 @@ func SignInOutputToResponse(out *dto.SignInOutput) *responses.SignInResponse {
 	}
 }
 
-// SignInWithGoogleRequestToDTOInput converts from requests.SignInWithGoogleRequest to dto.SignInWithGoogleInput
+// SignInWithGoogleRequestToDTOInput converts from requests.SignInWithGoogleRequest to dto.SignInWithGoogleInput.
 func SignInWithGoogleRequestToDTOInput(in requests.SignInWithGoogleRequest) dto.SignInWithGoogleInput {
 	return dto.SignInWithGoogleInput{
 		SessionToken: in.SessionToken,
 	}
 }
 
-// SignInWithGoogleOutputToResponse converts from dto.SignInWithGoogleOutput to responses.SignInWithGoogleResponse
+// SignInWithGoogleOutputToResponse converts from dto.SignInWithGoogleOutput to responses.SignInWithGoogleResponse.
 func SignInWithGoogleOutputToResponse(out *dto.SignInWithGoogleOutput) *responses.SignInWithGoogleResponse {
 	return &responses.SignInWithGoogleResponse{
 		AuthURL:              out.AuthURL,
@@ -170,21 +170,21 @@ func SignInWithGoogleOutputToResponse(out *dto.SignInWithGoogleOutput) *response
 	}
 }
 
-// SendSignUpInstructionsRequestToDTOInput converts from requests.SendSignUpInstructionsRequest to dto.SendSignUpInstructionsInput
+// SendSignUpInstructionsRequestToDTOInput converts from requests.SendSignUpInstructionsRequest to dto.SendSignUpInstructionsInput.
 func SendSignUpInstructionsRequestToDTOInput(in requests.SendSignUpInstructionsRequest) dto.SendSignUpInstructionsInput {
 	return dto.SendSignUpInstructionsInput{
 		Email: in.Email,
 	}
 }
 
-// SendSignUpInstructionsOutputToResponse converts from dto.SendSignUpInstructionsOutput to responses.SendSignUpInstructionsResponse
+// SendSignUpInstructionsOutputToResponse converts from dto.SendSignUpInstructionsOutput to responses.SendSignUpInstructionsResponse.
 func SendSignUpInstructionsOutputToResponse(out *dto.SendSignUpInstructionsOutput) *responses.SendSignUpInstructionsResponse {
 	return &responses.SendSignUpInstructionsResponse{
 		Email: out.Email,
 	}
 }
 
-// SignUpRequestToDTOInput converts from requests.SignUpRequest to dto.SignUpInput
+// SignUpRequestToDTOInput converts from requests.SignUpRequest to dto.SignUpInput.
 func SignUpRequestToDTOInput(in requests.SignUpRequest) dto.SignUpInput {
 	return dto.SignUpInput{
 		Token:                in.Token,
@@ -195,7 +195,7 @@ func SignUpRequestToDTOInput(in requests.SignUpRequest) dto.SignUpInput {
 	}
 }
 
-// SignUpOutputToResponse converts from dto.SignUpOutput to responses.SignUpResponse
+// SignUpOutputToResponse converts from dto.SignUpOutput to responses.SignUpResponse.
 func SignUpOutputToResponse(out *dto.SignUpOutput) *responses.SignUpResponse {
 	return &responses.SignUpResponse{
 		Token:     out.Token,
@@ -203,7 +203,7 @@ func SignUpOutputToResponse(out *dto.SignUpOutput) *responses.SignUpResponse {
 	}
 }
 
-// SignUpWithGoogleRequestToDTOInput converts from requests.SignUpWithGoogleRequest to dto.SignUpWithGoogleInput
+// SignUpWithGoogleRequestToDTOInput converts from requests.SignUpWithGoogleRequest to dto.SignUpWithGoogleInput.
 func SignUpWithGoogleRequestToDTOInput(in requests.SignUpWithGoogleRequest) dto.SignUpWithGoogleInput {
 	return dto.SignUpWithGoogleInput{
 		SessionToken: in.SessionToken,
@@ -212,7 +212,7 @@ func SignUpWithGoogleRequestToDTOInput(in requests.SignUpWithGoogleRequest) dto.
 	}
 }
 
-// SignUpWithGoogleOutputToResponse converts from dto.SignUpWithGoogleOutput to responses.SignUpWithGoogleResponse
+// SignUpWithGoogleOutputToResponse converts from dto.SignUpWithGoogleOutput to responses.SignUpWithGoogleResponse.
 func SignUpWithGoogleOutputToResponse(out *dto.SignUpWithGoogleOutput) *responses.SignUpWithGoogleResponse {
 	return &responses.SignUpWithGoogleResponse{
 		Token:     out.Token,
@@ -220,7 +220,7 @@ func SignUpWithGoogleOutputToResponse(out *dto.SignUpWithGoogleOutput) *response
 	}
 }
 
-// RefreshTokenRequestToDTOInput converts from requests.RefreshTokenRequest to dto.RefreshTokenInput
+// RefreshTokenRequestToDTOInput converts from requests.RefreshTokenRequest to dto.RefreshTokenInput.
 func RefreshTokenRequestToDTOInput(in requests.RefreshTokenRequest) dto.RefreshTokenInput {
 	return dto.RefreshTokenInput{
 		Secret:          in.Secret,
@@ -229,21 +229,21 @@ func RefreshTokenRequestToDTOInput(in requests.RefreshTokenRequest) dto.RefreshT
 	}
 }
 
-// RefreshTokenOutputToResponse converts from dto.RefreshTokenOutput to responses.RefreshTokenResponse
+// RefreshTokenOutputToResponse converts from dto.RefreshTokenOutput to responses.RefreshTokenResponse.
 func RefreshTokenOutputToResponse(out *dto.RefreshTokenOutput) *responses.RefreshTokenResponse {
 	return &responses.RefreshTokenResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// SaveAuthRequestToDTOInput converts from requests.SaveAuthRequest to dto.SaveAuthInput
+// SaveAuthRequestToDTOInput converts from requests.SaveAuthRequest to dto.SaveAuthInput.
 func SaveAuthRequestToDTOInput(in requests.SaveAuthRequest) dto.SaveAuthInput {
 	return dto.SaveAuthInput{
 		Token: in.Token,
 	}
 }
 
-// SaveAuthOutputToResponse converts from dto.SaveAuthOutput to responses.SaveAuthResponse
+// SaveAuthOutputToResponse converts from dto.SaveAuthOutput to responses.SaveAuthResponse.
 func SaveAuthOutputToResponse(out *dto.SaveAuthOutput) *responses.SaveAuthResponse {
 	return &responses.SaveAuthResponse{
 		ExpiresAt:   out.ExpiresAt,
@@ -251,7 +251,7 @@ func SaveAuthOutputToResponse(out *dto.SaveAuthOutput) *responses.SaveAuthRespon
 	}
 }
 
-// InviteUsersRequestToDTOInput converts from requests.InviteUsersRequest to dto.InviteUsersInput
+// InviteUsersRequestToDTOInput converts from requests.InviteUsersRequest to dto.InviteUsersInput.
 func InviteUsersRequestToDTOInput(in requests.InviteUsersRequest) dto.InviteUsersInput {
 	return dto.InviteUsersInput{
 		Emails: in.Emails,
@@ -259,7 +259,7 @@ func InviteUsersRequestToDTOInput(in requests.InviteUsersRequest) dto.InviteUser
 	}
 }
 
-// InviteUsersOutputToResponse converts from dto.InviteUsersOutput to responses.InviteUsersResponse
+// InviteUsersOutputToResponse converts from dto.InviteUsersOutput to responses.InviteUsersResponse.
 func InviteUsersOutputToResponse(out *dto.InviteUsersOutput) *responses.InviteUsersResponse {
 	invitations := make([]*responses.UserInvitationResponse, 0, len(out.UserInvitations))
 	for _, invitation := range out.UserInvitations {
@@ -271,7 +271,7 @@ func InviteUsersOutputToResponse(out *dto.InviteUsersOutput) *responses.InviteUs
 	}
 }
 
-// SignInInvitationRequestToDTOInput converts from requests.SignInInvitationRequest to dto.SignInInvitationInput
+// SignInInvitationRequestToDTOInput converts from requests.SignInInvitationRequest to dto.SignInInvitationInput.
 func SignInInvitationRequestToDTOInput(in requests.SignInInvitationRequest) dto.SignInInvitationInput {
 	return dto.SignInInvitationInput{
 		InvitationToken: in.InvitationToken,
@@ -279,14 +279,14 @@ func SignInInvitationRequestToDTOInput(in requests.SignInInvitationRequest) dto.
 	}
 }
 
-// SignInInvitationOutputToResponse converts from dto.SignInInvitationOutput to responses.SignInInvitationResponse
+// SignInInvitationOutputToResponse converts from dto.SignInInvitationOutput to responses.SignInInvitationResponse.
 func SignInInvitationOutputToResponse(out *dto.SignInInvitationOutput) *responses.SignInInvitationResponse {
 	return &responses.SignInInvitationResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// SignUpInvitationRequestToDTOInput converts from requests.SignUpInvitationRequest to dto.SignUpInvitationInput
+// SignUpInvitationRequestToDTOInput converts from requests.SignUpInvitationRequest to dto.SignUpInvitationInput.
 func SignUpInvitationRequestToDTOInput(in requests.SignUpInvitationRequest) dto.SignUpInvitationInput {
 	return dto.SignUpInvitationInput{
 		InvitationToken:      in.InvitationToken,
@@ -297,14 +297,14 @@ func SignUpInvitationRequestToDTOInput(in requests.SignUpInvitationRequest) dto.
 	}
 }
 
-// SignUpInvitationOutputToResponse converts from dto.SignUpInvitationOutput to responses.SignUpInvitationResponse
+// SignUpInvitationOutputToResponse converts from dto.SignUpInvitationOutput to responses.SignUpInvitationResponse.
 func SignUpInvitationOutputToResponse(out *dto.SignUpInvitationOutput) *responses.SignUpInvitationResponse {
 	return &responses.SignUpInvitationResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// GoogleOAuthCallbackRequestToDTOInput converts from requests.GoogleOAuthCallbackRequest to dto.GoogleOAuthCallbackInput
+// GoogleOAuthCallbackRequestToDTOInput converts from requests.GoogleOAuthCallbackRequest to dto.GoogleOAuthCallbackInput.
 func GoogleOAuthCallbackRequestToDTOInput(in requests.GoogleOAuthCallbackRequest) dto.GoogleOAuthCallbackInput {
 	return dto.GoogleOAuthCallbackInput{
 		State: in.State,
@@ -312,35 +312,35 @@ func GoogleOAuthCallbackRequestToDTOInput(in requests.GoogleOAuthCallbackRequest
 	}
 }
 
-// GetGoogleAuthCodeURLInvitationRequestToDTOInput converts from requests.GetGoogleAuthCodeURLInvitationRequest to dto.GetGoogleAuthCodeURLInvitationInput
+// GetGoogleAuthCodeURLInvitationRequestToDTOInput converts from requests.GetGoogleAuthCodeURLInvitationRequest to dto.GetGoogleAuthCodeURLInvitationInput.
 func GetGoogleAuthCodeURLInvitationRequestToDTOInput(in requests.GetGoogleAuthCodeURLInvitationRequest) dto.GetGoogleAuthCodeURLInvitationInput {
 	return dto.GetGoogleAuthCodeURLInvitationInput{
 		InvitationToken: in.InvitationToken,
 	}
 }
 
-// GetGoogleAuthCodeURLInvitationOutputToResponse converts from dto.GetGoogleAuthCodeURLInvitationOutput to responses.GetGoogleAuthCodeURLInvitationResponse
+// GetGoogleAuthCodeURLInvitationOutputToResponse converts from dto.GetGoogleAuthCodeURLInvitationOutput to responses.GetGoogleAuthCodeURLInvitationResponse.
 func GetGoogleAuthCodeURLInvitationOutputToResponse(out *dto.GetGoogleAuthCodeURLInvitationOutput) *responses.GetGoogleAuthCodeURLInvitationResponse {
 	return &responses.GetGoogleAuthCodeURLInvitationResponse{
 		URL: out.URL,
 	}
 }
 
-// SignInWithGoogleInvitationRequestToDTOInput converts from requests.SignInWithGoogleInvitationRequest to dto.SignInWithGoogleInvitationInput
+// SignInWithGoogleInvitationRequestToDTOInput converts from requests.SignInWithGoogleInvitationRequest to dto.SignInWithGoogleInvitationInput.
 func SignInWithGoogleInvitationRequestToDTOInput(in requests.SignInWithGoogleInvitationRequest) dto.SignInWithGoogleInvitationInput {
 	return dto.SignInWithGoogleInvitationInput{
 		SessionToken: in.SessionToken,
 	}
 }
 
-// SignInWithGoogleInvitationOutputToResponse converts from dto.SignInWithGoogleInvitationOutput to responses.SignInWithGoogleInvitationResponse
+// SignInWithGoogleInvitationOutputToResponse converts from dto.SignInWithGoogleInvitationOutput to responses.SignInWithGoogleInvitationResponse.
 func SignInWithGoogleInvitationOutputToResponse(out *dto.SignInWithGoogleInvitationOutput) *responses.SignInWithGoogleInvitationResponse {
 	return &responses.SignInWithGoogleInvitationResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// SignUpWithGoogleInvitationRequestToDTOInput converts from requests.SignUpWithGoogleInvitationRequest to dto.SignUpWithGoogleInvitationInput
+// SignUpWithGoogleInvitationRequestToDTOInput converts from requests.SignUpWithGoogleInvitationRequest to dto.SignUpWithGoogleInvitationInput.
 func SignUpWithGoogleInvitationRequestToDTOInput(in requests.SignUpWithGoogleInvitationRequest) dto.SignUpWithGoogleInvitationInput {
 	return dto.SignUpWithGoogleInvitationInput{
 		SessionToken: in.SessionToken,
@@ -349,28 +349,28 @@ func SignUpWithGoogleInvitationRequestToDTOInput(in requests.SignUpWithGoogleInv
 	}
 }
 
-// SignUpWithGoogleInvitationOutputToResponse converts from dto.SignUpWithGoogleInvitationOutput to responses.SignUpWithGoogleInvitationResponse
+// SignUpWithGoogleInvitationOutputToResponse converts from dto.SignUpWithGoogleInvitationOutput to responses.SignUpWithGoogleInvitationResponse.
 func SignUpWithGoogleInvitationOutputToResponse(out *dto.SignUpWithGoogleInvitationOutput) *responses.SignUpWithGoogleInvitationResponse {
 	return &responses.SignUpWithGoogleInvitationResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// ResendInvitationRequestToDTOInput converts from requests.ResendInvitationRequest to dto.ResendInvitationInput
+// ResendInvitationRequestToDTOInput converts from requests.ResendInvitationRequest to dto.ResendInvitationInput.
 func ResendInvitationRequestToDTOInput(in requests.ResendInvitationRequest) dto.ResendInvitationInput {
 	return dto.ResendInvitationInput{
 		InvitationID: in.InvitationID,
 	}
 }
 
-// ResendInvitationOutputToResponse converts from dto.ResendInvitationOutput to responses.ResendInvitationResponse
+// ResendInvitationOutputToResponse converts from dto.ResendInvitationOutput to responses.ResendInvitationResponse.
 func ResendInvitationOutputToResponse(out *dto.ResendInvitationOutput) *responses.ResendInvitationResponse {
 	return &responses.ResendInvitationResponse{
 		UserInvitation: UserInvitationDTOToResponse(out.UserInvitation),
 	}
 }
 
-// SignOutOutputToResponse converts from dto.SignOutOutput to responses.SignOutResponse
+// SignOutOutputToResponse converts from dto.SignOutOutput to responses.SignOutResponse.
 func SignOutOutputToResponse(out *dto.SignOutOutput) *responses.SignOutResponse {
 	return &responses.SignOutResponse{
 		Domain: out.Domain,

@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
+	redisv1 "github.com/trysourcetool/sourcetool/proto/go/redis/v1"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	redisv1 "github.com/trysourcetool/sourcetool/proto/go/redis/v1"
 )
 
 type redisClient struct {
@@ -30,7 +30,7 @@ func newRedisClient() (*redisClient, error) {
 	}, nil
 }
 
-func (r *redisClient) Publish(ctx context.Context, channel string, id string, payload []byte) error {
+func (r *redisClient) Publish(ctx context.Context, channel, id string, payload []byte) error {
 	message := &redisv1.RedisMessage{
 		Id:      id,
 		Payload: payload,

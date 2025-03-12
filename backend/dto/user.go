@@ -4,7 +4,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-// User represents user data in DTOs
+// User represents user data in DTOs.
 type User struct {
 	ID           string
 	Email        string
@@ -16,7 +16,7 @@ type User struct {
 	Organization *Organization
 }
 
-// UserFromModel converts from model.User to dto.User
+// UserFromModel converts from model.User to dto.User.
 func UserFromModel(user *model.User, org *model.Organization, role model.UserOrganizationRole) *User {
 	if user == nil {
 		return nil
@@ -39,14 +39,14 @@ func UserFromModel(user *model.User, org *model.Organization, role model.UserOrg
 	return result
 }
 
-// UserInvitation represents user invitation data in DTOs
+// UserInvitation represents user invitation data in DTOs.
 type UserInvitation struct {
 	ID        string
 	Email     string
 	CreatedAt int64
 }
 
-// UserInvitationFromModel converts from model.UserInvitation to dto.UserInvitation
+// UserInvitationFromModel converts from model.UserInvitation to dto.UserInvitation.
 func UserInvitationFromModel(invitation *model.UserInvitation) *UserInvitation {
 	if invitation == nil {
 		return nil
@@ -59,7 +59,7 @@ func UserInvitationFromModel(invitation *model.UserInvitation) *UserInvitation {
 	}
 }
 
-// UserGroup represents user group data in DTOs
+// UserGroup represents user group data in DTOs.
 type UserGroup struct {
 	ID        string
 	UserID    string
@@ -68,7 +68,7 @@ type UserGroup struct {
 	UpdatedAt int64
 }
 
-// UserGroupFromModel converts from model.UserGroup to dto.UserGroup
+// UserGroupFromModel converts from model.UserGroup to dto.UserGroup.
 func UserGroupFromModel(group *model.UserGroup) *UserGroup {
 	if group == nil {
 		return nil
@@ -83,63 +83,63 @@ func UserGroupFromModel(group *model.UserGroup) *UserGroup {
 	}
 }
 
-// GetMeOutput is the output for GetMe operation
+// GetMeOutput is the output for GetMe operation.
 type GetMeOutput struct {
 	User *User
 }
 
-// ListUsersOutput is the output for List operation
+// ListUsersOutput is the output for List operation.
 type ListUsersOutput struct {
 	Users           []*User
 	UserInvitations []*UserInvitation
 }
 
-// UpdateUserInput is the input for Update operation
+// UpdateUserInput is the input for Update operation.
 type UpdateUserInput struct {
 	FirstName *string
 	LastName  *string
 }
 
-// UpdateUserOutput is the output for Update operation
+// UpdateUserOutput is the output for Update operation.
 type UpdateUserOutput struct {
 	User *User
 }
 
-// SendUpdateUserEmailInstructionsInput is the input for Send Update User Email Instructions operation
+// SendUpdateUserEmailInstructionsInput is the input for Send Update User Email Instructions operation.
 type SendUpdateUserEmailInstructionsInput struct {
 	Email             string
 	EmailConfirmation string
 }
 
-// UpdateUserEmailInput is the input for Update User Email operation
+// UpdateUserEmailInput is the input for Update User Email operation.
 type UpdateUserEmailInput struct {
 	Token string
 }
 
-// UpdateUserEmailOutput is the output for Update User Email operation
+// UpdateUserEmailOutput is the output for Update User Email operation.
 type UpdateUserEmailOutput struct {
 	User *User
 }
 
-// UpdateUserPasswordInput is the input for Update User Password operation
+// UpdateUserPasswordInput is the input for Update User Password operation.
 type UpdateUserPasswordInput struct {
 	CurrentPassword      string
 	Password             string
 	PasswordConfirmation string
 }
 
-// UpdateUserPasswordOutput is the output for Update User Password operation
+// UpdateUserPasswordOutput is the output for Update User Password operation.
 type UpdateUserPasswordOutput struct {
 	User *User
 }
 
-// SignInInput is the input for Sign In operation
+// SignInInput is the input for Sign In operation.
 type SignInInput struct {
 	Email    string
 	Password string
 }
 
-// SignInOutput is the output for Sign In operation
+// SignInOutput is the output for Sign In operation.
 type SignInOutput struct {
 	AuthURL              string
 	Token                string
@@ -149,12 +149,12 @@ type SignInOutput struct {
 	Domain               string
 }
 
-// SignInWithGoogleInput is the input for Sign In With Google operation
+// SignInWithGoogleInput is the input for Sign In With Google operation.
 type SignInWithGoogleInput struct {
 	SessionToken string
 }
 
-// SignInWithGoogleOutput is the output for Sign In With Google operation
+// SignInWithGoogleOutput is the output for Sign In With Google operation.
 type SignInWithGoogleOutput struct {
 	AuthURL              string
 	Token                string
@@ -164,17 +164,17 @@ type SignInWithGoogleOutput struct {
 	Domain               string
 }
 
-// SendSignUpInstructionsInput is the input for Send SignUp Instructions operation
+// SendSignUpInstructionsInput is the input for Send SignUp Instructions operation.
 type SendSignUpInstructionsInput struct {
 	Email string
 }
 
-// SendSignUpInstructionsOutput is the output for Send SignUp Instructions operation
+// SendSignUpInstructionsOutput is the output for Send SignUp Instructions operation.
 type SendSignUpInstructionsOutput struct {
 	Email string
 }
 
-// SignUpInput is the input for Sign Up operation
+// SignUpInput is the input for Sign Up operation.
 type SignUpInput struct {
 	Token                string
 	FirstName            string
@@ -183,33 +183,33 @@ type SignUpInput struct {
 	PasswordConfirmation string
 }
 
-// SignUpOutput is the output for Sign Up operation
+// SignUpOutput is the output for Sign Up operation.
 type SignUpOutput struct {
 	Token     string
 	XSRFToken string
 }
 
-// SignUpWithGoogleInput is the input for Sign Up With Google operation
+// SignUpWithGoogleInput is the input for Sign Up With Google operation.
 type SignUpWithGoogleInput struct {
 	SessionToken string
 	FirstName    string
 	LastName     string
 }
 
-// SignUpWithGoogleOutput is the output for Sign Up With Google operation
+// SignUpWithGoogleOutput is the output for Sign Up With Google operation.
 type SignUpWithGoogleOutput struct {
 	Token     string
 	XSRFToken string
 }
 
-// RefreshTokenInput is the input for Refresh Token operation
+// RefreshTokenInput is the input for Refresh Token operation.
 type RefreshTokenInput struct {
 	Secret          string
 	XSRFTokenHeader string
 	XSRFTokenCookie string
 }
 
-// RefreshTokenOutput is the output for Refresh Token operation
+// RefreshTokenOutput is the output for Refresh Token operation.
 type RefreshTokenOutput struct {
 	Token     string
 	Secret    string
@@ -218,12 +218,12 @@ type RefreshTokenOutput struct {
 	Domain    string
 }
 
-// SaveAuthInput is the input for Save Auth operation
+// SaveAuthInput is the input for Save Auth operation.
 type SaveAuthInput struct {
 	Token string
 }
 
-// SaveAuthOutput is the output for Save Auth operation
+// SaveAuthOutput is the output for Save Auth operation.
 type SaveAuthOutput struct {
 	Token       string
 	Secret      string
@@ -233,7 +233,7 @@ type SaveAuthOutput struct {
 	Domain      string
 }
 
-// ObtainAuthTokenOutput is the output for Obtain Auth Token operation
+// ObtainAuthTokenOutput is the output for Obtain Auth Token operation.
 type ObtainAuthTokenOutput struct {
 	AuthURL   string
 	Token     string
@@ -242,24 +242,24 @@ type ObtainAuthTokenOutput struct {
 	Domain    string
 }
 
-// InviteUsersInput is the input for Invite Users operation
+// InviteUsersInput is the input for Invite Users operation.
 type InviteUsersInput struct {
 	Emails []string
 	Role   string
 }
 
-// InviteUsersOutput is the output for Invite Users operation
+// InviteUsersOutput is the output for Invite Users operation.
 type InviteUsersOutput struct {
 	UserInvitations []*UserInvitation
 }
 
-// SignInInvitationInput is the input for Sign In Invitation operation
+// SignInInvitationInput is the input for Sign In Invitation operation.
 type SignInInvitationInput struct {
 	InvitationToken string
 	Password        string
 }
 
-// SignInInvitationOutput is the output for Sign In Invitation operation
+// SignInInvitationOutput is the output for Sign In Invitation operation.
 type SignInInvitationOutput struct {
 	Token     string
 	Secret    string
@@ -268,7 +268,7 @@ type SignInInvitationOutput struct {
 	Domain    string
 }
 
-// SignUpInvitationInput is the input for Sign Up Invitation operation
+// SignUpInvitationInput is the input for Sign Up Invitation operation.
 type SignUpInvitationInput struct {
 	InvitationToken      string
 	FirstName            string
@@ -277,7 +277,7 @@ type SignUpInvitationInput struct {
 	PasswordConfirmation string
 }
 
-// SignUpInvitationOutput is the output for Sign Up Invitation operation
+// SignUpInvitationOutput is the output for Sign Up Invitation operation.
 type SignUpInvitationOutput struct {
 	Token     string
 	Secret    string
@@ -286,18 +286,18 @@ type SignUpInvitationOutput struct {
 	Domain    string
 }
 
-// GetGoogleAuthCodeURLOutput is the output for Get Google Auth Code URL operation
+// GetGoogleAuthCodeURLOutput is the output for Get Google Auth Code URL operation.
 type GetGoogleAuthCodeURLOutput struct {
 	URL string
 }
 
-// GoogleOAuthCallbackInput is the input for Google OAuth Callback operation
+// GoogleOAuthCallbackInput is the input for Google OAuth Callback operation.
 type GoogleOAuthCallbackInput struct {
 	State string
 	Code  string
 }
 
-// GoogleOAuthCallbackOutput is the output for Google OAuth Callback operation
+// GoogleOAuthCallbackOutput is the output for Google OAuth Callback operation.
 type GoogleOAuthCallbackOutput struct {
 	SessionToken string
 	IsUserExists bool
@@ -307,22 +307,22 @@ type GoogleOAuthCallbackOutput struct {
 	Invited      bool
 }
 
-// GetGoogleAuthCodeURLInvitationInput is the input for Get Google Auth Code URL Invitation operation
+// GetGoogleAuthCodeURLInvitationInput is the input for Get Google Auth Code URL Invitation operation.
 type GetGoogleAuthCodeURLInvitationInput struct {
 	InvitationToken string
 }
 
-// GetGoogleAuthCodeURLInvitationOutput is the output for Get Google Auth Code URL Invitation operation
+// GetGoogleAuthCodeURLInvitationOutput is the output for Get Google Auth Code URL Invitation operation.
 type GetGoogleAuthCodeURLInvitationOutput struct {
 	URL string
 }
 
-// SignInWithGoogleInvitationInput is the input for Sign In With Google Invitation operation
+// SignInWithGoogleInvitationInput is the input for Sign In With Google Invitation operation.
 type SignInWithGoogleInvitationInput struct {
 	SessionToken string
 }
 
-// SignInWithGoogleInvitationOutput is the output for Sign In With Google Invitation operation
+// SignInWithGoogleInvitationOutput is the output for Sign In With Google Invitation operation.
 type SignInWithGoogleInvitationOutput struct {
 	Token     string
 	Secret    string
@@ -331,14 +331,14 @@ type SignInWithGoogleInvitationOutput struct {
 	Domain    string
 }
 
-// SignUpWithGoogleInvitationInput is the input for Sign Up With Google Invitation operation
+// SignUpWithGoogleInvitationInput is the input for Sign Up With Google Invitation operation.
 type SignUpWithGoogleInvitationInput struct {
 	SessionToken string
 	FirstName    string
 	LastName     string
 }
 
-// SignUpWithGoogleInvitationOutput is the output for Sign Up With Google Invitation operation
+// SignUpWithGoogleInvitationOutput is the output for Sign Up With Google Invitation operation.
 type SignUpWithGoogleInvitationOutput struct {
 	Token     string
 	Secret    string
@@ -347,17 +347,17 @@ type SignUpWithGoogleInvitationOutput struct {
 	Domain    string
 }
 
-// SignOutOutput is the output for Sign Out operation
+// SignOutOutput is the output for Sign Out operation.
 type SignOutOutput struct {
 	Domain string
 }
 
-// ResendInvitationInput is the input for Resend Invitation operation
+// ResendInvitationInput is the input for Resend Invitation operation.
 type ResendInvitationInput struct {
 	InvitationID string
 }
 
-// ResendInvitationOutput is the output for Resend Invitation operation
+// ResendInvitationOutput is the output for Resend Invitation operation.
 type ResendInvitationOutput struct {
 	UserInvitation *UserInvitation
 }

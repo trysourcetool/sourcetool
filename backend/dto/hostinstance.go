@@ -4,7 +4,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-// HostInstance represents host instance data in DTOs
+// HostInstance represents host instance data in DTOs.
 type HostInstance struct {
 	ID             string
 	OrganizationID string
@@ -16,7 +16,7 @@ type HostInstance struct {
 	UpdatedAt      int64
 }
 
-// HostInstanceFromModel converts from model.HostInstance to dto.HostInstance
+// HostInstanceFromModel converts from model.HostInstance to dto.HostInstance.
 func HostInstanceFromModel(instance *model.HostInstance) *HostInstance {
 	if instance == nil {
 		return nil
@@ -34,12 +34,12 @@ func HostInstanceFromModel(instance *model.HostInstance) *HostInstance {
 	}
 }
 
-// PingHostInstanceInput is the input for Ping operation
+// PingHostInstanceInput is the input for Ping operation.
 type PingHostInstanceInput struct {
 	PageID *string
 }
 
-// PingHostInstanceOutput is the output for Ping operation
+// PingHostInstanceOutput is the output for Ping operation.
 type PingHostInstanceOutput struct {
 	HostInstance *HostInstance
 }
