@@ -43,13 +43,13 @@ fi
 check_gcloud_auth
 
 # Check if terraform.tfvars exists
-if [ ! -f "$(dirname "$0")/../terraform/terraform.tfvars" ]; then
-  echo "Error: terraform.tfvars file not found in the terraform directory."
+if [ ! -f "$(dirname "$0")/../terraform/cloud/terraform.tfvars" ]; then
+  echo "Error: terraform.tfvars file not found in the terraform/cloud directory."
   exit 1
 fi
 
 # Set the working directory to the terraform directory first
-cd "$(dirname "$0")/../terraform" || exit 1
+cd "$(dirname "$0")/../terraform/cloud" || exit 1
 
 # Get project_id and environment from terraform.tfvars
 project_id=$(grep 'project_id' "terraform.tfvars" | cut -d'=' -f2 | tr -d ' "')
