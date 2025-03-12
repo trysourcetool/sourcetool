@@ -57,6 +57,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		ID:             uuid.Must(uuid.NewV4()),
 		UserID:         currentUser.ID,
 		OrganizationID: o.ID,
+		Role:           model.UserOrganizationRoleAdmin,
 	}
 	devEnv := &model.Environment{
 		ID:             uuid.Must(uuid.NewV4()),
