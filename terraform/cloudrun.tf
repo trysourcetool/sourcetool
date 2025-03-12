@@ -223,7 +223,7 @@ resource "google_cloud_run_v2_service" "default" {
 
     vpc_access {
       connector = google_vpc_access_connector.connector.id
-      egress = "PRIVATE_RANGES_ONLY"
+      egress = "ALL_TRAFFIC"
     }
 
     service_account = google_service_account.cloud_run_sa.email
