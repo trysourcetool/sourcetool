@@ -2,6 +2,8 @@ timeout: 3600s
 options:
   logging: CLOUD_LOGGING_ONLY
   env:
+    - 'PROJECT_ID=${PROJECT_ID}'
+    - 'COMMIT_SHA=${COMMIT_SHA}'
     - 'VITE_API_BASE_URL=${_VITE_API_BASE_URL}'
     - 'VITE_DOMAIN=${_VITE_DOMAIN}'
     - 'DEPLOY_ENV=${_DEPLOY_ENV}'
