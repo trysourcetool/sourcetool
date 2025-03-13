@@ -79,7 +79,6 @@ vendor/
 # Environment variables
 .env*
 !.env.example
-!.env.terraform.example
 
 # Debug logs
 npm-debug.log*
@@ -101,7 +100,7 @@ crash.*.log
 *.tfvars.json
 
 # Include example files
-!*.example.tfvars
+!*.tfvars.example
 
 # Ignore override files as they are usually used for local development
 override.tf

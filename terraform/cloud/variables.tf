@@ -64,6 +64,11 @@ variable "cloud_run_service_name" {
   type        = string
 }
 
+variable "cloud_run_job_migrate_name" {
+  description = "Name of the Cloud Run job for database migrations"
+  type        = string
+}
+
 variable "container_image" {
   description = "Container image to deploy"
   type        = string

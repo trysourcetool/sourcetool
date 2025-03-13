@@ -43,18 +43,25 @@ fi
 check_gcloud_auth
 
 # Check if terraform.tfvars exists
-if [ ! -f "$(dirname "$0")/../terraform/terraform.tfvars" ]; then
-  echo "Error: terraform.tfvars file not found in the terraform directory."
+if [ ! -f "$(dirname "$0")/../terraform/cloud/terraform.tfvars" ]; then
+  echo "Error: terraform.tfvars file not found in the terraform/cloud directory."
   exit 1
 fi
 
 # Set the working directory to the terraform directory first
-cd "$(dirname "$0")/../terraform" || exit 1
+cd "$(dirname "$0")/../terraform/cloud" || exit 1
 
-# Get project_id from terraform.tfvars
+# Get project_id and environment from terraform.tfvars
 project_id=$(grep 'project_id' "terraform.tfvars" | cut -d'=' -f2 | tr -d ' "')
+environment=$(grep 'environment' "terraform.tfvars" | cut -d'=' -f2 | tr -d ' "')
+
 if [ -z "$project_id" ]; then
   echo "Error: Could not find project_id in terraform.tfvars"
+  exit 1
+fi
+
+if [ -z "$environment" ]; then
+  echo "Error: Could not find environment in terraform.tfvars"
   exit 1
 fi
 
@@ -68,13 +75,12 @@ fi
 # Enable required GCP APIs
 echo "Enabling required GCP APIs..."
 required_apis=(
-  "compute.googleapis.com"          # Compute Engine API
-  "sqladmin.googleapis.com"        # Cloud SQL Admin API
-  "run.googleapis.com"             # Cloud Run API
-  "vpcaccess.googleapis.com"       # Serverless VPC Access API
-  "servicenetworking.googleapis.com" # Service Networking API
-  "dns.googleapis.com"             # Cloud DNS API
-  "secretmanager.googleapis.com"   # Secret Manager API
+  "compute.googleapis.com"            # Compute Engine API
+  "run.googleapis.com"                # Cloud Run API
+  "vpcaccess.googleapis.com"          # Serverless VPC Access API
+  "servicenetworking.googleapis.com"  # Service Networking API
+  "sqladmin.googleapis.com"           # Cloud SQL Admin API
+  "secretmanager.googleapis.com"      # Secret Manager API
   "certificatemanager.googleapis.com" # Certificate Manager API
 )
 
@@ -100,5 +106,20 @@ echo "Applying Terraform changes..."
 terraform apply
 
 echo "Infrastructure setup completed!"
-echo "Important: After the setup is complete, check the nameservers output and update your domain registrar's nameserver settings accordingly."
-echo "You can view the nameservers again by running: terraform output nameservers" 
+echo ""
+echo "Important: Please complete the following steps to finish the setup:"
+echo ""
+echo "1. DNS Configuration:"
+echo "   a. Add an A record for your domain pointing to the Load Balancer IP:"
+echo "      Domain: $(terraform output -raw domain_name 2>/dev/null || echo '<your-domain>')"
+echo "      Type: A"
+echo "      Value: $(terraform output -raw load_balancer_ip 2>/dev/null || echo '<run: terraform output load_balancer_ip>')"
+echo ""
+echo "2. SSL Certificate Setup:"
+echo "   Add the following TXT record for ACME challenge:"
+echo "      Name: $(terraform output -raw acme_challenge_record_name 2>/dev/null || echo '<run: terraform output acme_challenge_record_name>')"
+echo "      Type: TXT"
+echo "      Value: $(terraform output -raw acme_challenge 2>/dev/null || echo '<run: terraform output acme_challenge>')"
+echo ""
+echo "Note: DNS propagation can take time (up to 48 hours). You can check the certificate status with:"
+echo "gcloud certificate-manager certificates describe cert-${environment} --project=$project_id" 

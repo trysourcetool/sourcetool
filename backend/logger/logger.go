@@ -18,7 +18,7 @@ func Init() {
 		Logger, err = zapdriver.NewProductionWithCore(zapdriver.WrapCore(
 			zapdriver.ServiceName("server"),
 		))
-	case config.EnvStg:
+	case config.EnvStaging:
 		Logger, err = zapdriver.NewDevelopmentWithCore(zapdriver.WrapCore(
 			zapdriver.ServiceName("server"),
 		))

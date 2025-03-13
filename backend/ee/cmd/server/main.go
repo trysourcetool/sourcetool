@@ -12,9 +12,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	ceconfig "github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	"github.com/trysourcetool/sourcetool/backend/ee/config"
 	"github.com/trysourcetool/sourcetool/backend/ee/infra/mailer"
 	"github.com/trysourcetool/sourcetool/backend/ee/infra/signer"
 	"github.com/trysourcetool/sourcetool/backend/ee/infra/store"
@@ -27,7 +26,6 @@ import (
 )
 
 func init() {
-	ceconfig.Init()
 	config.Init()
 	logger.Init()
 }

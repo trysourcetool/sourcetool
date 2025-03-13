@@ -17,11 +17,6 @@ resource "google_cloud_run_v2_service" "default" {
 
       # Common configuration
       env {
-        name  = "ENV"
-        value = var.environment
-      }
-
-      env {
         name  = "DOMAIN"
         value = var.domain_name
       }
@@ -48,33 +43,18 @@ resource "google_cloud_run_v2_service" "default" {
 
       # Database configuration
       env {
-        name = "POSTGRES_HOST"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.postgres_host.secret_id
-            version = "latest"
-          }
-        }
+        name  = "POSTGRES_HOST"
+        value = google_sql_database_instance.instance.private_ip_address
       }
 
       env {
-        name = "POSTGRES_DB"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.postgres_db.secret_id
-            version = "latest"
-          }
-        }
+        name  = "POSTGRES_DB"
+        value = google_sql_database.database.name
       }
 
       env {
-        name = "POSTGRES_USER"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.postgres_user.secret_id
-            version = "latest"
-          }
-        }
+        name  = "POSTGRES_USER"
+        value = google_sql_user.user.name
       }
 
       env {
@@ -88,24 +68,14 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name = "POSTGRES_PORT"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.postgres_port.secret_id
-            version = "latest"
-          }
-        }
+        name  = "POSTGRES_PORT"
+        value = "5432"
       }
 
       # Redis configuration
       env {
-        name = "REDIS_HOST"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.redis_host.secret_id
-            version = "latest"
-          }
-        }
+        name  = "REDIS_HOST"
+        value = google_redis_instance.default.host
       }
 
       env {
@@ -119,13 +89,8 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name = "REDIS_PORT"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.redis_port.secret_id
-            version = "latest"
-          }
-        }
+        name  = "REDIS_PORT"
+        value = google_redis_instance.default.port
       }
 
       # OAuth configuration
@@ -150,44 +115,24 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name = "GOOGLE_OAUTH_CALLBACK_URL"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.google_oauth_callback_url.secret_id
-            version = "latest"
-          }
-        }
+        name  = "GOOGLE_OAUTH_CALLBACK_URL"
+        value = var.google_oauth_callback_url
       }
 
       # SMTP configuration
       env {
-        name = "SMTP_HOST"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.smtp_host.secret_id
-            version = "latest"
-          }
-        }
+        name  = "SMTP_HOST"
+        value = var.smtp_host
       }
 
       env {
-        name = "SMTP_PORT"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.smtp_port.secret_id
-            version = "latest"
-          }
-        }
+        name  = "SMTP_PORT"
+        value = var.smtp_port
       }
 
       env {
-        name = "SMTP_USERNAME"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.smtp_username.secret_id
-            version = "latest"
-          }
-        }
+        name  = "SMTP_USERNAME"
+        value = var.smtp_username
       }
 
       env {
@@ -201,13 +146,8 @@ resource "google_cloud_run_v2_service" "default" {
       }
 
       env {
-        name = "SMTP_FROM_EMAIL"
-        value_source {
-          secret_key_ref {
-            secret = google_secret_manager_secret.smtp_from_email.secret_id
-            version = "latest"
-          }
-        }
+        name  = "SMTP_FROM_EMAIL"
+        value = var.smtp_from_email
       }
 
       startup_probe {
@@ -228,7 +168,7 @@ resource "google_cloud_run_v2_service" "default" {
 
     vpc_access {
       connector = google_vpc_access_connector.connector.id
-      egress = "PRIVATE_RANGES_ONLY"
+      egress = "ALL_TRAFFIC"
     }
 
     service_account = google_service_account.cloud_run_sa.email
@@ -238,22 +178,11 @@ resource "google_cloud_run_v2_service" "default" {
     google_project_service.required_apis["run.googleapis.com"],
     google_secret_manager_secret_version.encryption_key,
     google_secret_manager_secret_version.jwt_key,
-    google_secret_manager_secret_version.postgres_host,
-    google_secret_manager_secret_version.postgres_db,
-    google_secret_manager_secret_version.postgres_user,
     google_secret_manager_secret_version.postgres_password,
-    google_secret_manager_secret_version.postgres_port,
-    google_secret_manager_secret_version.redis_host,
     google_secret_manager_secret_version.redis_password,
-    google_secret_manager_secret_version.redis_port,
     google_secret_manager_secret_version.google_oauth_client_id,
     google_secret_manager_secret_version.google_oauth_client_secret,
-    google_secret_manager_secret_version.google_oauth_callback_url,
-    google_secret_manager_secret_version.smtp_host,
-    google_secret_manager_secret_version.smtp_port,
-    google_secret_manager_secret_version.smtp_username,
     google_secret_manager_secret_version.smtp_password,
-    google_secret_manager_secret_version.smtp_from_email,
   ]
 }
 
