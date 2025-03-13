@@ -128,7 +128,7 @@ go-sdk-lint:
 # Maintenance commands
 remove-docker-images:
 	@echo "Removing untagged Docker images..."
-	@cd backend && bash ./devtools/remove_untagged_docker_images.sh
+	@bash ./devtools/remove_untagged_docker_images.sh
 
 remove-docker-builder:
 	@echo "Pruning Docker builder cache..."
