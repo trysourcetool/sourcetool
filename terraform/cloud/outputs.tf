@@ -13,11 +13,11 @@ output "load_balancer_ip" {
 # ACME Challenge
 output "acme_challenge" {
   description = "ACME challenge record for SSL certificate validation"
-  value       = google_certificate_manager_dns_authorization.default.dns_record[0].data
+  value       = google_certificate_manager_dns_authorization.default.dns_resource_record[0].data
 }
 
 # DNS Record Name for ACME Challenge
 output "acme_challenge_record_name" {
   description = "Record name for ACME challenge"
-  value       = google_certificate_manager_dns_authorization.default.dns_record[0].name
+  value       = google_certificate_manager_dns_authorization.default.dns_resource_record[0].name
 } 

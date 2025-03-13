@@ -72,6 +72,27 @@ if ! gcloud projects describe "$project_id" >/dev/null 2>&1; then
   exit 1
 fi
 
+# Enable required GCP APIs
+echo "Enabling required GCP APIs..."
+required_apis=(
+  "compute.googleapis.com"            # Compute Engine API
+  "run.googleapis.com"                # Cloud Run API
+  "vpcaccess.googleapis.com"          # Serverless VPC Access API
+  "servicenetworking.googleapis.com"  # Service Networking API
+  "sqladmin.googleapis.com"           # Cloud SQL Admin API
+  "secretmanager.googleapis.com"      # Secret Manager API
+  "certificatemanager.googleapis.com" # Certificate Manager API
+)
+
+for api in "${required_apis[@]}"; do
+  if ! gcloud services list --project "$project_id" --filter="config.name:$api" --format="get(config.name)" | grep -q "^$api"; then
+    echo "Enabling $api..."
+    gcloud services enable "$api" --project "$project_id" --quiet
+  else
+    echo "$api is already enabled"
+  fi
+done
+
 # Initialize Terraform
 echo "Initializing Terraform..."
 terraform init

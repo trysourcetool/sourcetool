@@ -44,17 +44,17 @@ resource "google_cloud_run_v2_service" "default" {
       # Database configuration
       env {
         name  = "POSTGRES_HOST"
-        value = var.postgres_host
+        value = google_sql_database_instance.instance.private_ip_address
       }
 
       env {
         name  = "POSTGRES_DB"
-        value = var.postgres_db
+        value = google_sql_database.database.name
       }
 
       env {
         name  = "POSTGRES_USER"
-        value = var.postgres_user
+        value = google_sql_user.user.name
       }
 
       env {
@@ -69,13 +69,13 @@ resource "google_cloud_run_v2_service" "default" {
 
       env {
         name  = "POSTGRES_PORT"
-        value = var.postgres_port
+        value = "5432"
       }
 
       # Redis configuration
       env {
         name  = "REDIS_HOST"
-        value = var.redis_host
+        value = google_redis_instance.default.host
       }
 
       env {
@@ -90,7 +90,7 @@ resource "google_cloud_run_v2_service" "default" {
 
       env {
         name  = "REDIS_PORT"
-        value = var.redis_port
+        value = google_redis_instance.default.port
       }
 
       # OAuth configuration
