@@ -488,6 +488,13 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 		return nil, errdefs.ErrUserEmailAlreadyExists(errors.New("email exists"))
 	}
 
+	// In staging environment, only allow @trysourcetool.com email addresses
+	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(in.Email, "@trysourcetool.com") {
+		return &dto.SendSignUpInstructionsOutput{
+			Email: in.Email,
+		}, nil
+	}
+
 	requestExists, err := s.Store.User().IsRegistrationRequestExists(ctx, in.Email)
 	if err != nil {
 		return nil, err
@@ -1181,6 +1188,15 @@ func (s *ServiceCE) GoogleOAuthCallback(ctx context.Context, in dto.GoogleOAuthC
 	userInfo, err := googleOAuthClient.getGoogleUserInfo(ctx, tok)
 	if err != nil {
 		return nil, err
+	}
+
+	// In staging environment, only allow @trysourcetool.com email addresses
+	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(userInfo.email, "@trysourcetool.com") {
+		return &dto.GoogleOAuthCallbackOutput{
+			SessionToken: "",
+			IsUserExists: false,
+			Domain:       googleAuthReq.Domain,
+		}, nil
 	}
 
 	isUserExists, err := s.Store.User().IsEmailExists(ctx, userInfo.email)
