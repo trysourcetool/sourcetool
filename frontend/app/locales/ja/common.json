@@ -36,6 +36,13 @@
   "zod_errors_current_password_required": "現在のパスワードは必須です",
   "zod_errors_password_same_as_current": "新しいパスワードは現在のパスワードと同じにできません",
 
+  "routes_pages_page_header": "ページ",
+  "routes_pages_placeholder_title": "Sourcetoolを使い始めるには、次のインストール手順に従ってください：",
+  "routes_pages_placeholder_description": "Add the following code to your backend:",
+  "routes_pages_placeholder_restart_server": "Restart your server and reload this page",
+  "routes_pages_placeholder_page_added": "You should see your \"Welcome to Sourcetool!\" page added",
+  "routes_pages_placeholder_documentation": "See the documentation for other components and detailed specifications",
+
   "routes_groups_page_header": "権限",
   "routes_groups_title": "権限グループ",
   "routes_groups_search_placeholder": "権限グループを検索",
@@ -48,6 +55,8 @@
   "routes_groups_delete": "削除",
   "routes_groups_toast_deleted": "グループが削除されました",
   "routes_groups_toast_delete_failed": "グループの削除に失敗しました",
+  "routes_groups_no_groups_title": "権限グループがありません",
+  "routes_groups_no_groups_description": "まだ権限グループが作成されていません。最初の権限グループを作成して始めましょう。",
 
   "routes_signin_title": "お帰りなさい。",
   "routes_signin_description": "アカウントにログインしてください",
@@ -176,6 +185,8 @@
   "routes_apikeys_new_create_button": "作成",
   "routes_apikeys_new_cancel_button": "キャンセル",
   "routes_apikeys_new_toast_create_failed": "APIキーの作成に失敗しました",
+  "routes_apikeys_no_keys_title": "ライブモードキーがありません",
+  "routes_apikeys_no_keys_description": "まだライブモードキーを作成していません。ライブモードキーを作成して、Sourcetoolを使用してください。",
 
   "routes_users_page_header": "ユーザー",
   "routes_users_title": "組織内のユーザー",

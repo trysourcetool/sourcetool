@@ -36,6 +36,13 @@
   "zod_errors_current_password_required": "Current password is required",
   "zod_errors_password_same_as_current": "New password cannot be the same as the current password",
 
+  "routes_pages_page_header": "Pages",
+  "routes_pages_placeholder_title": "Add your first page to get started with Sourcetool",
+  "routes_pages_placeholder_description": "Add the following code to your backend:",
+  "routes_pages_placeholder_restart_server": "Restart your server and reload this page",
+  "routes_pages_placeholder_page_added": "You should see your \"Welcome to Sourcetool!\" page added",
+  "routes_pages_placeholder_documentation": "See the documentation for other components and detailed specifications",
+
   "routes_groups_page_header": "Permissions",
   "routes_groups_title": "Permission Groups",
   "routes_groups_search_placeholder": "Search permission groups",
@@ -48,6 +55,8 @@
   "routes_groups_delete": "Delete",
   "routes_groups_toast_deleted": "Group deleted",
   "routes_groups_toast_delete_failed": "Failed to delete group",
+  "routes_groups_no_groups_title": "No Permission Groups",
+  "routes_groups_no_groups_description": "You haven't created any Permission Groups yet. Create your first Permission Groups to get started.",
 
   "routes_signin_title": "Welcome back.",
   "routes_signin_description": "Log in to your account below",
@@ -167,6 +176,8 @@
   "routes_apikeys_toast_copy_failed": "Failed to copy API key",
   "routes_apikeys_toast_deleted": "API key deleted",
   "routes_apikeys_toast_delete_failed": "Failed to delete API key",
+  "routes_apikeys_no_keys_title": "No Live mode keys",
+  "routes_apikeys_no_keys_description": "You haven't created any Live mode keys yet. Create your first Live mode keys to get started.",
 
   "routes_apikeys_new_page_header": "Create New API key",
   "routes_apikeys_new_name_label": "API Key Name",

@@ -12,6 +12,7 @@ import { File } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { CodeBlock } from '@/components/common/code-block';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -37,12 +38,43 @@ export default function Pages() {
 
   return (
     <div>
-      <PageHeader label="Pages" />
+      <PageHeader label={t('routes_pages_page_header')} />
       <div className="p-6">
-        <div className="rounded-md border p-4">
-          <SidebarMenu>
-            {/* TODO: Recursive processing and folder support */}
-            {/* <Collapsible className="group/collapsible">
+        {pages.length === 0 && (
+          <div className="flex flex-col gap-6">
+            <h2 className="text-xl font-bold">
+              {t('routes_pages_placeholder_title')}
+            </h2>
+            <p className="font-normal text-sidebar-foreground">
+              {t('routes_pages_placeholder_description')}
+            </p>
+            <CodeBlock
+              code={`import "github.com/trysourcetool/sourcetool-go"
+
+func main() {
+    s := sourcetool.New("$your-api-key")
+    if err := s.Listen(); err != nil {
+        log.Fatal(err)
+    }
+}`}
+              language="go"
+            />
+            <p className="font-normal text-sidebar-foreground">
+              {t('routes_pages_placeholder_restart_server')}
+            </p>
+            <p className="font-normal text-sidebar-foreground">
+              {t('routes_pages_placeholder_page_added')}
+            </p>
+            <p className="font-normal text-sidebar-foreground">
+              {t('routes_pages_placeholder_documentation')}
+            </p>
+          </div>
+        )}
+        {pages.length > 0 && (
+          <div className="rounded-md border p-4">
+            <SidebarMenu>
+              {/* TODO: Recursive processing and folder support */}
+              {/* <Collapsible className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuSubButton />
@@ -54,18 +86,19 @@ export default function Pages() {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible> */}
-            {pages.map((page) => (
-              <SidebarMenuItem key={page.id}>
-                <SidebarMenuButton asChild>
-                  <Link to={`/pages${page.route}`}>
-                    <File className="size-4" />
-                    {page.name}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </div>
+              {pages.map((page) => (
+                <SidebarMenuItem key={page.id}>
+                  <SidebarMenuButton asChild>
+                    <Link to={`/pages${page.route}`}>
+                      <File className="size-4" />
+                      {page.name}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
+        )}
       </div>
     </div>
   );
