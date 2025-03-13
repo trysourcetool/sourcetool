@@ -19,6 +19,7 @@ docker push "gcr.io/$PROJECT_ID/$SERVICE_NAME-migrate:$COMMIT_SHA"
 # Build and push main application image
 log "Building main application image..."
 docker build -t "gcr.io/$PROJECT_ID/$SERVICE_NAME:$COMMIT_SHA" \
+    -f docker/cloud/Dockerfile \
     --build-arg "VITE_API_BASE_URL=$VITE_API_BASE_URL" \
     --build-arg "VITE_DOMAIN=$VITE_DOMAIN" .
 

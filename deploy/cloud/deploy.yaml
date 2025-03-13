@@ -7,7 +7,7 @@ options:
     - 'VITE_API_BASE_URL=${_VITE_API_BASE_URL}'
     - 'VITE_DOMAIN=${_VITE_DOMAIN}'
     - 'DEPLOY_ENV=${_DEPLOY_ENV}'
-    - 'REGION=us-central1'
+    - 'REGION=${_REGION}'
     - 'SERVICE_NAME=sourcetool'
 
 steps:
