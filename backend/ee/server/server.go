@@ -47,7 +47,7 @@ func (s *Server) router() chi.Router {
 			case config.EnvProd:
 				pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
 			case config.EnvStaging:
-				pattern = `^https://[a-zA-Z0-9-]+\.stg\.trysourcetool\.com$`
+				pattern = `^https://[a-zA-Z0-9-]+\.staging\.trysourcetool\.com$`
 			case config.EnvLocal:
 				pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`
 			default:
