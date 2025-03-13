@@ -1,6 +1,6 @@
 # Cloud Run Job for database migrations
 resource "google_cloud_run_v2_job" "migrate" {
-  name     = "sourcetool-migrate"
+  name     = var.cloud_run_job_migrate_name
   location = var.region
 
   template {

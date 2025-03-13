@@ -33,15 +33,16 @@ smtp_password   = "your-smtp-password"
 smtp_from_email = "your-smtp-from-email"
 
 # Cloud Run Configuration
-cloud_run_service_name   = "sourcetool"
-container_image         = "gcr.io/your-project-id/sourcetool:latest"
-job_container_image     = "gcr.io/your-project-id/sourcetool:latest"
-cloud_run_cpu           = "1"
-cloud_run_memory        = "512Mi"
-cloud_run_min_instances = 0
-cloud_run_max_instances = 10
-cloud_run_concurrency   = 80
-cloud_run_timeout       = 300
+cloud_run_service_name     = "sourcetool"
+cloud_run_job_migrate_name = "sourcetool-migrate"
+container_image            = "gcr.io/your-project-id/sourcetool:latest"
+job_container_image        = "gcr.io/your-project-id/sourcetool:latest"
+cloud_run_cpu              = "1"
+cloud_run_memory           = "512Mi"
+cloud_run_min_instances    = 0
+cloud_run_max_instances    = 10
+cloud_run_concurrency      = 80
+cloud_run_timeout          = 300
 
 # Network Configuration
 vpc_connector_machine_type   = "e2-micro"

@@ -21,7 +21,7 @@ log "Starting deployment to $DEPLOY_ENV environment..."
 
 # Update and execute migration job
 log "Updating and executing migration job..."
-gcloud run jobs update "$SERVICE_NAME-migrate" \
+gcloud run jobs update "$SERVICE_NAME-$DEPLOY_ENV-migrate" \
     --image "gcr.io/$PROJECT_ID/$SERVICE_NAME-migrate:$COMMIT_SHA" \
     --region "$REGION" \
     --execute-now \
