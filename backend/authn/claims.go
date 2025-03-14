@@ -34,7 +34,6 @@ type UserGoogleAuthRequestClaims struct {
 // UserAuthClaims represents claims for user authentication with XSRF token.
 type UserAuthClaims struct {
 	UserID    string
-	Email     string
 	XSRFToken string
 	jwt.RegisteredClaims
 }

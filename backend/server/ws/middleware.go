@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
@@ -85,7 +87,12 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 		return nil, err
 	}
 
-	u, err := m.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
+	userID, err := uuid.FromString(c.UserID)
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
+
+	u, err := m.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}

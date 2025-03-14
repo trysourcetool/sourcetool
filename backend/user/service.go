@@ -353,7 +353,6 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     in.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -445,7 +444,6 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     googleAuthReq.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -605,7 +603,6 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 
 		token, err = authn.SignToken(&authn.UserAuthClaims{
 			UserID:    u.ID.String(),
-			Email:     c.Email,
 			XSRFToken: xsrfToken,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -683,7 +680,6 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 
 		token, err = authn.SignToken(&authn.UserAuthClaims{
 			UserID:    u.ID.String(),
-			Email:     googleAuthReq.Email,
 			XSRFToken: xsrfToken,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -727,7 +723,6 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     u.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -770,7 +765,6 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     u.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -823,7 +817,6 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     u.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -976,7 +969,6 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     u.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -1110,7 +1102,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 
 		token, err = authn.SignToken(&authn.UserAuthClaims{
 			UserID:    u.ID.String(),
-			Email:     c.Email,
 			XSRFToken: xsrfToken,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -1407,7 +1398,6 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := authn.SignToken(&authn.UserAuthClaims{
 		UserID:    u.ID.String(),
-		Email:     googleAuthReq.Email,
 		XSRFToken: xsrfToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
@@ -1547,7 +1537,6 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 
 		token, err = authn.SignToken(&authn.UserAuthClaims{
 			UserID:    u.ID.String(),
-			Email:     googleAuthReq.Email,
 			XSRFToken: xsrfToken,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(expiresAt),
