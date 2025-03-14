@@ -364,12 +364,12 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	u.Secret = secret
+	u.Secret = hashedSecret
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
@@ -380,7 +380,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	return &dto.SignInOutput{
 		AuthURL:              buildSaveAuthURL(orgSubdomain),
 		Token:                token,
-		Secret:               secret,
+		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
 		Domain:               orgSubdomain + "." + config.Config.Domain,
@@ -455,12 +455,12 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	u.Secret = secret
+	u.Secret = hashedSecret
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
@@ -471,7 +471,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	return &dto.SignInWithGoogleOutput{
 		AuthURL:              buildSaveAuthURL(orgSubdomain),
 		Token:                token,
-		Secret:               secret,
+		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
 		Domain:               orgSubdomain + "." + config.Config.Domain,
@@ -577,7 +577,7 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	secret, err := generateSecret()
+	_, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -590,7 +590,7 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 		LastName:             in.LastName,
 		Email:                c.Email,
 		Password:             hex.EncodeToString(encodedPass[:]),
-		Secret:               secret,
+		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
 
@@ -654,7 +654,7 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	_, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -666,7 +666,7 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                googleAuthReq.Email,
-		Secret:               secret,
+		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 		GoogleID:             googleAuthReq.GoogleID,
 	}
@@ -707,7 +707,8 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
 	}
 
-	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(in.Secret))
+	hashedSecret := hashSecret(in.Secret)
+	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(hashedSecret))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -736,7 +737,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 
 	return &dto.RefreshTokenOutput{
 		Token:     token,
-		Secret:    u.Secret,
+		Secret:    in.Secret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
@@ -744,12 +745,17 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 }
 
 func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAuthOutput, error) {
-	c, err := authn.ParseToken[*authn.UserClaims](in.Token)
+	c, err := authn.ParseToken[*authn.UserAuthClaims](in.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
+	userID, err := uuid.FromString(c.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -776,12 +782,12 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	u.Secret = secret
+	u.Secret = hashedSecret
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
@@ -791,7 +797,7 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 
 	return &dto.SaveAuthOutput{
 		Token:       token,
-		Secret:      secret,
+		Secret:      plainSecret,
 		XSRFToken:   xsrfToken,
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
 		RedirectURL: buildServiceURL(subdomain),
@@ -980,12 +986,12 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	u.Secret = secret
+	u.Secret = hashedSecret
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
@@ -1007,7 +1013,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	return &dto.SignInInvitationOutput{
 		Token:     token,
-		Secret:    secret,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
@@ -1057,7 +1063,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -1070,7 +1076,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		LastName:             in.LastName,
 		Email:                c.Email,
 		Password:             hex.EncodeToString(encodedPass[:]),
-		Secret:               secret,
+		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
 
@@ -1120,7 +1126,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 
 	return &dto.SignUpInvitationOutput{
 		Token:     token,
-		Secret:    secret,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
@@ -1409,12 +1415,12 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	u.Secret = secret
+	u.Secret = hashedSecret
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
@@ -1436,7 +1442,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	return &dto.SignInWithGoogleInvitationOutput{
 		Token:     token,
-		Secret:    secret,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
@@ -1492,7 +1498,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, err
 	}
 
-	secret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -1504,7 +1510,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                googleAuthReq.Email,
-		Secret:               secret,
+		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 		GoogleID:             googleAuthReq.GoogleID,
 	}
@@ -1555,7 +1561,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 
 	return &dto.SignUpWithGoogleInvitationOutput{
 		Token:     token,
-		Secret:    secret,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    subdomain + "." + config.Config.Domain,
