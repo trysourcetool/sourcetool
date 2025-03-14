@@ -41,7 +41,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const isInitialLoading = useRef(false);
   const socketUrl = useMemo(
     () =>
-      `ws://${subDomain}.${ENVIRONMENTS.DOMAIN}${
+      `wss://${subDomain}.${ENVIRONMENTS.DOMAIN}${
         ENVIRONMENTS.MODE === 'production' ? '' : ':8080'
       }/ws`,
     [subDomain],
