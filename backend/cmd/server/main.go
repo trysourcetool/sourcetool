@@ -18,7 +18,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/infra/mailer"
-	"github.com/trysourcetool/sourcetool/backend/infra/signer"
 	"github.com/trysourcetool/sourcetool/backend/infra/store"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/postgres"
@@ -46,7 +45,7 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
-	dep := infra.NewDependency(store.NewCE(db), signer.NewCE(), mailer.NewCE())
+	dep := infra.NewDependency(store.NewCE(db), mailer.NewCE())
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Store); err != nil {

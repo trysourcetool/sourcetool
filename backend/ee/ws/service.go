@@ -22,7 +22,7 @@ type serviceEE struct {
 func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
-		ServiceCE:  ws.NewServiceCE(infra.NewDependency(d.Store, d.Signer, d.Mailer)),
+		ServiceCE:  ws.NewServiceCE(infra.NewDependency(d.Store, d.Mailer)),
 	}
 }
 

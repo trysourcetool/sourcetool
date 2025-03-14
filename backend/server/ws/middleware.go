@@ -7,9 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
@@ -104,17 +102,14 @@ func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain str
 	return o, nil
 }
 
-func (m *MiddlewareCE) validateUserToken(token string) (*model.UserClaims, error) {
+func (m *MiddlewareCE) validateUserToken(token string) (*authn.UserAuthClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
 
-	claims := &model.UserClaims{}
-	tok, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (any, error) {
-		return []byte(config.Config.Jwt.Key), nil
-	})
-	if err != nil || !tok.Valid {
-		return nil, errdefs.ErrUnauthenticated(fmt.Errorf("failed to parse token: %s", err))
+	claims, err := authn.ParseToken[*authn.UserAuthClaims](token)
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
 	return claims, nil
