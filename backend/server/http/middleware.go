@@ -168,12 +168,12 @@ func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain str
 	return o, nil
 }
 
-func (m *MiddlewareCE) validateUserToken(token string) (*model.UserClaims, error) {
+func (m *MiddlewareCE) validateUserToken(token string) (*model.UserAuthClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
 
-	claims := &model.UserClaims{}
+	claims := &model.UserAuthClaims{}
 	tok, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (any, error) {
 		return []byte(config.Config.Jwt.Key), nil
 	})
