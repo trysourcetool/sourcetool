@@ -7,8 +7,8 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/gofrs/uuid/v5"
-	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
@@ -183,39 +183,15 @@ const (
 	UserSignatureSubjectGoogleAuthRequest = "google_auth_request"
 )
 
-type UserClaims struct {
-	UserID string
-	Email  string
-	jwt.RegisteredClaims
-}
-
-type UserEmailClaims struct {
-	Email string
-	jwt.RegisteredClaims
-}
-
-type UserGoogleAuthRequestClaims struct {
-	GoogleAuthRequestID string
-	jwt.RegisteredClaims
-}
-
-type UserAuthClaims struct {
-	UserID string
-	// OrganizationID string
-	Email     string
-	XSRFToken string
-	jwt.RegisteredClaims
-}
-
 type UserSigner interface {
-	SignedString(context.Context, *UserClaims) (string, error)
-	SignedStringFromEmail(context.Context, *UserEmailClaims) (string, error)
-	SignedStringGoogleAuthRequest(context.Context, *UserGoogleAuthRequestClaims) (string, error)
-	SignedStringAuth(context.Context, *UserAuthClaims) (string, error)
-	ClaimsFromToken(context.Context, string) (*UserClaims, error)
-	EmailClaimsFromToken(context.Context, string) (*UserEmailClaims, error)
-	GoogleAuthRequestClaimsFromToken(context.Context, string) (*UserGoogleAuthRequestClaims, error)
-	AuthClaimsFromToken(context.Context, string) (*UserAuthClaims, error)
+	SignedString(context.Context, *authn.UserClaims) (string, error)
+	SignedStringFromEmail(context.Context, *authn.UserEmailClaims) (string, error)
+	SignedStringGoogleAuthRequest(context.Context, *authn.UserGoogleAuthRequestClaims) (string, error)
+	SignedStringAuth(context.Context, *authn.UserAuthClaims) (string, error)
+	ClaimsFromToken(context.Context, string) (*authn.UserClaims, error)
+	EmailClaimsFromToken(context.Context, string) (*authn.UserEmailClaims, error)
+	GoogleAuthRequestClaimsFromToken(context.Context, string) (*authn.UserGoogleAuthRequestClaims, error)
+	AuthClaimsFromToken(context.Context, string) (*authn.UserAuthClaims, error)
 }
 
 type SendSignUpInstructions struct {

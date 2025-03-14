@@ -20,7 +20,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
 		ServiceCE: page.NewServiceCE(
-			infra.NewDependency(d.Store, d.Signer, d.Mailer),
+			infra.NewDependency(d.Store, d.Mailer),
 		),
 	}
 }
