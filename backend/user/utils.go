@@ -21,7 +21,7 @@ func hashSecret(plainSecret string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func generateSecret() (plainSecret string, hashedSecret string, err error) {
+func generateSecret() (plainSecret, hashedSecret string, err error) {
 	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
 		return "", "", err
