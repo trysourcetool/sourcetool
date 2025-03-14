@@ -184,9 +184,8 @@ const (
 )
 
 type UserClaims struct {
-	UserID    string
-	Email     string
-	XSRFToken string
+	UserID string
+	Email  string
 	jwt.RegisteredClaims
 }
 
@@ -200,13 +199,23 @@ type UserGoogleAuthRequestClaims struct {
 	jwt.RegisteredClaims
 }
 
+type UserAuthClaims struct {
+	UserID string
+	// OrganizationID string
+	Email     string
+	XSRFToken string
+	jwt.RegisteredClaims
+}
+
 type UserSigner interface {
 	SignedString(context.Context, *UserClaims) (string, error)
 	SignedStringFromEmail(context.Context, *UserEmailClaims) (string, error)
 	SignedStringGoogleAuthRequest(context.Context, *UserGoogleAuthRequestClaims) (string, error)
+	SignedStringAuth(context.Context, *UserAuthClaims) (string, error)
 	ClaimsFromToken(context.Context, string) (*UserClaims, error)
 	EmailClaimsFromToken(context.Context, string) (*UserEmailClaims, error)
 	GoogleAuthRequestClaimsFromToken(context.Context, string) (*UserGoogleAuthRequestClaims, error)
+	AuthClaimsFromToken(context.Context, string) (*UserAuthClaims, error)
 }
 
 type SendSignUpInstructions struct {

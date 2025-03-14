@@ -350,7 +350,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     in.Email,
 		XSRFToken: xsrfToken,
@@ -442,7 +442,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     googleAuthReq.Email,
 		XSRFToken: xsrfToken,
@@ -602,7 +602,7 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 			return err
 		}
 
-		token, err = s.Signer.User().SignedString(ctx, &model.UserClaims{
+		token, err = s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 			UserID:    u.ID.String(),
 			Email:     c.Email,
 			XSRFToken: xsrfToken,
@@ -680,7 +680,7 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 			return err
 		}
 
-		token, err = s.Signer.User().SignedString(ctx, &model.UserClaims{
+		token, err = s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 			UserID:    u.ID.String(),
 			Email:     googleAuthReq.Email,
 			XSRFToken: xsrfToken,
@@ -724,7 +724,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     u.Email,
 		XSRFToken: xsrfToken,
@@ -767,7 +767,7 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     u.Email,
 		XSRFToken: xsrfToken,
@@ -820,7 +820,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     u.Email,
 		XSRFToken: xsrfToken,
@@ -973,7 +973,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     u.Email,
 		XSRFToken: xsrfToken,
@@ -1107,7 +1107,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 			return err
 		}
 
-		token, err = s.Signer.User().SignedString(ctx, &model.UserClaims{
+		token, err = s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 			UserID:    u.ID.String(),
 			Email:     c.Email,
 			XSRFToken: xsrfToken,
@@ -1404,7 +1404,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := s.Signer.User().SignedString(ctx, &model.UserClaims{
+	token, err := s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 		UserID:    u.ID.String(),
 		Email:     googleAuthReq.Email,
 		XSRFToken: xsrfToken,
@@ -1544,7 +1544,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 			return err
 		}
 
-		token, err = s.Signer.User().SignedString(ctx, &model.UserClaims{
+		token, err = s.Signer.User().SignedStringAuth(ctx, &model.UserAuthClaims{
 			UserID:    u.ID.String(),
 			Email:     googleAuthReq.Email,
 			XSRFToken: xsrfToken,
