@@ -2,7 +2,7 @@ package config
 
 import (
 	"log"
-	"strings"
+	"regexp"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -58,26 +58,26 @@ func Init() {
 		log.Fatal("[INIT] config: ", err)
 	}
 
-	const localhost = "localhost"
-	const cloudDomain = "trysourcetool.com"
+	localhostRegex := regexp.MustCompile(`^localhost(:\d+)?$`)
+	cloudDomainRegex := regexp.MustCompile(`^(?:([^.]+)\.)?trysourcetool\.com$`)
 
 	// Set Env and IsCloudEdition based on DOMAIN
-	if strings.Contains(cfg.Domain, localhost) {
+	if localhostRegex.MatchString(cfg.Domain) {
 		cfg.Env = EnvLocal
 		cfg.IsCloudEdition = false
-	} else if strings.HasSuffix(cfg.Domain, cloudDomain) {
-		parts := strings.Split(cfg.Domain, ".")
-		if len(parts) > 2 {
-			cfg.Env = parts[0]
-			cfg.IsCloudEdition = true
+	} else if matches := cloudDomainRegex.FindStringSubmatch(cfg.Domain); matches != nil {
+		cfg.IsCloudEdition = true
+		if matches[1] != "" {
+			cfg.Env = matches[1] // subdomain exists (e.g., staging.trysourcetool.com)
 		} else {
-			cfg.Env = EnvProd
-			cfg.IsCloudEdition = true
+			cfg.Env = EnvProd // just trysourcetool.com
 		}
 	} else {
 		cfg.Env = EnvProd
 		cfg.IsCloudEdition = false
 	}
+
+	log.Printf("env: %s, isCloudEdition: %t", cfg.Env, cfg.IsCloudEdition)
 
 	Config = cfg
 }
