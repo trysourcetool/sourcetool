@@ -3,6 +3,40 @@
 # Exit on error
 set -e
 
+# Show usage
+show_usage() {
+  echo "Usage: $0 [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  -h, --help     Show this help message"
+  echo "  -p, --plan     Only show plan without applying"
+  echo ""
+  echo "Example:"
+  echo "  $0            # Apply cloud infrastructure"
+  echo "  $0 -p        # Show plan for cloud infrastructure"
+}
+
+# Parse arguments
+PLAN_ONLY=false
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help)
+      show_usage
+      exit 0
+      ;;
+    -p|--plan)
+      PLAN_ONLY=true
+      shift
+      ;;
+    *)
+      echo "Error: Unknown argument $1"
+      show_usage
+      exit 1
+      ;;
+  esac
+done
+
 # Function to check if a command exists
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -42,14 +76,21 @@ fi
 # Check Google Cloud authentication
 check_gcloud_auth
 
-# Check if terraform.tfvars exists
-if [ ! -f "$(dirname "$0")/../terraform/cloud/terraform.tfvars" ]; then
-  echo "Error: terraform.tfvars file not found in the terraform/cloud directory."
+# Set the working directory
+TERRAFORM_DIR="$(dirname "$0")/../terraform/cloud"
+if [ ! -d "$TERRAFORM_DIR" ]; then
+  echo "Error: Directory $TERRAFORM_DIR does not exist"
   exit 1
 fi
 
-# Set the working directory to the terraform directory first
-cd "$(dirname "$0")/../terraform/cloud" || exit 1
+# Check if terraform.tfvars exists
+if [ ! -f "$TERRAFORM_DIR/terraform.tfvars" ]; then
+  echo "Error: terraform.tfvars file not found in $TERRAFORM_DIR"
+  exit 1
+fi
+
+# Set the working directory
+cd "$TERRAFORM_DIR" || exit 1
 
 # Get project_id and environment from terraform.tfvars
 project_id=$(grep 'project_id' "terraform.tfvars" | cut -d'=' -f2 | tr -d ' "')
@@ -101,25 +142,27 @@ terraform init
 echo "Planning Terraform changes..."
 terraform plan
 
-# Apply the changes
-echo "Applying Terraform changes..."
-terraform apply
-
-echo "Infrastructure setup completed!"
-echo ""
-echo "Important: Please complete the following steps to finish the setup:"
-echo ""
-echo "1. DNS Configuration:"
-echo "   a. Add an A record for your domain pointing to the Load Balancer IP:"
-echo "      Domain: $(terraform output -raw domain_name 2>/dev/null || echo '<your-domain>')"
-echo "      Type: A"
-echo "      Value: $(terraform output -raw load_balancer_ip 2>/dev/null || echo '<run: terraform output load_balancer_ip>')"
-echo ""
-echo "2. SSL Certificate Setup:"
-echo "   Add the following TXT record for ACME challenge:"
-echo "      Name: $(terraform output -raw acme_challenge_record_name 2>/dev/null || echo '<run: terraform output acme_challenge_record_name>')"
-echo "      Type: CNAME"
-echo "      Value: $(terraform output -raw acme_challenge 2>/dev/null || echo '<run: terraform output acme_challenge>')"
-echo ""
-echo "Note: DNS propagation can take time (up to 48 hours). You can check the certificate status with:"
-echo "gcloud certificate-manager certificates describe cert-${environment} --project=$project_id" 
+# Apply the changes if not in plan-only mode
+if [ "$PLAN_ONLY" = false ]; then
+  echo "Applying Terraform changes..."
+  terraform apply
+  
+  echo "Infrastructure setup completed!"
+  echo ""
+  echo "Important: Please complete the following steps to finish the setup:"
+  echo ""
+  echo "1. DNS Configuration:"
+  echo "   a. Add an A record for your domain pointing to the Load Balancer IP:"
+  echo "      Domain: $(terraform output -raw domain_name 2>/dev/null || echo '<your-domain>')"
+  echo "      Type: A"
+  echo "      Value: $(terraform output -raw load_balancer_ip 2>/dev/null || echo '<run: terraform output load_balancer_ip>')"
+  echo ""
+  echo "2. SSL Certificate Setup:"
+  echo "   Add the following TXT record for ACME challenge:"
+  echo "      Name: $(terraform output -raw acme_challenge_record_name 2>/dev/null || echo '<run: terraform output acme_challenge_record_name>')"
+  echo "      Type: CNAME"
+  echo "      Value: $(terraform output -raw acme_challenge 2>/dev/null || echo '<run: terraform output acme_challenge>')"
+  echo ""
+  echo "Note: DNS propagation can take time (up to 48 hours). You can check the certificate status with:"
+  echo "gcloud certificate-manager certificates describe cert-${environment} --project=$project_id"
+fi 
