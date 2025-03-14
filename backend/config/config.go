@@ -58,11 +58,14 @@ func Init() {
 		log.Fatal("[INIT] config: ", err)
 	}
 
+	const localhost = "localhost"
+	const cloudDomain = "trysourcetool.com"
+
 	// Set Env and IsCloudEdition based on DOMAIN
-	if strings.Contains(cfg.Domain, "localhost") {
+	if strings.Contains(cfg.Domain, localhost) {
 		cfg.Env = EnvLocal
 		cfg.IsCloudEdition = false
-	} else if strings.HasSuffix(cfg.Domain, "trysourcetool.com") {
+	} else if strings.HasSuffix(cfg.Domain, cloudDomain) {
 		parts := strings.Split(cfg.Domain, ".")
 		if len(parts) > 2 {
 			cfg.Env = parts[0]
