@@ -3,8 +3,10 @@ package user
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
-	"math/big"
 	"net/url"
 	"path"
 	"strconv"
@@ -14,19 +16,21 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-func generateSecret() (string, error) {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	result := make([]byte, 32)
+func hashSecret(plainSecret string) string {
+	hash := sha256.Sum256([]byte(plainSecret))
+	return hex.EncodeToString(hash[:])
+}
 
-	for i := range result {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", err
-		}
-		result[i] = charset[num.Int64()]
+func generateSecret() (plainSecret string, hashedSecret string, err error) {
+	randomBytes := make([]byte, 32)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", "", err
 	}
 
-	return string(result), nil
+	plainSecret = base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	hashedSecret = hashSecret(plainSecret)
+
+	return plainSecret, hashedSecret, nil
 }
 
 func buildUserActivateURL(ctx context.Context, token string) (string, error) {
