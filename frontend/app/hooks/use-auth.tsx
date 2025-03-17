@@ -1,4 +1,4 @@
-import { checkSubDomain } from '@/lib/checkSubDomain';
+import { checkDomain } from '@/lib/checkDomain';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { Loader2 } from 'lucide-react';
@@ -15,26 +15,26 @@ import {
 
 type AuthState = {
   subDomain: string | null;
-  subDomainMatched: {
-    isMatched: boolean;
-    status: 'checking' | 'checked';
-  };
+  isSourcetoolDomain: boolean;
+  isSubDomainMatched: boolean;
+  isAuthChecked: 'checking' | 'checked';
+  environments: 'production' | 'staging' | 'local' | null;
 };
 
 export const authContext = createContext<AuthState>({
   subDomain: null,
-  subDomainMatched: {
-    isMatched: false,
-    status: 'checking',
-  },
+  isSourcetoolDomain: false,
+  isSubDomainMatched: false,
+  isAuthChecked: 'checking',
+  environments: null,
 });
 
 export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
   const isInitialAuthChecking = useRef(false);
   const dispatch = useDispatch();
 
-  const subDomain = useMemo(
-    () => (typeof window !== 'undefined' ? checkSubDomain() : null),
+  const domain = useMemo(
+    () => (typeof window !== 'undefined' ? checkDomain() : null),
     [],
   );
 
@@ -45,7 +45,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
   );
 
   const subDomainMatched = useSelector((state) =>
-    usersStore.selector.getSubDomainMatched(state, subDomain),
+    usersStore.selector.getSubDomainMatched(state, domain?.subDomain ?? null),
   );
 
   useEffect(() => {
@@ -70,9 +70,12 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
           if (usersStore.asyncActions.getUsersMe.fulfilled.match(resultUser)) {
             const user = resultUser.payload.user;
             const userOrganization = user.organization;
-            if (userOrganization && userOrganization?.subdomain === subDomain) {
+            if (
+              userOrganization &&
+              userOrganization?.subdomain === domain?.subDomain
+            ) {
               // TODO: Redirect if outside the authentication screen
-            } else if (userOrganization && subDomain === 'auth') {
+            } else if (userOrganization && domain?.subDomain === 'auth') {
               window.location.replace(
                 `${window.location.protocol}//${window.location.host.replace(
                   'auth',
@@ -90,15 +93,18 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
     dispatch,
     isAuthChecked,
     isRefreshTokenWaiting,
-    subDomain,
+    domain?.subDomain,
     isAuthSucceeded,
   ]);
 
   return (
     <authContext.Provider
       value={{
-        subDomain,
-        subDomainMatched,
+        subDomain: domain?.subDomain ?? null,
+        isSourcetoolDomain: !!domain?.isSourcetoolDomain,
+        isSubDomainMatched: subDomainMatched.isMatched,
+        isAuthChecked: subDomainMatched.status,
+        environments: domain?.environments ?? null,
       }}
     >
       {isAuthChecked ? (
@@ -113,15 +119,21 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
 };
 
 export const useAuth = () => {
-  const { subDomain, subDomainMatched } = useContext(authContext);
+  const {
+    subDomain,
+    isSubDomainMatched,
+    isAuthChecked,
+    isSourcetoolDomain,
+    environments,
+  } = useContext(authContext);
 
   const handleNoAuthRoute = useCallback(() => {
-    if (!subDomain) {
+    if (isSourcetoolDomain && !subDomain) {
       console.log(`auth.${window.location.host}`);
       window.location.replace(
         `${window.location.protocol}//auth.${window.location.host}/signin`,
       );
-    } else if (subDomain && subDomain !== 'auth') {
+    } else if (isSourcetoolDomain && subDomain && subDomain !== 'auth') {
       console.log(
         `${window.location.protocol}//${window.location.host}/signin`,
       );
@@ -136,8 +148,18 @@ export const useAuth = () => {
 
   console.log({
     subDomain,
-    subDomainMatched,
+    isSubDomainMatched,
+    isAuthChecked,
+    isSourcetoolDomain,
+    environments,
   });
 
-  return { subDomain, subDomainMatched, handleNoAuthRoute };
+  return {
+    subDomain,
+    isSubDomainMatched,
+    isAuthChecked,
+    handleNoAuthRoute,
+    isSourcetoolDomain,
+    environments,
+  };
 };

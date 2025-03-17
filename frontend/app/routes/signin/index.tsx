@@ -26,8 +26,7 @@ import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useMemo } from 'react';
-import { checkSubDomain } from '@/lib/checkSubDomain';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Signin() {
   const dispatch = useDispatch();
@@ -35,10 +34,7 @@ export default function Signin() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
 
-  const subDomain = useMemo(
-    () => (typeof window !== 'undefined' ? checkSubDomain() : null),
-    [],
-  );
+  const { isSourcetoolDomain, subDomain } = useAuth();
 
   const isSigninWaiting = useSelector((state) => state.users.isSigninWaiting);
   const isOauthGoogleAuthWaiting = useSelector(
@@ -178,7 +174,8 @@ export default function Signin() {
               label={t('routes_signin_google_button')}
             />
 
-            {subDomain === 'auth' && (
+            {((isSourcetoolDomain && subDomain === 'auth') ||
+              !isSourcetoolDomain) && (
               <p className="text-center text-sm font-normal text-foreground">
                 {t('routes_signin_no_account')}{' '}
                 <Link className="underline" to={$path('/signup')}>

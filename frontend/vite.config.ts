@@ -1,10 +1,9 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { reactRouter } from '@react-router/dev/vite';
 
 export default defineConfig(({ mode }) => {
-  const envPrefix = ['VITE_', 'APP_ENV'];
-  const env = loadEnv(mode, '.', envPrefix);
+  console.log({ mode });
   return {
     server: {
       host: '127.0.0.1',
@@ -13,7 +12,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [reactRouter(), tsconfigPaths()],
     esbuild: {
-      drop: env['APP_ENV'] === 'production' ? ['console', 'debugger'] : [],
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
     },
   };
 });

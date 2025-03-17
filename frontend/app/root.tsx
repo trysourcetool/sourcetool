@@ -45,12 +45,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <Provider store={reduxStore.store}>
           <ThemeProvider enableSystem={false} attribute="class">
-            <DomainProvider>
-              <AuthProvider>
+            <AuthProvider>
+              <DomainProvider>
                 {children}
                 <WebSocketController />
-              </AuthProvider>
-            </DomainProvider>
+              </DomainProvider>
+            </AuthProvider>
             <Toaster />
           </ThemeProvider>
         </Provider>

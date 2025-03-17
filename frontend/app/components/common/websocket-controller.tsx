@@ -30,7 +30,7 @@ import { $path } from 'safe-routes';
 const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const dispatch = useDispatch();
   const { '*': path } = useParams();
-  const { subDomain } = useAuth();
+  const { subDomain, isSourcetoolDomain, environments } = useAuth();
   const currentPageId = useRef('');
   const currentSessionId = useRef('');
   const prevVisibilityStatus = useRef(!document.hidden);
@@ -41,10 +41,12 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const isInitialLoading = useRef(false);
   const socketUrl = useMemo(
     () =>
-      `wss://${subDomain}.${ENVIRONMENTS.DOMAIN}${
-        ENVIRONMENTS.MODE === 'production' ? '' : ':8080'
+      `${
+        environments === 'local' ? 'ws' : 'wss'
+      }://${isSourcetoolDomain && subDomain ? `${subDomain}.` : ''}${
+        ENVIRONMENTS.API_BASE_URL
       }/ws`,
-    [subDomain],
+    [subDomain, environments, isSourcetoolDomain],
   );
 
   const pageId = useSelector(
@@ -346,17 +348,17 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
 export const WebSocketController = () => {
   const location = useLocation();
   const [isSocketReady, setIsSocketReady] = useState(false);
-  const { subDomainMatched } = useAuth();
+  const { isAuthChecked, isSubDomainMatched, isSourcetoolDomain } = useAuth();
 
   useEffect(() => {
     if (
-      subDomainMatched.status === 'checked' &&
-      subDomainMatched.isMatched &&
+      isAuthChecked === 'checked' &&
+      ((!isSourcetoolDomain && isSubDomainMatched) || isSourcetoolDomain) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
     }
-  }, [location.pathname, subDomainMatched]);
+  }, [location.pathname, isSubDomainMatched, isSourcetoolDomain]);
 
   console.log({ isSocketReady });
 

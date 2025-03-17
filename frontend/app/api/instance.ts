@@ -2,6 +2,7 @@ import { ENVIRONMENTS } from '@/environments';
 import { checkSubDomain } from '@/lib/checkSubDomain';
 import dayjs from 'dayjs';
 import { usersRefreshToken } from './modules/users';
+import { checkDomain } from '@/lib/checkDomain';
 
 type SuccessResponse = {
   code: 0;
@@ -85,9 +86,9 @@ class Api {
   }
 
   getParams(auth?: boolean) {
-    const subDomain = checkSubDomain();
-    console.log({ subDomain });
-    const url = `${window.location.protocol}//${subDomain ? `${subDomain}.` : ''}${ENVIRONMENTS.API_BASE_URL}/api/v1`;
+    const domain = checkDomain();
+    console.log({ domain });
+    const url = `${window.location.protocol}//${domain.isSourcetoolDomain && domain.subDomain ? `${domain.subDomain}.` : ''}${ENVIRONMENTS.API_BASE_URL}/api/v1`;
 
     const headers = new Headers();
 
