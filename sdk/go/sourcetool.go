@@ -22,6 +22,7 @@ type Sourcetool struct {
 }
 
 func New(apiKey string) *Sourcetool {
+	// TODO: fetch subdomain from api key
 	subdomain := subdomainFromAPIKey(apiKey)
 	namespaceDNS := fmt.Sprintf("%s.trysourcetool.com", subdomain)
 	s := &Sourcetool{

@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -20,7 +21,7 @@ func OrganizationFromModel(org *model.Organization) *Organization {
 
 	return &Organization{
 		ID:        org.ID.String(),
-		Subdomain: org.Subdomain,
+		Subdomain: conv.SafeValue(org.Subdomain),
 		CreatedAt: org.CreatedAt.Unix(),
 		UpdatedAt: org.UpdatedAt.Unix(),
 	}

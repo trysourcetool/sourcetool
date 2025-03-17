@@ -19,6 +19,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -66,9 +67,14 @@ func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	opts := []storeopts.OrganizationOption{
 		storeopts.OrganizationByUserID(u.ID),
 	}
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	if subdomain != "auth" {
-		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
+	if config.Config.IsCloudEdition {
+		subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+		if subdomain != "auth" {
+			opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
+		}
 	}
 	o, err := s.Store.Organization().Get(ctx, opts...)
 	if err != nil && !errdefs.IsOrganizationNotFound(err) {
@@ -193,7 +199,8 @@ func (s *ServiceCE) SendUpdateEmailInstructions(ctx context.Context, in dto.Send
 		return err
 	}
 
-	url, err := buildUpdateEmailURL(ctx, tok)
+	currentOrg := ctxutils.CurrentOrganization(ctx)
+	url, err := buildUpdateEmailURL(conv.SafeValue(currentOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
@@ -325,11 +332,17 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	if subdomain != "auth" {
-		_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	if config.Config.IsCloudEdition {
+		subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
 		if err != nil {
-			return nil, err
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+
+		if subdomain != "auth" {
+			_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -345,7 +358,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 			return nil, err
 		}
 
-		orgSubdomain = org.Subdomain
+		orgSubdomain = conv.SafeValue(org.Subdomain)
 	}
 
 	now := time.Now()
@@ -371,6 +384,16 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	u.Secret = hashedSecret
 
+	domain, err := buildServiceDomain(orgSubdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	authURL, err := buildSaveAuthURL(orgSubdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -378,12 +401,12 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	}
 
 	return &dto.SignInOutput{
-		AuthURL:              buildSaveAuthURL(orgSubdomain),
+		AuthURL:              authURL,
 		Token:                token,
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
-		Domain:               orgSubdomain + "." + config.Config.Domain,
+		Domain:               domain,
 	}, nil
 }
 
@@ -416,11 +439,17 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	if subdomain != "auth" {
-		_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	if config.Config.IsCloudEdition {
+		subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
 		if err != nil {
-			return nil, err
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+
+		if subdomain != "auth" {
+			_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -436,7 +465,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 			return nil, err
 		}
 
-		orgSubdomain = org.Subdomain
+		orgSubdomain = conv.SafeValue(org.Subdomain)
 	}
 
 	now := time.Now()
@@ -462,6 +491,16 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 
 	u.Secret = hashedSecret
 
+	domain, err := buildServiceDomain(orgSubdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	authURL, err := buildSaveAuthURL(orgSubdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -469,12 +508,12 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	}
 
 	return &dto.SignInWithGoogleOutput{
-		AuthURL:              buildSaveAuthURL(orgSubdomain),
+		AuthURL:              authURL,
 		Token:                token,
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
-		Domain:               orgSubdomain + "." + config.Config.Domain,
+		Domain:               domain,
 	}, nil
 }
 
@@ -521,7 +560,7 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 			return err
 		}
 
-		url, err := buildUserActivateURL(ctx, tok)
+		url, err := buildUserActivateURL("auth", tok)
 		if err != nil {
 			return err
 		}
@@ -713,10 +752,17 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-	if err != nil {
-		return nil, err
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+
+		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	now := time.Now()
@@ -735,12 +781,17 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.RefreshTokenOutput{
 		Token:     token,
 		Secret:    in.Secret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    subdomain + "." + config.Config.Domain,
+		Domain:    domain,
 	}, nil
 }
 
@@ -760,10 +811,17 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-	if err != nil {
-		return nil, err
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+
+		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	now := time.Now()
@@ -789,6 +847,16 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 
 	u.Secret = hashedSecret
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	redirectURL, err := buildServiceURL(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -800,8 +868,8 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		Secret:      plainSecret,
 		XSRFToken:   xsrfToken,
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
-		RedirectURL: buildServiceURL(subdomain),
-		Domain:      subdomain + "." + config.Config.Domain,
+		RedirectURL: redirectURL,
+		Domain:      domain,
 	}, nil
 }
 
@@ -834,6 +902,11 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 		return nil, err
 	}
 
+	authURL, err := buildSaveAuthURL(conv.SafeValue(o.Subdomain))
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -841,7 +914,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	}
 
 	return &dto.ObtainAuthTokenOutput{
-		AuthURL: buildSaveAuthURL(o.Subdomain),
+		AuthURL: authURL,
 		Token:   token,
 	}, nil
 }
@@ -886,7 +959,7 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 			return nil, err
 		}
 
-		url, err := buildInvitationURL(ctx, tok, email, userExists)
+		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email, userExists)
 		if err != nil {
 			return nil, err
 		}
@@ -949,7 +1022,10 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -993,6 +1069,11 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	u.Secret = hashedSecret
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
@@ -1016,7 +1097,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    subdomain + "." + config.Config.Domain,
+		Domain:    domain,
 	}, nil
 }
 
@@ -1040,7 +1121,10 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -1087,6 +1171,11 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		Role:           userInvitation.Role,
 	}
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	var token string
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1129,7 +1218,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    subdomain + "." + config.Config.Domain,
+		Domain:    domain,
 	}, nil
 }
 
@@ -1151,9 +1240,14 @@ func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAut
 			return err
 		}
 
+		domain, err := buildServiceDomain("auth")
+		if err != nil {
+			return err
+		}
+
 		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
 			ID:        state,
-			Domain:    buildServiceDomain("auth"),
+			Domain:    domain,
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
 			Invited:   false,
 		})
@@ -1314,7 +1408,10 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -1370,7 +1467,10 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -1422,6 +1522,11 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	u.Secret = hashedSecret
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
@@ -1445,7 +1550,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    subdomain + "." + config.Config.Domain,
+		Domain:    domain,
 	}, nil
 }
 
@@ -1475,7 +1580,10 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err
@@ -1522,6 +1630,11 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Role:           userInvitation.Role,
 	}
 
+	domain, err := buildServiceDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	var token string
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1564,7 +1677,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    subdomain + "." + config.Config.Domain,
+		Domain:    domain,
 	}, nil
 }
 
@@ -1608,7 +1721,7 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 		return nil, err
 	}
 
-	url, err := buildInvitationURL(ctx, tok, userInvitation.Email, userExists)
+	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email, userExists)
 	if err != nil {
 		return nil, err
 	}
@@ -1634,14 +1747,22 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 	u := ctxutils.CurrentUser(ctx)
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
-	_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
+	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	if err != nil {
+		return nil, err
+	}
+
+	domain, err := buildServiceDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}
 
 	return &dto.SignOutOutput{
-		Domain: subdomain + "." + config.Config.Domain,
+		Domain: domain,
 	}, nil
 }
 
@@ -1651,7 +1772,7 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 		return err
 	}
 
-	key, err := model.GenerateAPIKey(org.Subdomain, devEnv.Slug)
+	key, err := devEnv.GenerateAPIKey()
 	if err != nil {
 		return err
 	}
@@ -1670,7 +1791,10 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
 	u := ctxutils.CurrentUser(ctx)
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, nil, errdefs.ErrUnauthenticated(err)
+	}
 
 	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
