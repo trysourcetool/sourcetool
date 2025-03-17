@@ -37,7 +37,12 @@ type ClientHeader struct {
 func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		subdomain := strings.Split(r.Host, ".")[0]
+		subdomain, err := httputils.GetSubdomainFromHost(r.Host)
+		if err != nil {
+			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			return
+		}
+
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))

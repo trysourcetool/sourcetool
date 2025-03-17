@@ -16,9 +16,9 @@ const (
 )
 
 type ConfigCE struct {
-	Env            string
 	IsCloudEdition bool
-	Domain         string `env:"DOMAIN"`
+	Env            string `env:"APP_ENV"`
+	BaseURL        string `env:"BASE_URL"`
 	EncryptionKey  string `env:"ENCRYPTION_KEY"`
 	Jwt            struct {
 		Key string `env:"JWT_KEY"`
@@ -58,24 +58,10 @@ func Init() {
 		log.Fatal("[INIT] config: ", err)
 	}
 
-	localhostRegex := regexp.MustCompile(`^localhost(:\d+)?$`)
-	cloudDomainRegex := regexp.MustCompile(`^(?:([^.]+)\.)?trysourcetool\.com$`)
+	cloudDomainRegex := regexp.MustCompile(`^https?://(?:([^.]+)\.)?trysourcetool\.com(?::\d+)?$`)
 
-	// Set Env and IsCloudEdition based on DOMAIN
-	if localhostRegex.MatchString(cfg.Domain) {
-		cfg.Env = EnvLocal
-		cfg.IsCloudEdition = false
-	} else if matches := cloudDomainRegex.FindStringSubmatch(cfg.Domain); matches != nil {
-		cfg.IsCloudEdition = true
-		if matches[1] != "" {
-			cfg.Env = matches[1] // subdomain exists (e.g., staging.trysourcetool.com)
-		} else {
-			cfg.Env = EnvProd // just trysourcetool.com
-		}
-	} else {
-		cfg.Env = EnvProd
-		cfg.IsCloudEdition = false
-	}
+	matches := cloudDomainRegex.FindStringSubmatch(cfg.BaseURL)
+	cfg.IsCloudEdition = len(matches) > 1
 
 	log.Printf("env: %s, isCloudEdition: %t", cfg.Env, cfg.IsCloudEdition)
 

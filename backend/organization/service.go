@@ -3,15 +3,16 @@ package organization
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/samber/lo"
 
+	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
@@ -32,21 +33,26 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error) {
-	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
-	}
+	var subdomain *string
+	if config.Config.IsCloudEdition {
+		subdomain = conv.NilValue(in.Subdomain)
 
-	if lo.Contains(reservedSubdomains, in.Subdomain) {
-		return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
+		if lo.Contains(reservedSubdomains, in.Subdomain) {
+			return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
+		}
+
+		exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
+		}
 	}
 
 	o := &model.Organization{
 		ID:        uuid.Must(uuid.NewV4()),
-		Subdomain: in.Subdomain,
+		Subdomain: subdomain,
 	}
 
 	currentUser := ctxutils.CurrentUser(ctx)
@@ -76,7 +82,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		},
 		devEnv,
 	}
-	key, err := model.GenerateAPIKey(o.Subdomain, devEnv.Slug)
+	key, err := devEnv.GenerateAPIKey()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -147,7 +153,11 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 		return nil, err
 	}
 
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
+
 	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, err

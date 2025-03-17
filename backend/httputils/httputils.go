@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -151,4 +152,23 @@ func HTTPScheme() string {
 		return "http"
 	}
 	return "https"
+}
+
+func GetSubdomainFromHost(host string) (string, error) {
+	if host == "" {
+		return "", errors.New("empty host")
+	}
+	parts := strings.Split(host, ".")
+	if len(parts) < 2 {
+		return "", errors.New("invalid host format")
+	}
+	return parts[0], nil
+}
+
+func ExtractDomainFromURL(baseURL string) (string, error) {
+	parts := strings.Split(baseURL, "://")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid URL format: %s", baseURL)
+	}
+	return parts[1], nil
 }

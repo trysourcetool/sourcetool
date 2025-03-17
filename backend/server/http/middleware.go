@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authn"
+	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
@@ -88,7 +88,16 @@ func (m *MiddlewareCE) AuthOrganization(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		subdomain := strings.Split(r.Host, ".")[0]
+		var subdomain string
+		var err error
+		if config.Config.IsCloudEdition {
+			subdomain, err = httputils.GetSubdomainFromHost(r.Host)
+			if err != nil {
+				httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				return
+			}
+		}
+
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
@@ -150,7 +159,15 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 		ctx = context.WithValue(ctx, ctxutils.CurrentUserCtxKey, u)
 		r = r.WithContext(ctx)
 
-		subdomain := strings.Split(r.Host, ".")[0]
+		var subdomain string
+		if config.Config.IsCloudEdition {
+			subdomain, err = httputils.GetSubdomainFromHost(r.Host)
+			if err != nil {
+				httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				return
+			}
+		}
+
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
 			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
@@ -171,7 +188,12 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	o, err := m.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+	opts := []storeopts.OrganizationOption{}
+	if subdomain != "" {
+		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
+	}
+
+	o, err := m.Store.Organization().Get(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -198,11 +220,6 @@ func (m *MiddlewareCE) SetHTTPHeader(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), ctxutils.HTTPHostCtxKey, host)
 		r = r.WithContext(ctx)
 
-		referer := r.Header["Referer"]
-		if len(referer) != 0 {
-			ctx := context.WithValue(r.Context(), ctxutils.HTTPRefererCtxKey, referer[0])
-			r = r.WithContext(ctx)
-		}
 		next.ServeHTTP(w, r)
 	})
 }

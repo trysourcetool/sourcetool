@@ -1,7 +1,6 @@
 package user
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -10,9 +9,10 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
+	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
@@ -33,8 +33,13 @@ func generateSecret() (plainSecret, hashedSecret string, err error) {
 	return plainSecret, hashedSecret, nil
 }
 
-func buildUserActivateURL(ctx context.Context, token string) (string, error) {
-	u, err := url.Parse(ctxutils.HTTPReferer(ctx))
+func buildUserActivateURL(subdomain, token string) (string, error) {
+	serviceURL, err := buildServiceURL(subdomain)
+	if err != nil {
+		return "", err
+	}
+
+	u, err := url.Parse(serviceURL)
 	if err != nil {
 		return "", nil
 	}
@@ -48,8 +53,13 @@ func buildUserActivateURL(ctx context.Context, token string) (string, error) {
 	return u.String(), nil
 }
 
-func buildUpdateEmailURL(ctx context.Context, token string) (string, error) {
-	u, err := url.Parse(ctxutils.HTTPReferer(ctx))
+func buildUpdateEmailURL(subdomain, token string) (string, error) {
+	serviceURL, err := buildServiceURL(subdomain)
+	if err != nil {
+		return "", err
+	}
+
+	u, err := url.Parse(serviceURL)
 	if err != nil {
 		return "", nil
 	}
@@ -63,8 +73,13 @@ func buildUpdateEmailURL(ctx context.Context, token string) (string, error) {
 	return u.String(), nil
 }
 
-func buildInvitationURL(ctx context.Context, token, email string, isUserExists bool) (string, error) {
-	u, err := url.Parse(ctxutils.HTTPReferer(ctx))
+func buildInvitationURL(subdomain, token, email string, isUserExists bool) (string, error) {
+	serviceURL, err := buildServiceURL(subdomain)
+	if err != nil {
+		return "", err
+	}
+
+	u, err := url.Parse(serviceURL)
 	if err != nil {
 		return "", nil
 	}
@@ -80,32 +95,86 @@ func buildInvitationURL(ctx context.Context, token, email string, isUserExists b
 	return u.String(), nil
 }
 
-func buildSaveAuthURL(subdomain string) string {
-	if subdomain == "" {
-		return ""
-	}
-	if config.Config.Env == config.EnvLocal {
-		return fmt.Sprintf("http://%s.%s:8080%s", subdomain, config.Config.Domain, model.SaveAuthPath)
-	}
-	return fmt.Sprintf("https://%s.%s%s", subdomain, config.Config.Domain, model.SaveAuthPath)
+type URLConfig struct {
+	Port      string
+	Path      string
+	IsCloud   bool
+	Subdomain string
+	Env       string
+	BaseURL   string
 }
 
-func buildServiceURL(subdomain string) string {
-	if subdomain == "" {
-		return ""
+func (cfg URLConfig) buildURL() (string, error) {
+	if cfg.IsCloud && cfg.Subdomain == "" {
+		return "", fmt.Errorf("subdomain is required for cloud edition")
 	}
-	if config.Config.Env == config.EnvLocal {
-		return fmt.Sprintf("http://%s.%s:5173", subdomain, config.Config.Domain)
+
+	if cfg.Env == config.EnvLocal {
+		if cfg.IsCloud {
+			return fmt.Sprintf("http://%s.local.trysourcetool.com:%s%s",
+				cfg.Subdomain, cfg.Port, cfg.Path), nil
+		}
+		return fmt.Sprintf("http://localhost:%s%s", cfg.Port, cfg.Path), nil
 	}
-	return fmt.Sprintf("https://%s.%s", subdomain, config.Config.Domain)
+
+	if cfg.IsCloud {
+		domain, err := httputils.ExtractDomainFromURL(cfg.BaseURL)
+		if err != nil {
+			return "", err
+		}
+		scheme := strings.Split(cfg.BaseURL, "://")[0]
+		return fmt.Sprintf("%s://%s.%s%s", scheme, cfg.Subdomain, domain, cfg.Path), nil
+	}
+
+	if cfg.Path != "" {
+		return cfg.BaseURL + cfg.Path, nil
+	}
+	return cfg.BaseURL, nil
 }
 
-func buildServiceDomain(subdomain string) string {
-	if subdomain == "" {
-		return ""
+func buildSaveAuthURL(subdomain string) (string, error) {
+	cfg := URLConfig{
+		Port:      "8080",
+		Path:      model.SaveAuthPath,
+		IsCloud:   config.Config.IsCloudEdition,
+		Subdomain: subdomain,
+		Env:       config.Config.Env,
+		BaseURL:   config.Config.BaseURL,
 	}
+	return cfg.buildURL()
+}
+
+func buildServiceURL(subdomain string) (string, error) {
+	cfg := URLConfig{
+		Port:      "5173",
+		Path:      "",
+		IsCloud:   config.Config.IsCloudEdition,
+		Subdomain: subdomain,
+		Env:       config.Config.Env,
+		BaseURL:   config.Config.BaseURL,
+	}
+	return cfg.buildURL()
+}
+
+func buildServiceDomain(subdomain string) (string, error) {
 	if config.Config.Env == config.EnvLocal {
-		return fmt.Sprintf("%s.%s:5173", subdomain, config.Config.Domain)
+		if config.Config.IsCloudEdition {
+			return fmt.Sprintf("%s.local.trysourcetool.com", subdomain), nil
+		}
+		return "localhost", nil
 	}
-	return fmt.Sprintf("%s.%s", subdomain, config.Config.Domain)
+
+	if config.Config.IsCloudEdition {
+		domain, err := httputils.ExtractDomainFromURL(config.Config.BaseURL)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s.%s", subdomain, domain), nil
+	}
+
+	domain, err := httputils.ExtractDomainFromURL(config.Config.BaseURL)
+	if err != nil {
+		return "", err
+	}
+	return domain, nil
 }

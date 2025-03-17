@@ -2,6 +2,8 @@ package model
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -26,6 +28,24 @@ type Environment struct {
 	Color          string    `db:"color"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
+}
+
+func (e *Environment) GenerateAPIKey() (string, error) {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	const randomLength = 60
+
+	randomBytes := make([]byte, randomLength)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", err
+	}
+
+	result := make([]byte, randomLength)
+	for i, b := range randomBytes {
+		result[i] = charset[int(b)%len(charset)]
+	}
+
+	return fmt.Sprintf("%s_%s", e.Slug, string(result)), nil
 }
 
 type EnvironmentStore interface {

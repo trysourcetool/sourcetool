@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
@@ -52,7 +53,7 @@ func Load(ctx context.Context, store infra.Store) error {
 
 		o := &model.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
-			Subdomain: "acme",
+			Subdomain: conv.NilValue("acme"),
 		}
 		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err
@@ -89,7 +90,7 @@ func Load(ctx context.Context, store infra.Store) error {
 			return err
 		}
 
-		key, err := model.GenerateAPIKey(o.Subdomain, devEnv.Slug)
+		key, err := devEnv.GenerateAPIKey()
 		if err != nil {
 			return err
 		}
