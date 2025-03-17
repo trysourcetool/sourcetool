@@ -174,7 +174,7 @@ export default function Environments() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEnvironments.map((environment) => (
+              {slicedEnvironments.map((environment) => (
                 <TableRow
                   key={environment.id}
                   className="cursor-pointer"

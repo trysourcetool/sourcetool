@@ -9,13 +9,14 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
 import { File } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const dispatch = useDispatch();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
@@ -32,6 +33,7 @@ export default function Pages() {
       (async () => {
         await dispatch(pagesStore.asyncActions.listPages());
         isInitialLoading.current = false;
+        setIsInitialLoaded(true);
       })();
     }
   }, [dispatch]);
@@ -40,7 +42,7 @@ export default function Pages() {
     <div>
       <PageHeader label={t('routes_pages_page_header')} />
       <div className="p-6">
-        {pages.length === 0 && (
+        {isInitialLoaded && pages.length === 0 && (
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-bold">
               {t('routes_pages_placeholder_title')}

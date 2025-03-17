@@ -46,6 +46,7 @@ import { Input } from '@/components/ui/input';
 
 export default function Groups() {
   const isInitialLoading = useRef(false);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -119,6 +120,7 @@ export default function Groups() {
       (async () => {
         await dispatch(groupsStore.asyncActions.listGroups());
         isInitialLoading.current = false;
+        setIsInitialLoaded(true);
       })();
     }
   }, [dispatch]);
@@ -141,7 +143,7 @@ export default function Groups() {
           )}
         </div>
 
-        {groups.length > 0 && (
+        {isInitialLoaded && groups.length > 0 && (
           <div className="flex justify-between gap-2">
             <div className="hidden max-w-72 flex-1 md:block">
               <Input
