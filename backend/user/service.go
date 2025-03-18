@@ -1748,7 +1748,7 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 		return err
 	}
 
-	key, err := devEnv.GenerateAPIKey(conv.SafeValue(org.Subdomain))
+	key, err := devEnv.GenerateAPIKey()
 	if err != nil {
 		return err
 	}

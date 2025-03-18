@@ -1,10 +1,8 @@
 package sourcetool
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 
@@ -22,31 +20,15 @@ type Sourcetool struct {
 	mu       sync.RWMutex
 }
 
-func extractBaseURLFromAPIKey(apiKey string) (string, error) {
-	parts := strings.Split(apiKey, "_")
-	if len(parts) != 3 {
-		return "", errors.New("invalid API key format")
+func New(config *Config) *Sourcetool {
+	hostParts := strings.Split(config.Host, "://")
+	if len(hostParts) != 2 {
+		panic("invalid host")
 	}
-
-	encodedDomain := parts[1]
-	domainBytes, err := base64.RawURLEncoding.DecodeString(encodedDomain)
-	if err != nil {
-		return "", err
-	}
-
-	return string(domainBytes), nil
-}
-
-func New(apiKey string) *Sourcetool {
-	baseURL, err := extractBaseURLFromAPIKey(apiKey)
-	if err != nil {
-		panic(fmt.Sprintf("failed to get baseURL from API key: %v", err))
-	}
-	namespaceDNS := strings.Split(strings.Split(baseURL, "://")[1], ":")[0]
-	log.Printf("baseURL: %s, namespaceDNS: %s", baseURL, namespaceDNS)
+	namespaceDNS := strings.Split(hostParts[1], ":")[0]
 	s := &Sourcetool{
-		apiKey:   apiKey,
-		endpoint: fmt.Sprintf("%s/ws", baseURL),
+		apiKey:   config.APIKey,
+		endpoint: fmt.Sprintf("%s/ws", config.Host),
 		pages:    make(map[uuid.UUID]*page),
 	}
 	s.Router = newRouter(s, namespaceDNS)

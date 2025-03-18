@@ -1,6 +1,7 @@
 package sourcetool
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -158,7 +159,11 @@ func TestRouterAccessGroups(t *testing.T) {
 	pageHandler := func(ui UIBuilder) error { return nil }
 
 	t.Run("Group creation before and after AccessGroups", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 
 		st.AccessGroups("global")
 		admin := st.Group("/admin")
@@ -185,7 +190,11 @@ func TestRouterAccessGroups(t *testing.T) {
 	})
 
 	t.Run("Multiple AccessGroups calls", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		admin := st.Group("/admin")
 
 		admin.AccessGroups("admin")
@@ -215,7 +224,11 @@ func TestRouterAccessGroups(t *testing.T) {
 	})
 
 	t.Run("Sibling groups inheritance", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		st.AccessGroups("global")
 
 		users := st.Group("/users")
@@ -243,7 +256,11 @@ func TestRouterAccessGroups(t *testing.T) {
 	})
 
 	t.Run("Deep nested groups inheritance", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		st.AccessGroups("global")
 
 		api := st.Group("/api")
@@ -265,7 +282,11 @@ func TestRouterAccessGroups(t *testing.T) {
 	})
 
 	t.Run("Mixed group and page specific access groups", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 
 		admin := st.Group("/admin")
 		admin.AccessGroups("admin")
@@ -329,7 +350,11 @@ func TestRouterGroup(t *testing.T) {
 	pageHandler := func(ui UIBuilder) error { return nil }
 
 	t.Run("Base path construction", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		admin := st.Group("/admin")
 		settings := admin.Group("/settings")
 		settings.Page("/users", "User Settings", pageHandler)
@@ -345,7 +370,11 @@ func TestRouterGroup(t *testing.T) {
 	})
 
 	t.Run("Multiple nested groups", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		api := st.Group("/api")
 		v1 := api.Group("/v1")
 		users := v1.Group("/users")
@@ -358,6 +387,256 @@ func TestRouterGroup(t *testing.T) {
 
 		if page.route != "/api/v1/users/list" {
 			t.Errorf("Expected route /api/v1/users/list, got %s", page.route)
+		}
+	})
+}
+
+func TestRouter_Page(t *testing.T) {
+	t.Run("Basic page", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/test", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/test")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if page.name != "Test Page" {
+			t.Errorf("Page name = %v, want %v", page.name, "Test Page")
+		}
+	})
+
+	t.Run("Page with access groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		st.AccessGroups("admin")
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/admin", "Admin Page", handler)
+
+		page := findPageByPath(st.pages, "/admin")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if len(page.accessGroups) != 1 || page.accessGroups[0] != "admin" {
+			t.Errorf("Expected [admin] access group, got %v", page.accessGroups)
+		}
+	})
+
+	t.Run("Page with error handler", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error {
+			return errors.New("test error")
+		}
+		st.Page("/error", "Error Page", handler)
+
+		page := findPageByPath(st.pages, "/error")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if err := page.run(nil); err == nil {
+			t.Error("Expected error from handler, got nil")
+		}
+	})
+
+	t.Run("Page with empty route", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("", "Empty Route Page", handler)
+
+		page := findPageByPath(st.pages, "")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if page.route != "" {
+			t.Errorf("Expected empty route, got %v", page.route)
+		}
+	})
+
+	t.Run("Page with duplicate route", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/duplicate", "First Page", handler)
+		st.Page("/duplicate", "Second Page", handler)
+
+		pages := make([]*page, 0)
+		for _, p := range st.pages {
+			if p.route == "/duplicate" {
+				pages = append(pages, p)
+			}
+		}
+
+		if len(pages) != 2 {
+			t.Errorf("Expected 2 pages with duplicate route, got %d", len(pages))
+		}
+	})
+}
+
+func TestRouter_Group(t *testing.T) {
+	t.Run("Basic group", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		group := st.Group("/test")
+
+		if group == nil {
+			t.Fatal("Group returned nil")
+		}
+
+		handler := func(ui UIBuilder) error { return nil }
+		group.Page("/page", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/test/page")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+	})
+
+	t.Run("Group with access groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		group := st.Group("/admin")
+		group.AccessGroups("admin")
+
+		handler := func(ui UIBuilder) error { return nil }
+		group.Page("/dashboard", "Admin Dashboard", handler)
+
+		page := findPageByPath(st.pages, "/admin/dashboard")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if len(page.accessGroups) != 1 || page.accessGroups[0] != "admin" {
+			t.Errorf("Expected [admin] access group, got %v", page.accessGroups)
+		}
+	})
+
+	t.Run("Nested groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		parent := st.Group("/parent")
+		child := parent.Group("/child")
+
+		if child == nil {
+			t.Fatal("Child group returned nil")
+		}
+
+		handler := func(ui UIBuilder) error { return nil }
+		child.Page("/page", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/parent/child/page")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+	})
+
+	t.Run("Group with empty path", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		group := st.Group("")
+
+		if group == nil {
+			t.Fatal("Group returned nil")
+		}
+
+		handler := func(ui UIBuilder) error { return nil }
+		group.Page("/page", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/page")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+	})
+}
+
+func TestRouter_AccessGroups(t *testing.T) {
+	t.Run("Set access groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		st.AccessGroups("admin", "user")
+
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/test", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/test")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if len(page.accessGroups) != 2 {
+			t.Errorf("Expected 2 access groups, got %d", len(page.accessGroups))
+		}
+
+		expectedGroups := []string{"admin", "user"}
+		for _, group := range expectedGroups {
+			found := false
+			for _, actualGroup := range page.accessGroups {
+				if actualGroup == group {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("Expected group %s not found in %v", group, page.accessGroups)
+			}
+		}
+	})
+
+	t.Run("Clear access groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		st.AccessGroups("admin")
+		st.AccessGroups()
+
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/test", "Test Page", handler)
+
+		page := findPageByPath(st.pages, "/test")
+		if page == nil {
+			t.Fatal("Page not found")
+		}
+
+		if len(page.accessGroups) != 0 {
+			t.Errorf("Expected no access groups, got %v", page.accessGroups)
 		}
 	})
 }

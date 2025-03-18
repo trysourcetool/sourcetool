@@ -117,7 +117,11 @@ func main() {
 	fmt.Println("Starting server at http://localhost:8081/")
 
 	// Replace with your own API key for development
-	s := sourcetool.New("your_development_api_key")
+	config := &sourcetool.Config{
+		APIKey: "your_development_api_key",
+		Host:   "ws://localhost:3000",
+	}
+	s := sourcetool.New(config)
 
 	var (
 		groupAdmin           = "admin"

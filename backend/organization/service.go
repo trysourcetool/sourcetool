@@ -83,7 +83,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		devEnv,
 	}
 
-	key, err := devEnv.GenerateAPIKey(conv.SafeValue(o.Subdomain))
+	key, err := devEnv.GenerateAPIKey()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}

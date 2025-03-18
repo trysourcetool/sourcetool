@@ -9,7 +9,12 @@ import (
 
 func TestNew(t *testing.T) {
 	apiKey := "test_api_key"
-	st := New(apiKey)
+	host := "ws://test.trysourcetool.com"
+	config := &Config{
+		APIKey: apiKey,
+		Host:   host,
+	}
+	st := New(config)
 
 	if st == nil {
 		t.Fatal("New returned nil")
@@ -21,7 +26,7 @@ func TestNew(t *testing.T) {
 		want any
 	}{
 		{"APIKey", st.apiKey, apiKey},
-		{"Endpoint", st.endpoint, "ws://test/ws"},
+		{"Endpoint", st.endpoint, "ws://test.trysourcetool.com/ws"},
 		{"Pages length", len(st.pages), 0},
 	}
 
@@ -38,7 +43,11 @@ func TestPage(t *testing.T) {
 	pageHandler := func(ui UIBuilder) error { return nil }
 
 	t.Run("Public page", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		st.Page("/public", "Public Page", pageHandler)
 
 		page := findPageByPath(st.pages, "/public")
@@ -56,7 +65,11 @@ func TestPage(t *testing.T) {
 	})
 
 	t.Run("Page with direct access groups", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		st.AccessGroups("admin")
 		st.Page("/admin", "Admin Page", pageHandler)
 
@@ -71,7 +84,11 @@ func TestPage(t *testing.T) {
 	})
 
 	t.Run("Group with access groups", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		api := st.Group("/api")
 		api.AccessGroups("api_user")
 		api.Page("/users", "Users API", pageHandler)
@@ -93,8 +110,12 @@ func TestPage(t *testing.T) {
 		}
 	})
 
-	t.Run("Page specific access groups", func(t *testing.T) {
-		st := New("test_api_key")
+	t.Run("Nested groups with access groups", func(t *testing.T) {
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		users := st.Group("/users")
 		users.AccessGroups("admin")
 		users.Page("/list", "List users page", pageHandler)
@@ -145,7 +166,11 @@ func TestPage(t *testing.T) {
 	})
 
 	t.Run("Complex group structure", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 
 		admin := st.Group("/admin")
 		admin.AccessGroups("admin")
@@ -205,7 +230,11 @@ func TestPage(t *testing.T) {
 	})
 
 	t.Run("Error handling", func(t *testing.T) {
-		st := New("test_api_key")
+		config := &Config{
+			APIKey: "test_api_key",
+			Host:   "ws://test.trysourcetool.com",
+		}
+		st := New(config)
 		errorHandler := func(ui UIBuilder) error {
 			return errors.New("test error")
 		}
