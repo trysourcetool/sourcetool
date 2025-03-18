@@ -4,7 +4,7 @@
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
 	db-migrate \
 	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean \
-	go-sdk-test
+	go-sdk-test backend-test go-mod-tidy
 
 # Default target
 help:
@@ -34,6 +34,8 @@ help:
 	@echo "  make frontend-lint   - Run linters on frontend codebase"
 	@echo "  make go-sdk-lint     - Run linters on Go SDK"
 	@echo "  make go-sdk-test     - Run tests on Go SDK"
+	@echo "  make backend-test    - Run tests on backend codebase"
+	@echo "  make go-mod-tidy     - Run go mod tidy on both backend and Go SDK"
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-migrate      - Run database migrations"
@@ -170,3 +172,15 @@ proto-clean:
 go-sdk-test:
 	@echo "Running Go SDK tests..."
 	@cd sdk/go && go test -v ./...
+
+# Backend test commands
+backend-test:
+	@echo "Running backend tests..."
+	@cd backend && go test -v ./...
+
+# Go module commands
+go-mod-tidy:
+	@echo "Running go mod tidy on backend..."
+	@cd backend && go mod tidy
+	@echo "Running go mod tidy on Go SDK..."
+	@cd sdk/go && go mod tidy

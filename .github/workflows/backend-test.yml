@@ -1,0 +1,26 @@
+name: Backend Test
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '!backend/README.md'
+      - '!backend/LICENSE'
+      - '!backend/SECURITY.md'
+      - '!backend/CODE_OF_CONDUCT.md'
+
+jobs:
+  test:
+    name: Run backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          check-latest: true
+
+      - name: Run backend tests
+        run: make backend-test 
