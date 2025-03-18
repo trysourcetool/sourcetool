@@ -16,7 +16,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/net/html"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -145,13 +144,6 @@ func GetIP(r *http.Request) (string, error) {
 	}
 
 	return userIP.String(), nil
-}
-
-func HTTPScheme() string {
-	if config.Config.Env == config.EnvLocal {
-		return "http"
-	}
-	return "https"
 }
 
 func GetSubdomainFromHost(host string) (string, error) {
