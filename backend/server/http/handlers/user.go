@@ -9,12 +9,12 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/user"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type UserHandler struct {
@@ -36,12 +36,12 @@ func NewUserHandler(service user.Service) *UserHandler {
 func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.GetMe(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetMeOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetMeOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -57,12 +57,12 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListUsersOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ListUsersOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -79,23 +79,23 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var req requests.UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Update(r.Context(), adapters.UpdateUserRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -112,25 +112,25 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SendUpdateEmailInstructions(w http.ResponseWriter, r *http.Request) {
 	var req requests.SendUpdateUserEmailInstructionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	if err := h.service.SendUpdateEmailInstructions(r.Context(), adapters.SendUpdateUserEmailInstructionsRequestToDTOInput(req)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully sent update email instructions",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -147,23 +147,23 @@ func (h *UserHandler) SendUpdateEmailInstructions(w http.ResponseWriter, r *http
 func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 	var req requests.UpdateUserEmailRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.UpdateEmail(r.Context(), adapters.UpdateUserEmailRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserEmailOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserEmailOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -180,23 +180,23 @@ func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	var req requests.UpdateUserPasswordRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.UpdatePassword(r.Context(), adapters.UpdateUserPasswordRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateUserPasswordOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserPasswordOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -213,18 +213,18 @@ func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignInRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignIn(r.Context(), adapters.SignInRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -233,8 +233,8 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SignInOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -251,18 +251,18 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignInWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignInWithGoogle(r.Context(), adapters.SignInWithGoogleRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -271,8 +271,8 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -289,23 +289,23 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SendSignUpInstructions(w http.ResponseWriter, r *http.Request) {
 	var req requests.SendSignUpInstructionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SendSignUpInstructions(r.Context(), adapters.SendSignUpInstructionsRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SendSignUpInstructionsOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SendSignUpInstructionsOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -322,28 +322,28 @@ func (h *UserHandler) SendSignUpInstructions(w http.ResponseWriter, r *http.Requ
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignUp(r.Context(), adapters.SignUpRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -360,28 +360,28 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignUpWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignUpWithGoogle(r.Context(), adapters.SignUpWithGoogleRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up with Google",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -397,19 +397,19 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
 	if xsrfTokenHeader == "" {
-		httputils.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
 		return
 	}
 
 	xsrfTokenCookie, err := r.Cookie("xsrf_token_same_site")
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
 		return
 	}
 
 	secretCookie, err := r.Cookie("refresh_token")
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
 		return
 	}
 
@@ -418,21 +418,21 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		XSRFTokenHeader: xsrfTokenHeader,
 		XSRFTokenCookie: xsrfTokenCookie.Value,
 	}
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RefreshToken(r.Context(), adapters.RefreshTokenRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -449,25 +449,25 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 	var req requests.SaveAuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SaveAuth(r.Context(), adapters.SaveAuthRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -483,14 +483,14 @@ func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.ObtainAuthToken(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.deleteTmpAuthCookie(w, r)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, out); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -507,23 +507,23 @@ func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) ResendInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.ResendInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.ResendInvitation(r.Context(), adapters.ResendInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ResendInvitationOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ResendInvitationOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -539,17 +539,17 @@ func (h *UserHandler) ResendInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.SignOut(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.deleteAuthCookie(w, r, out.Domain)
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed out",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -566,23 +566,23 @@ func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
 	var req requests.InviteUsersRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Invite(r.Context(), adapters.InviteUsersRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.InviteUsersOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.InviteUsersOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -599,28 +599,28 @@ func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignInInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignInInvitation(r.Context(), adapters.SignInInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed in",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -637,28 +637,28 @@ func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignUpInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignUpInvitation(r.Context(), adapters.SignUpInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -674,12 +674,12 @@ func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.GetGoogleAuthCodeURL(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, out); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, out); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -689,7 +689,7 @@ func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request
 		State: r.URL.Query().Get("state"),
 		Code:  r.URL.Query().Get("code"),
 	}
-	if err := httputils.ValidateRequest(req); err != nil {
+	if err := httputil.ValidateRequest(req); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -704,7 +704,7 @@ func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request
 	if out.Invited {
 		path = "/users/oauth/google/invitations/callback"
 	}
-	base := httputils.HTTPScheme() + "://" + out.Domain + path
+	base := config.Config.Protocol + "://" + out.Domain + path
 	params := url.Values{}
 	params.Add("token", out.SessionToken)
 	params.Add("isUserExists", strconv.FormatBool(out.IsUserExists))
@@ -730,23 +730,23 @@ func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request
 func (h *UserHandler) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.GetGoogleAuthCodeURLInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.GetGoogleAuthCodeURLInvitation(r.Context(), adapters.GetGoogleAuthCodeURLInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetGoogleAuthCodeURLInvitationOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetGoogleAuthCodeURLInvitationOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -763,28 +763,28 @@ func (h *UserHandler) GetGoogleAuthCodeURLInvitation(w http.ResponseWriter, r *h
 func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignInWithGoogleInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignInWithGoogleInvitation(r.Context(), adapters.SignInWithGoogleInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed in with Google",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -801,28 +801,28 @@ func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.
 func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignUpWithGoogleInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.SignUpWithGoogleInvitation(r.Context(), adapters.SignUpWithGoogleInvitationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
 
-	if err := httputils.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up with Google",
 	}); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -832,7 +832,7 @@ func (h *UserHandler) setTmpAuthCookie(w http.ResponseWriter, token, xsrfToken s
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
 	}
-	domain := "auth" + "." + config.Config.Domain
+	domain := config.Config.AuthDomain()
 	maxAge := int(model.TmpTokenExpiration.Seconds())
 	http.SetCookie(w, &http.Cookie{
 		Name:     "access_token",
@@ -871,7 +871,7 @@ func (h *UserHandler) deleteTmpAuthCookie(w http.ResponseWriter, r *http.Request
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
 	}
-	domain := "auth" + "." + config.Config.Domain
+	domain := config.Config.AuthDomain()
 	tokenCookie, _ := r.Cookie("access_token")
 	if tokenCookie != nil {
 		tokenCookie.MaxAge = -1

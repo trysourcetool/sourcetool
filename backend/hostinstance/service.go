@@ -3,17 +3,17 @@ package hostinstance
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/conv"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
@@ -30,7 +30,10 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
-	subdomain := strings.Split(ctxutils.HTTPHost(ctx), ".")[0]
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
 
 	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {

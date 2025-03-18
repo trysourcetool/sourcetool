@@ -7,13 +7,13 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
-	"github.com/trysourcetool/sourcetool/backend/conv"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Service interface {
@@ -33,7 +33,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.GetEnvironmentOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -50,7 +50,7 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.G
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	slugExists, err := s.Store.Environment().IsSlugExistsInOrganization(ctx, currentOrg.ID, in.Slug)
 	if err != nil {
@@ -120,7 +120,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -164,7 +164,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)

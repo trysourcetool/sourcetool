@@ -7,7 +7,6 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/gofrs/uuid/v5"
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
@@ -173,40 +172,6 @@ type UserStore interface {
 	UpdateGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
 	DeleteGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
 	BulkDeleteGoogleAuthRequests(context.Context, []*UserGoogleAuthRequest) error
-}
-
-const (
-	UserSignatureSubjectEmail             = "email"
-	UserSignatureSubjectUpdateEmail       = "update_email"
-	UserSignatureSubjectActivate          = "activate"
-	UserSignatureSubjectInvitation        = "invitaiton"
-	UserSignatureSubjectGoogleAuthRequest = "google_auth_request"
-)
-
-type UserClaims struct {
-	UserID    string
-	Email     string
-	XSRFToken string
-	jwt.RegisteredClaims
-}
-
-type UserEmailClaims struct {
-	Email string
-	jwt.RegisteredClaims
-}
-
-type UserGoogleAuthRequestClaims struct {
-	GoogleAuthRequestID string
-	jwt.RegisteredClaims
-}
-
-type UserSigner interface {
-	SignedString(context.Context, *UserClaims) (string, error)
-	SignedStringFromEmail(context.Context, *UserEmailClaims) (string, error)
-	SignedStringGoogleAuthRequest(context.Context, *UserGoogleAuthRequestClaims) (string, error)
-	ClaimsFromToken(context.Context, string) (*UserClaims, error)
-	EmailClaimsFromToken(context.Context, string) (*UserEmailClaims, error)
-	GoogleAuthRequestClaimsFromToken(context.Context, string) (*UserGoogleAuthRequestClaims, error)
 }
 
 type SendSignUpInstructions struct {

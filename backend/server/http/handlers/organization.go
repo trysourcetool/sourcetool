@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/organization"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type OrganizationHandler struct {
@@ -33,23 +33,23 @@ func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
 func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateOrganizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Create(r.Context(), adapters.CreateOrganizationRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateOrganizationOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.CreateOrganizationOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -67,14 +67,14 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 	req := requests.CheckSubdomainAvailablityRequest{
 		Subdomain: r.URL.Query().Get("subdomain"),
 	}
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	err := h.service.CheckSubdomainAvailability(r.Context(), adapters.CheckSubdomainAvailabilityRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -83,8 +83,8 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 		Message: "Subdomain is available",
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, response); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, response); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -104,23 +104,23 @@ func (h *OrganizationHandler) UpdateUser(w http.ResponseWriter, r *http.Request)
 		UserID: chi.URLParam(r, "userID"),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.UpdateUser(r.Context(), adapters.UpdateOrganizationUserRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateOrganizationUserOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateOrganizationUserOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

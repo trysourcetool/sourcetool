@@ -21,8 +21,7 @@ func TestNew(t *testing.T) {
 		want any
 	}{
 		{"APIKey", st.apiKey, apiKey},
-		{"Subdomain", st.subdomain, "test"},
-		{"Endpoint", st.endpoint, "ws://test.local.trysourcetool.com:8080/ws"},
+		{"Endpoint", st.endpoint, "ws://test/ws"},
 		{"Pages length", len(st.pages), 0},
 	}
 

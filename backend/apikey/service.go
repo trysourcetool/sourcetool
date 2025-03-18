@@ -7,13 +7,13 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
-	"github.com/trysourcetool/sourcetool/backend/conv"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Service interface {
@@ -33,7 +33,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -54,8 +54,8 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPI
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 
 	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 }
 
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
@@ -139,12 +139,12 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 		}
 	}
 
-	key, err := model.GenerateAPIKey(currentOrg.Subdomain, env.Slug)
+	key, err := env.GenerateAPIKey(conv.SafeValue(currentOrg.Subdomain))
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 	apiKey := &model.APIKey{
 		ID:             uuid.Must(uuid.NewV4()),
 		OrganizationID: currentOrg.ID,
@@ -171,7 +171,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 }
 
 func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)

@@ -3,8 +3,9 @@ package fixtures
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
-	"math/big"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
 func Load(ctx context.Context, store infra.Store) error {
@@ -29,7 +31,7 @@ func Load(ctx context.Context, store infra.Store) error {
 		return err
 	}
 
-	secret, err := generateSecret()
+	_, hashedSecret, err := generateSecret()
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,7 @@ func Load(ctx context.Context, store infra.Store) error {
 			LastName:             "Doe",
 			Email:                email,
 			Password:             hex.EncodeToString(encodedPass[:]),
-			Secret:               secret,
+			Secret:               hashedSecret,
 			EmailAuthenticatedAt: &now,
 		}
 		if err := tx.User().Create(ctx, u); err != nil {
@@ -51,7 +53,7 @@ func Load(ctx context.Context, store infra.Store) error {
 
 		o := &model.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
-			Subdomain: "acme",
+			Subdomain: conv.NilValue("acme"),
 		}
 		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err
@@ -88,7 +90,7 @@ func Load(ctx context.Context, store infra.Store) error {
 			return err
 		}
 
-		key, err := model.GenerateAPIKey(o.Subdomain, devEnv.Slug)
+		key, err := devEnv.GenerateAPIKey(conv.SafeValue(o.Subdomain))
 		if err != nil {
 			return err
 		}
@@ -109,17 +111,16 @@ func Load(ctx context.Context, store infra.Store) error {
 	})
 }
 
-func generateSecret() (string, error) {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	result := make([]byte, 32)
-
-	for i := range result {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", err
-		}
-		result[i] = charset[num.Int64()]
+func generateSecret() (plainSecret, hashedSecret string, err error) {
+	randomBytes := make([]byte, 32)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", "", err
 	}
 
-	return string(result), nil
+	plainSecret = base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+
+	hash := sha256.Sum256([]byte(plainSecret))
+	hashedSecret = hex.EncodeToString(hash[:])
+
+	return plainSecret, hashedSecret, nil
 }

@@ -10,9 +10,9 @@ import (
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 func SendResponse(conn *websocket.Conn, msg *websocketv1.Message) error {
@@ -29,7 +29,7 @@ func SendResponse(conn *websocket.Conn, msg *websocketv1.Message) error {
 }
 
 func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err error) {
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
 		email = currentUser.Email

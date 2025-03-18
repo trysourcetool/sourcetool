@@ -8,14 +8,14 @@ import (
 	"github.com/gorilla/websocket"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
-	"github.com/trysourcetool/sourcetool/backend/conv"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Service interface {
@@ -57,7 +57,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	if currentOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
@@ -93,7 +93,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
 	}
 
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 
 	var sess *model.Session
 	var sessionExists bool
