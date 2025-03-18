@@ -10,9 +10,10 @@ CREATE TABLE "user_organization_access" (
   FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE,
   FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE CASCADE,
   FOREIGN KEY ("role") REFERENCES "user_organization_role"("code") ON DELETE RESTRICT,
-  UNIQUE("user_id", "organization_id"),
   PRIMARY KEY ("id")
 );
+
+CREATE UNIQUE INDEX idx_user_organization_access_user_organization ON "user_organization_access" ("user_id", "organization_id");
 
 CREATE TRIGGER update_user_organization_access_updated_at
     BEFORE UPDATE ON "user_organization_access"
