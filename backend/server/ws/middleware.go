@@ -11,11 +11,11 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type Middleware interface {
@@ -37,15 +37,15 @@ type ClientHeader struct {
 func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		subdomain, err := httputils.GetSubdomainFromHost(r.Host)
+		subdomain, err := httputil.GetSubdomainFromHost(r.Host)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 

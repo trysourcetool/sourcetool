@@ -10,11 +10,11 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type Middleware interface {
@@ -38,42 +38,42 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 
 		xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
 		if xsrfTokenHeader == "" {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
 			return
 		}
 
 		xsrfTokenCookie, err := r.Cookie("xsrf_token_same_site")
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		token, err := r.Cookie("access_token")
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		c, err := m.validateUserToken(token.Value)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if err := validateXSRFToken(xsrfTokenHeader, xsrfTokenCookie.Value, c.XSRFToken); err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		userID, err := uuid.FromString(c.UserID)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		u, err := m.Store.User().Get(ctx, storeopts.UserByID(userID))
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
@@ -91,16 +91,16 @@ func (m *MiddlewareCE) AuthOrganization(next http.Handler) http.Handler {
 		var subdomain string
 		var err error
 		if config.Config.IsCloudEdition {
-			subdomain, err = httputils.GetSubdomainFromHost(r.Host)
+			subdomain, err = httputil.GetSubdomainFromHost(r.Host)
 			if err != nil {
-				httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
@@ -117,42 +117,42 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 
 		xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
 		if xsrfTokenHeader == "" {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
 			return
 		}
 
 		xsrfTokenCookie, err := r.Cookie("xsrf_token_same_site")
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		token, err := r.Cookie("access_token")
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		c, err := m.validateUserToken(token.Value)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if err := validateXSRFToken(xsrfTokenHeader, xsrfTokenCookie.Value, c.XSRFToken); err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		userID, err := uuid.FromString(c.UserID)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		u, err := m.Store.User().Get(ctx, storeopts.UserByID(userID))
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
@@ -161,22 +161,22 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 
 		var subdomain string
 		if config.Config.IsCloudEdition {
-			subdomain, err = httputils.GetSubdomainFromHost(r.Host)
+			subdomain, err = httputil.GetSubdomainFromHost(r.Host)
 			if err != nil {
-				httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		_, err = m.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 		if err != nil {
-			httputils.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 

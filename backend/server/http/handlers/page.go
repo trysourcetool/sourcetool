@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/page"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type PageHandler struct {
@@ -27,12 +27,12 @@ func NewPageHandler(service page.Service) *PageHandler {
 func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListPagesOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ListPagesOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

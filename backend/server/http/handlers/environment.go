@@ -7,9 +7,9 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/environment"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type EnvironmentHandler struct {
@@ -34,19 +34,19 @@ func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Get(r.Context(), adapters.GetEnvironmentRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetEnvironmentOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetEnvironmentOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -62,12 +62,12 @@ func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListEnvironmentsOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ListEnvironmentsOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -84,23 +84,23 @@ func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateEnvironmentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Create(r.Context(), adapters.CreateEnvironmentRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateEnvironmentOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.CreateEnvironmentOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -120,23 +120,23 @@ func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Update(r.Context(), adapters.UpdateEnvironmentRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateEnvironmentOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateEnvironmentOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -155,19 +155,19 @@ func (h *EnvironmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		EnvironmentID: chi.URLParam(r, "environmentID"),
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Delete(r.Context(), adapters.DeleteEnvironmentRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.DeleteEnvironmentOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.DeleteEnvironmentOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

@@ -7,9 +7,9 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/group"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type GroupHandler struct {
@@ -34,19 +34,19 @@ func (h *GroupHandler) Get(w http.ResponseWriter, r *http.Request) {
 		GroupID: chi.URLParam(r, "groupID"),
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Get(r.Context(), adapters.GetGroupRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.GetGroupOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetGroupOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -62,12 +62,12 @@ func (h *GroupHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.ListGroupsOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ListGroupsOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -84,23 +84,23 @@ func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateGroupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Create(r.Context(), adapters.CreateGroupRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.CreateGroupOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.CreateGroupOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -120,23 +120,23 @@ func (h *GroupHandler) Update(w http.ResponseWriter, r *http.Request) {
 		GroupID: chi.URLParam(r, "groupID"),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Update(r.Context(), adapters.UpdateGroupRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.UpdateGroupOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateGroupOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -155,19 +155,19 @@ func (h *GroupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		GroupID: chi.URLParam(r, "groupID"),
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Delete(r.Context(), adapters.DeleteGroupRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.DeleteGroupOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.DeleteGroupOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

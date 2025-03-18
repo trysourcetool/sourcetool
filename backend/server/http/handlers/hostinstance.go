@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type HostInstanceHandler struct {
@@ -32,19 +32,19 @@ func (h *HostInstanceHandler) Ping(w http.ResponseWriter, r *http.Request) {
 		PageID: conv.NilValue(r.URL.Query().Get("pageId")),
 	}
 
-	if err := httputils.ValidateRequest(req); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Ping(r.Context(), adapters.PingHostInstanceRequestToDTOInput(req))
 	if err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputils.WriteJSON(w, http.StatusOK, adapters.PingHostInstanceOutputToResponse(out)); err != nil {
-		httputils.WriteErrJSON(r.Context(), w, err)
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.PingHostInstanceOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
