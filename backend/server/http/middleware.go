@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/jwt"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -201,12 +201,12 @@ func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain str
 	return o, nil
 }
 
-func (m *MiddlewareCE) validateUserToken(token string) (*authn.UserAuthClaims, error) {
+func (m *MiddlewareCE) validateUserToken(token string) (*jwt.UserAuthClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
 
-	claims, err := authn.ParseToken[*authn.UserAuthClaims](token)
+	claims, err := jwt.ParseToken[*jwt.UserAuthClaims](token)
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
