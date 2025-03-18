@@ -17,13 +17,13 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type Service interface {
@@ -68,7 +68,7 @@ func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 		storeopts.OrganizationByUserID(u.ID),
 	}
 	if config.Config.IsCloudEdition {
-		subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
 			return nil, errdefs.ErrUnauthenticated(err)
 		}
@@ -333,7 +333,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	}
 
 	if config.Config.IsCloudEdition {
-		subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
 			return nil, errdefs.ErrUnauthenticated(err)
 		}
@@ -437,7 +437,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	}
 
 	if config.Config.IsCloudEdition {
-		subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
 			return nil, errdefs.ErrUnauthenticated(err)
 		}
@@ -746,7 +746,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain, err = httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
 			return nil, errdefs.ErrUnauthenticated(err)
 		}
@@ -800,7 +800,7 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain, err = httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
 			return nil, errdefs.ErrUnauthenticated(err)
 		}
@@ -999,7 +999,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1093,7 +1093,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1370,7 +1370,7 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1429,7 +1429,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1537,7 +1537,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1699,7 +1699,7 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -1738,7 +1738,7 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
 	u := ctxutil.CurrentUser(ctx)
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, nil, errdefs.ErrUnauthenticated(err)
 	}
