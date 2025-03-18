@@ -72,10 +72,7 @@ func Init() {
 	}
 	cfg.Protocol = baseURLParts[0]
 	cfg.BaseHostname = baseURLParts[1]
-
-	if baseURLParts[0] == "https" {
-		cfg.SSL = true
-	}
+	cfg.SSL = cfg.Protocol == "https"
 
 	hostnameParts := strings.Split(cfg.BaseHostname, ":")
 	cfg.BaseDomain = hostnameParts[0]
