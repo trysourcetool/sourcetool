@@ -384,10 +384,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	u.Secret = hashedSecret
 
-	domain, err := buildServiceDomain(orgSubdomain)
-	if err != nil {
-		return nil, err
-	}
+	domain := config.Config.OrgDomain(orgSubdomain)
 
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
@@ -491,11 +488,6 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 
 	u.Secret = hashedSecret
 
-	domain, err := buildServiceDomain(orgSubdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
@@ -513,7 +505,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
-		Domain:               domain,
+		Domain:               config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
@@ -560,7 +552,7 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 			return err
 		}
 
-		url, err := buildUserActivateURL("auth", tok)
+		url, err := buildUserActivateURL(tok)
 		if err != nil {
 			return err
 		}
@@ -781,17 +773,12 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	return &dto.RefreshTokenOutput{
 		Token:     token,
 		Secret:    in.Secret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    domain,
+		Domain:    config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -847,16 +834,6 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 
 	u.Secret = hashedSecret
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
-	redirectURL, err := buildServiceURL(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -868,8 +845,8 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		Secret:      plainSecret,
 		XSRFToken:   xsrfToken,
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
-		RedirectURL: redirectURL,
-		Domain:      domain,
+		RedirectURL: config.Config.OrgBaseURL(subdomain),
+		Domain:      config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1069,11 +1046,6 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	u.Secret = hashedSecret
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
@@ -1097,7 +1069,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    domain,
+		Domain:    config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1171,11 +1143,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		Role:           userInvitation.Role,
 	}
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	var token string
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1218,7 +1185,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    domain,
+		Domain:    config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1240,14 +1207,9 @@ func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAut
 			return err
 		}
 
-		domain, err := buildServiceDomain("auth")
-		if err != nil {
-			return err
-		}
-
 		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
 			ID:        state,
-			Domain:    domain,
+			Domain:    config.Config.OrgDomain("auth"),
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
 			Invited:   false,
 		})
@@ -1522,11 +1484,6 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	u.Secret = hashedSecret
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
@@ -1550,7 +1507,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    domain,
+		Domain:    config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1630,11 +1587,6 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Role:           userInvitation.Role,
 	}
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	var token string
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1677,7 +1629,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    domain,
+		Domain:    config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1756,13 +1708,8 @@ func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 		return nil, err
 	}
 
-	domain, err := buildServiceDomain(subdomain)
-	if err != nil {
-		return nil, err
-	}
-
 	return &dto.SignOutOutput{
-		Domain: domain,
+		Domain: config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
@@ -1772,7 +1719,7 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 		return err
 	}
 
-	key, err := devEnv.GenerateAPIKey()
+	key, err := devEnv.GenerateAPIKey(conv.SafeValue(org.Subdomain))
 	if err != nil {
 		return err
 	}

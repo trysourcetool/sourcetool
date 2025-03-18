@@ -2,12 +2,14 @@ package config
 
 import (
 	"log"
-	"regexp"
+	"strings"
 
 	"github.com/caarlos0/env/v11"
+
+	"github.com/trysourcetool/sourcetool/backend/utils/urlutil"
 )
 
-var Config *ConfigCE
+var Config *config
 
 const (
 	EnvLocal   = "local"
@@ -15,10 +17,14 @@ const (
 	EnvProd    = "prod"
 )
 
-type ConfigCE struct {
-	IsCloudEdition bool
+type config struct {
 	Env            string `env:"APP_ENV"`
 	BaseURL        string `env:"BASE_URL"`
+	SSL            bool   `env:"-"`
+	Protocol       string `env:"-"`
+	BaseDomain     string `env:"-"`
+	BaseHostname   string `env:"-"`
+	IsCloudEdition bool   `env:"-"`
 	EncryptionKey  string `env:"ENCRYPTION_KEY"`
 	Jwt            struct {
 		Key string `env:"JWT_KEY"`
@@ -52,18 +58,71 @@ type ConfigCE struct {
 }
 
 func Init() {
-	cfg := new(ConfigCE)
+	cfg := new(config)
 	envOpts := env.Options{RequiredIfNoDef: true}
 	if err := env.ParseWithOptions(cfg, envOpts); err != nil {
 		log.Fatal("[INIT] config: ", err)
 	}
 
-	cloudDomainRegex := regexp.MustCompile(`^https?://(?:([^.]+)\.)?trysourcetool\.com(?::\d+)?$`)
+	cfg.IsCloudEdition = urlutil.IsCloudEdition(cfg.BaseURL)
 
-	matches := cloudDomainRegex.FindStringSubmatch(cfg.BaseURL)
-	cfg.IsCloudEdition = len(matches) > 1
+	baseURLParts := strings.Split(cfg.BaseURL, "://")
+	if len(baseURLParts) != 2 {
+		log.Fatal("[INIT] invalid BASE_URL format: ", cfg.BaseURL)
+	}
+	cfg.Protocol = baseURLParts[0]
+	cfg.BaseHostname = baseURLParts[1]
 
+	if baseURLParts[0] == "https" {
+		cfg.SSL = true
+	}
+
+	hostnameParts := strings.Split(cfg.BaseHostname, ":")
+	cfg.BaseDomain = hostnameParts[0]
 	log.Printf("env: %s, isCloudEdition: %t", cfg.Env, cfg.IsCloudEdition)
 
 	Config = cfg
+}
+
+func (c *config) AuthHostname() string {
+	if c.IsCloudEdition {
+		return "auth." + c.BaseHostname
+	}
+	return c.BaseHostname
+}
+
+func (c *config) OrgHostname(subdomain string) string {
+	if c.IsCloudEdition {
+		return subdomain + "." + c.BaseHostname
+	}
+	return c.BaseHostname
+}
+
+func (c *config) AuthDomain() string {
+	if c.IsCloudEdition {
+		return "auth." + c.BaseDomain
+	}
+	return c.BaseDomain
+}
+
+func (c *config) OrgDomain(subdomain string) string {
+	if c.IsCloudEdition {
+		return subdomain + "." + c.BaseDomain
+	}
+	return c.BaseDomain
+}
+
+func (c *config) AuthBaseURL() string {
+	return c.Protocol + "://" + c.AuthHostname()
+}
+
+func (c *config) OrgBaseURL(subdomain string) string {
+	return c.Protocol + "://" + c.OrgHostname(subdomain)
+}
+
+func (c *config) WebSocketOrgBaseURL(subdomain string) string {
+	if c.SSL {
+		return "wss://" + c.OrgHostname(subdomain)
+	}
+	return "ws://" + c.OrgHostname(subdomain)
 }

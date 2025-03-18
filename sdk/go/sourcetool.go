@@ -1,8 +1,10 @@
 package sourcetool
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 
@@ -13,23 +15,39 @@ import (
 
 type Sourcetool struct {
 	Router
-	apiKey    string
-	endpoint  string
-	subdomain string
-	runtime   *runtime
-	pages     map[uuid.UUID]*page
-	mu        sync.RWMutex
+	apiKey   string
+	endpoint string
+	runtime  *runtime
+	pages    map[uuid.UUID]*page
+	mu       sync.RWMutex
+}
+
+func extractBaseURLFromAPIKey(apiKey string) (string, error) {
+	parts := strings.Split(apiKey, "_")
+	if len(parts) != 3 {
+		return "", errors.New("invalid API key format")
+	}
+
+	encodedDomain := parts[1]
+	domainBytes, err := base64.RawURLEncoding.DecodeString(encodedDomain)
+	if err != nil {
+		return "", err
+	}
+
+	return string(domainBytes), nil
 }
 
 func New(apiKey string) *Sourcetool {
-	// TODO: fetch subdomain from api key
-	subdomain := subdomainFromAPIKey(apiKey)
-	namespaceDNS := fmt.Sprintf("%s.trysourcetool.com", subdomain)
+	baseURL, err := extractBaseURLFromAPIKey(apiKey)
+	if err != nil {
+		panic(fmt.Sprintf("failed to get baseURL from API key: %v", err))
+	}
+	namespaceDNS := strings.Split(strings.Split(baseURL, "://")[1], ":")[0]
+	log.Printf("baseURL: %s, namespaceDNS: %s", baseURL, namespaceDNS)
 	s := &Sourcetool{
-		apiKey:    apiKey,
-		subdomain: subdomain,
-		endpoint:  fmt.Sprintf("ws://%s.local.trysourcetool.com:8080/ws", subdomain),
-		pages:     make(map[uuid.UUID]*page),
+		apiKey:   apiKey,
+		endpoint: fmt.Sprintf("%s/ws", baseURL),
+		pages:    make(map[uuid.UUID]*page),
 	}
 	s.Router = newRouter(s, namespaceDNS)
 	return s
@@ -83,12 +101,4 @@ func (s *Sourcetool) addPage(id uuid.UUID, p *page) {
 	s.mu.Lock()
 	s.pages[id] = p
 	s.mu.Unlock()
-}
-
-func subdomainFromAPIKey(apiKey string) string {
-	subdomainSplit := strings.Split(apiKey, "_")
-	if len(subdomainSplit) < 2 {
-		panic("invalid api key")
-	}
-	return subdomainSplit[0]
 }

@@ -832,7 +832,7 @@ func (h *UserHandler) setTmpAuthCookie(w http.ResponseWriter, token, xsrfToken s
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
 	}
-	domain := buildAuthCookieDomain()
+	domain := config.Config.AuthDomain()
 	maxAge := int(model.TmpTokenExpiration.Seconds())
 	http.SetCookie(w, &http.Cookie{
 		Name:     "access_token",
@@ -871,7 +871,7 @@ func (h *UserHandler) deleteTmpAuthCookie(w http.ResponseWriter, r *http.Request
 	if config.Config.Env == config.EnvLocal {
 		xsrfTokenSameSite = http.SameSiteLaxMode
 	}
-	domain := buildAuthCookieDomain()
+	domain := config.Config.AuthDomain()
 	tokenCookie, _ := r.Cookie("access_token")
 	if tokenCookie != nil {
 		tokenCookie.MaxAge = -1
@@ -996,15 +996,4 @@ func (h *UserHandler) deleteAuthCookie(w http.ResponseWriter, r *http.Request, d
 		xsrfTokenSameSiteCookie.SameSite = http.SameSiteStrictMode
 		http.SetCookie(w, xsrfTokenSameSiteCookie)
 	}
-}
-
-func buildAuthCookieDomain() string {
-	domain, err := httputils.ExtractDomainFromURL(config.Config.BaseURL)
-	if err != nil {
-		return ""
-	}
-	if config.Config.IsCloudEdition {
-		return "auth." + domain
-	}
-	return domain
 }

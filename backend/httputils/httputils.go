@@ -164,11 +164,3 @@ func GetSubdomainFromHost(host string) (string, error) {
 	}
 	return parts[0], nil
 }
-
-func ExtractDomainFromURL(baseURL string) (string, error) {
-	parts := strings.Split(baseURL, "://")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid URL format: %s", baseURL)
-	}
-	return parts[1], nil
-}
