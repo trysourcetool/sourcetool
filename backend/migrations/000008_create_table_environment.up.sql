@@ -9,9 +9,10 @@ CREATE TABLE "environment" (
   "created_at"      TIMESTAMPTZ   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"      TIMESTAMPTZ   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE CASCADE,
-  UNIQUE("organization_id", "slug"),
   PRIMARY KEY ("id")
 );
+
+CREATE UNIQUE INDEX idx_environment_organization_slug ON "environment" ("organization_id", "slug");
 
 CREATE TRIGGER update_environment_updated_at
     BEFORE UPDATE ON "environment"
