@@ -999,17 +999,21 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
 
-	if invitedOrg.ID != hostOrg.ID {
-		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
 	}
 
 	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
@@ -1093,17 +1097,21 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
 
-	if invitedOrg.ID != hostOrg.ID {
-		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
 	}
 
 	if err := model.ValidatePassword(in.Password); err != nil {
@@ -1370,17 +1378,21 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
 
-	if invitedOrg.ID != hostOrg.ID {
-		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
 	}
 
 	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1429,17 +1441,21 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
 
-	if invitedOrg.ID != hostOrg.ID {
-		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
 	}
 
 	if err := s.Store.User().DeleteGoogleAuthRequest(ctx, googleAuthReq); err != nil {
@@ -1537,17 +1553,21 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-	hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
 
-	if invitedOrg.ID != hostOrg.ID {
-		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
 	}
 
 	if err := s.Store.User().DeleteGoogleAuthRequest(ctx, googleAuthReq); err != nil {
@@ -1699,11 +1719,20 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
+	orgAccessOpts := []storeopts.UserOrganizationAccessOption{
+		storeopts.UserOrganizationAccessByUserID(u.ID),
 	}
-	_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		var err error
+		subdomain, err = httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, errdefs.ErrUnauthenticated(err)
+		}
+		orgAccessOpts = append(orgAccessOpts, storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	}
+	_, err := s.Store.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1738,12 +1767,18 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
 	u := ctxutil.CurrentUser(ctx)
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, nil, errdefs.ErrUnauthenticated(err)
+	orgOpts := []storeopts.OrganizationOption{
+		storeopts.OrganizationByUserID(u.ID),
+	}
+	if config.Config.IsCloudEdition {
+		subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
+		if err != nil {
+			return nil, nil, errdefs.ErrUnauthenticated(err)
+		}
+		orgOpts = append(orgOpts, storeopts.OrganizationBySubdomain(subdomain))
 	}
 
-	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+	o, err := s.Store.Organization().Get(ctx, orgOpts...)
 	if err != nil {
 		return nil, nil, err
 	}
