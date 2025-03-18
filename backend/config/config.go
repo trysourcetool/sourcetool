@@ -18,7 +18,7 @@ const (
 )
 
 type config struct {
-	Env            string `env:"APP_ENV"`
+	Env            string `env:"ENV"`
 	BaseURL        string `env:"BASE_URL"`
 	SSL            bool   `env:"-"`
 	Protocol       string `env:"-"`
