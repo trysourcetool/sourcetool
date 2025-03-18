@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
@@ -16,6 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Service interface {
@@ -55,7 +55,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		Subdomain: subdomain,
 	}
 
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 
 	// TODO: Check if the currentUser is already a member of an organization
 
@@ -154,7 +154,7 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 		return nil, err
 	}
 
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}

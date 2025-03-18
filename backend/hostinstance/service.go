@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
@@ -14,6 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
@@ -30,7 +30,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
-	subdomain, err := httputils.GetSubdomainFromHost(ctxutils.HTTPHost(ctx))
+	subdomain, err := httputils.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}

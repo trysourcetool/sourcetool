@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/group"
@@ -15,6 +14,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type serviceEE struct {
@@ -32,7 +32,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 }
 
 func (s *serviceEE) Get(ctx context.Context, in dto.GetGroupInput) (*dto.GetGroupOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groupID, err := uuid.FromString(in.GroupID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -49,7 +49,7 @@ func (s *serviceEE) Get(ctx context.Context, in dto.GetGroupInput) (*dto.GetGrou
 }
 
 func (s *serviceEE) List(ctx context.Context) (*dto.ListGroupsOutput, error) {
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groups, err := s.Store.Group().List(ctx, storeopts.GroupByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.C
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	slugExists, err := s.Store.Group().IsSlugExistsInOrganization(ctx, currentOrg.ID, in.Slug)
 	if err != nil {
@@ -182,7 +182,7 @@ func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.U
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groupID, err := uuid.FromString(in.GroupID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -254,7 +254,7 @@ func (s *serviceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*dto.D
 		return nil, err
 	}
 
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groupID, err := uuid.FromString(in.GroupID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)

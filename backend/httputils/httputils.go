@@ -17,9 +17,9 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
@@ -50,7 +50,7 @@ func WriteBytes(w http.ResponseWriter, status int, b []byte) error {
 }
 
 func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
-	currentUser := ctxutils.CurrentUser(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
 		email = currentUser.Email

@@ -3,11 +3,11 @@ package page
 import (
 	"context"
 
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Service interface {
@@ -23,7 +23,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
-	o := ctxutils.CurrentOrganization(ctx)
+	o := ctxutil.CurrentOrganization(ctx)
 
 	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {

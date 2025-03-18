@@ -1,4 +1,4 @@
-package ctxutils
+package ctxutil
 
 import (
 	"context"

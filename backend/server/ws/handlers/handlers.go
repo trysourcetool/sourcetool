@@ -10,10 +10,10 @@ import (
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
@@ -59,7 +59,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 
-	ctx := ctxutils.NewBackgroundContext(r.Context())
+	ctx := ctxutil.NewBackgroundContext(r.Context())
 
 	done := make(chan struct{})
 	defer func() {
