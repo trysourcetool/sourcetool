@@ -1,0 +1,27 @@
+name: Go SDK Test
+
+on:
+  pull_request:
+    paths:
+      - 'sdk/go/**'
+      - '!sdk/go/README.md'
+      - '!sdk/go/MIRROR_README.md'
+      - '!sdk/go/LICENSE'
+      - '!sdk/go/SECURITY.md'
+      - '!sdk/go/CODE_OF_CONDUCT.md'
+
+jobs:
+  test:
+    name: Run Go SDK tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          check-latest: true
+
+      - name: Run Go SDK tests
+        run: make go-sdk-test 

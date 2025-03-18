@@ -3,7 +3,8 @@
 	swagger swagger-open \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
 	db-migrate \
-	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean
+	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean \
+	go-sdk-test
 
 # Default target
 help:
@@ -32,6 +33,7 @@ help:
 	@echo "  make backend-lint    - Run linters on both CE and EE codebases (includes cache clean)"
 	@echo "  make frontend-lint   - Run linters on frontend codebase"
 	@echo "  make go-sdk-lint     - Run linters on Go SDK"
+	@echo "  make go-sdk-test     - Run tests on Go SDK"
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-migrate      - Run database migrations"
@@ -163,3 +165,8 @@ proto-mod-update:
 proto-clean:
 	@echo "Cleaning generated proto files..."
 	@cd proto && rm -rf go/
+
+# Go SDK commands
+go-sdk-test:
+	@echo "Running Go SDK tests..."
+	@cd sdk/go && go test -v ./...
