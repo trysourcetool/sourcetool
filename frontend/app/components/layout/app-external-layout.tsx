@@ -55,7 +55,12 @@ export function AppExternalLayout(props: PropsWithChildren) {
   const { pathname } = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
   const { breadcrumbsState } = useBreadcrumbs();
-  const { subDomainMatched, handleNoAuthRoute } = useAuth();
+  const {
+    isSubDomainMatched,
+    isAuthChecked,
+    handleNoAuthRoute,
+    isSourcetoolDomain,
+  } = useAuth();
   const user = useSelector(usersStore.selector.getMe);
   const { t } = useTranslation('common');
 
@@ -71,12 +76,18 @@ export function AppExternalLayout(props: PropsWithChildren) {
   };
 
   useEffect(() => {
-    if (subDomainMatched.status === 'checked' && !subDomainMatched.isMatched) {
+    if (
+      isAuthChecked === 'checked' &&
+      isSourcetoolDomain &&
+      !isSubDomainMatched
+    ) {
+      handleNoAuthRoute();
+    } else if (isAuthChecked === 'checked' && !isSourcetoolDomain && !user) {
       handleNoAuthRoute();
     }
-  }, [subDomainMatched, handleNoAuthRoute]);
+  }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
 
-  return subDomainMatched.status === 'checked' && subDomainMatched.isMatched ? (
+  return isAuthChecked === 'checked' && isSubDomainMatched ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>

@@ -19,20 +19,31 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
+import { usersStore } from '@/store/modules/users';
 
 export function AppPreviewLayout(props: PropsWithChildren) {
   const isInitialLoading = useRef(false);
   const { pageId } = useParams();
-  const { subDomainMatched, handleNoAuthRoute } = useAuth();
+  const {
+    isSubDomainMatched,
+    isAuthChecked,
+    handleNoAuthRoute,
+    isSourcetoolDomain,
+  } = useAuth();
   const dispatch = useDispatch();
+  const user = useSelector(usersStore.selector.getMe);
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const { t } = useTranslation('common');
 
   useEffect(() => {
-    if (subDomainMatched.status === 'checked' && !subDomainMatched.isMatched) {
+    if (
+      isAuthChecked === 'checked' &&
+      isSourcetoolDomain &&
+      !isSubDomainMatched
+    ) {
       handleNoAuthRoute();
     }
-  }, [subDomainMatched, handleNoAuthRoute]);
+  }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
 
   useEffect(() => {
     if (!isInitialLoading.current) {
@@ -41,10 +52,12 @@ export function AppPreviewLayout(props: PropsWithChildren) {
         await dispatch(pagesStore.asyncActions.listPages());
         isInitialLoading.current = false;
       })();
+    } else if (isAuthChecked === 'checked' && !isSourcetoolDomain && !user) {
+      handleNoAuthRoute();
     }
   }, [dispatch]);
 
-  return subDomainMatched.status === 'checked' && subDomainMatched.isMatched ? (
+  return isAuthChecked === 'checked' && isSubDomainMatched ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>

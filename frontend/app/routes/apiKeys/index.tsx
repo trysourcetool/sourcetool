@@ -56,6 +56,7 @@ import { Input } from '@/components/ui/input';
 
 export default function ApiKeys() {
   const isInitialLoading = useRef(false);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -142,6 +143,7 @@ export default function ApiKeys() {
       (async () => {
         await dispatch(apiKeysStore.asyncActions.listApiKeys());
         isInitialLoading.current = false;
+        setIsInitialLoaded(true);
       })();
     }
   }, [dispatch]);
@@ -207,7 +209,7 @@ export default function ApiKeys() {
           <p className="text-xl font-bold text-foreground">
             {t('routes_apikeys_live_mode_keys_title')}
           </p>
-          {apiKeys.length === 0 && (
+          {isInitialLoaded && apiKeys.length === 0 && (
             <Button asChild>
               <Link to={$path('/apiKeys/new')}>
                 <Plus />
