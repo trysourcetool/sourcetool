@@ -174,7 +174,13 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		_, err = m.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessOpts := []storeopts.UserOrganizationAccessOption{
+			storeopts.UserOrganizationAccessByUserID(u.ID),
+		}
+		if config.Config.IsCloudEdition {
+			orgAccessOpts = append(orgAccessOpts, storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		}
+		_, err = m.Store.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 		if err != nil {
 			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
