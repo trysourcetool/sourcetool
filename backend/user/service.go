@@ -9,15 +9,15 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/golang-jwt/jwt/v5"
+	gojwt "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/jwt"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
@@ -186,13 +186,13 @@ func (s *ServiceCE) SendUpdateEmailInstructions(ctx context.Context, in dto.Send
 
 	currentUser := ctxutil.CurrentUser(ctx)
 
-	tok, err := authn.SignToken(&authn.UserClaims{
+	tok, err := jwt.SignToken(&jwt.UserClaims{
 		UserID: currentUser.ID.String(),
 		Email:  in.Email,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   model.UserSignatureSubjectUpdateEmail,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-			Issuer:    model.JwtIssuer,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			Subject:   jwt.UserSignatureSubjectUpdateEmail,
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
+			Issuer:    jwt.Issuer,
 		},
 	})
 	if err != nil {
@@ -223,12 +223,12 @@ func (s *ServiceCE) SendUpdateEmailInstructions(ctx context.Context, in dto.Send
 }
 
 func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput) (*dto.UpdateUserEmailOutput, error) {
-	c, err := authn.ParseToken[*authn.UserClaims](in.Token)
+	c, err := jwt.ParseToken[*jwt.UserClaims](in.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.Subject != model.UserSignatureSubjectUpdateEmail {
+	if c.Subject != jwt.UserSignatureSubjectUpdateEmail {
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
@@ -364,13 +364,13 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -408,7 +408,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 }
 
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
-	googleAuthReqClaims, err := authn.ParseToken[*authn.UserGoogleAuthRequestClaims](in.SessionToken)
+	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -468,13 +468,13 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -540,12 +540,12 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 			}
 		}
 
-		tok, err := authn.SignToken(&authn.UserEmailClaims{
+		tok, err := jwt.SignToken(&jwt.UserEmailClaims{
 			Email: in.Email,
-			RegisteredClaims: jwt.RegisteredClaims{
-				Subject:   model.UserSignatureSubjectActivate,
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-				Issuer:    model.JwtIssuer,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				Subject:   jwt.UserSignatureSubjectActivate,
+				ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
+				Issuer:    jwt.Issuer,
 			},
 		})
 		if err != nil {
@@ -581,12 +581,12 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 }
 
 func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUpOutput, error) {
-	c, err := authn.ParseToken[*authn.UserEmailClaims](in.Token)
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.Subject != model.UserSignatureSubjectActivate {
+	if c.Subject != jwt.UserSignatureSubjectActivate {
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
@@ -632,13 +632,13 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 			return err
 		}
 
-		token, err = authn.SignToken(&authn.UserAuthClaims{
+		token, err = jwt.SignToken(&jwt.UserAuthClaims{
 			UserID:    u.ID.String(),
 			XSRFToken: xsrfToken,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(expiresAt),
-				Issuer:    model.JwtIssuer,
-				Subject:   model.UserSignatureSubjectEmail,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				ExpiresAt: gojwt.NewNumericDate(expiresAt),
+				Issuer:    jwt.Issuer,
+				Subject:   jwt.UserSignatureSubjectEmail,
 			},
 		})
 		if err != nil {
@@ -657,7 +657,7 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 }
 
 func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error) {
-	googleAuthReqClaims, err := authn.ParseToken[*authn.UserGoogleAuthRequestClaims](in.SessionToken)
+	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -709,13 +709,13 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 			return err
 		}
 
-		token, err = authn.SignToken(&authn.UserAuthClaims{
+		token, err = jwt.SignToken(&jwt.UserAuthClaims{
 			UserID:    u.ID.String(),
 			XSRFToken: xsrfToken,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(expiresAt),
-				Issuer:    model.JwtIssuer,
-				Subject:   model.UserSignatureSubjectEmail,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				ExpiresAt: gojwt.NewNumericDate(expiresAt),
+				Issuer:    jwt.Issuer,
+				Subject:   jwt.UserSignatureSubjectEmail,
 			},
 		})
 		if err != nil {
@@ -760,13 +760,13 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -783,7 +783,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 }
 
 func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAuthOutput, error) {
-	c, err := authn.ParseToken[*authn.UserAuthClaims](in.Token)
+	c, err := jwt.ParseToken[*jwt.UserAuthClaims](in.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -814,13 +814,13 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -866,13 +866,13 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -924,12 +924,12 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 			return nil, err
 		}
 
-		tok, err := authn.SignToken(&authn.UserEmailClaims{
+		tok, err := jwt.SignToken(&jwt.UserEmailClaims{
 			Email: email,
-			RegisteredClaims: jwt.RegisteredClaims{
-				Subject:   model.UserSignatureSubjectInvitation,
-				ExpiresAt: jwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-				Issuer:    model.JwtIssuer,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				Subject:   jwt.UserSignatureSubjectInvitation,
+				ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
+				Issuer:    jwt.Issuer,
 			},
 		})
 		if err != nil {
@@ -980,12 +980,12 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 }
 
 func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitationInput) (*dto.SignInInvitationOutput, error) {
-	c, err := authn.ParseToken[*authn.UserEmailClaims](in.InvitationToken)
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.Subject != model.UserSignatureSubjectInvitation {
+	if c.Subject != jwt.UserSignatureSubjectInvitation {
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
@@ -1026,13 +1026,13 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -1074,12 +1074,12 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 }
 
 func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitationInput) (*dto.SignUpInvitationOutput, error) {
-	c, err := authn.ParseToken[*authn.UserEmailClaims](in.InvitationToken)
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.Subject != model.UserSignatureSubjectInvitation {
+	if c.Subject != jwt.UserSignatureSubjectInvitation {
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
@@ -1162,13 +1162,13 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 			return err
 		}
 
-		token, err = authn.SignToken(&authn.UserAuthClaims{
+		token, err = jwt.SignToken(&jwt.UserAuthClaims{
 			UserID:    u.ID.String(),
 			XSRFToken: xsrfToken,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(expiresAt),
-				Issuer:    model.JwtIssuer,
-				Subject:   model.UserSignatureSubjectEmail,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				ExpiresAt: gojwt.NewNumericDate(expiresAt),
+				Issuer:    jwt.Issuer,
+				Subject:   jwt.UserSignatureSubjectEmail,
 			},
 		})
 		if err != nil {
@@ -1269,12 +1269,12 @@ func (s *ServiceCE) GoogleOAuthCallback(ctx context.Context, in dto.GoogleOAuthC
 	googleAuthReq.GoogleID = userInfo.id
 	googleAuthReq.Email = userInfo.email
 
-	sessionToken, err := authn.SignToken(&authn.UserGoogleAuthRequestClaims{
+	sessionToken, err := jwt.SignToken(&jwt.UserGoogleAuthRequestClaims{
 		GoogleAuthRequestID: googleAuthReq.ID.String(),
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(googleAuthReq.ExpiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectGoogleAuthRequest,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(googleAuthReq.ExpiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectGoogleAuthRequest,
 		},
 	})
 	if err != nil {
@@ -1352,11 +1352,11 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		return nil, err
 	}
 
-	c, err := authn.ParseToken[*authn.UserEmailClaims](in.InvitationToken)
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
 	if err != nil {
 		return nil, err
 	}
-	if c.Subject != model.UserSignatureSubjectInvitation {
+	if c.Subject != jwt.UserSignatureSubjectInvitation {
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
@@ -1404,7 +1404,7 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 }
 
 func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignInWithGoogleInvitationInput) (*dto.SignInWithGoogleInvitationOutput, error) {
-	googleAuthReqClaims, err := authn.ParseToken[*authn.UserGoogleAuthRequestClaims](in.SessionToken)
+	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -1464,13 +1464,13 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := authn.SignToken(&authn.UserAuthClaims{
+	token, err := jwt.SignToken(&jwt.UserAuthClaims{
 		UserID:    u.ID.String(),
 		XSRFToken: xsrfToken,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			Issuer:    model.JwtIssuer,
-			Subject:   model.UserSignatureSubjectEmail,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   jwt.UserSignatureSubjectEmail,
 		},
 	})
 	if err != nil {
@@ -1512,7 +1512,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 }
 
 func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignUpWithGoogleInvitationInput) (*dto.SignUpWithGoogleInvitationOutput, error) {
-	googleAuthReqClaims, err := authn.ParseToken[*authn.UserGoogleAuthRequestClaims](in.SessionToken)
+	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -1606,13 +1606,13 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 			return err
 		}
 
-		token, err = authn.SignToken(&authn.UserAuthClaims{
+		token, err = jwt.SignToken(&jwt.UserAuthClaims{
 			UserID:    u.ID.String(),
 			XSRFToken: xsrfToken,
-			RegisteredClaims: jwt.RegisteredClaims{
-				ExpiresAt: jwt.NewNumericDate(expiresAt),
-				Issuer:    model.JwtIssuer,
-				Subject:   model.UserSignatureSubjectEmail,
+			RegisteredClaims: gojwt.RegisteredClaims{
+				ExpiresAt: gojwt.NewNumericDate(expiresAt),
+				Issuer:    jwt.Issuer,
+				Subject:   jwt.UserSignatureSubjectEmail,
 			},
 		})
 		if err != nil {
@@ -1661,12 +1661,12 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 		return nil, err
 	}
 
-	tok, err := authn.SignToken(&authn.UserEmailClaims{
+	tok, err := jwt.SignToken(&jwt.UserEmailClaims{
 		Email: userInvitation.Email,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   model.UserSignatureSubjectInvitation,
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-			Issuer:    model.JwtIssuer,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			Subject:   jwt.UserSignatureSubjectInvitation,
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
+			Issuer:    jwt.Issuer,
 		},
 	})
 	if err != nil {

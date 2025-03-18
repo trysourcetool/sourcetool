@@ -1,16 +1,20 @@
-package authn
+package jwt
 
 import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
+	Issuer = "trysourcetool.com"
+
 	UserSignatureSubjectEmail             = "email"
 	UserSignatureSubjectUpdateEmail       = "update_email"
 	UserSignatureSubjectActivate          = "activate"
 	UserSignatureSubjectInvitation        = "invitaiton"
 	UserSignatureSubjectGoogleAuthRequest = "google_auth_request"
 )
+
+type RegisteredClaims jwt.RegisteredClaims
 
 // UserClaims represents claims for general user authentication.
 type UserClaims struct {
