@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
 // Organization represents organization data in DTOs.
