@@ -704,7 +704,7 @@ func (h *UserHandler) GoogleOAuthCallback(w http.ResponseWriter, r *http.Request
 	if out.Invited {
 		path = "/users/oauth/google/invitations/callback"
 	}
-	base := httputil.HTTPScheme() + "://" + out.Domain + path
+	base := config.Config.Protocol + "://" + out.Domain + path
 	params := url.Values{}
 	params.Add("token", out.SessionToken)
 	params.Add("isUserExists", strconv.FormatBool(out.IsUserExists))
