@@ -10,12 +10,12 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/authn"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Middleware interface {
@@ -49,7 +49,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutils.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
 
 		if token, err := r.Cookie("access_token"); err == nil {
 			u, err := m.getCurrentUser(ctx, r, token.Value)
@@ -58,7 +58,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxutils.CurrentUserCtxKey, u)
+			ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
 		} else if apiKeyHeader := r.Header.Get("Authorization"); apiKeyHeader != "" {
 			apikeyVal, err := m.extractIncomingToken(apiKeyHeader)
 			if err != nil {

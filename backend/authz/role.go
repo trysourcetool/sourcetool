@@ -7,10 +7,10 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type operation string
@@ -51,8 +51,8 @@ var rolesAllowedByOperation = map[operation][]model.UserOrganizationRole{
 }
 
 func (a *authorizer) AuthorizeOperation(ctx context.Context, o operation) error {
-	currentUser := ctxutils.CurrentUser(ctx)
-	currentOrg := ctxutils.CurrentOrganization(ctx)
+	currentUser := ctxutil.CurrentUser(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 	if currentUser == nil || currentOrg == nil {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}

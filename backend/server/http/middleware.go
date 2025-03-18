@@ -9,12 +9,12 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/authn"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/ctxutils"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
 type Middleware interface {
@@ -77,7 +77,7 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutils.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
@@ -104,7 +104,7 @@ func (m *MiddlewareCE) AuthOrganization(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutils.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
@@ -156,7 +156,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutils.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
 		r = r.WithContext(ctx)
 
 		var subdomain string
@@ -180,7 +180,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutils.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
@@ -217,7 +217,7 @@ func (m *MiddlewareCE) validateUserToken(token string) (*authn.UserAuthClaims, e
 func (m *MiddlewareCE) SetHTTPHeader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
-		ctx := context.WithValue(r.Context(), ctxutils.HTTPHostCtxKey, host)
+		ctx := context.WithValue(r.Context(), ctxutil.HTTPHostCtxKey, host)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
