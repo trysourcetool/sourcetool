@@ -45,6 +45,16 @@ services:
       - frontend_node_modules:/app/node_modules
     working_dir: /app
 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - 3000:80
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
+
   postgres:
     image: postgres:15
     platform: linux/amd64
