@@ -459,15 +459,19 @@ func TestRouter_Page(t *testing.T) {
 		}
 		st := New(config)
 		handler := func(ui UIBuilder) error { return nil }
-		st.Page("", "Empty Route Page", handler)
+		st.Page("", "Root Page", handler)
 
-		page := findPageByPath(st.pages, "")
+		page := findPageByPath(st.pages, "/")
 		if page == nil {
 			t.Fatal("Page not found")
 		}
 
-		if page.route != "" {
-			t.Errorf("Expected empty route, got %v", page.route)
+		if page.route != "/" {
+			t.Errorf("Expected route '/', got %q", page.route)
+		}
+
+		if page.name != "Root Page" {
+			t.Errorf("Expected page name 'Root Page', got %q", page.name)
 		}
 	})
 
@@ -481,15 +485,13 @@ func TestRouter_Page(t *testing.T) {
 		st.Page("/duplicate", "First Page", handler)
 		st.Page("/duplicate", "Second Page", handler)
 
-		pages := make([]*page, 0)
-		for _, p := range st.pages {
-			if p.route == "/duplicate" {
-				pages = append(pages, p)
-			}
+		page := findPageByPath(st.pages, "/duplicate")
+		if page == nil {
+			t.Fatal("Page not found")
 		}
 
-		if len(pages) != 2 {
-			t.Errorf("Expected 2 pages with duplicate route, got %d", len(pages))
+		if page.name != "Second Page" {
+			t.Errorf("Expected page name to be 'Second Page', got %q", page.name)
 		}
 	})
 }
@@ -635,8 +637,8 @@ func TestRouter_AccessGroups(t *testing.T) {
 			t.Fatal("Page not found")
 		}
 
-		if len(page.accessGroups) != 0 {
-			t.Errorf("Expected no access groups, got %v", page.accessGroups)
+		if len(page.accessGroups) != 1 || page.accessGroups[0] != "admin" {
+			t.Errorf("Expected [admin] access group, got %v", page.accessGroups)
 		}
 	})
 }

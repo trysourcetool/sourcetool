@@ -1,7 +1,6 @@
 package sourcetool
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -66,16 +65,17 @@ func (s *Sourcetool) validatePages() error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	pageRoutes := make(map[string]struct{})
-	for _, p := range s.pages {
-		if p.route == "" {
-			return errors.New("page route cannot be empty")
-		}
-		if _, exists := pageRoutes[p.route]; exists {
-			return fmt.Errorf("duplicate page route: %s", p.route)
-		}
-		pageRoutes[p.route] = struct{}{}
+	pagesByRoute := make(map[string]uuid.UUID)
+	for id, p := range s.pages {
+		pagesByRoute[p.route] = id
 	}
+
+	newPages := make(map[uuid.UUID]*page)
+	for _, id := range pagesByRoute {
+		newPages[id] = s.pages[id]
+	}
+	s.pages = newPages
+
 	return nil
 }
 
