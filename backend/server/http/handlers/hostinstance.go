@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/conv"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/httputils"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
 type HostInstanceHandler struct {
