@@ -9,7 +9,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/utils/urlutil"
 )
 
-var Config *config
+var Config *Cfg
 
 const (
 	EnvLocal   = "local"
@@ -17,7 +17,7 @@ const (
 	EnvProd    = "prod"
 )
 
-type config struct {
+type Cfg struct {
 	Env            string `env:"ENV"`
 	BaseURL        string `env:"BASE_URL"`
 	SSL            bool   `env:"-"`
@@ -58,7 +58,7 @@ type config struct {
 }
 
 func Init() {
-	cfg := new(config)
+	cfg := new(Cfg)
 	envOpts := env.Options{RequiredIfNoDef: true}
 	if err := env.ParseWithOptions(cfg, envOpts); err != nil {
 		log.Fatal("[INIT] config: ", err)
@@ -81,43 +81,43 @@ func Init() {
 	Config = cfg
 }
 
-func (c *config) AuthHostname() string {
+func (c *Cfg) AuthHostname() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseHostname
 	}
 	return c.BaseHostname
 }
 
-func (c *config) OrgHostname(subdomain string) string {
+func (c *Cfg) OrgHostname(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseHostname
 	}
 	return c.BaseHostname
 }
 
-func (c *config) AuthDomain() string {
+func (c *Cfg) AuthDomain() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseDomain
 	}
 	return c.BaseDomain
 }
 
-func (c *config) OrgDomain(subdomain string) string {
+func (c *Cfg) OrgDomain(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseDomain
 	}
 	return c.BaseDomain
 }
 
-func (c *config) AuthBaseURL() string {
+func (c *Cfg) AuthBaseURL() string {
 	return c.Protocol + "://" + c.AuthHostname()
 }
 
-func (c *config) OrgBaseURL(subdomain string) string {
+func (c *Cfg) OrgBaseURL(subdomain string) string {
 	return c.Protocol + "://" + c.OrgHostname(subdomain)
 }
 
-func (c *config) WebSocketOrgBaseURL(subdomain string) string {
+func (c *Cfg) WebSocketOrgBaseURL(subdomain string) string {
 	if c.SSL {
 		return "wss://" + c.OrgHostname(subdomain)
 	}
