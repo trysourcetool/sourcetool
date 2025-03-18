@@ -90,7 +90,7 @@ func Load(ctx context.Context, store infra.Store) error {
 			return err
 		}
 
-		key, err := devEnv.GenerateAPIKey(conv.SafeValue(o.Subdomain))
+		key, err := devEnv.GenerateAPIKey()
 		if err != nil {
 			return err
 		}

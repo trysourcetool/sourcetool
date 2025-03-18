@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'sdk/go/**'
+      - '!sdk/go/README.md'
+      - '!sdk/go/MIRROR_README.md'
+      - '!sdk/go/LICENSE'
+      - '!sdk/go/SECURITY.md'
+      - '!sdk/go/CODE_OF_CONDUCT.md'
 
 jobs:
   lint:

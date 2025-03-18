@@ -3,14 +3,11 @@ package model
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base32"
-	"encoding/base64"
 	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
@@ -33,17 +30,19 @@ type Environment struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-func (e *Environment) GenerateAPIKey(subdomain string) (string, error) {
-	randomBytes := make([]byte, 9)
+func (e *Environment) GenerateAPIKey() (string, error) {
+	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
 		return "", err
 	}
-	randomStr := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
 
-	baseURL := config.Config.WebSocketOrgBaseURL(subdomain)
-	encodedDomain := base64.RawURLEncoding.EncodeToString([]byte(baseURL))
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	randomStr := make([]byte, 51)
+	for i := range randomStr {
+		randomStr[i] = charset[randomBytes[i%len(randomBytes)]%byte(len(charset))]
+	}
 
-	return fmt.Sprintf("%s_%s_%s", e.Slug, encodedDomain, randomStr), nil
+	return fmt.Sprintf("%s_%s", e.Slug, string(randomStr)), nil
 }
 
 type EnvironmentStore interface {

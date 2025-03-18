@@ -69,7 +69,16 @@ func (r *router) collectGroups() []string {
 }
 
 func (r *router) Page(relativePath, name string, handler func(UIBuilder) error) {
-	fullPath := r.joinPath(relativePath)
+	var fullPath string
+	if relativePath == "" {
+		if r.basePath == "" {
+			fullPath = "/"
+		} else {
+			fullPath = r.basePath
+		}
+	} else {
+		fullPath = r.joinPath(relativePath)
+	}
 	pageID := r.generatePageID(fullPath)
 
 	page := &page{
@@ -85,7 +94,9 @@ func (r *router) Page(relativePath, name string, handler func(UIBuilder) error) 
 }
 
 func (r *router) AccessGroups(groups ...string) Router {
-	r.groups = append(r.groups, groups...)
+	if len(groups) > 0 {
+		r.groups = append(r.groups, groups...)
+	}
 	return r
 }
 

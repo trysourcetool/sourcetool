@@ -1,10 +1,7 @@
 package sourcetool
 
 import (
-	"encoding/base64"
-	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 
@@ -22,31 +19,15 @@ type Sourcetool struct {
 	mu       sync.RWMutex
 }
 
-func extractBaseURLFromAPIKey(apiKey string) (string, error) {
-	parts := strings.Split(apiKey, "_")
-	if len(parts) != 3 {
-		return "", errors.New("invalid API key format")
+func New(config *Config) *Sourcetool {
+	hostParts := strings.Split(config.Host, "://")
+	if len(hostParts) != 2 {
+		panic("invalid host")
 	}
-
-	encodedDomain := parts[1]
-	domainBytes, err := base64.RawURLEncoding.DecodeString(encodedDomain)
-	if err != nil {
-		return "", err
-	}
-
-	return string(domainBytes), nil
-}
-
-func New(apiKey string) *Sourcetool {
-	baseURL, err := extractBaseURLFromAPIKey(apiKey)
-	if err != nil {
-		panic(fmt.Sprintf("failed to get baseURL from API key: %v", err))
-	}
-	namespaceDNS := strings.Split(strings.Split(baseURL, "://")[1], ":")[0]
-	log.Printf("baseURL: %s, namespaceDNS: %s", baseURL, namespaceDNS)
+	namespaceDNS := strings.Split(hostParts[1], ":")[0]
 	s := &Sourcetool{
-		apiKey:   apiKey,
-		endpoint: fmt.Sprintf("%s/ws", baseURL),
+		apiKey:   config.APIKey,
+		endpoint: fmt.Sprintf("%s/ws", config.Host),
 		pages:    make(map[uuid.UUID]*page),
 	}
 	s.Router = newRouter(s, namespaceDNS)
@@ -84,16 +65,17 @@ func (s *Sourcetool) validatePages() error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	pageRoutes := make(map[string]struct{})
-	for _, p := range s.pages {
-		if p.route == "" {
-			return errors.New("page route cannot be empty")
-		}
-		if _, exists := pageRoutes[p.route]; exists {
-			return fmt.Errorf("duplicate page route: %s", p.route)
-		}
-		pageRoutes[p.route] = struct{}{}
+	pagesByRoute := make(map[string]uuid.UUID)
+	for id, p := range s.pages {
+		pagesByRoute[p.route] = id
 	}
+
+	newPages := make(map[uuid.UUID]*page)
+	for _, id := range pagesByRoute {
+		newPages[id] = s.pages[id]
+	}
+	s.pages = newPages
+
 	return nil
 }
 
