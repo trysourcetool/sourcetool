@@ -9,7 +9,7 @@ export default function OnboardingComplete() {
   const { t } = useTranslation('common');
   return (
     <div className="m-auto flex w-full justify-center">
-      <div className="flex max-w-[374px] flex-col gap-6 p-6">
+      <div className="flex max-w-[374px] flex-col gap-6 p-4 md:p-6">
         <CardHeader className="p-0">
           <CardTitle>{t('routes_onboarding_complete_title')}</CardTitle>
           <CardDescription>

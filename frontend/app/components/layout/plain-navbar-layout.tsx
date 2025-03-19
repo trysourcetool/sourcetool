@@ -9,7 +9,7 @@ export function PlainNavbarLayout(props: PropsWithChildren) {
         <Logo />
         <ModeToggle />
       </header>
-      <main className="flex min-h-[calc(100svh-64px)] flex-col p-6">
+      <main className="flex min-h-[calc(100svh-64px)] flex-col px-4 py-6 md:px-6 md:py-6">
         {props.children}
       </main>
     </div>

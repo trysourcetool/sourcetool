@@ -128,8 +128,8 @@ export default function Groups() {
   return (
     <div>
       <PageHeader label={t('routes_groups_page_header')} />
-      <div className="flex w-screen flex-col gap-6 p-6 md:w-auto">
-        <div className="flex items-center justify-between gap-2 pt-6 md:flex-row">
+      <div className="flex w-screen flex-col gap-4 px-4 py-6 md:w-auto md:gap-6 md:px-6">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:pt-6">
           <p className="text-xl font-bold text-foreground">
             {t('routes_groups_title')}
           </p>
@@ -144,8 +144,8 @@ export default function Groups() {
         </div>
 
         {isInitialLoaded && groups.length > 0 && (
-          <div className="flex justify-between gap-2">
-            <div className="hidden max-w-72 flex-1 md:block">
+          <div className="flex flex-col-reverse justify-between gap-2 md:flex-row">
+            <div className="w-full max-w-full flex-1 md:w-auto md:max-w-72">
               <Input
                 placeholder={t('routes_groups_search_placeholder')}
                 value={search}
@@ -154,12 +154,14 @@ export default function Groups() {
                 }}
               />
             </div>
-            <Button asChild>
-              <Link to={$path('/groups/new')}>
-                <Plus />
-                {t('routes_groups_create_new')}
-              </Link>
-            </Button>
+            <div>
+              <Button asChild>
+                <Link to={$path('/groups/new')}>
+                  <Plus />
+                  {t('routes_groups_create_new')}
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
 
@@ -251,6 +253,7 @@ export default function Groups() {
                       <PaginationPrevious
                         className={clsx(
                           (page !== 1 || page === null) && 'cursor-pointer',
+                          'hidden md:inline-flex',
                         )}
                         onClick={() => {
                           if (page === 1 || page === null) {
@@ -259,6 +262,22 @@ export default function Groups() {
                           setPage((page || 1) - 1);
                         }}
                       />
+                      <PaginationLink
+                        onClick={() => {
+                          if (page === 1 || page === null) {
+                            return;
+                          }
+                          setPage((page || 1) - 1);
+                        }}
+                        isActive
+                        className={clsx(
+                          page !== pageCount && 'cursor-pointer',
+                          'inline-flex w-auto px-4 md:hidden',
+                        )}
+                        aria-label="Go to previous page"
+                      >
+                        <span>Previous</span>
+                      </PaginationLink>
                     </PaginationItem>
                   )}
                   {Array.from({ length: pageCount }).map((_, index) => {
@@ -270,13 +289,13 @@ export default function Groups() {
                       index === (page || 1) - 3
                     ) {
                       return (
-                        <PaginationItem key={index}>
+                        <PaginationItem key={index} className="hidden md:block">
                           <PaginationEllipsis />
                         </PaginationItem>
                       );
                     }
                     return (
-                      <PaginationItem key={index}>
+                      <PaginationItem key={index} className="hidden md:block">
                         <PaginationLink
                           onClick={() => setPage(index + 1)}
                           className={clsx(
@@ -302,8 +321,27 @@ export default function Groups() {
                           }
                           setPage((page || 1) + 1);
                         }}
-                        className={clsx(page !== pageCount && 'cursor-pointer')}
+                        className={clsx(
+                          page !== pageCount && 'cursor-pointer',
+                          'hidden md:inline-flex',
+                        )}
                       />
+                      <PaginationLink
+                        onClick={() => {
+                          if (page === pageCount) {
+                            return;
+                          }
+                          setPage((page || 1) + 1);
+                        }}
+                        isActive
+                        className={clsx(
+                          page !== pageCount && 'cursor-pointer',
+                          'inline-flex w-auto px-4 md:hidden',
+                        )}
+                        aria-label="Go to next page"
+                      >
+                        <span>Next</span>
+                      </PaginationLink>
                     </PaginationItem>
                   )}
                 </PaginationContent>

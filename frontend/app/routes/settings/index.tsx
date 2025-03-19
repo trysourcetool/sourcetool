@@ -218,8 +218,8 @@ export default function Settings() {
     <div>
       <PageHeader label={t('routes_settings_page_header')} />
       {user && (
-        <div className="flex flex-col gap-6 p-6">
-          <div className="flex flex-col gap-6 md:flex-row">
+        <div className="flex flex-col gap-4 px-4 py-6 md:gap-6 md:px-6 md:py-6">
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <div className="flex flex-1 flex-col gap-2">
               <p className="text-xl font-semibold text-foreground">
                 {t('routes_settings_name_title')}
@@ -272,9 +272,11 @@ export default function Settings() {
             </Form>
           </div>
 
-          <Separator />
+          <div className="hidden md:block">
+            <Separator />
+          </div>
 
-          <div className="flex flex-col gap-6 md:flex-row">
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <div className="flex flex-1 flex-col gap-2">
               <p className="text-xl font-semibold text-foreground">
                 {t('routes_settings_email_title')}
@@ -342,9 +344,11 @@ export default function Settings() {
             </Form>
           </div>
 
-          <Separator />
+          <div className="hidden md:block">
+            <Separator />
+          </div>
 
-          <div className="flex flex-col gap-6 md:flex-row">
+          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <div className="flex flex-1 flex-col gap-2">
               <p className="text-xl font-semibold text-foreground">
                 {t('routes_settings_password_title')}

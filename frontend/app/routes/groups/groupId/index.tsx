@@ -171,7 +171,10 @@ export default function GroupEdit() {
       <PageHeader label={t('routes_groups_edit_page_header')} />
       {group && (
         <Form {...form}>
-          <form className="flex flex-col gap-6 p-6" onSubmit={onSubmit}>
+          <form
+            className="flex flex-col gap-6 px-4 py-6 md:px-6"
+            onSubmit={onSubmit}
+          >
             <FormField
               control={form.control}
               name="name"
@@ -265,10 +268,10 @@ export default function GroupEdit() {
                       <TableBody>
                         {selectedUsers.map((user) => (
                           <TableRow key={user.id}>
-                            <TableCell className="font-medium">
+                            <TableCell className="truncate font-medium">
                               {user.firstName} {user.lastName}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="truncate">
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -317,7 +320,7 @@ export default function GroupEdit() {
               )}
             />
 
-            <div className="flex justify-start gap-3">
+            <div className="flex flex-row justify-start gap-3">
               <Button type="submit">
                 {isUpdateGroupWaiting && (
                   <Loader2 className="size-4 animate-spin" />

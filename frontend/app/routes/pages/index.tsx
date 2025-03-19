@@ -41,7 +41,7 @@ export default function Pages() {
   return (
     <div>
       <PageHeader label={t('routes_pages_page_header')} />
-      <div className="p-6">
+      <div className="px-4 py-6 md:px-6">
         {isInitialLoaded && pages.length === 0 && (
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-bold">
@@ -51,13 +51,29 @@ export default function Pages() {
               {t('routes_pages_placeholder_description')}
             </p>
             <CodeBlock
-              code={`import "github.com/trysourcetool/sourcetool-go"
+              code={`func main() {
+	st := sourcetool.New("<your-api-key>")
 
-func main() {
-    s := sourcetool.New("$your-api-key")
-    if err := s.Listen(); err != nil {
-        log.Fatal(err)
-    }
+	st.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
+		ui.Markdown("## Hello {firstName}!")
+
+		// Example:
+		// name := ui.TextInput("Name")
+		// email := ui.Email("Email")
+		//
+		// users, err := listUsers(ui.Context(), name, email)
+		// if err != nil {
+		//   return err
+		// }
+		//
+		// ui.Table(users)
+		
+		return nil
+	})
+	
+	if err := st.Listen(); err != nil {
+		log.Fatal(err)
+	}
 }`}
               language="go"
             />
