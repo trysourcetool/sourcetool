@@ -74,9 +74,23 @@ func shouldServeFile(path, filePath string) bool {
 		(fileExists && !strings.HasSuffix(filePath, "index.html"))
 }
 
+func setSecurityHeaders(w http.ResponseWriter) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+	w.Header().Set("X-XSS-Protection", "1; mode=block")
+	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss:;")
+	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+}
+
 func serveFile(w http.ResponseWriter, r *http.Request, fileServer http.Handler, path string) {
+	setSecurityHeaders(w)
 	if strings.HasPrefix(path, "/assets/") {
-		w.Header().Set("Cache-Control", "public, max-age=31536000")
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	} else {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 	}
 	fileServer.ServeHTTP(w, r)
 }
@@ -87,9 +101,7 @@ func serveIndexFile(w http.ResponseWriter, r *http.Request, indexPath string) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.Header().Set("X-Frame-Options", "DENY")
-	w.Header().Set("X-XSS-Protection", "1; mode=block")
+	setSecurityHeaders(w)
 
 	fmt.Printf("Serving index.html for client-side route: %s\n", r.URL.Path)
 	http.ServeFile(w, r, indexPath)
