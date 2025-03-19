@@ -2338,6 +2338,9 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "webSocketEndpoint": {
+                    "type": "string"
                 }
             }
         },

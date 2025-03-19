@@ -3,6 +3,7 @@ package adapters
 import (
 	"strconv"
 
+	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
@@ -15,10 +16,11 @@ func OrganizationDTOToResponse(org *dto.Organization) *responses.OrganizationRes
 	}
 
 	return &responses.OrganizationResponse{
-		ID:        org.ID,
-		Subdomain: org.Subdomain,
-		CreatedAt: strconv.FormatInt(org.CreatedAt, 10),
-		UpdatedAt: strconv.FormatInt(org.UpdatedAt, 10),
+		ID:                org.ID,
+		Subdomain:         org.Subdomain,
+		WebSocketEndpoint: config.Config.WebSocketOrgBaseURL(org.Subdomain),
+		CreatedAt:         strconv.FormatInt(org.CreatedAt, 10),
+		UpdatedAt:         strconv.FormatInt(org.UpdatedAt, 10),
 	}
 }
 

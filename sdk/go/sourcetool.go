@@ -20,14 +20,14 @@ type Sourcetool struct {
 }
 
 func New(config *Config) *Sourcetool {
-	hostParts := strings.Split(config.Host, "://")
+	hostParts := strings.Split(config.Endpoint, "://")
 	if len(hostParts) != 2 {
 		panic("invalid host")
 	}
 	namespaceDNS := strings.Split(hostParts[1], ":")[0]
 	s := &Sourcetool{
 		apiKey:   config.APIKey,
-		endpoint: fmt.Sprintf("%s/ws", config.Host),
+		endpoint: fmt.Sprintf("%s/ws", config.Endpoint),
 		pages:    make(map[uuid.UUID]*page),
 	}
 	s.Router = newRouter(s, namespaceDNS)
