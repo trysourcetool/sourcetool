@@ -165,7 +165,7 @@ func TestTimeInput(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateTimeInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTimeInput, []int{0})
 	state := sess.State.GetTimeInput(widgetID)
 	if state == nil {
 		t.Fatal("TimeInput state not found")
@@ -222,7 +222,7 @@ func TestTimeInput_DefaultValues(t *testing.T) {
 
 	builder.TimeInput(label)
 
-	widgetID := builder.generateTimeInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTimeInput, []int{0})
 	state := sess.State.GetTimeInput(widgetID)
 	if state == nil {
 		t.Fatal("TimeInput state not found")

@@ -159,7 +159,7 @@ func TestNumberInput(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateNumberInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeNumberInput, []int{0})
 	state := sess.State.GetNumberInput(widgetID)
 	if state == nil {
 		t.Fatal("NumberInput state not found")

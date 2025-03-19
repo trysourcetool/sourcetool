@@ -50,7 +50,7 @@ func (b *uiBuilder) Selectbox(label string, opts ...selectbox.Option) *selectbox
 		}
 	}
 
-	widgetID := b.generateSelectboxID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeSelectbox, path)
 	selectboxState := sess.State.GetSelectbox(widgetID)
 	if selectboxState == nil {
 		selectboxState = &state.SelectboxState{
@@ -103,14 +103,6 @@ func (b *uiBuilder) Selectbox(label string, opts ...selectbox.Option) *selectbox
 	}
 
 	return value
-}
-
-func (b *uiBuilder) generateSelectboxID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeSelectbox.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToSelectboxProto(state *state.SelectboxState) *widgetv1.Selectbox {

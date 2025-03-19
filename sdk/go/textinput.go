@@ -48,7 +48,7 @@ func (b *uiBuilder) TextInput(label string, opts ...textinput.Option) string {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateTextInputID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeTextInput, path)
 	textInputState := sess.State.GetTextInput(widgetID)
 	if textInputState == nil {
 		textInputState = &state.TextInputState{
@@ -81,14 +81,6 @@ func (b *uiBuilder) TextInput(label string, opts ...textinput.Option) string {
 	cursor.next()
 
 	return conv.SafeValue(textInputState.Value)
-}
-
-func (b *uiBuilder) generateTextInputID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeTextInput.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToTextInputProto(state *state.TextInputState) *widgetv1.TextInput {

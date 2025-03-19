@@ -176,7 +176,7 @@ func TestTextArea(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateTextAreaID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTextArea, []int{0})
 	state := sess.State.GetTextArea(widgetID)
 	if state == nil {
 		t.Fatal("TextArea state not found")
@@ -232,7 +232,7 @@ func TestTextArea_DefaultMinLines(t *testing.T) {
 
 	builder.TextArea(label)
 
-	widgetID := builder.generateTextAreaID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTextArea, []int{0})
 	state := sess.State.GetTextArea(widgetID)
 	if state == nil {
 		t.Fatal("TextArea state not found")

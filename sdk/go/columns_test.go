@@ -116,7 +116,7 @@ func TestColumns(t *testing.T) {
 		t.Errorf("WebSocket messages count = %d, want %d", len(messages), expectedMessages)
 	}
 
-	widgetID := builder.generateColumnsID([]int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeColumns, []int{0})
 	columnsState := sess.State.GetColumns(widgetID)
 	if columnsState == nil {
 		t.Fatal("Columns state not found")
@@ -128,7 +128,7 @@ func TestColumns(t *testing.T) {
 
 	for i := 0; i < cols; i++ {
 		columnPath := []int{0, i}
-		columnID := builder.generateColumnItemID(columnPath)
+		columnID := builder.generatePageID(state.WidgetTypeColumnItem, columnPath)
 		columnState := sess.State.Get(columnID)
 		if columnState == nil {
 			t.Fatalf("Column item state not found for index %d", i)
@@ -176,7 +176,7 @@ func TestColumns_WithWeight(t *testing.T) {
 
 	for i := 0; i < cols; i++ {
 		columnPath := []int{0, i}
-		columnID := builder.generateColumnItemID(columnPath)
+		columnID := builder.generatePageID(state.WidgetTypeColumnItem, columnPath)
 		columnState := sess.State.Get(columnID)
 		if columnState == nil {
 			t.Fatalf("Column item state not found for index %d", i)
@@ -240,7 +240,7 @@ func TestColumns_InvalidInput(t *testing.T) {
 			if tt.cols > 0 && builders != nil {
 				for i := 0; i < tt.cols; i++ {
 					columnPath := []int{0, i}
-					columnID := builder.generateColumnItemID(columnPath)
+					columnID := builder.generatePageID(state.WidgetTypeColumnItem, columnPath)
 					columnState := sess.State.Get(columnID)
 					if columnState == nil {
 						t.Fatalf("Column item state not found for index %d", i)

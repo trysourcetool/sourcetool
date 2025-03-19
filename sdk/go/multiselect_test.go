@@ -158,7 +158,7 @@ func TestMultiSelect(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateMultiSelectID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeMultiSelect, []int{0})
 	state := sess.State.GetMultiSelect(widgetID)
 	if state == nil {
 		t.Fatal("MultiSelect state not found")
@@ -215,7 +215,7 @@ func TestMultiSelect_WithFormatFunc(t *testing.T) {
 		multiselect.FormatFunc(formatFunc),
 	)
 
-	widgetID := builder.generateMultiSelectID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeMultiSelect, []int{0})
 	state := sess.State.GetMultiSelect(widgetID)
 	if state == nil {
 		t.Fatal("MultiSelect state not found")

@@ -121,7 +121,7 @@ func TestForm(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateFormID([]int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeForm, []int{0})
 	state := sess.State.GetForm(widgetID)
 	if state == nil {
 		t.Fatal("Form state not found")
@@ -179,7 +179,7 @@ func TestForm_WithOptions(t *testing.T) {
 		t.Error("Form returned true for submitted, want false")
 	}
 
-	widgetID := builder.generateFormID([]int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeForm, []int{0})
 	state := sess.State.GetForm(widgetID)
 	if state == nil {
 		t.Fatal("Form state not found")

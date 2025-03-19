@@ -157,7 +157,7 @@ func TestSelectbox(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateSelectboxID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeSelectbox, []int{0})
 	state := sess.State.GetSelectbox(widgetID)
 	if state == nil {
 		t.Fatal("Selectbox state not found")
@@ -214,7 +214,7 @@ func TestSelectbox_WithFormatFunc(t *testing.T) {
 		selectbox.FormatFunc(formatFunc),
 	)
 
-	widgetID := builder.generateSelectboxID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeSelectbox, []int{0})
 	state := sess.State.GetSelectbox(widgetID)
 	if state == nil {
 		t.Fatal("Selectbox state not found")

@@ -36,7 +36,7 @@ func (b *uiBuilder) Checkbox(label string, opts ...checkbox.Option) bool {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateCheckboxID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeCheckbox, path)
 	checkboxState := sess.State.GetCheckbox(widgetID)
 	if checkboxState == nil {
 		checkboxState = &state.CheckboxState{
@@ -66,14 +66,6 @@ func (b *uiBuilder) Checkbox(label string, opts ...checkbox.Option) bool {
 	cursor.next()
 
 	return checkboxState.Value
-}
-
-func (b *uiBuilder) generateCheckboxID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeCheckbox.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToCheckboxProto(state *state.CheckboxState) *widgetv1.Checkbox {

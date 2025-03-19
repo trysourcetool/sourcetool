@@ -118,7 +118,7 @@ func TestButton(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateButtonInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeButton, []int{0})
 	state := sess.State.GetButton(widgetID)
 	if state == nil {
 		t.Fatal("Button state not found")
@@ -166,7 +166,7 @@ func TestButton_DefaultState(t *testing.T) {
 
 	builder.Button(label)
 
-	widgetID := builder.generateButtonInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeButton, []int{0})
 	state := sess.State.GetButton(widgetID)
 	if state == nil {
 		t.Fatal("Button state not found")

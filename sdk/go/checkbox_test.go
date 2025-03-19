@@ -132,7 +132,7 @@ func TestCheckbox(t *testing.T) {
 	}
 
 	// Verify state
-	widgetID := builder.generateCheckboxID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeCheckbox, []int{0})
 	state := sess.State.GetCheckbox(widgetID)
 	if state == nil {
 		t.Fatal("Checkbox state not found")

@@ -148,7 +148,7 @@ func TestRadio(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateRadioID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeRadio, []int{0})
 	state := sess.State.GetRadio(widgetID)
 	if state == nil {
 		t.Fatal("Radio state not found")
@@ -204,7 +204,7 @@ func TestRadio_WithFormatFunc(t *testing.T) {
 		radio.FormatFunc(formatFunc),
 	)
 
-	widgetID := builder.generateRadioID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeRadio, []int{0})
 	state := sess.State.GetRadio(widgetID)
 	if state == nil {
 		t.Fatal("Radio state not found")
