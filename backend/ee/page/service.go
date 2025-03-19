@@ -3,6 +3,8 @@ package page
 import (
 	"context"
 
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -25,10 +27,20 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	}
 }
 
-func (s *serviceEE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
+func (s *serviceEE) List(ctx context.Context, in *dto.ListPagesInput) (*dto.ListPagesOutput, error) {
 	o := ctxutil.CurrentOrganization(ctx)
 
-	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
+	envID, err := uuid.FromString(in.EnvironmentID)
+	if err != nil {
+		return nil, err
+	}
+
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID))
+	if err != nil {
+		return nil, err
+	}
+
+	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageByEnvironmentID(env.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +50,7 @@ func (s *serviceEE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
 		return nil, err
 	}
 
-	groupPages, err := s.Store.Group().ListPages(ctx, storeopts.GroupPageByOrganizationID(o.ID))
+	groupPages, err := s.Store.Group().ListPages(ctx, storeopts.GroupPageByOrganizationID(o.ID), storeopts.GroupPageByEnvironmentID(env.ID))
 	if err != nil {
 		return nil, err
 	}

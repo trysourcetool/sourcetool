@@ -38,7 +38,7 @@ func PageFromModel(page *model.Page) *Page {
 
 // ListPagesInput is the input for List operation.
 type ListPagesInput struct {
-	OrganizationID string
+	EnvironmentID string
 }
 
 // ListPagesOutput is the output for List operation.

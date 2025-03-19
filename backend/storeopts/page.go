@@ -68,6 +68,20 @@ func (o pageBySessionIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 		Where(sq.Eq{`s."id"`: o.id})
 }
 
+func PageByEnvironmentID(id uuid.UUID) PageOption {
+	return pageByEnvironmentIDOption{id: id}
+}
+
+type pageByEnvironmentIDOption struct {
+	id uuid.UUID
+}
+
+func (o pageByEnvironmentIDOption) isPageOption() {}
+
+func (o pageByEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`p."environment_id"`: o.id})
+}
+
 func PageLimit(limit uint64) PageOption {
 	return pageLimitOption{limit: limit}
 }

@@ -100,3 +100,19 @@ func (o groupPageByPageIDsOption) isGroupPageOption() {}
 func (o groupPageByPageIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`gp."page_id"`: o.ids})
 }
+
+func GroupPageByEnvironmentID(id uuid.UUID) GroupPageOption {
+	return groupPageByEnvironmentIDOption{id: id}
+}
+
+type groupPageByEnvironmentIDOption struct {
+	id uuid.UUID
+}
+
+func (o groupPageByEnvironmentIDOption) isGroupPageOption() {}
+
+func (o groupPageByEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"page" p ON p."id" = gp."page_id"`).
+		Where(sq.Eq{`p."environment_id"`: o.id})
+}

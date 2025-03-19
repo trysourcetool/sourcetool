@@ -1110,6 +1110,12 @@ paths:
       consumes:
       - application/json
       operationId: list-pages
+      parameters:
+      - description: Environment ID
+        in: query
+        name: environmentId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
