@@ -99,7 +99,7 @@ func ValidateRequest(p any) error {
 	v.RegisterValidation("password", validatePassword)
 
 	if err := v.Struct(p); err != nil {
-		return err
+		return errdefs.ErrInvalidArgument(err)
 	}
 
 	return nil

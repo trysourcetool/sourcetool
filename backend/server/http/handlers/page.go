@@ -31,7 +31,7 @@ func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 		EnvironmentID: r.URL.Query().Get("environmentId"),
 	}
 	if err := httputil.ValidateRequest(in); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
