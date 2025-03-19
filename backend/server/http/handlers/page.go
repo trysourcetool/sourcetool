@@ -22,12 +22,13 @@ func NewPageHandler(service page.Service) *PageHandler {
 // @Accept json
 // @Produce json
 // @Tags pages
+// @Param environmentId query string true "Environment ID"
 // @Success 200 {object} responses.ListPagesResponse
 // @Failure default {object} errdefs.Error
 // @Router /pages [get].
 func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 	in := &requests.ListPagesRequest{
-		EnvironmentID: r.URL.Query().Get("environment_id"),
+		EnvironmentID: r.URL.Query().Get("environmentId"),
 	}
 	if err := httputil.ValidateRequest(in); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

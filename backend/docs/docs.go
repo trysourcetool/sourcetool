@@ -730,6 +730,15 @@ const docTemplate = `{
                     "pages"
                 ],
                 "operationId": "list-pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Environment ID",
+                        "name": "environmentId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
