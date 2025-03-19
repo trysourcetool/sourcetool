@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/config"
 )
 
 // ServeStaticFiles configures the router to serve static files from the specified directory.
@@ -74,16 +76,37 @@ func shouldServeFile(path, filePath string) bool {
 		(fileExists && !strings.HasSuffix(filePath, "index.html"))
 }
 
-func setSecurityHeaders(w http.ResponseWriter) {
+func setSecurityHeaders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+
+	if config.Config.Env == config.EnvLocal {
+		return
+	}
+
+	if config.Config.IsCloudEdition {
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self' *.trysourcetool.com; "+
+				"script-src 'self' *.trysourcetool.com; "+
+				"style-src 'self' 'unsafe-inline'; "+
+				"img-src * data: blob:; "+
+				"font-src * data:; "+
+				"media-src *; "+
+				"connect-src 'self' wss: *.trysourcetool.com https:;")
+	} else {
+		w.Header().Set("Content-Security-Policy",
+			"default-src * 'unsafe-inline' 'unsafe-eval'; "+
+				"img-src * data: blob:; "+
+				"font-src * data:; "+
+				"connect-src * ws: wss:;")
+	}
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, fileServer http.Handler, path string) {
-	setSecurityHeaders(w)
+	setSecurityHeaders(w, r)
 	if strings.HasPrefix(path, "/assets/") {
 		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	} else {
@@ -100,7 +123,7 @@ func serveIndexFile(w http.ResponseWriter, r *http.Request, indexPath string) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	setSecurityHeaders(w)
+	setSecurityHeaders(w, r)
 
 	fmt.Printf("Serving index.html for client-side route: %s\n", r.URL.Path)
 	http.ServeFile(w, r, indexPath)
