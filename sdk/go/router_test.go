@@ -160,8 +160,8 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Group creation before and after AccessGroups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 
@@ -191,8 +191,8 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Multiple AccessGroups calls", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		admin := st.Group("/admin")
@@ -225,8 +225,8 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Sibling groups inheritance", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("global")
@@ -257,8 +257,8 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Deep nested groups inheritance", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("global")
@@ -283,8 +283,8 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Mixed group and page specific access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 
@@ -351,8 +351,8 @@ func TestRouterGroup(t *testing.T) {
 
 	t.Run("Base path construction", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		admin := st.Group("/admin")
@@ -371,8 +371,8 @@ func TestRouterGroup(t *testing.T) {
 
 	t.Run("Multiple nested groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		api := st.Group("/api")
@@ -394,8 +394,8 @@ func TestRouterGroup(t *testing.T) {
 func TestRouter_Page(t *testing.T) {
 	t.Run("Basic page", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		handler := func(ui UIBuilder) error { return nil }
@@ -413,8 +413,8 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("admin")
@@ -433,8 +433,8 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with error handler", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		handler := func(ui UIBuilder) error {
@@ -454,8 +454,8 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with empty route", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		handler := func(ui UIBuilder) error { return nil }
@@ -477,8 +477,8 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with duplicate route", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		handler := func(ui UIBuilder) error { return nil }
@@ -499,8 +499,8 @@ func TestRouter_Page(t *testing.T) {
 func TestRouter_Group(t *testing.T) {
 	t.Run("Basic group", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		group := st.Group("/test")
@@ -520,8 +520,8 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Group with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		group := st.Group("/admin")
@@ -542,8 +542,8 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Nested groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		parent := st.Group("/parent")
@@ -564,8 +564,8 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Group with empty path", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		group := st.Group("")
@@ -587,8 +587,8 @@ func TestRouter_Group(t *testing.T) {
 func TestRouter_AccessGroups(t *testing.T) {
 	t.Run("Set access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("admin", "user")
@@ -622,8 +622,8 @@ func TestRouter_AccessGroups(t *testing.T) {
 
 	t.Run("Clear access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("admin")

@@ -16,11 +16,11 @@ func OrganizationDTOToResponse(org *dto.Organization) *responses.OrganizationRes
 	}
 
 	return &responses.OrganizationResponse{
-		ID:           org.ID,
-		Subdomain:    org.Subdomain,
-		WebSocketURL: config.Config.WebSocketOrgBaseURL(org.Subdomain) + "/ws",
-		CreatedAt:    strconv.FormatInt(org.CreatedAt, 10),
-		UpdatedAt:    strconv.FormatInt(org.UpdatedAt, 10),
+		ID:                org.ID,
+		Subdomain:         org.Subdomain,
+		WebSocketEndpoint: config.Config.WebSocketOrgBaseURL(org.Subdomain),
+		CreatedAt:         strconv.FormatInt(org.CreatedAt, 10),
+		UpdatedAt:         strconv.FormatInt(org.UpdatedAt, 10),
 	}
 }
 

@@ -9,10 +9,10 @@ import (
 
 func TestNew(t *testing.T) {
 	apiKey := "test_api_key"
-	host := "ws://test.trysourcetool.com"
+	endpoint := "ws://test.trysourcetool.com"
 	config := &Config{
-		APIKey: apiKey,
-		Host:   host,
+		APIKey:   apiKey,
+		Endpoint: endpoint,
 	}
 	st := New(config)
 
@@ -44,8 +44,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Public page", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.Page("/public", "Public Page", pageHandler)
@@ -66,8 +66,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Page with direct access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		st.AccessGroups("admin")
@@ -85,8 +85,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Group with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		api := st.Group("/api")
@@ -112,8 +112,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Nested groups with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		users := st.Group("/users")
@@ -167,8 +167,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Complex group structure", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 
@@ -231,8 +231,8 @@ func TestPage(t *testing.T) {
 
 	t.Run("Error handling", func(t *testing.T) {
 		config := &Config{
-			APIKey: "test_api_key",
-			Host:   "ws://test.trysourcetool.com",
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
 		errorHandler := func(ui UIBuilder) error {

@@ -501,7 +501,7 @@ definitions:
         type: string
       updatedAt:
         type: string
-      webSocketUrl:
+      webSocketEndpoint:
         type: string
     type: object
   responses.PageResponse:

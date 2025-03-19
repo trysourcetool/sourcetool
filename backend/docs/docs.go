@@ -2339,7 +2339,7 @@ const docTemplate = `{
                 "updatedAt": {
                     "type": "string"
                 },
-                "webSocketUrl": {
+                "webSocketEndpoint": {
                     "type": "string"
                 }
             }

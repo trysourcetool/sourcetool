@@ -1,6 +1,6 @@
 package sourcetool
 
 type Config struct {
-	APIKey string
-	Host   string
+	APIKey   string
+	Endpoint string
 }
