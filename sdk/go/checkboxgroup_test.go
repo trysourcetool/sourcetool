@@ -152,7 +152,7 @@ func TestCheckboxGroup(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateCheckboxGroupID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeCheckboxGroup, []int{0})
 	state := sess.State.GetCheckboxGroup(widgetID)
 	if state == nil {
 		t.Fatal("CheckboxGroup state not found")
@@ -208,7 +208,7 @@ func TestCheckboxGroup_WithFormatFunc(t *testing.T) {
 		checkboxgroup.FormatFunc(formatFunc),
 	)
 
-	widgetID := builder.generateCheckboxGroupID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeCheckboxGroup, []int{0})
 	state := sess.State.GetCheckboxGroup(widgetID)
 	if state == nil {
 		t.Fatal("CheckboxGroup state not found")

@@ -36,7 +36,7 @@ func (b *uiBuilder) Columns(cols int, opts ...columns.Option) []UIBuilder {
 		o.Apply(columnsOpts)
 	}
 
-	widgetID := b.generateColumnsID(path)
+	widgetID := b.generatePageID(state.WidgetTypeColumns, path)
 	weights := columnsOpts.Weight
 	if len(weights) == 0 || len(weights) != cols {
 		weights = make([]int, cols)
@@ -85,7 +85,7 @@ func (b *uiBuilder) Columns(cols int, opts ...columns.Option) []UIBuilder {
 		columnCursor.parentPath = append(path, i)
 
 		columnPath := append(path, i)
-		widgetID := b.generateColumnItemID(columnPath)
+		widgetID := b.generatePageID(state.WidgetTypeColumnItem, columnPath)
 		columnItemState := &state.ColumnItemState{
 			ID:     widgetID,
 			Weight: float64(weights[i]) / float64(totalWeight),
@@ -117,22 +117,6 @@ func (b *uiBuilder) Columns(cols int, opts ...columns.Option) []UIBuilder {
 	cursor.next()
 
 	return builders
-}
-
-func (b *uiBuilder) generateColumnsID(path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeColumns.String()+"-"+path.String())
-}
-
-func (b *uiBuilder) generateColumnItemID(path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeColumnItem.String()+"-"+path.String())
 }
 
 func convertStateToColumnsProto(state *state.ColumnsState) *widgetv1.Columns {

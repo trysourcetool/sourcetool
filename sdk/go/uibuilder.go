@@ -3,8 +3,11 @@ package sourcetool
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool-go/button"
 	"github.com/trysourcetool/sourcetool-go/checkbox"
@@ -14,6 +17,7 @@ import (
 	"github.com/trysourcetool/sourcetool-go/datetimeinput"
 	"github.com/trysourcetool/sourcetool-go/form"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
+	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/multiselect"
 	"github.com/trysourcetool/sourcetool-go/numberinput"
 	"github.com/trysourcetool/sourcetool-go/radio"
@@ -54,6 +58,17 @@ type uiBuilder struct {
 
 func (b *uiBuilder) Context() context.Context {
 	return b.context
+}
+
+func (b *uiBuilder) generatePageID(widgetType state.WidgetType, path []int) uuid.UUID {
+	if b.page == nil {
+		return uuid.Nil
+	}
+	strPath := make([]string, len(path))
+	for i, v := range path {
+		strPath[i] = strconv.Itoa(v)
+	}
+	return uuid.NewV5(b.page.id, widgetType.String()+"-"+strings.Join(strPath, "_"))
 }
 
 type path []int

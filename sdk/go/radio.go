@@ -49,7 +49,7 @@ func (b *uiBuilder) Radio(label string, opts ...radio.Option) *radio.Value {
 		}
 	}
 
-	widgetID := b.generateRadioID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeRadio, path)
 	radioState := sess.State.GetRadio(widgetID)
 	if radioState == nil {
 		radioState = &state.RadioState{
@@ -101,14 +101,6 @@ func (b *uiBuilder) Radio(label string, opts ...radio.Option) *radio.Value {
 	}
 
 	return value
-}
-
-func (b *uiBuilder) generateRadioID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeRadio.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToRadioProto(state *state.RadioState) *widgetv1.Radio {

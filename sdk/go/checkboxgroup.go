@@ -49,7 +49,7 @@ func (b *uiBuilder) CheckboxGroup(label string, opts ...checkboxgroup.Option) *c
 		}
 	}
 
-	widgetID := b.generateCheckboxGroupID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeCheckboxGroup, path)
 	checkboxGroupState := sess.State.GetCheckboxGroup(widgetID)
 	if checkboxGroupState == nil {
 		checkboxGroupState = &state.CheckboxGroupState{
@@ -103,14 +103,6 @@ func (b *uiBuilder) CheckboxGroup(label string, opts ...checkboxgroup.Option) *c
 	}
 
 	return value
-}
-
-func (b *uiBuilder) generateCheckboxGroupID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeCheckboxGroup.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToCheckboxGroupProto(state *state.CheckboxGroupState) *widgetv1.CheckboxGroup {

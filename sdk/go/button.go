@@ -34,7 +34,7 @@ func (b *uiBuilder) Button(label string, opts ...button.Option) bool {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateButtonInputID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeButton, path)
 	buttonState := sess.State.GetButton(widgetID)
 	if buttonState == nil {
 		buttonState = &state.ButtonState{
@@ -62,14 +62,6 @@ func (b *uiBuilder) Button(label string, opts ...button.Option) bool {
 	cursor.next()
 
 	return buttonState.Value
-}
-
-func (b *uiBuilder) generateButtonInputID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeButton.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToButtonProto(state *state.ButtonState) *widgetv1.Button {

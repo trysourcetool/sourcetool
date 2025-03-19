@@ -40,7 +40,7 @@ func (b *uiBuilder) NumberInput(label string, opts ...numberinput.Option) *float
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateNumberInputID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeNumberInput, path)
 	numberInputState := sess.State.GetNumberInput(widgetID)
 	if numberInputState == nil {
 		numberInputState = &state.NumberInputState{
@@ -73,14 +73,6 @@ func (b *uiBuilder) NumberInput(label string, opts ...numberinput.Option) *float
 	cursor.next()
 
 	return numberInputState.Value
-}
-
-func (b *uiBuilder) generateNumberInputID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeNumberInput.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToNumberInputProto(state *state.NumberInputState) *widgetv1.NumberInput {

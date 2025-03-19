@@ -77,7 +77,7 @@ func TestMarkdown(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateMarkdownID(body, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeMarkdown, []int{0})
 	state := sess.State.GetMarkdown(widgetID)
 	if state == nil {
 		t.Fatal("Markdown state not found")

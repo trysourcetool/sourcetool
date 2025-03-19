@@ -35,7 +35,7 @@ func (b *uiBuilder) Form(buttonLabel string, opts ...form.Option) (UIBuilder, bo
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateFormID(path)
+	widgetID := b.generatePageID(state.WidgetTypeForm, path)
 	formState := sess.State.GetForm(widgetID)
 	if formState == nil {
 		formState = &state.FormState{
@@ -74,14 +74,6 @@ func (b *uiBuilder) Form(buttonLabel string, opts ...form.Option) (UIBuilder, bo
 	}
 
 	return childBuilder, formState.Value
-}
-
-func (b *uiBuilder) generateFormID(path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeForm.String()+"-"+path.String())
 }
 
 func convertStateToFormProto(state *state.FormState) *widgetv1.Form {

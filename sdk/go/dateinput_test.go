@@ -187,7 +187,7 @@ func TestDateInput(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateDateInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeDateInput, []int{0})
 	state := sess.State.GetDateInput(widgetID)
 	if state == nil {
 		t.Fatal("DateInput state not found")
@@ -251,7 +251,7 @@ func TestDateInput_DefaultValues(t *testing.T) {
 
 	builder.DateInput(label)
 
-	widgetID := builder.generateDateInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeDateInput, []int{0})
 	state := sess.State.GetDateInput(widgetID)
 	if state == nil {
 		t.Fatal("DateInput state not found")

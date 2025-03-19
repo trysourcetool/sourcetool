@@ -28,7 +28,7 @@ func (b *uiBuilder) Markdown(body string) {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateMarkdownID(body, path)
+	widgetID := b.generatePageID(state.WidgetTypeMarkdown, path)
 	markdownState := sess.State.GetMarkdown(widgetID)
 	if markdownState == nil {
 		markdownState = &state.MarkdownState{
@@ -52,14 +52,6 @@ func (b *uiBuilder) Markdown(body string) {
 	})
 
 	cursor.next()
-}
-
-func (b *uiBuilder) generateMarkdownID(body string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeMarkdown.String()+"-"+body+"-"+path.String())
 }
 
 func convertStateToMarkdownProto(state *state.MarkdownState) *widgetv1.Markdown {

@@ -44,7 +44,7 @@ func (b *uiBuilder) TextArea(label string, opts ...textarea.Option) string {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateTextAreaID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeTextArea, path)
 	textAreaState := sess.State.GetTextArea(widgetID)
 	if textAreaState == nil {
 		textAreaState = &state.TextAreaState{
@@ -80,14 +80,6 @@ func (b *uiBuilder) TextArea(label string, opts ...textarea.Option) string {
 	cursor.next()
 
 	return conv.SafeValue(textAreaState.Value)
-}
-
-func (b *uiBuilder) generateTextAreaID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeTextArea.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToTextAreaProto(state *state.TextAreaState) *widgetv1.TextArea {

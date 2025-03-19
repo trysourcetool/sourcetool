@@ -155,7 +155,7 @@ func TestTextInput(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateTextInputID(label, []int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTextInput, []int{0})
 	state := sess.State.GetTextInput(widgetID)
 	if state == nil {
 		t.Fatal("TextInput state not found")

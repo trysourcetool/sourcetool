@@ -45,7 +45,7 @@ func (b *uiBuilder) DateTimeInput(label string, opts ...datetimeinput.Option) *t
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateDateTimeInputID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeDateTimeInput, path)
 	dateTimeInputState := sess.State.GetDateTimeInput(widgetID)
 	if dateTimeInputState == nil {
 		dateTimeInputState = &state.DateTimeInputState{
@@ -80,14 +80,6 @@ func (b *uiBuilder) DateTimeInput(label string, opts ...datetimeinput.Option) *t
 	cursor.next()
 
 	return dateTimeInputState.Value
-}
-
-func (b *uiBuilder) generateDateTimeInputID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeDateTimeInput.String()+"-"+label+"-"+path.String())
 }
 
 func convertDateTimeInputProtoToState(id uuid.UUID, data *widgetv1.DateTimeInput, location *time.Location) (*state.DateTimeInputState, error) {

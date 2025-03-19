@@ -42,7 +42,7 @@ func (b *uiBuilder) TimeInput(label string, opts ...timeinput.Option) *time.Time
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateTimeInputID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeTimeInput, path)
 	timeInputState := sess.State.GetTimeInput(widgetID)
 	if timeInputState == nil {
 		timeInputState = &state.TimeInputState{
@@ -74,14 +74,6 @@ func (b *uiBuilder) TimeInput(label string, opts ...timeinput.Option) *time.Time
 	cursor.next()
 
 	return timeInputState.Value
-}
-
-func (b *uiBuilder) generateTimeInputID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeTimeInput.String()+"-"+label+"-"+path.String())
 }
 
 func convertTimeInputProtoToState(id uuid.UUID, data *widgetv1.TimeInput, location *time.Location) (*state.TimeInputState, error) {

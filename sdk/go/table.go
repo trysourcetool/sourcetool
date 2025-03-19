@@ -36,7 +36,7 @@ func (b *uiBuilder) Table(data any, opts ...table.Option) table.Value {
 	}
 	path := cursor.getPath()
 
-	widgetID := b.generateTableID(path)
+	widgetID := b.generatePageID(state.WidgetTypeTable, path)
 	tableState := sess.State.GetTable(widgetID)
 	if tableState == nil {
 		tableState = &state.TableState{
@@ -84,14 +84,6 @@ func (b *uiBuilder) Table(data any, opts ...table.Option) table.Value {
 	}
 
 	return value
-}
-
-func (b *uiBuilder) generateTableID(path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeTable.String()+"-"+path.String())
 }
 
 func convertStateToTableProto(state *state.TableState) (*widgetv1.Table, error) {

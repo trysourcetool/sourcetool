@@ -50,7 +50,7 @@ func (b *uiBuilder) MultiSelect(label string, opts ...multiselect.Option) *multi
 		}
 	}
 
-	widgetID := b.generateMultiSelectID(label, path)
+	widgetID := b.generatePageID(state.WidgetTypeMultiSelect, path)
 	multiSelectState := sess.State.GetMultiSelect(widgetID)
 	if multiSelectState == nil {
 		multiSelectState = &state.MultiSelectState{
@@ -105,14 +105,6 @@ func (b *uiBuilder) MultiSelect(label string, opts ...multiselect.Option) *multi
 	}
 
 	return value
-}
-
-func (b *uiBuilder) generateMultiSelectID(label string, path path) uuid.UUID {
-	page := b.page
-	if page == nil {
-		return uuid.Nil
-	}
-	return uuid.NewV5(page.id, state.WidgetTypeMultiSelect.String()+"-"+label+"-"+path.String())
 }
 
 func convertStateToMultiSelectProto(state *state.MultiSelectState) *widgetv1.MultiSelect {

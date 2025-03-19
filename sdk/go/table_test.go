@@ -188,7 +188,7 @@ func TestTable(t *testing.T) {
 		t.Fatal("WebSocket message type = nil, want RenderWidget")
 	}
 
-	widgetID := builder.generateTableID([]int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTable, []int{0})
 	state := sess.State.GetTable(widgetID)
 	if state == nil {
 		t.Fatal("Table state not found")
@@ -244,7 +244,7 @@ func TestTable_DefaultValues(t *testing.T) {
 
 	builder.Table(data)
 
-	widgetID := builder.generateTableID([]int{0})
+	widgetID := builder.generatePageID(state.WidgetTypeTable, []int{0})
 	state := sess.State.GetTable(widgetID)
 	if state == nil {
 		t.Fatal("Table state not found")
