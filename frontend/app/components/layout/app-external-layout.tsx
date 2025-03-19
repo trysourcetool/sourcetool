@@ -87,7 +87,10 @@ export function AppExternalLayout(props: PropsWithChildren) {
     }
   }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
 
-  return isAuthChecked === 'checked' && isSubDomainMatched ? (
+  return (isAuthChecked === 'checked' &&
+    isSourcetoolDomain &&
+    isSubDomainMatched) ||
+    (isAuthChecked === 'checked' && !isSourcetoolDomain && user) ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>

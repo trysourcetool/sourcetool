@@ -57,7 +57,10 @@ export function AppPreviewLayout(props: PropsWithChildren) {
     }
   }, [dispatch]);
 
-  return isAuthChecked === 'checked' && isSubDomainMatched ? (
+  return (isAuthChecked === 'checked' &&
+    isSourcetoolDomain &&
+    isSubDomainMatched) ||
+    (isAuthChecked === 'checked' && !isSourcetoolDomain && user) ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>
