@@ -90,7 +90,7 @@ func setSecurityHeaders(w http.ResponseWriter) {
 	if config.Config.IsCloudEdition {
 		w.Header().Set("Content-Security-Policy",
 			"default-src 'self' *.trysourcetool.com; "+
-				"script-src 'self' *.trysourcetool.com; "+
+				"script-src 'self' 'unsafe-inline' 'unsafe-eval' *.trysourcetool.com; "+
 				"style-src 'self' 'unsafe-inline'; "+
 				"img-src * data: blob:; "+
 				"font-src * data:; "+
