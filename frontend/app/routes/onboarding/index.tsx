@@ -16,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
+import { usersStore } from '@/store/modules/users';
 
 export default function Onboarding() {
   const isInitialLoading = useRef(false);
@@ -24,6 +25,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
+  const user = useSelector(usersStore.selector.getMe);
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
 
   const handleCheckConnection = async () => {
@@ -83,13 +85,32 @@ export default function Onboarding() {
                 </CardDescription>
               </CardHeader>
               <CodeBlock
-                code={`import "github.com/trysourcetool/sourcetool-go"
+                code={`func main() {
+	s := sourcetool.New(&sourcetool.Config{
+		APIKey:   "${devKey.key}",
+		Endpoint: "${user?.organization?.webSocketEndpoint}"
+	})
 
-func main() {
-    s := sourcetool.New("${devKey.key}")
-    if err := s.Listen(); err != nil {
-        log.Fatal(err)
-    }
+	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
+		ui.Markdown("## Hello {firstName}!")
+
+		// Example:
+		// name := ui.TextInput("Name")
+		// email := ui.Email("Email")
+		//
+		// users, err := listUsers(ui.Context(), name, email)
+		// if err != nil {
+		//   return err
+		// }
+		//
+		// ui.Table(users)
+
+		return nil
+	})
+
+	if err := s.Listen(); err != nil {
+		log.Fatal(err)
+	}
 }`}
                 language="go"
               />

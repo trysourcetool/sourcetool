@@ -28,6 +28,7 @@ export type User = {
     id: string;
     subdomain: string;
     updatedAt: string;
+    webSocketEndpoint: string;
   } | null;
 };
 

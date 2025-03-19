@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
+import { usersStore } from '@/store/modules/users';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -22,6 +23,7 @@ export default function Pages() {
   const { t } = useTranslation('common');
 
   const pages = useSelector(pagesStore.selector.getPermissionPages);
+  const user = useSelector(usersStore.selector.getMe);
 
   useEffect(() => {
     setBreadcrumbsState?.([{ label: t('breadcrumbs_pages') }]);
@@ -52,9 +54,12 @@ export default function Pages() {
             </p>
             <CodeBlock
               code={`func main() {
-	st := sourcetool.New("<your-api-key>")
+	s := sourcetool.New(&sourcetool.Config{
+		APIKey:   "your_api_key",
+		Endpoint: "${user?.organization?.webSocketEndpoint}"
+	})
 
-	st.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
+	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
 		ui.Markdown("## Hello {firstName}!")
 
 		// Example:
@@ -71,7 +76,7 @@ export default function Pages() {
 		return nil
 	})
 	
-	if err := st.Listen(); err != nil {
+	if err := s.Listen(); err != nil {
 		log.Fatal(err)
 	}
 }`}
