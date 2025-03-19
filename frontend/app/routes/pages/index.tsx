@@ -14,6 +14,8 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
 import { usersStore } from '@/store/modules/users';
+import { environmentsStore } from '@/store/modules/environments';
+import { apiKeysStore } from '@/store/modules/apiKeys';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -24,6 +26,7 @@ export default function Pages() {
 
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const user = useSelector(usersStore.selector.getMe);
+  const devKey = useSelector(apiKeysStore.selector.getDevKey);
 
   useEffect(() => {
     setBreadcrumbsState?.([{ label: t('breadcrumbs_pages') }]);
@@ -33,7 +36,10 @@ export default function Pages() {
     if (!isInitialLoading.current) {
       isInitialLoading.current = true;
       (async () => {
-        await dispatch(pagesStore.asyncActions.listPages());
+        Promise.all([
+          dispatch(pagesStore.asyncActions.listPages()),
+          dispatch(apiKeysStore.asyncActions.listApiKeys()),
+        ]);
         isInitialLoading.current = false;
         setIsInitialLoaded(true);
       })();
@@ -55,12 +61,12 @@ export default function Pages() {
             <CodeBlock
               code={`func main() {
 	s := sourcetool.New(&sourcetool.Config{
-		APIKey:   "your_api_key",
+		APIKey:   "${devKey?.key}",
 		Endpoint: "${user?.organization?.webSocketEndpoint}"
 	})
 
 	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
-		ui.Markdown("## Hello {firstName}!")
+		ui.Markdown("## Hello ${user?.firstName}!")
 
 		// Example:
 		// name := ui.TextInput("Name")
@@ -72,10 +78,10 @@ export default function Pages() {
 		// }
 		//
 		// ui.Table(users)
-		
+
 		return nil
 	})
-	
+
 	if err := s.Listen(); err != nil {
 		log.Fatal(err)
 	}

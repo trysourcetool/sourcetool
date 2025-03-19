@@ -92,7 +92,7 @@ export default function Onboarding() {
 	})
 
 	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
-		ui.Markdown("## Hello {firstName}!")
+		ui.Markdown("## Hello ${user?.firstName}!")
 
 		// Example:
 		// name := ui.TextInput("Name")
