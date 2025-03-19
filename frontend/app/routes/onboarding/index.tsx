@@ -56,7 +56,7 @@ export default function Onboarding() {
     devKey && (
       <>
         <div className="m-auto flex w-full justify-center pb-14">
-          <div className="w-full max-w-xl p-6">
+          <div className="w-full max-w-xl p-4 md:p-6">
             <div className="p-6">
               <PageHeader
                 label={t('routes_onboarding_page_header')}
@@ -64,7 +64,7 @@ export default function Onboarding() {
                 description={t('routes_onboarding_page_description')}
               />
             </div>
-            <Card className="flex flex-col gap-4 border-none px-6 py-0">
+            <Card className="flex flex-col gap-4 border-none px-4 py-0 md:px-6">
               <CardHeader className="p-0 pt-4">
                 <CardTitle>{t('routes_onboarding_step1_title')}</CardTitle>
                 <CardDescription>

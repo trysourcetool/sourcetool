@@ -150,7 +150,10 @@ export default function GroupNew() {
     <div>
       <PageHeader label={t('routes_groups_new_page_header')} />
       <Form {...form}>
-        <form className="flex flex-col gap-6 p-6" onSubmit={onSubmit}>
+        <form
+          className="flex flex-col gap-6 px-4 py-6 md:px-6"
+          onSubmit={onSubmit}
+        >
           <FormField
             control={form.control}
             name="name"
@@ -252,10 +255,10 @@ export default function GroupNew() {
                     <TableBody>
                       {selectedUsers.map((user) => (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">
+                          <TableCell className="truncate font-medium">
                             {user.firstName} {user.lastName}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="truncate">
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -304,7 +307,7 @@ export default function GroupNew() {
             )}
           />
 
-          <div className="flex flex-col justify-start gap-3 md:flex-row">
+          <div className="flex flex-row justify-start gap-3">
             <Button type="submit" disabled={isCreateGroupWaiting}>
               {isCreateGroupWaiting && (
                 <Loader2 className="size-4 animate-spin" />

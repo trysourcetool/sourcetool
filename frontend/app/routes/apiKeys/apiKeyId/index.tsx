@@ -124,7 +124,10 @@ export default function ApiKeysEdit() {
       <PageHeader label={t('routes_apikeys_edit_page_header')} />
       {apiKey && (
         <Form {...form}>
-          <form className="flex flex-col gap-6 p-6" onSubmit={onSubmit}>
+          <form
+            className="flex flex-col gap-6 px-4 py-6 md:px-6"
+            onSubmit={onSubmit}
+          >
             <FormField
               control={form.control}
               name="name"

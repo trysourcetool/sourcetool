@@ -15,7 +15,7 @@ export default function Preview() {
   return (
     <div>
       <PageHeader label={page?.name ?? ''} />
-      <div className="space-y-6 p-6">
+      <div className="space-y-4 px-4 py-6 md:space-y-6 md:px-6 md:py-6">
         {!exception && <RenderWidgets parentPath={[]} />}
         {exception && <ExceptionView />}
       </div>

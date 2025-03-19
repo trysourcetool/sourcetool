@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
-import { Ellipsis, Loader2, Plus } from 'lucide-react';
+import { ChevronRight, Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
@@ -321,15 +321,15 @@ export default function Users() {
   return (
     <div>
       <PageHeader label={t('routes_users_page_header')} />
-      <div className="flex w-screen flex-col gap-6 p-6 md:w-auto">
-        <div className="flex flex-col justify-between gap-2 pt-6 md:flex-row">
+      <div className="flex w-screen flex-col gap-4 px-4 py-6 md:gap-6 md:px-6">
+        <div className="flex flex-col justify-between gap-2 md:flex-row md:pt-6">
           <p className="text-xl font-bold text-foreground">
             {t('routes_users_title')}
           </p>
         </div>
 
-        <div className="flex justify-between gap-2">
-          <div className="hidden max-w-72 flex-1 md:block">
+        <div className="flex flex-col-reverse justify-between gap-3 md:flex-row md:gap-2">
+          <div className="w-full max-w-full flex-1 md:w-auto md:max-w-72">
             <Input
               placeholder={t('routes_users_search_placeholder')}
               value={search}
@@ -338,12 +338,14 @@ export default function Users() {
               }}
             />
           </div>
-          <Button asChild>
-            <Link to={$path('/users/invite')}>
-              <Plus />
-              {t('routes_users_invite_button')}
-            </Link>
-          </Button>
+          <div>
+            <Button asChild>
+              <Link to={$path('/users/invite')}>
+                <Plus />
+                {t('routes_users_invite_button')}
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="w-full overflow-auto rounded-md border">
@@ -443,6 +445,7 @@ export default function Users() {
                     <PaginationPrevious
                       className={clsx(
                         (page !== 1 || page === null) && 'cursor-pointer',
+                        'hidden md:inline-flex',
                       )}
                       onClick={() => {
                         if (page === 1 || page === null) {
@@ -451,6 +454,22 @@ export default function Users() {
                         setPage((page || 1) - 1);
                       }}
                     />
+                    <PaginationLink
+                      onClick={() => {
+                        if (page === 1 || page === null) {
+                          return;
+                        }
+                        setPage((page || 1) - 1);
+                      }}
+                      isActive
+                      className={clsx(
+                        page !== pageCount && 'cursor-pointer',
+                        'inline-flex w-auto px-4 md:hidden',
+                      )}
+                      aria-label="Go to previous page"
+                    >
+                      <span>Previous</span>
+                    </PaginationLink>
                   </PaginationItem>
                 )}
                 {Array.from({ length: pageCount }).map((_, index) => {
@@ -459,13 +478,13 @@ export default function Users() {
                   }
                   if (index === (page || 1) + 2 || index === (page || 1) - 3) {
                     return (
-                      <PaginationItem key={index}>
+                      <PaginationItem key={index} className="hidden md:block">
                         <PaginationEllipsis />
                       </PaginationItem>
                     );
                   }
                   return (
-                    <PaginationItem key={index}>
+                    <PaginationItem key={index} className="hidden md:block">
                       <PaginationLink
                         onClick={() => setPage(index + 1)}
                         className={clsx(
@@ -491,8 +510,27 @@ export default function Users() {
                         }
                         setPage((page || 1) + 1);
                       }}
-                      className={clsx(page !== pageCount && 'cursor-pointer')}
+                      className={clsx(
+                        page !== pageCount && 'cursor-pointer',
+                        'hidden md:inline-flex',
+                      )}
                     />
+                    <PaginationLink
+                      onClick={() => {
+                        if (page === pageCount) {
+                          return;
+                        }
+                        setPage((page || 1) + 1);
+                      }}
+                      isActive
+                      className={clsx(
+                        page !== pageCount && 'cursor-pointer',
+                        'inline-flex w-auto px-4 md:hidden',
+                      )}
+                      aria-label="Go to next page"
+                    >
+                      <span>Next</span>
+                    </PaginationLink>
                   </PaginationItem>
                 )}
               </PaginationContent>
