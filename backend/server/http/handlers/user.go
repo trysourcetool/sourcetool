@@ -18,11 +18,15 @@ import (
 )
 
 type UserHandler struct {
-	service user.Service
+	service      user.Service
+	cookieConfig *CookieConfig
 }
 
 func NewUserHandler(service user.Service) *UserHandler {
-	return &UserHandler{service}
+	return &UserHandler{
+		service:      service,
+		cookieConfig: NewCookieConfig(),
+	}
 }
 
 // GetMe godoc
@@ -229,8 +233,7 @@ func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !out.IsOrganizationExists {
-		maxAge := int(model.TmpTokenExpiration.Seconds())
-		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInOutputToResponse(out)); err != nil {
@@ -267,8 +270,7 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !out.IsOrganizationExists {
-		maxAge := int(model.TmpTokenExpiration.Seconds())
-		h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, maxAge, maxAge, maxAge)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
@@ -337,7 +339,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
+	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -375,7 +377,7 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setTmpAuthCookie(w, out.Token, out.XSRFToken)
+	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -429,7 +431,11 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
@@ -464,7 +470,11 @@ func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
@@ -487,7 +497,7 @@ func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deleteTmpAuthCookie(w, r)
+	h.cookieConfig.DeleteTmpAuthCookie(w, r)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, out); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
@@ -543,7 +553,7 @@ func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.deleteAuthCookie(w, r, out.Domain)
+	h.cookieConfig.DeleteAuthCookie(w, r, out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -614,7 +624,11 @@ func (h *UserHandler) SignInInvitation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -652,7 +666,11 @@ func (h *UserHandler) SignUpInvitation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -778,7 +796,11 @@ func (h *UserHandler) SignInWithGoogleInvitation(w http.ResponseWriter, r *http.
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -816,7 +838,11 @@ func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.
 		return
 	}
 
-	h.setAuthCookie(w, out.Domain, out.Token, out.Secret, out.XSRFToken, int(model.TokenExpiration().Seconds()), int(model.SecretExpiration.Seconds()), int(model.XSRFTokenExpiration.Seconds()))
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -824,176 +850,5 @@ func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.
 	}); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
-	}
-}
-
-func (h *UserHandler) setTmpAuthCookie(w http.ResponseWriter, token, xsrfToken string) {
-	xsrfTokenSameSite := http.SameSiteNoneMode
-	if config.Config.Env == config.EnvLocal {
-		xsrfTokenSameSite = http.SameSiteLaxMode
-	}
-	domain := config.Config.AuthDomain()
-	maxAge := int(model.TmpTokenExpiration.Seconds())
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    token,
-		MaxAge:   maxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: true,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: http.SameSiteStrictMode,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "xsrf_token",
-		Value:    xsrfToken,
-		MaxAge:   maxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: false,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: xsrfTokenSameSite,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "xsrf_token_same_site",
-		Value:    xsrfToken,
-		MaxAge:   maxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: true,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: http.SameSiteStrictMode,
-	})
-}
-
-func (h *UserHandler) deleteTmpAuthCookie(w http.ResponseWriter, r *http.Request) {
-	xsrfTokenSameSite := http.SameSiteNoneMode
-	if config.Config.Env == config.EnvLocal {
-		xsrfTokenSameSite = http.SameSiteLaxMode
-	}
-	domain := config.Config.AuthDomain()
-	tokenCookie, _ := r.Cookie("access_token")
-	if tokenCookie != nil {
-		tokenCookie.MaxAge = -1
-		tokenCookie.Domain = domain
-		tokenCookie.Path = "/"
-		tokenCookie.HttpOnly = true
-		tokenCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		tokenCookie.SameSite = http.SameSiteStrictMode
-		http.SetCookie(w, tokenCookie)
-	}
-	xsrfTokenCookie, _ := r.Cookie("xsrf_token")
-	if xsrfTokenCookie != nil {
-		xsrfTokenCookie.MaxAge = -1
-		xsrfTokenCookie.Domain = domain
-		xsrfTokenCookie.Path = "/"
-		xsrfTokenCookie.HttpOnly = false
-		xsrfTokenCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		xsrfTokenCookie.SameSite = xsrfTokenSameSite
-		http.SetCookie(w, xsrfTokenCookie)
-	}
-	xsrfTokenSameSiteCookie, _ := r.Cookie("xsrf_token_same_site")
-	if xsrfTokenSameSiteCookie != nil {
-		xsrfTokenSameSiteCookie.MaxAge = -1
-		xsrfTokenSameSiteCookie.Domain = domain
-		xsrfTokenSameSiteCookie.Path = "/"
-		xsrfTokenSameSiteCookie.HttpOnly = true
-		xsrfTokenSameSiteCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		xsrfTokenSameSiteCookie.SameSite = http.SameSiteStrictMode
-		http.SetCookie(w, xsrfTokenSameSiteCookie)
-	}
-}
-
-func (h *UserHandler) setAuthCookie(w http.ResponseWriter, domain, token, secret, xsrfToken string, tokenMaxAge, secretMaxAge, xsrfTokenMaxAge int) {
-	xsrfTokenSameSite := http.SameSiteNoneMode
-	if config.Config.Env == config.EnvLocal {
-		xsrfTokenSameSite = http.SameSiteLaxMode
-	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    token,
-		MaxAge:   tokenMaxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: true,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: http.SameSiteStrictMode,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    secret,
-		MaxAge:   secretMaxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: true,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: http.SameSiteStrictMode,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "xsrf_token",
-		Value:    xsrfToken,
-		MaxAge:   xsrfTokenMaxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: false,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: xsrfTokenSameSite,
-	})
-	http.SetCookie(w, &http.Cookie{
-		Name:     "xsrf_token_same_site",
-		Value:    xsrfToken,
-		MaxAge:   xsrfTokenMaxAge,
-		Path:     "/",
-		Domain:   domain,
-		HttpOnly: true,
-		Secure:   !(config.Config.Env == config.EnvLocal),
-		SameSite: http.SameSiteStrictMode,
-	})
-}
-
-func (h *UserHandler) deleteAuthCookie(w http.ResponseWriter, r *http.Request, domain string) {
-	xsrfTokenSameSite := http.SameSiteNoneMode
-	if config.Config.Env == config.EnvLocal {
-		xsrfTokenSameSite = http.SameSiteLaxMode
-	}
-	tokenCookie, _ := r.Cookie("access_token")
-	if tokenCookie != nil {
-		tokenCookie.MaxAge = -1
-		tokenCookie.Domain = domain
-		tokenCookie.Path = "/"
-		tokenCookie.HttpOnly = true
-		tokenCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		tokenCookie.SameSite = http.SameSiteStrictMode
-		http.SetCookie(w, tokenCookie)
-	}
-	secretCookie, _ := r.Cookie("refresh_token")
-	if secretCookie != nil {
-		secretCookie.MaxAge = -1
-		secretCookie.Domain = domain
-		secretCookie.Path = "/"
-		secretCookie.HttpOnly = true
-		secretCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		secretCookie.SameSite = http.SameSiteStrictMode
-		http.SetCookie(w, secretCookie)
-	}
-	xsrfTokenCookie, _ := r.Cookie("xsrf_token")
-	if xsrfTokenCookie != nil {
-		xsrfTokenCookie.MaxAge = -1
-		xsrfTokenCookie.Domain = domain
-		xsrfTokenCookie.Path = "/"
-		xsrfTokenCookie.HttpOnly = false
-		xsrfTokenCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		xsrfTokenCookie.SameSite = xsrfTokenSameSite
-		http.SetCookie(w, xsrfTokenCookie)
-	}
-	xsrfTokenSameSiteCookie, _ := r.Cookie("xsrf_token_same_site")
-	if xsrfTokenSameSiteCookie != nil {
-		xsrfTokenSameSiteCookie.MaxAge = -1
-		xsrfTokenSameSiteCookie.Domain = domain
-		xsrfTokenSameSiteCookie.Path = "/"
-		xsrfTokenSameSiteCookie.HttpOnly = true
-		xsrfTokenSameSiteCookie.Secure = !(config.Config.Env == config.EnvLocal)
-		xsrfTokenSameSiteCookie.SameSite = http.SameSiteStrictMode
-		http.SetCookie(w, xsrfTokenSameSiteCookie)
 	}
 }

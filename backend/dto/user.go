@@ -235,11 +235,8 @@ type SaveAuthOutput struct {
 
 // ObtainAuthTokenOutput is the output for Obtain Auth Token operation.
 type ObtainAuthTokenOutput struct {
-	AuthURL   string
-	Token     string
-	Secret    string
-	XSRFToken string
-	Domain    string
+	AuthURL string
+	Token   string
 }
 
 // InviteUsersInput is the input for Invite Users operation.
