@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/trysourcetool/sourcetool/backend/config"
 )
 
 // ServeStaticFiles configures the router to serve static files from the specified directory.
@@ -80,6 +82,27 @@ func setSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+
+	if config.Config.Env == config.EnvLocal {
+		return
+	}
+
+	if config.Config.IsCloudEdition {
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self' *.trysourcetool.com; "+
+				"script-src 'self' *.trysourcetool.com; "+
+				"style-src 'self' 'unsafe-inline'; "+
+				"img-src * data: blob:; "+
+				"font-src * data:; "+
+				"media-src *; "+
+				"connect-src 'self' wss: *.trysourcetool.com https:;")
+	} else {
+		w.Header().Set("Content-Security-Policy",
+			"default-src * 'unsafe-inline' 'unsafe-eval'; "+
+				"img-src * data: blob:; "+
+				"font-src * data:; "+
+				"connect-src * ws: wss:;")
+	}
 }
 
 func serveFile(w http.ResponseWriter, r *http.Request, fileServer http.Handler, path string) {
