@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 )
 
@@ -19,6 +20,13 @@ func PageDTOToResponse(page *dto.Page) *responses.PageResponse {
 		Route:     page.Route,
 		CreatedAt: strconv.FormatInt(page.CreatedAt, 10),
 		UpdatedAt: strconv.FormatInt(page.UpdatedAt, 10),
+	}
+}
+
+// ListPagesRequestToDTOInput converts from requests.ListPagesRequest to dto.ListPagesInput.
+func ListPagesRequestToDTOInput(in *requests.ListPagesRequest) *dto.ListPagesInput {
+	return &dto.ListPagesInput{
+		EnvironmentID: in.EnvironmentID,
 	}
 }
 

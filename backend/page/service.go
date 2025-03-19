@@ -3,6 +3,8 @@ package page
 import (
 	"context"
 
+	"github.com/gofrs/uuid/v5"
+
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -11,7 +13,7 @@ import (
 )
 
 type Service interface {
-	List(context.Context) (*dto.ListPagesOutput, error)
+	List(context.Context, *dto.ListPagesInput) (*dto.ListPagesOutput, error)
 }
 
 type ServiceCE struct {
@@ -22,10 +24,20 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) List(ctx context.Context) (*dto.ListPagesOutput, error) {
+func (s *ServiceCE) List(ctx context.Context, in *dto.ListPagesInput) (*dto.ListPagesOutput, error) {
 	o := ctxutil.CurrentOrganization(ctx)
 
-	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
+	envID, err := uuid.FromString(in.EnvironmentID)
+	if err != nil {
+		return nil, err
+	}
+
+	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID))
+	if err != nil {
+		return nil, err
+	}
+
+	pages, err := s.Store.Page().List(ctx, storeopts.PageByOrganizationID(o.ID), storeopts.PageByEnvironmentID(env.ID), storeopts.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {
 		return nil, err
 	}
