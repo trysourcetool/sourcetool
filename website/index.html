@@ -111,7 +111,7 @@
     @layer components {
       /* ヘッダーのスタイル */
       .header-nav {
-        @apply fixed top-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b z-50;
+        @apply fixed top-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800 z-50;
       }
 
       .nav-container {
@@ -332,32 +332,32 @@
       </div>
     </section>
 
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="features" class="section-title">Features</h2>
         <table class="border-collapse w-full my-5">
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">💻</span>Backend-only, Code-first development</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">💻</span>Backend-only, Code-first development</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🎨</span>Rich UI components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Pre-built components (forms, tables, inputs, etc.)</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🎨</span>Rich UI components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Pre-built components (forms, tables, inputs, etc.)</td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔐</span>Granular permissions</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Manage access to your internal tools with flexible group-based permissions</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔐</span>Granular permissions</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Manage access to your internal tools with flexible group-based permissions</td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🌐</span>Multiple environment support</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Easily switch between different environments (development, staging, production)</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🌐</span>Multiple environment support</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Easily switch between different environments (development, staging, production)</td>
           </tr>
         </table>
       </div>
     </section>
 
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="architecture" class="section-title">Architecture</h2>
@@ -429,11 +429,11 @@
           </div>
         </div>
 
-        <p class="my-[10px] font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold text-black">no frontend expertise required</span>.</p>
+        <p class="my-[10px] font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold">no frontend expertise required</span>.</p>
       </div>
     </section>
 
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="components" class="section-title">Components</h2>
@@ -441,32 +441,32 @@
 
         <table class="border-collapse w-full my-5">
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📝</span>Input Components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📝</span>Input Components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
               TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput
             </td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📋</span>Selection Components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📋</span>Selection Components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
               Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup
             </td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔳</span>Layout Components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔳</span>Layout Components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
               Columns, Form
             </td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📊</span>Display Components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📊</span>Display Components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
               Markdown, Table
             </td>
           </tr>
           <tr>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔘</span>Interactive Components</td>
-            <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔘</span>Interactive Components</td>
+            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
               Button
             </td>
           </tr>
@@ -474,7 +474,7 @@
       </div>
     </section>
 
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="started" class="section-title">Get Started</h2>
@@ -527,37 +527,37 @@
       </div>
     </section>
 
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="faq" class="section-title">FAQ</h2>
         <dl>
           <dt class="mt-[25px] text-primary font-bold">$ What is Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool is an <span class="font-bold text-black">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold text-black">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool is an <span class="font-bold">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ Do I need frontend skills to use Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold text-black">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ What types of applications can I build with Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool compatible with existing Go code?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool work behind the scenes?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool connects browsers to your backend code through <span class="font-bold text-black">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold text-black">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
           
           <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool differ from Retool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold text-black">code-first</span>. This makes Sourcetool <span class="font-bold text-black">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold text-black">type-safe Go code</span>, your applications are <span class="font-bold text-black">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe Go code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool secure?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold text-black">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-bold text-black">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-bold">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool free to use?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Check out the <a href="https://trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-bold text-black">open source under the MIT license</span>.</dd>
+          <dd class="ml-0 mb-[25px] leading-[1.6]">Check out the <a href="https://trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-bold">open source under the MIT license</span>.</dd>
 
           <dt class="mt-[25px] text-primary font-bold">$ How can I contribute to Sourcetool?</dt>
           <dd class="ml-0 mb-[25px] leading-[1.6]">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary no-underline hover:underline">GitHub repository</a> and review the contribution guidelines.</dd>
@@ -567,10 +567,8 @@
         </dl>
       </div>
     </section>
-
-    <hr class="border-none h-px bg-[#ddd] my-[30px]">
     
-    <footer class="py-6 px-4 border-t border-[#ddd]">
+    <footer class="py-6 px-4 border-t border-zinc-100 dark:border-zinc-800">
       <div class="container mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="mb-4 md:mb-0">
