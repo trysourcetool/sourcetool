@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
   <title>Sourcetool</title>
@@ -11,202 +11,264 @@
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style type="text/tailwindcss">
+    @import "tailwindcss";
+    @custom-variant dark (&:where(.dark, .dark *));
+
     @theme {
       --color-primary: #6b46c1;
     }
     
     @layer components {
+      /* ダークモード用の基本スタイル */
+      :root[class~="dark"] {
+        --color-primary: #A332FF;
+      }
+
       .code-keyword {
-        @apply text-primary font-normal;
+        @apply text-primary font-normal dark:text-[#A332FF];
       }
       .code-string {
-        @apply text-green-700;
+        @apply text-green-700 dark:text-green-400;
       }
       .code-comment {
-        @apply text-[#786d96] italic;
+        @apply text-[#786d96] italic dark:text-[#9d91bd];
       }
       .arch-box {
-        @apply border-2 border-primary p-3 rounded-lg bg-[#f8f7fc];
+        @apply border-2 border-primary p-3 rounded-lg bg-white dark:bg-black dark:border-[#A332FF];
       }
       .arch-box strong {
-        @apply text-[17px] block mb-1.5;
+        @apply text-[17px] block mb-1.5 text-black dark:text-white;
       }
       .arch-box span {
-        @apply text-[13px] text-gray-600 block leading-snug;
+        @apply text-[13px] text-gray-600 block leading-snug dark:text-gray-400;
       }
       .arch-arrow-symbol {
-        @apply text-[22px] text-primary;
+        @apply text-[22px] text-primary dark:text-[#A332FF];
       }
       .arch-arrow-label {
-        @apply text-[11px] text-gray-600;
+        @apply text-[11px] text-gray-600 dark:text-gray-400;
+      }
+
+      /* ヘッダーのスタイル */
+      .header-nav {
+        @apply fixed top-0 left-0 right-0 bg-white dark:bg-black border-b border-[#ddd] dark:border-[#333] z-50;
+      }
+
+      .nav-container {
+        @apply max-w-[900px] mx-auto px-5 py-4 flex justify-between items-center;
+      }
+
+      .nav-links {
+        @apply flex items-center space-x-4;
+      }
+
+      .nav-link {
+        @apply text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-[#A332FF] text-sm no-underline;
+      }
+
+      /* テーマトグルボタンのスタイル */
+      .theme-toggle {
+        @apply p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
       }
     }
   </style>
 </head>
-<body class="font-['Lucida_Console',_monospace] text-base text-[#333333] bg-white max-w-[900px] mx-auto p-5 box-border leading-[1.4]">
-  <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-    <div class="w-full max-w-[750px] inline-block">
-      <img src="src/logo.svg" alt="Sourcetool Logo" class="w-full max-w-[380px] mx-auto" />
+<body class="font-['Inter',_system-ui,_-apple-system,_BlinkMacSystemFont,_'Segoe_UI',_Roboto,_'Helvetica_Neue',_Arial,_sans-serif] text-base text-black bg-[#ffffff] dark:bg-[#000000] dark:text-white max-w-[900px] mx-auto p-5 box-border leading-[1.4]">
+  <!-- ヘッダー -->
+  <header class="header-nav">
+    <div class="nav-container">
+      <a href="#" class="flex items-center">
+        <img src="src/logo.svg" alt="Sourcetool Logo" class="h-8 block dark:hidden" />
+        <img src="src/logo-white.svg" alt="Sourcetool Logo" class="h-8 hidden dark:block" />
+      </a>
+      <div class="flex items-center space-x-6">
+        <nav class="nav-links">
+          <a href="#about" class="nav-link">[about]</a>
+          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <a href="#features" class="nav-link">[features]</a>
+          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <a href="#architecture" class="nav-link">[architecture]</a>
+          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <a href="#components" class="nav-link">[components]</a>
+          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <a href="#started" class="nav-link">[get_started]</a>
+          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <a href="#faq" class="nav-link">[faq]</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-gray-600 dark:text-gray-300"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-gray-600 dark:text-gray-300"></i>
+        </button>
+      </div>
     </div>
-    <p class="text-[17px] my-[5px] mb-[15px] text-[#666666] font-normal text-center">An open-source internal tool builder with just backend code</p>
-    <div class="text-base my-[15px]">
-      <a href="#about" class="no-underline mx-[5px] text-primary">[about]</a><span class="text-[#777] mx-2">|</span>
-      <a href="#features" class="no-underline mx-[5px] text-primary">[features]</a><span class="text-[#777] mx-2">|</span>
-      <a href="#architecture" class="no-underline mx-[5px] text-primary">[architecture]</a><span class="text-[#777] mx-2">|</span>
-      <a href="#components" class="no-underline mx-[5px] text-primary">[components]</a><span class="text-[#777] mx-2">|</span>
-      <a href="#started" class="no-underline mx-[5px] text-primary">[get_started]</a><span class="text-[#777] mx-2">|</span>
-      <a href="#faq" class="no-underline mx-[5px] text-primary">[faq]</a>
-    </div>
-  </div>
+  </header>
 
+  <!-- メインコンテンツ用のパディング -->
+  <div class="pt-[72px]">
+    <div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div class="w-full max-w-[750px] inline-block">
+        <img src="src/logo.svg" alt="Sourcetool Logo" class="w-full max-w-[380px] mx-auto block dark:hidden" />
+        <img src="src/logo-white.svg" alt="Sourcetool Logo" class="w-full max-w-[380px] mx-auto hidden dark:block" />
+      </div>
+      <p class="text-[17px] my-[5px] mb-[15px] text-[#666666] font-normal text-center">An open-source internal tool builder with just backend code</p>
+      <div class="text-base my-[15px]">
+        <a href="#about" class="no-underline mx-[5px] text-primary">[about]</a><span class="text-[#777] mx-2">|</span>
+        <a href="#features" class="no-underline mx-[5px] text-primary">[features]</a><span class="text-[#777] mx-2">|</span>
+        <a href="#architecture" class="no-underline mx-[5px] text-primary">[architecture]</a><span class="text-[#777] mx-2">|</span>
+        <a href="#components" class="no-underline mx-[5px] text-primary">[components]</a><span class="text-[#777] mx-2">|</span>
+        <a href="#started" class="no-underline mx-[5px] text-primary">[get_started]</a><span class="text-[#777] mx-2">|</span>
+        <a href="#faq" class="no-underline mx-[5px] text-primary">[faq]</a>
+      </div>
+    </div>
+
+    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <h2 id="about" class="text-primary">> sourcetool</h2>
+    <p class="my-[10px] font-normal text-[17px] leading-relaxed">We develop <a href="https://github.com/trysourcetool/sourcetool" class="text-primary no-underline hover:underline">Sourcetool</a>, an open-source internal tool builder with just backend code.</p>
+
+    <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.</p>
+
+    <p class="my-[10px] font-normal text-[17px] leading-relaxed">Type-safe, flexible, build complete internal tools without writing any frontend code.</p>
+
+    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <h2 id="features" class="text-primary">> features</h2>
+    <table class="border-collapse w-full my-5">
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">💻</span>Backend-only, Code-first development</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🎨</span>Rich UI components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Pre-built components (forms, tables, inputs, etc.)</td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔐</span>Granular permissions</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Manage access to your internal tools with flexible group-based permissions</td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🌐</span>Multiple environment support</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Easily switch between different environments (development, staging, production)</td>
+      </tr>
+    </table>
   <hr class="border-none h-px bg-[#ddd] my-[30px]">
-  <h2 id="about" class="text-primary">> sourcetool</h2>
-  <p class="my-[10px] font-normal text-[17px] leading-relaxed">We develop <a href="https://github.com/trysourcetool/sourcetool" class="text-primary no-underline hover:underline">Sourcetool</a>, an open-source internal tool builder with just backend code.</p>
+  <h2 id="architecture" class="text-primary">> architecture</h2>
+  <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development:</p>
 
-  <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.</p>
+  <div class="text-center my-[30px]">
+    <div class="flex justify-center items-center gap-[10px] flex-wrap mb-5">
+      <!-- Step 1: Your Backend -->
+      <div class="relative min-w-[220px] max-w-[250px]">
+        <div class="arch-box">
+          <strong>Your Backend</strong>
+          <span>Backend logic & UI definitions</span>
+        </div>
+      </div>
 
-  <p class="my-[10px] font-normal text-[17px] leading-relaxed">Type-safe, flexible, build complete internal tools without writing any frontend code.</p>
+      <!-- Bidirectional Arrow -->
+      <div class="flex flex-col items-center mx-[2px]">
+        <span class="arch-arrow-symbol">⟷</span>
+        <span class="arch-arrow-label">WebSocket</span>
+      </div>
 
-  <hr class="border-none h-px bg-[#ddd] my-[30px]">
-  <h2 id="features" class="text-primary">> features</h2>
-  <table class="border-collapse w-full my-5">
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">💻</span>Backend-only, Code-first development</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🎨</span>Rich UI components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Pre-built components (forms, tables, inputs, etc.)</td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔐</span>Granular permissions</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Manage access to your internal tools with flexible group-based permissions</td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🌐</span>Multiple environment support</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">Easily switch between different environments (development, staging, production)</td>
-    </tr>
-  </table>
-<hr class="border-none h-px bg-[#ddd] my-[30px]">
-<h2 id="architecture" class="text-primary">> architecture</h2>
-<p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development:</p>
+      <!-- Step 2: Sourcetool Server -->
+      <div class="relative min-w-[220px] max-w-[250px]">
+        <div class="arch-box">
+          <strong>Sourcetool Server</strong>
+          <span>Authentication & Authorization</span>
+        </div>
+      </div>
 
-<div class="text-center my-[30px]">
-  <div class="flex justify-center items-center gap-[10px] flex-wrap mb-5">
-    <!-- Step 1: Your Backend -->
-    <div class="relative min-w-[220px] max-w-[250px]">
-      <div class="arch-box">
-        <strong>Your Backend</strong>
-        <span>Backend logic & UI definitions</span>
+      <!-- Bidirectional Arrow -->
+      <div class="flex flex-col items-center mx-[2px]">
+        <span class="arch-arrow-symbol">⟷</span>
+        <span class="arch-arrow-label">WebSocket</span>
+      </div>
+
+      <!-- Step 3: Web Browser -->
+      <div class="relative min-w-[220px] max-w-[250px]">
+        <div class="arch-box">
+          <strong>Web Browser</strong>
+          <span>Auto-generates browser UI</span>
+        </div>
       </div>
     </div>
-
-    <!-- Bidirectional Arrow -->
-    <div class="flex flex-col items-center mx-[2px]">
-      <span class="arch-arrow-symbol">⟷</span>
-      <span class="arch-arrow-label">WebSocket</span>
-    </div>
-
-    <!-- Step 2: Sourcetool Server -->
-    <div class="relative min-w-[220px] max-w-[250px]">
-      <div class="arch-box">
-        <strong>Sourcetool Server</strong>
-        <span>Authentication & Authorization</span>
-      </div>
-    </div>
-
-    <!-- Bidirectional Arrow -->
-    <div class="flex flex-col items-center mx-[2px]">
-      <span class="arch-arrow-symbol">⟷</span>
-      <span class="arch-arrow-label">WebSocket</span>
-    </div>
-
-    <!-- Step 3: Web Browser -->
-    <div class="relative min-w-[220px] max-w-[250px]">
-      <div class="arch-box">
-        <strong>Web Browser</strong>
-        <span>Auto-generates browser UI</span>
-      </div>
+    
+    <!-- Note about bidirectional communication -->
+    <div class="text-center mt-[10px] text-[12px] text-[#666]">
+      All components communicate bidirectionally in real-time
     </div>
   </div>
-  
-  <!-- Note about bidirectional communication -->
-  <div class="text-center mt-[10px] text-[12px] text-[#666]">
-    All components communicate bidirectionally in real-time
-  </div>
-</div>
 
-<div class="flex flex-wrap my-5 gap-5">
-  <div class="flex-1 min-w-[280px]">
-    <h4 class="text-primary mt-0">How It Works:</h4>
-    <ol>
-      <li>You define UI components in your backend code</li>
-      <li>Sourcetool Server handles auth & permissions</li>
-      <li>UI is automatically rendered in browser</li>
-      <li>User interactions return to your backend code</li>
-    </ol>
-  </div>
-  <div class="flex-1 min-w-[280px]">
-    <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)] mt-0"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
+  <div class="flex flex-wrap my-5 gap-5">
+    <div class="flex-1 min-w-[280px]">
+      <h4 class="text-primary mt-0">How It Works:</h4>
+      <ol>
+        <li>You define UI components in your backend code</li>
+        <li>Sourcetool Server handles auth & permissions</li>
+        <li>UI is automatically rendered in browser</li>
+        <li>User interactions return to your backend code</li>
+      </ol>
+    </div>
+    <div class="flex-1 min-w-[280px]">
+      <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)] mt-0"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
 <span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
     ui.Markdown(<span class="code-string">"## Users"</span>)
     users, _ := listUsers()
     ui.Table(users)
     <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
 }</code></pre>
+    </div>
   </div>
-</div>
 
-<p class="my-[10px] font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold text-black">no frontend expertise required</span>.</p>
-
-<hr class="border-none h-px bg-[#ddd] my-[30px]">
-  <h2 id="components" class="text-primary">> components</h2>
-  <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool provides UI components you can use directly from Go code:</p>
-
-  <table class="border-collapse w-full my-5">
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📝</span>Input Components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
-        TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput
-      </td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📋</span>Selection Components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
-        Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup
-      </td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔳</span>Layout Components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
-        Columns, Form
-      </td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📊</span>Display Components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
-        Markdown, Table
-      </td>
-    </tr>
-    <tr>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔘</span>Interactive Components</td>
-      <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
-        Button
-      </td>
-    </tr>
-  </table>
+  <p class="my-[10px] font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold text-black">no frontend expertise required</span>.</p>
 
   <hr class="border-none h-px bg-[#ddd] my-[30px]">
-  <h2 id="started" class="text-primary">> get_started</h2>
+    <h2 id="components" class="text-primary">> components</h2>
+    <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool provides UI components you can use directly from Go code:</p>
 
-  <h4 class="text-primary">$ Get your API key</p>
-  <p class="my-[10px] font-normal text-[17px] leading-[1.5]">Sign up at <a href="https://auth.trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool Dashboard</a></p>
+    <table class="border-collapse w-full my-5">
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📝</span>Input Components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+          TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput
+        </td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📋</span>Selection Components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+          Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup
+        </td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔳</span>Layout Components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+          Columns, Form
+        </td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📊</span>Display Components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+          Markdown, Table
+        </td>
+      </tr>
+      <tr>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔘</span>Interactive Components</td>
+        <td class="p-[8px_12px] border border-[#ddd] align-top font-normal text-[16.5px] leading-[1.5]">
+          Button
+        </td>
+      </tr>
+    </table>
 
-  <h4 class="text-primary">$ Install the Sourcetool SDK</p>
-  <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
+    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <h2 id="started" class="text-primary">> get_started</h2>
 
-  <h4 class="text-primary">$ Write your first internal tool</p>
-  <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">package</span> main
+    <h4 class="text-primary">$ Get your API key</p>
+    <p class="my-[10px] font-normal text-[17px] leading-[1.5]">Sign up at <a href="https://auth.trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool Dashboard</a></p>
+
+    <h4 class="text-primary">$ Install the Sourcetool SDK</p>
+    <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
+
+    <h4 class="text-primary">$ Write your first internal tool</p>
+    <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">package</span> main
 
 <span class="code-keyword">import</span> (
     <span class="code-string">"github.com/trysourcetool/sourcetool-go"</span>
@@ -242,85 +304,104 @@
     }
 }</code></pre>
 
-  <h4 class="text-primary">$ More examples</h4>
-  <p class="my-[10px] font-normal text-[17px] leading-[1.5]">Check out our <a href="https://github.com/trysourcetool/sourcetool/tree/main/examples/go" class="text-primary no-underline hover:underline">GitHub repository examples</a> for more complex implementations and advanced usage patterns.</p>
+    <h4 class="text-primary">$ More examples</h4>
+    <p class="my-[10px] font-normal text-[17px] leading-[1.5]">Check out our <a href="https://github.com/trysourcetool/sourcetool/tree/main/examples/go" class="text-primary no-underline hover:underline">GitHub repository examples</a> for more complex implementations and advanced usage patterns.</p>
 
-  <hr class="border-none h-px bg-[#ddd] my-[30px]">
-  <h2 id="faq" class="text-primary">> faq</h2>
-  <dl>
-    <dt class="mt-[25px] text-primary font-bold">$ What is Sourcetool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool is an <span class="font-bold text-black">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold text-black">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
+    <hr class="border-none h-px bg-[#ddd] my-[30px]">
+    <h2 id="faq" class="text-primary">> faq</h2>
+    <dl>
+      <dt class="mt-[25px] text-primary font-bold">$ What is Sourcetool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool is an <span class="font-bold text-black">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold text-black">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
 
-    <dt class="mt-[25px] text-primary font-bold">$ Do I need frontend skills to use Sourcetool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold text-black">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
+      <dt class="mt-[25px] text-primary font-bold">$ Do I need frontend skills to use Sourcetool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold text-black">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
 
-    <dt class="mt-[25px] text-primary font-bold">$ What types of applications can I build with Sourcetool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</dd>
+      <dt class="mt-[25px] text-primary font-bold">$ What types of applications can I build with Sourcetool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</dd>
 
-    <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool compatible with existing Go code?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</dd>
+      <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool compatible with existing Go code?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</dd>
 
-    <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool work behind the scenes?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool connects browsers to your backend code through <span class="font-bold text-black">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
+      <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool work behind the scenes?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool connects browsers to your backend code through <span class="font-bold text-black">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
 
-    <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold text-black">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
+      <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold text-black">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
+      
+      <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool differ from Retool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold text-black">code-first</span>. This makes Sourcetool <span class="font-bold text-black">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold text-black">type-safe Go code</span>, your applications are <span class="font-bold text-black">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</dd>
+
+      <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool secure?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold text-black">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-bold text-black">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</dd>
+
+      <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool free to use?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Check out the <a href="https://trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-bold text-black">open source under the MIT license</span>.</dd>
+
+      <dt class="mt-[25px] text-primary font-bold">$ How can I contribute to Sourcetool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary no-underline hover:underline">GitHub repository</a> and review the contribution guidelines.</dd>
+
+      <dt class="mt-[25px] text-primary font-bold">$ Where can I learn more about Sourcetool?</dt>
+      <dd class="ml-0 mb-[25px] leading-[1.6]">Visit our <a href="https://docs.trysourcetool.com" class="text-primary no-underline hover:underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary no-underline hover:underline">Twitter</a> for updates and announcements.</dd>
+    </dl>
+
+    <hr class="border-none h-px bg-[#ddd] my-[30px]">
     
-    <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool differ from Retool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold text-black">code-first</span>. This makes Sourcetool <span class="font-bold text-black">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold text-black">type-safe Go code</span>, your applications are <span class="font-bold text-black">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</dd>
-
-    <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool secure?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold text-black">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold text-black">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-bold text-black">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</dd>
-
-    <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool free to use?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Check out the <a href="https://trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-bold text-black">open source under the MIT license</span>.</dd>
-
-    <dt class="mt-[25px] text-primary font-bold">$ How can I contribute to Sourcetool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary no-underline hover:underline">GitHub repository</a> and review the contribution guidelines.</dd>
-
-    <dt class="mt-[25px] text-primary font-bold">$ Where can I learn more about Sourcetool?</dt>
-    <dd class="ml-0 mb-[25px] leading-[1.6]">Visit our <a href="https://docs.trysourcetool.com" class="text-primary no-underline hover:underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary no-underline hover:underline">Twitter</a> for updates and announcements.</dd>
-  </dl>
-
-  <hr class="border-none h-px bg-[#ddd] my-[30px]">
-  
-  <footer class="py-6 px-4 border-t border-[#ddd]">
-    <div class="container mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="mb-4 md:mb-0">
-          <p class="text-sm text-gray-600">&copy; 2024 Sourcetool. All rights reserved.</p>
+    <footer class="py-6 px-4 border-t border-[#ddd]">
+      <div class="container mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-4 md:mb-0">
+            <p class="text-sm text-gray-600">&copy; 2024 Sourcetool. All rights reserved.</p>
+          </div>
+          <div class="flex space-x-6">
+            <a href="https://github.com/trysourcetool" class="text-gray-600 hover:text-primary" aria-label="GitHub">
+              <i data-lucide="github" class="w-5 h-5"></i>
+            </a>
+            <a href="https://x.com/sourcetool" class="text-gray-600 hover:text-primary" aria-label="Twitter">
+              <i data-lucide="twitter" class="w-5 h-5"></i>
+            </a>
+            <a href="https://docs.trysourcetool.com" class="text-gray-600 hover:text-primary" aria-label="Documentation">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </a>
+          </div>
         </div>
-        <div class="flex space-x-6">
-          <a href="https://github.com/trysourcetool" class="text-gray-600 hover:text-primary" aria-label="GitHub">
-            <i data-lucide="github" class="w-5 h-5"></i>
+        <div class="mt-4 text-center text-sm text-gray-500">
+          <a href="#" class="hover:text-primary mx-2">
+            Privacy Policy
           </a>
-          <a href="https://x.com/sourcetool" class="text-gray-600 hover:text-primary" aria-label="Twitter">
-            <i data-lucide="twitter" class="w-5 h-5"></i>
+          <span class="text-gray-400">|</span>
+          <a href="#" class="hover:text-primary mx-2">
+            Terms of Service
           </a>
-          <a href="https://docs.trysourcetool.com" class="text-gray-600 hover:text-primary" aria-label="Documentation">
-            <i data-lucide="book-open" class="w-5 h-5"></i>
+          <span class="text-gray-400">|</span>
+          <a href="#" class="hover:text-primary mx-2">
+            Contact
           </a>
         </div>
       </div>
-      <div class="mt-4 text-center text-sm text-gray-500">
-        <a href="#" class="hover:text-primary mx-2">
-          Privacy Policy
-        </a>
-        <span class="text-gray-400">|</span>
-        <a href="#" class="hover:text-primary mx-2">
-          Terms of Service
-        </a>
-        <span class="text-gray-400">|</span>
-        <a href="#" class="hover:text-primary mx-2">
-          Contact
-        </a>
-      </div>
-    </div>
-  </footer>
+    </footer>
 
-  <script>
-    // Lucide Iconsの初期化
-    lucide.createIcons();
-  </script>
+    <script>
+      // Lucide Iconsの初期化
+      lucide.createIcons();
+
+      // テーマ切り替えの機能
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // ローカルストレージからテーマを取得
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.className = savedTheme;
+
+        themeToggle.addEventListener('click', () => {
+          const currentTheme = html.className;
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          html.className = newTheme;
+          localStorage.setItem('theme', newTheme);
+        });
+      });
+    </script>
+  </div>
 </body>
 </html>
