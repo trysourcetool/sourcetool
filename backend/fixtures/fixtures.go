@@ -11,12 +11,17 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
 func Load(ctx context.Context, store infra.Store) error {
+	if !config.Config.IsCloudEdition {
+		return nil
+	}
+
 	email := "john.doe@acme.com"
 	exists, err := store.User().IsEmailExists(ctx, email)
 	if err != nil {

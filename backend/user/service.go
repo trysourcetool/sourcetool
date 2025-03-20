@@ -509,7 +509,23 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	}, nil
 }
 
+// validateSelfHostedOrganization checks if creating a new organization is allowed in self-hosted mode
+func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
+	if !config.Config.IsCloudEdition {
+		// In self-hosted mode, check if an organization already exists
+		if _, err := s.Store.Organization().Get(ctx); err == nil {
+			return errdefs.ErrPermissionDenied(errors.New("only one organization is allowed in self-hosted edition"))
+		}
+	}
+	return nil
+}
+
 func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error) {
+	// Check self-hosted organization restriction
+	if err := s.validateSelfHostedOrganization(ctx); err != nil {
+		return nil, err
+	}
+
 	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
 	if err != nil {
 		return nil, err
@@ -1198,6 +1214,11 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 }
 
 func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAuthCodeURLOutput, error) {
+	// Check self-hosted organization restriction
+	if err := s.validateSelfHostedOrganization(ctx); err != nil {
+		return nil, err
+	}
+
 	state := uuid.Must(uuid.NewV4())
 	googleOAuthClient := newGoogleOAuthClient()
 	url, err := googleOAuthClient.getGoogleAuthCodeURL(ctx, state.String())
