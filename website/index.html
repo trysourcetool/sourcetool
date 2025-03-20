@@ -9,6 +9,7 @@
   <link rel="icon" type="image/x-icon" href="src/favicon/favicon.ico">
   <link rel="manifest" href="src/favicon/site.webmanifest">
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style type="text/tailwindcss">
     @theme {
       --color-primary: #6b46c1;
@@ -280,5 +281,46 @@
     <dt class="mt-[25px] text-primary font-bold">$ Where can I learn more about Sourcetool?</dt>
     <dd class="ml-0 mb-[25px] leading-[1.6]">Visit our <a href="https://docs.trysourcetool.com" class="text-primary no-underline hover:underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary no-underline hover:underline">Twitter</a> for updates and announcements.</dd>
   </dl>
+
+  <hr class="border-none h-px bg-[#ddd] my-[30px]">
+  
+  <footer class="py-6 px-4 border-t border-[#ddd]">
+    <div class="container mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-sm text-gray-600">&copy; 2024 Sourcetool. All rights reserved.</p>
+        </div>
+        <div class="flex space-x-6">
+          <a href="https://github.com/trysourcetool" class="text-gray-600 hover:text-primary" aria-label="GitHub">
+            <i data-lucide="github" class="w-5 h-5"></i>
+          </a>
+          <a href="https://x.com/sourcetool" class="text-gray-600 hover:text-primary" aria-label="Twitter">
+            <i data-lucide="twitter" class="w-5 h-5"></i>
+          </a>
+          <a href="https://docs.trysourcetool.com" class="text-gray-600 hover:text-primary" aria-label="Documentation">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </a>
+        </div>
+      </div>
+      <div class="mt-4 text-center text-sm text-gray-500">
+        <a href="#" class="hover:text-primary mx-2">
+          Privacy Policy
+        </a>
+        <span class="text-gray-400">|</span>
+        <a href="#" class="hover:text-primary mx-2">
+          Terms of Service
+        </a>
+        <span class="text-gray-400">|</span>
+        <a href="#" class="hover:text-primary mx-2">
+          Contact
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Lucide Iconsの初期化
+    lucide.createIcons();
+  </script>
 </body>
 </html>
