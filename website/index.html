@@ -25,13 +25,13 @@
       }
 
       .code-keyword {
-        @apply text-primary font-normal dark:text-[#A332FF];
+        @apply text-[#D73A49] font-normal dark:text-[#FF7B72];
       }
       .code-string {
-        @apply text-green-700 dark:text-green-400;
+        @apply text-[#032F62] dark:text-[#A5D6FF];
       }
       .code-comment {
-        @apply text-[#786d96] italic dark:text-[#9d91bd];
+        @apply text-[#6A737D] italic dark:text-[#8B949E];
       }
       .arch-box {
         @apply border-2 border-primary p-3 rounded-lg bg-white dark:bg-black dark:border-[#A332FF];
@@ -69,6 +69,14 @@
       /* テーマトグルボタンのスタイル */
       .theme-toggle {
         @apply p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
+      }
+
+      pre {
+        @apply bg-zinc-100 dark:bg-[#0D1117] p-4 overflow-x-auto border border-[#D0D7DE] dark:border-[#30363D] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.15)];
+      }
+
+      pre code {
+        @apply font-['JetBrains_Mono',_'SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#24292F] dark:text-[#C9D1D9] p-0 text-[14px] font-light tracking-tight;
       }
     }
   </style>
@@ -209,7 +217,7 @@
       </ol>
     </div>
     <div class="flex-1 min-w-[280px]">
-      <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)] mt-0"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
+      <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)] mt-0"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
 <span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
     ui.Markdown(<span class="code-string">"## Users"</span>)
     users, _ := listUsers()
@@ -265,10 +273,10 @@
     <p class="my-[10px] font-normal text-[17px] leading-[1.5]">Sign up at <a href="https://auth.trysourcetool.com" class="text-primary no-underline hover:underline">Sourcetool Dashboard</a></p>
 
     <h4 class="text-primary">$ Install the Sourcetool SDK</p>
-    <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
+    <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">go get</span> github.com/trysourcetool/sourcetool-go</code></pre>
 
     <h4 class="text-primary">$ Write your first internal tool</p>
-    <pre class="bg-[#f8f7fc] p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">package</span> main
+    <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] text-[#333] p-0 text-[13.6px] font-light"><span class="code-keyword">package</span> main
 
 <span class="code-keyword">import</span> (
     <span class="code-string">"github.com/trysourcetool/sourcetool-go"</span>
