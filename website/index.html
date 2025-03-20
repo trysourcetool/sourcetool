@@ -89,25 +89,46 @@
         <img src="src/logo.svg" alt="Sourcetool Logo" class="h-8 block dark:hidden" />
         <img src="src/logo-white.svg" alt="Sourcetool Logo" class="h-8 hidden dark:block" />
       </a>
-      <div class="flex items-center space-x-6">
+      
+      <!-- デスクトップナビゲーション -->
+      <div class="hidden md:flex items-center space-x-6">
         <nav class="nav-links">
           <a href="#about" class="nav-link">[about]</a>
-          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <span class="text-muted-foreground">|</span>
           <a href="#features" class="nav-link">[features]</a>
-          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <span class="text-muted-foreground">|</span>
           <a href="#architecture" class="nav-link">[architecture]</a>
-          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <span class="text-muted-foreground">|</span>
           <a href="#components" class="nav-link">[components]</a>
-          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <span class="text-muted-foreground">|</span>
           <a href="#started" class="nav-link">[get_started]</a>
-          <span class="text-gray-400 dark:text-gray-600">|</span>
+          <span class="text-muted-foreground">|</span>
           <a href="#faq" class="nav-link">[faq]</a>
         </nav>
+      </div>
+
+      <!-- モバイル用コントロール -->
+      <div class="flex items-center space-x-4">
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-          <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-gray-600 dark:text-gray-300"></i>
-          <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-gray-600 dark:text-gray-300"></i>
+          <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-muted-foreground"></i>
+          <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-muted-foreground"></i>
+        </button>
+        <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground" aria-label="Toggle menu">
+          <i data-lucide="menu" class="w-5 h-5 text-muted-foreground"></i>
         </button>
       </div>
+    </div>
+
+    <!-- モバイルメニュー -->
+    <div id="mobile-menu" class="hidden md:hidden border-t">
+      <nav class="px-4 py-4 space-y-4">
+        <a href="#about" class="nav-link block py-2">[about]</a>
+        <a href="#features" class="nav-link block py-2">[features]</a>
+        <a href="#architecture" class="nav-link block py-2">[architecture]</a>
+        <a href="#components" class="nav-link block py-2">[components]</a>
+        <a href="#started" class="nav-link block py-2">[get_started]</a>
+        <a href="#faq" class="nav-link block py-2">[faq]</a>
+      </nav>
     </div>
   </header>
 
@@ -392,21 +413,37 @@
       // Lucide Iconsの初期化
       lucide.createIcons();
 
-      // テーマ切り替えの機能
+      // テーマ切り替えとモバイルメニューの機能
       document.addEventListener('DOMContentLoaded', () => {
         const themeToggle = document.getElementById('theme-toggle');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
         const html = document.documentElement;
 
         // ローカルストレージからテーマを取得
         const savedTheme = localStorage.getItem('theme') || 'light';
         html.className = savedTheme;
 
+        // テーマ切り替え
         themeToggle.addEventListener('click', () => {
           const currentTheme = html.className;
           const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
           
           html.className = newTheme;
           localStorage.setItem('theme', newTheme);
+        });
+
+        // モバイルメニューの切り替え
+        mobileMenuButton.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+        });
+
+        // モバイルメニューのリンクをクリックしたらメニューを閉じる
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+          });
         });
       });
     </script>
