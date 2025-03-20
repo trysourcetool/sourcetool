@@ -624,13 +624,12 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	_, hashedSecret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
 	now := time.Now()
-	expiresAt := now.Add(model.TmpTokenExpiration)
 	u := &model.User{
 		ID:                   uuid.Must(uuid.NewV4()),
 		FirstName:            in.FirstName,
@@ -648,17 +647,36 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 			return err
 		}
 
-		token, err = jwt.SignToken(&jwt.UserAuthClaims{
-			UserID:    u.ID.String(),
-			XSRFToken: xsrfToken,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				ExpiresAt: gojwt.NewNumericDate(expiresAt),
-				Issuer:    jwt.Issuer,
-				Subject:   jwt.UserSignatureSubjectEmail,
-			},
-		})
-		if err != nil {
-			return err
+		if !config.Config.IsCloudEdition {
+			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
+				return err
+			}
+
+			expiresAt := now.Add(model.TokenExpiration())
+			xsrfToken := uuid.Must(uuid.NewV4()).String()
+			token, err = jwt.SignToken(&jwt.UserAuthClaims{
+				UserID:    u.ID.String(),
+				XSRFToken: xsrfToken,
+				RegisteredClaims: gojwt.RegisteredClaims{
+					ExpiresAt: gojwt.NewNumericDate(expiresAt),
+					Issuer:    jwt.Issuer,
+					Subject:   jwt.UserSignatureSubjectEmail,
+				},
+			})
+		} else {
+			expiresAt := now.Add(model.TmpTokenExpiration)
+			token, err = jwt.SignToken(&jwt.UserAuthClaims{
+				UserID:    u.ID.String(),
+				XSRFToken: xsrfToken,
+				RegisteredClaims: gojwt.RegisteredClaims{
+					ExpiresAt: gojwt.NewNumericDate(expiresAt),
+					Issuer:    jwt.Issuer,
+					Subject:   jwt.UserSignatureSubjectEmail,
+				},
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
@@ -668,8 +686,62 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 
 	return &dto.SignUpOutput{
 		Token:     token,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 	}, nil
+}
+
+func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, tx infra.Transaction, u *model.User) error {
+	if config.Config.IsCloudEdition {
+		return nil
+	}
+
+	org := &model.Organization{
+		ID:        uuid.Must(uuid.NewV4()),
+		Subdomain: nil, // Empty subdomain for non-cloud edition
+	}
+	if err := tx.Organization().Create(ctx, org); err != nil {
+		return err
+	}
+
+	orgAccess := &model.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: org.ID,
+		Role:           model.UserOrganizationRoleAdmin,
+	}
+	if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
+		return err
+	}
+
+	devEnv := &model.Environment{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		Name:           model.EnvironmentNameDevelopment,
+		Slug:           model.EnvironmentSlugDevelopment,
+		Color:          model.EnvironmentColorDevelopment,
+	}
+	if err := tx.Environment().Create(ctx, devEnv); err != nil {
+		return err
+	}
+
+	key, err := devEnv.GenerateAPIKey()
+	if err != nil {
+		return err
+	}
+	apiKey := &model.APIKey{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		EnvironmentID:  devEnv.ID,
+		UserID:         u.ID,
+		Name:           "",
+		Key:            key,
+	}
+	if err := tx.APIKey().Create(ctx, apiKey); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error) {
@@ -701,13 +773,12 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 		return nil, err
 	}
 
-	_, hashedSecret, err := generateSecret()
+	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
 	now := time.Now()
-	expiresAt := now.Add(model.TokenExpiration())
 	u := &model.User{
 		ID:                   uuid.Must(uuid.NewV4()),
 		FirstName:            in.FirstName,
@@ -725,17 +796,36 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 			return err
 		}
 
-		token, err = jwt.SignToken(&jwt.UserAuthClaims{
-			UserID:    u.ID.String(),
-			XSRFToken: xsrfToken,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				ExpiresAt: gojwt.NewNumericDate(expiresAt),
-				Issuer:    jwt.Issuer,
-				Subject:   jwt.UserSignatureSubjectEmail,
-			},
-		})
-		if err != nil {
-			return err
+		if !config.Config.IsCloudEdition {
+			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
+				return err
+			}
+
+			expiresAt := now.Add(model.TokenExpiration())
+			xsrfToken := uuid.Must(uuid.NewV4()).String()
+			token, err = jwt.SignToken(&jwt.UserAuthClaims{
+				UserID:    u.ID.String(),
+				XSRFToken: xsrfToken,
+				RegisteredClaims: gojwt.RegisteredClaims{
+					ExpiresAt: gojwt.NewNumericDate(expiresAt),
+					Issuer:    jwt.Issuer,
+					Subject:   jwt.UserSignatureSubjectEmail,
+				},
+			})
+		} else {
+			expiresAt := now.Add(model.TmpTokenExpiration)
+			token, err = jwt.SignToken(&jwt.UserAuthClaims{
+				UserID:    u.ID.String(),
+				XSRFToken: xsrfToken,
+				RegisteredClaims: gojwt.RegisteredClaims{
+					ExpiresAt: gojwt.NewNumericDate(expiresAt),
+					Issuer:    jwt.Issuer,
+					Subject:   jwt.UserSignatureSubjectEmail,
+				},
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
@@ -745,6 +835,7 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 
 	return &dto.SignUpWithGoogleOutput{
 		Token:     token,
+		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
 	}, nil
 }

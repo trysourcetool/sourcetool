@@ -186,6 +186,7 @@ type SignUpInput struct {
 // SignUpOutput is the output for Sign Up operation.
 type SignUpOutput struct {
 	Token     string
+	Secret    string // only for self-hosted edition
 	XSRFToken string
 }
 
@@ -199,6 +200,7 @@ type SignUpWithGoogleInput struct {
 // SignUpWithGoogleOutput is the output for Sign Up With Google operation.
 type SignUpWithGoogleOutput struct {
 	Token     string
+	Secret    string // only for self-hosted edition
 	XSRFToken string
 }
 
