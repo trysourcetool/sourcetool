@@ -332,6 +332,23 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	var orgAccess *model.UserOrganizationAccess
+	orgSubdomain := "auth"
+	if len(orgAccesses) == 1 {
+		orgAccess = orgAccesses[0]
+		o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+		if err != nil {
+			return nil, err
+		}
+
+		orgSubdomain = conv.SafeValue(o.Subdomain)
+	}
+
 	if config.Config.IsCloudEdition {
 		subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
 		if err != nil {
@@ -339,26 +356,36 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		}
 
 		if subdomain != "auth" {
-			_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			// If accessing from a specific subdomain, verify access
+			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 			if err != nil {
 				return nil, err
 			}
+
+			orgSubdomain = subdomain
+		} else if len(orgAccesses) > 1 {
+			// If accessing from auth domain and user has multiple organizations, send selection email
+			loginURLs := make([]string, 0, len(orgAccesses))
+
+			for _, access := range orgAccesses {
+				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				loginURLs = append(loginURLs, config.Config.OrgBaseURL(conv.SafeValue(org.Subdomain))+"/signin")
+			}
+
+			if err := s.Mailer.User().SendMultipleOrganizationsEmail(ctx, &model.SendMultipleOrganizationsEmail{
+				To:        u.Email,
+				FirstName: u.FirstName,
+				Email:     u.Email,
+				LoginURLs: loginURLs,
+			}); err != nil {
+				return nil, err
+			}
+
+			return nil, errdefs.ErrUserMultipleOrganizations(errors.New("email belongs to multiple organizations"))
 		}
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
-		return nil, err
-	}
-
-	orgSubdomain := "auth"
-	if orgAccess != nil {
-		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-		if err != nil {
-			return nil, err
-		}
-
-		orgSubdomain = conv.SafeValue(org.Subdomain)
 	}
 
 	now := time.Now()

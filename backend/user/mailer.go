@@ -127,6 +127,38 @@ To accept the invitation, please create your account by clicking the URL below w
 	return nil
 }
 
+func (m *MailerCE) SendMultipleOrganizationsEmail(ctx context.Context, in *model.SendMultipleOrganizationsEmail) error {
+	subject := "Choose your Sourcetool organization to log in"
+
+	urlList := ""
+	for _, url := range in.LoginURLs {
+		urlList += url + "\n"
+	}
+
+	content := fmt.Sprintf(`Hi %s,
+
+Your email, %s, is associated with multiple Sourcetool organizations. You may log in to each one by visiting its login page below:
+
+%s
+If you have any questions, encounter any issues, or need further assistance, please don't hesitate to reach out to support@sourcetool.com.
+
+Thank you!
+
+The Sourcetool Team`, in.FirstName, in.Email, urlList)
+
+	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.from, in.To, subject, content)
+
+	if err := m.sendMail([]string{in.To}, []byte(msg)); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	return nil
+}
+
 func (m *MailerCE) sendMail(to []string, msg []byte) error {
 	conn, err := tls.Dial("tcp", m.addr, m.tlsConf)
 	if err != nil {
