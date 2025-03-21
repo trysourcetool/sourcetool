@@ -109,7 +109,7 @@
     }
 
     @layer components {
-      /* ヘッダーのスタイル */
+      /* Header Styles */
       .header-nav {
         @apply fixed top-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800 z-50;
       }
@@ -126,7 +126,7 @@
         @apply text-sm font-medium text-muted-foreground hover:text-primary transition-colors;
       }
 
-      /* ヒーローセクション */
+      /* Hero Section */
       .hero-section {
         @apply relative overflow-hidden bg-gradient-to-b from-background to-secondary/20;
       }
@@ -147,7 +147,7 @@
         @apply flex flex-col sm:flex-row gap-4;
       }
 
-      /* セクション */
+      /* Section */
       .section {
         @apply py-16 md:py-24;
       }
@@ -160,7 +160,7 @@
         @apply text-lg text-muted-foreground mb-12 max-w-2xl;
       }
 
-      /* カード */
+      /* Card */
       .card {
         @apply rounded-lg border bg-card text-card-foreground shadow-sm;
       }
@@ -181,7 +181,7 @@
         @apply p-6 pt-0;
       }
 
-      /* テーブル */
+      /* Table */
       .table-container {
         @apply w-full overflow-hidden rounded-lg border;
       }
@@ -198,7 +198,7 @@
         @apply p-4 align-middle;
       }
 
-      /* コードブロック */
+      /* Code Block */
       pre {
         @apply relative rounded-lg bg-muted p-4 overflow-x-auto border my-4;
       }
@@ -207,7 +207,7 @@
         @apply font-mono text-sm leading-relaxed;
       }
 
-      /* ボタン */
+      /* Button */
       .btn {
         @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
       }
@@ -603,21 +603,21 @@
     </footer>
 
     <script>
-      // Lucide Iconsの初期化
+      // Initialize Lucide Icons
       lucide.createIcons();
 
-      // テーマ切り替えとモバイルメニューの機能
+      // Theme toggle and mobile menu functionality
       document.addEventListener('DOMContentLoaded', () => {
         const themeToggle = document.getElementById('theme-toggle');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
         const html = document.documentElement;
 
-        // ローカルストレージからテーマを取得
+        // Get theme from local storage
         const savedTheme = localStorage.getItem('theme') || 'light';
         html.className = savedTheme;
 
-        // テーマ切り替え
+        // Theme toggle
         themeToggle.addEventListener('click', () => {
           const currentTheme = html.className;
           const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -626,12 +626,12 @@
           localStorage.setItem('theme', newTheme);
         });
 
-        // モバイルメニューの切り替え
+        // Mobile menu toggle
         mobileMenuButton.addEventListener('click', () => {
           mobileMenu.classList.toggle('hidden');
         });
 
-        // モバイルメニューのリンクをクリックしたらメニューを閉じる
+        // Close mobile menu when clicking links
         const mobileLinks = mobileMenu.querySelectorAll('a');
         mobileLinks.forEach(link => {
           link.addEventListener('click', () => {
