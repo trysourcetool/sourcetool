@@ -326,17 +326,20 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		return nil, err
 	}
 
+	if len(orgAccesses) == 0 {
+		return nil, errdefs.ErrUnauthenticated(errors.New("user has no organization access"))
+	}
+
 	// Handle organization subdomain logic
 	subdomain := ctxutil.Subdomain(ctx)
 	var orgAccess *model.UserOrganizationAccess
 	var orgSubdomain string
+	var org *model.Organization
 
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
-			// For specific organization subdomain
-			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
-				storeopts.UserOrganizationAccessByUserID(u.ID),
-				storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			// For specific organization subdomain, resolve org and access
+			org, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
@@ -346,11 +349,11 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 			if len(orgAccesses) == 1 {
 				// Single organization - redirect to it
 				orgAccess = orgAccesses[0]
-				o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = conv.SafeValue(o.Subdomain)
+				orgSubdomain = conv.SafeValue(org.Subdomain)
 			} else {
 				// Multiple organizations - send email with options
 				return s.handleMultipleOrganizations(ctx, u, orgAccesses)
@@ -359,6 +362,10 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	} else {
 		// Self-hosted mode has only one organization
 		orgAccess = orgAccesses[0]
+		org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Create token, secret, etc.
@@ -392,6 +399,16 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	}, nil
 }
 
+// resolveOrganizationBySubdomain gets an organization by subdomain and verifies the user has access.
+// Deprecated: Use getOrganizationBySubdomain instead.
+func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
+	if subdomain == "" {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("subdomain cannot be empty"))
+	}
+
+	return s.getOrganizationBySubdomain(ctx, u, subdomain)
+}
+
 // handleMultipleOrganizations sends an email with login links when a user belongs to multiple organizations.
 func (s *ServiceCE) handleMultipleOrganizations(ctx context.Context, u *model.User, orgAccesses []*model.UserOrganizationAccess) (*dto.SignInOutput, error) {
 	loginURLs := make([]string, 0, len(orgAccesses))
@@ -417,6 +434,7 @@ func (s *ServiceCE) handleMultipleOrganizations(ctx context.Context, u *model.Us
 }
 
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
+	// Parse and validate the Google auth request token
 	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
@@ -427,6 +445,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
+	// Get and validate the Google auth request
 	googleAuthReq, err := s.Store.User().GetGoogleAuthRequest(ctx, googleAuthReqID)
 	if err != nil {
 		return nil, err
@@ -440,36 +459,59 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
+	// Get the user by email
 	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
+	// Get current subdomain and resolve organization access
+	subdomain := ctxutil.Subdomain(ctx)
+	var org *model.Organization
+	var orgAccess *model.UserOrganizationAccess
+	var orgSubdomain string
+
+	// Handle organization lookup based on edition and subdomain
 	if config.Config.IsCloudEdition {
-		subdomain := ctxutil.Subdomain(ctx)
 		if subdomain != "auth" {
-			_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			// For specific organization subdomain, verify user has access
+			org, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, get user's first organization access
+			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
+				storeopts.UserOrganizationAccessByUserID(u.ID),
+				storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
+
+			if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
+				return nil, err
+			}
+
+			if orgAccess != nil {
+				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				orgSubdomain = conv.SafeValue(org.Subdomain)
+			} else {
+				orgSubdomain = "auth"
+			}
 		}
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
-		return nil, err
-	}
-
-	orgSubdomain := "auth"
-	if orgAccess != nil {
-		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+	} else {
+		// Self-hosted edition - get the user's organization
+		org, orgAccess, err = s.getOrganizationInfo(ctx, u)
 		if err != nil {
-			return nil, err
+			if !errdefs.IsUserOrganizationAccessNotFound(err) {
+				return nil, err
+			}
+			// If no organization access found, continue with nil orgAccess
 		}
-
-		orgSubdomain = conv.SafeValue(org.Subdomain)
 	}
 
+	// Generate token and secret
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -483,6 +525,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	// Update user's secret
 	u.Secret = hashedSecret
 
 	authURL, err := buildSaveAuthURL(orgSubdomain)
@@ -490,6 +533,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, err
 	}
 
+	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -810,25 +854,40 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 }
 
 func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error) {
+	// Validate XSRF token consistency
 	if in.XSRFTokenCookie != in.XSRFTokenHeader {
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
 	}
 
+	// Get user by secret
 	hashedSecret := hashSecret(in.Secret)
 	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(hashedSecret))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	var subdomain string
+	// Get current subdomain and resolve organization
+	subdomain := ctxutil.Subdomain(ctx)
+	var orgSubdomain string
+
 	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-		if err != nil {
-			return nil, err
+		if subdomain != "auth" {
+			// Verify user has access to this organization
+			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			if err != nil {
+				return nil, err
+			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, use default
+			orgSubdomain = "auth"
 		}
+	} else {
+		// For self-hosted, no specific subdomain needed
+		orgSubdomain = ""
 	}
 
+	// Generate token and set expiration
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -842,11 +901,12 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		Secret:    in.Secret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(subdomain),
+		Domain:    config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
 func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAuthOutput, error) {
+	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserAuthClaims](in.Token)
 	if err != nil {
 		return nil, err
@@ -857,20 +917,31 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, err
 	}
 
+	// Get user by ID
 	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
 
-	var subdomain string
+	// Get current subdomain and verify organization access
+	subdomain := ctxutil.Subdomain(ctx)
+	var orgSubdomain string
+
 	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-		if err != nil {
-			return nil, err
+		if subdomain != "auth" {
+			// For specific organization subdomain, verify user has access
+			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			if err != nil {
+				return nil, err
+			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, use default
+			orgSubdomain = "auth"
 		}
 	}
 
+	// Generate token and secret
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -884,8 +955,10 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	// Update user's secret
 	u.Secret = hashedSecret
 
+	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -897,28 +970,25 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		Secret:      plainSecret,
 		XSRFToken:   xsrfToken,
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
-		RedirectURL: config.Config.OrgBaseURL(subdomain),
-		Domain:      config.Config.OrgDomain(subdomain),
+		RedirectURL: config.Config.OrgBaseURL(orgSubdomain),
+		Domain:      config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
+	// Get current user from context
 	u := ctxutil.CurrentUser(ctx)
+	if u == nil {
+		return nil, errdefs.ErrUnauthenticated(errors.New("no user in context"))
+	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(
-		ctx,
-		storeopts.UserOrganizationAccessByUserID(u.ID),
-		storeopts.UserOrganizationAccessOrderBy("created_at DESC"),
-	)
+	// Get user's organization info
+	org, _, err := s.getUserOrganizationInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-	if err != nil {
-		return nil, err
-	}
-
+	// Generate temporary token
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -927,11 +997,13 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 		return nil, err
 	}
 
-	authURL, err := buildSaveAuthURL(conv.SafeValue(o.Subdomain))
+	// Build auth URL with organization subdomain
+	authURL, err := buildSaveAuthURL(conv.SafeValue(org.Subdomain))
 	if err != nil {
 		return nil, err
 	}
 
+	// Update user
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -1770,34 +1842,65 @@ func (s *ServiceCE) sendEmailWithLogging(ctx context.Context, url string, sendFu
 	return nil
 }
 
-// getUserOrganizationInfo retrieves organization and access information for the current user.
+// getUserOrganizationInfo is a convenience wrapper that retrieves organization
+// and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
-	u := ctxutil.CurrentUser(ctx)
+	return s.getOrganizationInfo(ctx, ctxutil.CurrentUser(ctx))
+}
 
-	// Build organization options based on edition
-	orgOpts := []storeopts.OrganizationOption{
-		storeopts.OrganizationByUserID(u.ID),
+// getOrganizationInfo retrieves organization and access information for the specified user.
+// It handles both cloud and self-hosted editions with appropriate subdomain logic.
+func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+	if u == nil {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	// Add subdomain filter in cloud edition
-	if config.Config.IsCloudEdition {
-		subdomain := ctxutil.Subdomain(ctx)
-		orgOpts = append(orgOpts, storeopts.OrganizationBySubdomain(subdomain))
+	subdomain := ctxutil.Subdomain(ctx)
+	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
+
+	// Different strategies for cloud vs. self-hosted or auth subdomain
+	if isCloudWithSubdomain {
+		return s.getOrganizationBySubdomain(ctx, u, subdomain)
 	}
 
-	// Get organization
-	o, err := s.Store.Organization().Get(ctx, orgOpts...)
+	return s.getDefaultOrganizationForUser(ctx, u)
+}
+
+// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access
+func (s *ServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
+	// Get organization by subdomain
+	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Get user's access role in this organization
+	// Verify user has access to this organization
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByOrganizationID(o.ID),
+		storeopts.UserOrganizationAccessByOrganizationID(org.ID),
 		storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return o, orgAccess, nil
+	return org, orgAccess, nil
+}
+
+// getDefaultOrganizationForUser gets the default organization for a user
+// (typically the most recently created one)
+func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+	// Get user's organization access
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
+		storeopts.UserOrganizationAccessByUserID(u.ID),
+		storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the organization
+	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return org, orgAccess, nil
 }
