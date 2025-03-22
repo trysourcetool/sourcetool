@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
@@ -37,7 +38,7 @@ type ClientHeader struct {
 func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		subdomain, err := httputil.GetSubdomainFromHost(r.Host)
+		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
 			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
@@ -106,12 +107,12 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	o, err := m.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
+	opts := []storeopts.OrganizationOption{}
+	if subdomain != "" && subdomain != "auth" {
+		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
 	}
 
-	return o, nil
+	return m.Store.Organization().Get(ctx, opts...)
 }
 
 func (m *MiddlewareCE) validateUserToken(token string) (*jwt.UserAuthClaims, error) {
@@ -132,4 +133,11 @@ func (m *MiddlewareCE) extractIncomingToken(headerValue string) (string, error) 
 		return "", fmt.Errorf("invalid or malformed %q header, expected 'Bearer JWT-token...'", headerValue)
 	}
 	return strings.Split(headerValue, " ")[1], nil
+}
+
+func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, error) {
+	if !config.Config.IsCloudEdition {
+		return "", nil
+	}
+	return httputil.GetSubdomainFromHost(r.Host)
 }
