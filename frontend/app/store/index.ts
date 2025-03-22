@@ -26,6 +26,7 @@ import {
   hostInstancesStore,
   type HostInstancesState,
 } from './modules/hostInstances';
+
 export type RootState = {
   users: UsersState;
   organizations: OrganizationsState;
@@ -39,6 +40,7 @@ export type RootState = {
 };
 
 export const configureStore = () => {
+
   const rootReducer = combineReducers({
     users: usersStore.reducer,
     organizations: organizationsStore.reducer,
@@ -50,6 +52,7 @@ export const configureStore = () => {
     hostInstances: hostInstancesStore.reducer,
     error: errorStore.reducer,
   });
+
 
   const store = createConfigureStore({
     devTools:
