@@ -22,6 +22,7 @@ type Middleware interface {
 	AuthUserWithOrganization(next http.Handler) http.Handler
 	AuthUserWithOrganizationIfSubdomainExists(next http.Handler) http.Handler
 	AuthOrganizationIfSubdomainExists(next http.Handler) http.Handler
+	SetSubdomain(next http.Handler) http.Handler
 }
 
 type MiddlewareCE struct {
@@ -230,6 +231,14 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 			ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
 		}
 
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (m *MiddlewareCE) SetSubdomain(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		subdomain, _ := httputil.GetSubdomainFromHost(r.Host)
+		ctx := context.WithValue(r.Context(), ctxutil.SubdomainCtxKey, subdomain)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
