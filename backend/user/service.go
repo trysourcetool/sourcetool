@@ -211,13 +211,10 @@ func (s *ServiceCE) SendUpdateEmailInstructions(ctx context.Context, in dto.Send
 		return err
 	}
 
-	// Send email with URL (or log it in local environment)
-	return s.sendEmailWithLogging(ctx, url, func() error {
-		return s.Mailer.User().SendUpdateEmailInstructions(ctx, &model.SendUpdateUserEmailInstructions{
-			To:        in.Email,
-			FirstName: currentUser.FirstName,
-			URL:       url,
-		})
+	return s.Mailer.User().SendUpdateEmailInstructions(ctx, &model.SendUpdateUserEmailInstructions{
+		To:        in.Email,
+		FirstName: currentUser.FirstName,
+		URL:       url,
 	})
 }
 
@@ -614,12 +611,9 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 			return err
 		}
 
-		// Send email with URL (or log it in local environment)
-		return s.sendEmailWithLogging(ctx, url, func() error {
-			return s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
-				To:  in.Email,
-				URL: url,
-			})
+		return s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
+			To:  in.Email,
+			URL: url,
 		})
 	}); err != nil {
 		return nil, err
@@ -1827,21 +1821,6 @@ func (s *ServiceCE) createTokenWithSecret(userID uuid.UUID, expiration time.Dura
 	return token, xsrfToken, plainSecret, hashedSecret, expiresAt, nil
 }
 
-// sendEmailWithLogging sends an email with logging for local development.
-func (s *ServiceCE) sendEmailWithLogging(ctx context.Context, url string, sendFunc func() error) error {
-	logger.Logger.Sugar().Debug("================= URL =================")
-	logger.Logger.Sugar().Debug(url)
-	logger.Logger.Sugar().Debug("================= URL =================")
-
-	if !(config.Config.Env == config.EnvLocal) {
-		if err := sendFunc(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
 // and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
@@ -1866,7 +1845,7 @@ func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *model.User) (*mo
 	return s.getDefaultOrganizationForUser(ctx, u)
 }
 
-// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access
+// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
 func (s *ServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
 	// Get organization by subdomain
 	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
@@ -1885,8 +1864,7 @@ func (s *ServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model.Use
 	return org, orgAccess, nil
 }
 
-// getDefaultOrganizationForUser gets the default organization for a user
-// (typically the most recently created one)
+// (typically the most recently created one).
 func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
 	// Get user's organization access
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
