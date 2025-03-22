@@ -2,15 +2,12 @@ package user
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
@@ -25,37 +22,51 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
+// Service defines the interface for user-related operations.
 type Service interface {
+	// User management methods
 	GetMe(context.Context) (*dto.GetMeOutput, error)
 	List(context.Context) (*dto.ListUsersOutput, error)
 	Update(context.Context, dto.UpdateUserInput) (*dto.UpdateUserOutput, error)
+
+	// Email operations
 	SendUpdateEmailInstructions(context.Context, dto.SendUpdateUserEmailInstructionsInput) error
 	UpdateEmail(context.Context, dto.UpdateUserEmailInput) (*dto.UpdateUserEmailOutput, error)
 	UpdatePassword(context.Context, dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error)
+
+	// Authentication methods
 	SignIn(context.Context, dto.SignInInput) (*dto.SignInOutput, error)
-	SignInWithGoogle(context.Context, dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error)
-	SendSignUpInstructions(context.Context, dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error)
-	SignUp(context.Context, dto.SignUpInput) (*dto.SignUpOutput, error)
-	SignUpWithGoogle(context.Context, dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error)
+	SignOut(context.Context) (*dto.SignOutOutput, error)
 	RefreshToken(context.Context, dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error)
 	SaveAuth(context.Context, dto.SaveAuthInput) (*dto.SaveAuthOutput, error)
 	ObtainAuthToken(context.Context) (*dto.ObtainAuthTokenOutput, error)
+
+	// Registration methods
+	SendSignUpInstructions(context.Context, dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error)
+	SignUp(context.Context, dto.SignUpInput) (*dto.SignUpOutput, error)
+
+	// Invitation methods
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
 	ResendInvitation(context.Context, dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error)
 	SignInInvitation(context.Context, dto.SignInInvitationInput) (*dto.SignInInvitationOutput, error)
 	SignUpInvitation(context.Context, dto.SignUpInvitationInput) (*dto.SignUpInvitationOutput, error)
+
+	// Google OAuth methods
 	GetGoogleAuthCodeURL(context.Context) (*dto.GetGoogleAuthCodeURLOutput, error)
 	GoogleOAuthCallback(context.Context, dto.GoogleOAuthCallbackInput) (*dto.GoogleOAuthCallbackOutput, error)
+	SignInWithGoogle(context.Context, dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error)
+	SignUpWithGoogle(context.Context, dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error)
 	GetGoogleAuthCodeURLInvitation(context.Context, dto.GetGoogleAuthCodeURLInvitationInput) (*dto.GetGoogleAuthCodeURLInvitationOutput, error)
 	SignInWithGoogleInvitation(context.Context, dto.SignInWithGoogleInvitationInput) (*dto.SignInWithGoogleInvitationOutput, error)
 	SignUpWithGoogleInvitation(context.Context, dto.SignUpWithGoogleInvitationInput) (*dto.SignUpWithGoogleInvitationOutput, error)
-	SignOut(context.Context) (*dto.SignOutOutput, error)
 }
 
+// ServiceCE implements the Service interface for the Community Edition.
 type ServiceCE struct {
 	*infra.Dependency
 }
 
+// NewServiceCE creates a new instance of the ServiceCE.
 func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
@@ -168,55 +179,43 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 	}, nil
 }
 
+// SendUpdateEmailInstructions sends instructions for updating a user's email address.
 func (s *ServiceCE) SendUpdateEmailInstructions(ctx context.Context, in dto.SendUpdateUserEmailInstructionsInput) error {
+	// Validate email and confirmation match
 	if in.Email != in.EmailConfirmation {
 		return errdefs.ErrInvalidArgument(errors.New("email and email confirmation do not match"))
 	}
 
+	// Check if email already exists
 	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return errdefs.ErrUserEmailAlreadyExists(errors.New("email exists"))
+		return errdefs.ErrUserEmailAlreadyExists(errors.New("email already exists"))
 	}
 
+	// Get current user and organization
 	currentUser := ctxutil.CurrentUser(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
 
-	tok, err := jwt.SignToken(&jwt.UserClaims{
-		UserID: currentUser.ID.String(),
-		Email:  in.Email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			Subject:   jwt.UserSignatureSubjectUpdateEmail,
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-		},
-	})
+	// Create token for email update
+	tok, err := createUserToken(currentUser.ID.String(), in.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectUpdateEmail)
 	if err != nil {
 		return err
 	}
 
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	// Build update URL
 	url, err := buildUpdateEmailURL(conv.SafeValue(currentOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
 
-	logger.Logger.Sugar().Debug("================= URL =================")
-	logger.Logger.Sugar().Debug(url)
-	logger.Logger.Sugar().Debug("================= URL =================")
-
-	if !(config.Config.Env == config.EnvLocal) {
-		if err := s.Mailer.User().SendUpdateEmailInstructions(ctx, &model.SendUpdateUserEmailInstructions{
-			To:        in.Email,
-			FirstName: currentUser.FirstName,
-			URL:       url,
-		}); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return s.Mailer.User().SendUpdateEmailInstructions(ctx, &model.SendUpdateUserEmailInstructions{
+		To:        in.Email,
+		FirstName: currentUser.FirstName,
+		URL:       url,
+	})
 }
 
 func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput) (*dto.UpdateUserEmailOutput, error) {
@@ -266,31 +265,30 @@ func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput
 	}, nil
 }
 
+// UpdatePassword changes the user's password after verifying their current password.
 func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 
-	h, err := hex.DecodeString(currentUser.Password)
+	// Verify current password
+	if err := verifyPassword(currentUser.Password, in.CurrentPassword); err != nil {
+		return nil, err
+	}
+
+	// Hash new password
+	hashedPassword, err := hashPassword(in.Password)
 	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
+		return nil, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword(h, []byte(in.CurrentPassword)); err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
-	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	currentUser.Password = hex.EncodeToString(encodedPass[:])
-
+	// Update user record
+	currentUser.Password = hashedPassword
 	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, currentUser)
 	}); err != nil {
 		return nil, err
 	}
 
+	// Get organization information for response
 	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
 	if err != nil {
 		return nil, err
@@ -306,100 +304,81 @@ func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswor
 	}, nil
 }
 
+// SignIn authenticates a user with email and password.
 func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignInOutput, error) {
+	// Get user by email
 	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	h, err := hex.DecodeString(u.Password)
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
+	// Verify password
+	if err = verifyPassword(u.Password, in.Password); err != nil {
+		return nil, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword(h, []byte(in.Password)); err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
+	// Get user's organization access information
 	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: replace these with a single function
+	if len(orgAccesses) == 0 {
+		return nil, errdefs.ErrUnauthenticated(errors.New("user has no organization access"))
+	}
+
+	// Handle organization subdomain logic
 	subdomain := ctxutil.Subdomain(ctx)
 	var orgAccess *model.UserOrganizationAccess
 	var orgSubdomain string
+
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
-			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			// For specific organization subdomain, resolve org and access
+			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
 			orgSubdomain = subdomain
 		} else {
+			// For auth subdomain
 			if len(orgAccesses) == 1 {
+				// Single organization - redirect to it
 				orgAccess = orgAccesses[0]
-				o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = conv.SafeValue(o.Subdomain)
+				orgSubdomain = conv.SafeValue(org.Subdomain)
 			} else {
-				loginURLs := make([]string, 0, len(orgAccesses))
-
-				for _, access := range orgAccesses {
-					org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
-					if err != nil {
-						return nil, err
-					}
-					loginURLs = append(loginURLs, config.Config.OrgBaseURL(conv.SafeValue(org.Subdomain))+"/signin")
-				}
-
-				if err := s.Mailer.User().SendMultipleOrganizationsEmail(ctx, &model.SendMultipleOrganizationsEmail{
-					To:        u.Email,
-					FirstName: u.FirstName,
-					Email:     u.Email,
-					LoginURLs: loginURLs,
-				}); err != nil {
-					return nil, err
-				}
-
-				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("email belongs to multiple organizations"))
+				// Multiple organizations - send email with options
+				return s.handleMultipleOrganizations(ctx, u, orgAccesses)
 			}
 		}
 	} else {
+		// Self-hosted mode has only one organization
 		orgAccess = orgAccesses[0]
+		_, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	now := time.Now()
-	expiresAt := now.Add(model.TmpTokenExpiration)
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	// Create token, secret, etc.
+	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(
+		u.ID, model.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
 
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
+	// Update user with new secret
 	u.Secret = hashedSecret
-
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
 	}
 
+	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -416,7 +395,42 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	}, nil
 }
 
+// resolveOrganizationBySubdomain gets an organization by subdomain and verifies the user has access.
+// Deprecated: Use getOrganizationBySubdomain instead.
+func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
+	if subdomain == "" {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("subdomain cannot be empty"))
+	}
+
+	return s.getOrganizationBySubdomain(ctx, u, subdomain)
+}
+
+// handleMultipleOrganizations sends an email with login links when a user belongs to multiple organizations.
+func (s *ServiceCE) handleMultipleOrganizations(ctx context.Context, u *model.User, orgAccesses []*model.UserOrganizationAccess) (*dto.SignInOutput, error) {
+	loginURLs := make([]string, 0, len(orgAccesses))
+
+	for _, access := range orgAccesses {
+		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
+		if err != nil {
+			return nil, err
+		}
+		loginURLs = append(loginURLs, config.Config.OrgBaseURL(conv.SafeValue(org.Subdomain))+"/signin")
+	}
+
+	if err := s.Mailer.User().SendMultipleOrganizationsEmail(ctx, &model.SendMultipleOrganizationsEmail{
+		To:        u.Email,
+		FirstName: u.FirstName,
+		Email:     u.Email,
+		LoginURLs: loginURLs,
+	}); err != nil {
+		return nil, err
+	}
+
+	return nil, errdefs.ErrUserMultipleOrganizations(errors.New("email belongs to multiple organizations"))
+}
+
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
+	// Parse and validate the Google auth request token
 	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
 	if err != nil {
 		return nil, err
@@ -427,6 +441,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
+	// Get and validate the Google auth request
 	googleAuthReq, err := s.Store.User().GetGoogleAuthRequest(ctx, googleAuthReqID)
 	if err != nil {
 		return nil, err
@@ -440,48 +455,63 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
 	}
 
+	// Get the user by email
 	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(googleAuthReq.Email))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
+	// Get current subdomain and resolve organization access
+	subdomain := ctxutil.Subdomain(ctx)
+	var org *model.Organization
+	var orgAccess *model.UserOrganizationAccess
+	var orgSubdomain string
+
+	// Handle organization lookup based on edition and subdomain
 	if config.Config.IsCloudEdition {
-		subdomain := ctxutil.Subdomain(ctx)
 		if subdomain != "auth" {
-			_, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			// For specific organization subdomain, verify user has access
+			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, get user's first organization access
+			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
+				storeopts.UserOrganizationAccessByUserID(u.ID),
+				storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
+
+			if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
+				return nil, err
+			}
+
+			if orgAccess != nil {
+				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				orgSubdomain = conv.SafeValue(org.Subdomain)
+			} else {
+				orgSubdomain = "auth"
+			}
 		}
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
-		return nil, err
-	}
-
-	orgSubdomain := "auth"
-	if orgAccess != nil {
-		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+	} else {
+		// Self-hosted edition - get the user's organization
+		_, orgAccess, err = s.getOrganizationInfo(ctx, u)
 		if err != nil {
-			return nil, err
+			if !errdefs.IsUserOrganizationAccessNotFound(err) {
+				return nil, err
+			}
+			// If no organization access found, continue with nil orgAccess
 		}
-
-		orgSubdomain = conv.SafeValue(org.Subdomain)
 	}
 
+	// Generate token and secret
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -491,6 +521,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	// Update user's secret
 	u.Secret = hashedSecret
 
 	authURL, err := buildSaveAuthURL(orgSubdomain)
@@ -498,6 +529,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		return nil, err
 	}
 
+	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -525,18 +557,20 @@ func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
 	return nil
 }
 
+// SendSignUpInstructions sends an email with a sign-up activation link.
 func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error) {
 	// Check self-hosted organization restriction
 	if err := s.validateSelfHostedOrganization(ctx); err != nil {
 		return nil, err
 	}
 
+	// Check if email already exists
 	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return nil, errdefs.ErrUserEmailAlreadyExists(errors.New("email exists"))
+		return nil, errdefs.ErrUserEmailAlreadyExists(errors.New("email already exists"))
 	}
 
 	// In staging environment, only allow @trysourcetool.com email addresses
@@ -546,12 +580,15 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 		}, nil
 	}
 
+	// Check if registration request already exists
 	requestExists, err := s.Store.User().IsRegistrationRequestExists(ctx, in.Email)
 	if err != nil {
 		return nil, err
 	}
 
+	// Create or update registration request and send instructions
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		// Create registration request if needed
 		if !requestExists {
 			if err := tx.User().CreateRegistrationRequest(ctx, &model.UserRegistrationRequest{
 				ID:    uuid.Must(uuid.NewV4()),
@@ -561,37 +598,22 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 			}
 		}
 
-		tok, err := jwt.SignToken(&jwt.UserEmailClaims{
-			Email: in.Email,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				Subject:   jwt.UserSignatureSubjectActivate,
-				ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-				Issuer:    jwt.Issuer,
-			},
-		})
+		// Create token for activation
+		tok, err := createUserToken("", in.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectActivate)
 		if err != nil {
 			return err
 		}
 
+		// Build activation URL
 		url, err := buildUserActivateURL(tok)
 		if err != nil {
 			return err
 		}
 
-		logger.Logger.Sugar().Debug("================= URL =================")
-		logger.Logger.Sugar().Debug(url)
-		logger.Logger.Sugar().Debug("================= URL =================")
-
-		if !(config.Config.Env == config.EnvLocal) {
-			if err := s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
-				To:  in.Email,
-				URL: url,
-			}); err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
+			To:  in.Email,
+			URL: url,
+		})
 	}); err != nil {
 		return nil, err
 	}
@@ -601,7 +623,9 @@ func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignU
 	}, nil
 }
 
+// SignUp registers a new user with the activated token.
 func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUpOutput, error) {
+	// Verify token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
 		return nil, err
@@ -611,71 +635,64 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
+	// Get registration request
 	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(c.Email))
 	if err != nil {
 		return nil, err
 	}
 
-	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
+	// Create password hash
+	hashedPassword, err := hashPassword(in.Password)
 	if err != nil {
-		return nil, errdefs.ErrInternal(err)
+		return nil, err
 	}
 
+	// Generate user secret
 	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	// Prepare user object
 	now := time.Now()
 	u := &model.User{
 		ID:                   uuid.Must(uuid.NewV4()),
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                c.Email,
-		Password:             hex.EncodeToString(encodedPass[:]),
+		Password:             hashedPassword,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
 
+	// Prepare token expiration time based on edition
 	var token string
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
+	var xsrfToken string
+
+	// Create user and setup related data in transaction
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().Create(ctx, u); err != nil {
 			return err
 		}
 
+		// Handle different editions
+		expiration := model.TmpTokenExpiration
 		if !config.Config.IsCloudEdition {
+			// For self-hosted, create initial organization
 			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
 				return err
 			}
-
-			expiresAt := now.Add(model.TokenExpiration())
-			xsrfToken := uuid.Must(uuid.NewV4()).String()
-			token, err = jwt.SignToken(&jwt.UserAuthClaims{
-				UserID:    u.ID.String(),
-				XSRFToken: xsrfToken,
-				RegisteredClaims: gojwt.RegisteredClaims{
-					ExpiresAt: gojwt.NewNumericDate(expiresAt),
-					Issuer:    jwt.Issuer,
-					Subject:   jwt.UserSignatureSubjectEmail,
-				},
-			})
-		} else {
-			expiresAt := now.Add(model.TmpTokenExpiration)
-			token, err = jwt.SignToken(&jwt.UserAuthClaims{
-				UserID:    u.ID.String(),
-				XSRFToken: xsrfToken,
-				RegisteredClaims: gojwt.RegisteredClaims{
-					ExpiresAt: gojwt.NewNumericDate(expiresAt),
-					Issuer:    jwt.Issuer,
-					Subject:   jwt.UserSignatureSubjectEmail,
-				},
-			})
-			if err != nil {
-				return err
-			}
+			expiration = model.TokenExpiration()
 		}
 
+		// Create token
+		var err error
+		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(u.ID, expiration)
+		if err != nil {
+			return err
+		}
+
+		// Delete registration request
 		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
 	}); err != nil {
 		return nil, err
@@ -807,32 +824,14 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
 				return err
 			}
-
 			expiresAt := now.Add(model.TokenExpiration())
-			xsrfToken := uuid.Must(uuid.NewV4()).String()
-			token, err = jwt.SignToken(&jwt.UserAuthClaims{
-				UserID:    u.ID.String(),
-				XSRFToken: xsrfToken,
-				RegisteredClaims: gojwt.RegisteredClaims{
-					ExpiresAt: gojwt.NewNumericDate(expiresAt),
-					Issuer:    jwt.Issuer,
-					Subject:   jwt.UserSignatureSubjectEmail,
-				},
-			})
+			token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 		} else {
 			expiresAt := now.Add(model.TmpTokenExpiration)
-			token, err = jwt.SignToken(&jwt.UserAuthClaims{
-				UserID:    u.ID.String(),
-				XSRFToken: xsrfToken,
-				RegisteredClaims: gojwt.RegisteredClaims{
-					ExpiresAt: gojwt.NewNumericDate(expiresAt),
-					Issuer:    jwt.Issuer,
-					Subject:   jwt.UserSignatureSubjectEmail,
-				},
-			})
-			if err != nil {
-				return err
-			}
+			token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+		}
+		if err != nil {
+			return err
 		}
 
 		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
@@ -848,37 +847,44 @@ func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogl
 }
 
 func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error) {
+	// Validate XSRF token consistency
 	if in.XSRFTokenCookie != in.XSRFTokenHeader {
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
 	}
 
+	// Get user by secret
 	hashedSecret := hashSecret(in.Secret)
 	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(hashedSecret))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	var subdomain string
+	// Get current subdomain and resolve organization
+	subdomain := ctxutil.Subdomain(ctx)
+	var orgSubdomain string
+
 	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-		if err != nil {
-			return nil, err
+		if subdomain != "auth" {
+			// Verify user has access to this organization
+			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			if err != nil {
+				return nil, err
+			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, use default
+			orgSubdomain = "auth"
 		}
+	} else {
+		// For self-hosted, no specific subdomain needed
+		orgSubdomain = ""
 	}
 
+	// Generate token and set expiration
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -888,11 +894,12 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		Secret:    in.Secret,
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(subdomain),
+		Domain:    config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
 func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAuthOutput, error) {
+	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserAuthClaims](in.Token)
 	if err != nil {
 		return nil, err
@@ -903,32 +910,35 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, err
 	}
 
+	// Get user by ID
 	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
 
-	var subdomain string
+	// Get current subdomain and verify organization access
+	subdomain := ctxutil.Subdomain(ctx)
+	var orgSubdomain string
+
 	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		_, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
-		if err != nil {
-			return nil, err
+		if subdomain != "auth" {
+			// For specific organization subdomain, verify user has access
+			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			if err != nil {
+				return nil, err
+			}
+			orgSubdomain = subdomain
+		} else {
+			// For auth subdomain, use default
+			orgSubdomain = "auth"
 		}
 	}
 
+	// Generate token and secret
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -938,8 +948,10 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, errdefs.ErrInternal(err)
 	}
 
+	// Update user's secret
 	u.Secret = hashedSecret
 
+	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -951,49 +963,40 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		Secret:      plainSecret,
 		XSRFToken:   xsrfToken,
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
-		RedirectURL: config.Config.OrgBaseURL(subdomain),
-		Domain:      config.Config.OrgDomain(subdomain),
+		RedirectURL: config.Config.OrgBaseURL(orgSubdomain),
+		Domain:      config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
+	// Get current user from context
 	u := ctxutil.CurrentUser(ctx)
+	if u == nil {
+		return nil, errdefs.ErrUnauthenticated(errors.New("no user in context"))
+	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(
-		ctx,
-		storeopts.UserOrganizationAccessByUserID(u.ID),
-		storeopts.UserOrganizationAccessOrderBy("created_at DESC"),
-	)
+	// Get user's organization info
+	org, _, err := s.getUserOrganizationInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-	if err != nil {
-		return nil, err
-	}
-
+	// Generate temporary token
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, err
 	}
 
-	authURL, err := buildSaveAuthURL(conv.SafeValue(o.Subdomain))
+	// Build auth URL with organization subdomain
+	authURL, err := buildSaveAuthURL(conv.SafeValue(org.Subdomain))
 	if err != nil {
 		return nil, err
 	}
 
+	// Update user
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
@@ -1034,14 +1037,7 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 			return nil, err
 		}
 
-		tok, err := jwt.SignToken(&jwt.UserEmailClaims{
-			Email: email,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				Subject:   jwt.UserSignatureSubjectInvitation,
-				ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-				Issuer:    jwt.Issuer,
-			},
-		})
+		tok, err := createUserToken("", email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 		if err != nil {
 			return nil, err
 		}
@@ -1136,15 +1132,7 @@ func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitatio
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -1216,9 +1204,10 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		}
 	}
 
-	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
+	// Hash password
+	hashedPassword, err := hashPassword(in.Password)
 	if err != nil {
-		return nil, errdefs.ErrInternal(err)
+		return nil, err
 	}
 
 	plainSecret, hashedSecret, err := generateSecret()
@@ -1233,7 +1222,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                c.Email,
-		Password:             hex.EncodeToString(encodedPass[:]),
+		Password:             hashedPassword,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
@@ -1264,15 +1253,7 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 			return err
 		}
 
-		token, err = jwt.SignToken(&jwt.UserAuthClaims{
-			UserID:    u.ID.String(),
-			XSRFToken: xsrfToken,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				ExpiresAt: gojwt.NewNumericDate(expiresAt),
-				Issuer:    jwt.Issuer,
-				Subject:   jwt.UserSignatureSubjectEmail,
-			},
-		})
+		token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 		if err != nil {
 			return err
 		}
@@ -1376,14 +1357,7 @@ func (s *ServiceCE) GoogleOAuthCallback(ctx context.Context, in dto.GoogleOAuthC
 	googleAuthReq.GoogleID = userInfo.id
 	googleAuthReq.Email = userInfo.email
 
-	sessionToken, err := jwt.SignToken(&jwt.UserGoogleAuthRequestClaims{
-		GoogleAuthRequestID: googleAuthReq.ID.String(),
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(googleAuthReq.ExpiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectGoogleAuthRequest,
-		},
-	})
+	sessionToken, err := createGoogleAuthRequestToken(googleAuthReq.ID.String(), googleAuthReq.ExpiresAt, jwt.UserSignatureSubjectGoogleAuthRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -1571,15 +1545,7 @@ func (s *ServiceCE) SignInWithGoogleInvitation(ctx context.Context, in dto.SignI
 
 	expiresAt := time.Now().Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    u.ID.String(),
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectEmail,
-		},
-	})
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -1713,15 +1679,7 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 			return err
 		}
 
-		token, err = jwt.SignToken(&jwt.UserAuthClaims{
-			UserID:    u.ID.String(),
-			XSRFToken: xsrfToken,
-			RegisteredClaims: gojwt.RegisteredClaims{
-				ExpiresAt: gojwt.NewNumericDate(expiresAt),
-				Issuer:    jwt.Issuer,
-				Subject:   jwt.UserSignatureSubjectEmail,
-			},
-		})
+		token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 		if err != nil {
 			return err
 		}
@@ -1768,14 +1726,7 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 		return nil, err
 	}
 
-	tok, err := jwt.SignToken(&jwt.UserEmailClaims{
-		Email: userInvitation.Email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			Subject:   jwt.UserSignatureSubjectInvitation,
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-		},
-	})
+	tok, err := createUserEmailToken(userInvitation.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 	if err != nil {
 		return nil, err
 	}
@@ -1848,25 +1799,85 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 	return tx.APIKey().Create(ctx, apiKey)
 }
 
+// Helper functions for common operations
+
+// createTokenWithSecret creates a new authentication token and secret.
+func (s *ServiceCE) createTokenWithSecret(userID uuid.UUID, expiration time.Duration) (token, xsrfToken, plainSecret, hashedSecret string, expiresAt time.Time, err error) {
+	now := time.Now()
+	expiresAt = now.Add(expiration)
+	xsrfToken = uuid.Must(uuid.NewV4()).String()
+
+	token, err = createAuthToken(userID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	if err != nil {
+		return "", "", "", "", time.Time{}, err
+	}
+
+	plainSecret, hashedSecret, err = generateSecret()
+	if err != nil {
+		return "", "", "", "", time.Time{}, errdefs.ErrInternal(err)
+	}
+
+	return token, xsrfToken, plainSecret, hashedSecret, expiresAt, nil
+}
+
+// getUserOrganizationInfo is a convenience wrapper that retrieves organization
+// and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
-	u := ctxutil.CurrentUser(ctx)
-	orgOpts := []storeopts.OrganizationOption{
-		storeopts.OrganizationByUserID(u.ID),
-	}
-	if config.Config.IsCloudEdition {
-		subdomain := ctxutil.Subdomain(ctx)
-		orgOpts = append(orgOpts, storeopts.OrganizationBySubdomain(subdomain))
+	return s.getOrganizationInfo(ctx, ctxutil.CurrentUser(ctx))
+}
+
+// getOrganizationInfo retrieves organization and access information for the specified user.
+// It handles both cloud and self-hosted editions with appropriate subdomain logic.
+func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+	if u == nil {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	o, err := s.Store.Organization().Get(ctx, orgOpts...)
+	subdomain := ctxutil.Subdomain(ctx)
+	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
+
+	// Different strategies for cloud vs. self-hosted or auth subdomain
+	if isCloudWithSubdomain {
+		return s.getOrganizationBySubdomain(ctx, u, subdomain)
+	}
+
+	return s.getDefaultOrganizationForUser(ctx, u)
+}
+
+// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
+func (s *ServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
+	// Get organization by subdomain
+	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(o.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
+	// Verify user has access to this organization
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
+		storeopts.UserOrganizationAccessByOrganizationID(org.ID),
+		storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return o, orgAccess, nil
+	return org, orgAccess, nil
+}
+
+// (typically the most recently created one).
+func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+	// Get user's organization access
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
+		storeopts.UserOrganizationAccessByUserID(u.ID),
+		storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the organization
+	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return org, orgAccess, nil
 }
