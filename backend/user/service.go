@@ -963,7 +963,11 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(
+		ctx,
+		storeopts.UserOrganizationAccessByUserID(u.ID),
+		storeopts.UserOrganizationAccessOrderBy("created_at DESC"),
+	)
 	if err != nil {
 		return nil, err
 	}

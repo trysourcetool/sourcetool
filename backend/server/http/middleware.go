@@ -192,7 +192,7 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 			return
 		}
 
-		if subdomain != "" {
+		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
 				httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
@@ -221,7 +221,7 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 			return
 		}
 
-		if subdomain != "" {
+		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
 				httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
