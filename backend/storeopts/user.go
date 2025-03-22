@@ -194,6 +194,20 @@ func (o userOrganizationAccessByOrganizationSubdomainOption) Apply(b sq.SelectBu
 		Where(sq.Eq{`o."subdomain"`: o.subdomain})
 }
 
+func UserOrganizationAccessOrderBy(orderBy string) UserOrganizationAccessOption {
+	return userOrganizationAccessOrderByOption{orderBy: orderBy}
+}
+
+type userOrganizationAccessOrderByOption struct {
+	orderBy string
+}
+
+func (o userOrganizationAccessOrderByOption) isUserOrganizationAccessOption() {}
+
+func (o userOrganizationAccessOrderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(o.orderBy)
+}
+
 type UserGroupOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
 	isUserGroupOption()

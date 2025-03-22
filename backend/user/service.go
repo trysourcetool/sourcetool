@@ -63,27 +63,29 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 	currentOrg := ctxutil.CurrentOrganization(ctx)
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID))
+	if err != nil {
+		return nil, err
+	}
 	var orgAccess *model.UserOrganizationAccess
-	if currentOrg == nil {
-		orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID))
-		if err != nil {
-			return nil, err
-		}
-		if len(orgAccesses) > 1 {
-			return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
-		}
-		currentOrg, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccesses[0].OrganizationID))
-		if err != nil {
-			return nil, err
-		}
-		orgAccess = orgAccesses[0]
-	} else {
-		var err error
-		orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
-			storeopts.UserOrganizationAccessByUserID(currentUser.ID),
-			storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
-		if err != nil {
-			return nil, err
+	if len(orgAccesses) > 0 {
+		if currentOrg == nil {
+			if len(orgAccesses) > 1 {
+				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
+			}
+			currentOrg, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccesses[0].OrganizationID))
+			if err != nil {
+				return nil, err
+			}
+			orgAccess = orgAccesses[0]
+		} else {
+			var err error
+			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
+				storeopts.UserOrganizationAccessByUserID(currentUser.ID),
+				storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -335,15 +337,22 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	// TODO: replace these with a single function
 	subdomain := ctxutil.Subdomain(ctx)
 	var orgAccess *model.UserOrganizationAccess
+	var orgSubdomain string
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 			if err != nil {
 				return nil, err
 			}
+			orgSubdomain = subdomain
 		} else {
 			if len(orgAccesses) == 1 {
 				orgAccess = orgAccesses[0]
+				o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				orgSubdomain = conv.SafeValue(o.Subdomain)
 			} else {
 				loginURLs := make([]string, 0, len(orgAccesses))
 
@@ -394,7 +403,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	u.Secret = hashedSecret
 
-	authURL, err := buildSaveAuthURL(subdomain)
+	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +420,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
-		Domain:               config.Config.OrgDomain(subdomain),
+		Domain:               config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
@@ -725,7 +734,17 @@ func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, 
 		Slug:           model.EnvironmentSlugDevelopment,
 		Color:          model.EnvironmentColorDevelopment,
 	}
-	if err := tx.Environment().Create(ctx, devEnv); err != nil {
+	envs := []*model.Environment{
+		{
+			ID:             uuid.Must(uuid.NewV4()),
+			OrganizationID: org.ID,
+			Name:           model.EnvironmentNameProduction,
+			Slug:           model.EnvironmentSlugProduction,
+			Color:          model.EnvironmentColorProduction,
+		},
+		devEnv,
+	}
+	if err := tx.Environment().BulkInsert(ctx, envs); err != nil {
 		return err
 	}
 
@@ -956,7 +975,11 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(
+		ctx,
+		storeopts.UserOrganizationAccessByUserID(u.ID),
+		storeopts.UserOrganizationAccessOrderBy("created_at DESC"),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1317,7 +1340,7 @@ func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAut
 
 		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
 			ID:        state,
-			Domain:    config.Config.OrgDomain("auth"),
+			Domain:    config.Config.OrgHostname("auth"),
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
 			Invited:   false,
 		})

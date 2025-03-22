@@ -251,6 +251,14 @@ func SaveAuthOutputToResponse(out *dto.SaveAuthOutput) *responses.SaveAuthRespon
 	}
 }
 
+// ObtainAuthTokenOutputToResponse converts from dto.ObtainAuthTokenOutput to responses.ObtainAuthTokenResponse.
+func ObtainAuthTokenOutputToResponse(out *dto.ObtainAuthTokenOutput) *responses.ObtainAuthTokenResponse {
+	return &responses.ObtainAuthTokenResponse{
+		AuthURL: out.AuthURL,
+		Token:   out.Token,
+	}
+}
+
 // InviteUsersRequestToDTOInput converts from requests.InviteUsersRequest to dto.InviteUsersInput.
 func InviteUsersRequestToDTOInput(in requests.InviteUsersRequest) dto.InviteUsersInput {
 	return dto.InviteUsersInput{
@@ -301,6 +309,13 @@ func SignUpInvitationRequestToDTOInput(in requests.SignUpInvitationRequest) dto.
 func SignUpInvitationOutputToResponse(out *dto.SignUpInvitationOutput) *responses.SignUpInvitationResponse {
 	return &responses.SignUpInvitationResponse{
 		ExpiresAt: out.ExpiresAt,
+	}
+}
+
+// GetGoogleAuthCodeURLOutputToResponse converts from dto.GetGoogleAuthCodeURLOutput to responses.GetGoogleAuthCodeURLResponse.
+func GetGoogleAuthCodeURLOutputToResponse(out *dto.GetGoogleAuthCodeURLOutput) *responses.GetGoogleAuthCodeURLResponse {
+	return &responses.GetGoogleAuthCodeURLResponse{
+		URL: out.URL,
 	}
 }
 
