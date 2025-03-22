@@ -732,7 +732,17 @@ func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, 
 		Slug:           model.EnvironmentSlugDevelopment,
 		Color:          model.EnvironmentColorDevelopment,
 	}
-	if err := tx.Environment().Create(ctx, devEnv); err != nil {
+	envs := []*model.Environment{
+		{
+			ID:             uuid.Must(uuid.NewV4()),
+			OrganizationID: org.ID,
+			Name:           model.EnvironmentNameProduction,
+			Slug:           model.EnvironmentSlugProduction,
+			Color:          model.EnvironmentColorProduction,
+		},
+		devEnv,
+	}
+	if err := tx.Environment().BulkInsert(ctx, envs); err != nil {
 		return err
 	}
 
