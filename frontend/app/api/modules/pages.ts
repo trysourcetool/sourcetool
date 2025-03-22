@@ -10,14 +10,14 @@ export type Page = {
   route: string;
 };
 
-export const listPages = async () => {
+export const listPages = async (params: { environmentId: string }) => {
   const res = await api.get<{
     pages: Page[];
     groupPages: GroupPage[];
     groups: Group[];
     userGroups: UserGroup[];
     users: User[];
-  }>({ path: '/pages', auth: true });
+  }>({ path: '/pages', auth: true, params });
 
   return res;
 };

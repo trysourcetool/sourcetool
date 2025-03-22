@@ -10,7 +10,6 @@ import {
 } from 'react-router';
 import type { LinksFunction } from 'react-router';
 import i18n from './i18n';
-
 import styles from './tailwind.css?url';
 import { ThemeProvider } from 'next-themes';
 import { I18nextProvider, useTranslation } from 'react-i18next';

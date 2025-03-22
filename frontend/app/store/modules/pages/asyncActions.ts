@@ -5,9 +5,9 @@ import type { ErrorResponse } from '@/api/instance';
 
 export const listPages = createAsyncThunk(
   'pages/listPages',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (params: { environmentId: string }, { dispatch, rejectWithValue }) => {
     try {
-      const res = await api.pages.listPages();
+      const res = await api.pages.listPages(params);
 
       return res;
     } catch (error: any) {
