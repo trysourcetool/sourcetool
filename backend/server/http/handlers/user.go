@@ -712,7 +712,7 @@ func (h *UserHandler) GetGoogleAuthCodeURL(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, out); err != nil {
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetGoogleAuthCodeURLOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

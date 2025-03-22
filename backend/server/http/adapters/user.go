@@ -304,6 +304,13 @@ func SignUpInvitationOutputToResponse(out *dto.SignUpInvitationOutput) *response
 	}
 }
 
+// GetGoogleAuthCodeURLOutputToResponse converts from dto.GetGoogleAuthCodeURLOutput to responses.GetGoogleAuthCodeURLResponse.
+func GetGoogleAuthCodeURLOutputToResponse(out *dto.GetGoogleAuthCodeURLOutput) *responses.GetGoogleAuthCodeURLResponse {
+	return &responses.GetGoogleAuthCodeURLResponse{
+		URL: out.URL,
+	}
+}
+
 // GoogleOAuthCallbackRequestToDTOInput converts from requests.GoogleOAuthCallbackRequest to dto.GoogleOAuthCallbackInput.
 func GoogleOAuthCallbackRequestToDTOInput(in requests.GoogleOAuthCallbackRequest) dto.GoogleOAuthCallbackInput {
 	return dto.GoogleOAuthCallbackInput{

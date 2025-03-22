@@ -1324,7 +1324,7 @@ func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAut
 
 		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
 			ID:        state,
-			Domain:    config.Config.OrgDomain("auth"),
+			Domain:    config.Config.OrgHostname("auth"),
 			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
 			Invited:   false,
 		})
