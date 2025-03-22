@@ -194,8 +194,16 @@ type SendInvitationEmail struct {
 	URLs     map[string]string // email -> url
 }
 
+type SendMultipleOrganizationsEmail struct {
+	To        string
+	FirstName string
+	Email     string
+	LoginURLs []string
+}
+
 type UserMailer interface {
 	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(context.Context, *SendInvitationEmail) error
+	SendMultipleOrganizationsEmail(context.Context, *SendMultipleOrganizationsEmail) error
 }

@@ -339,7 +339,15 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	if config.Config.IsCloudEdition {
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	} else {
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+			int(model.TokenExpiration().Seconds()),
+			int(model.SecretExpiration.Seconds()),
+			int(model.XSRFTokenExpiration.Seconds()),
+			config.Config.BaseDomain)
+	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
@@ -377,7 +385,15 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	if config.Config.IsCloudEdition {
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	} else {
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+			int(model.TokenExpiration().Seconds()),
+			int(model.SecretExpiration.Seconds()),
+			int(model.XSRFTokenExpiration.Seconds()),
+			config.Config.BaseDomain)
+	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,

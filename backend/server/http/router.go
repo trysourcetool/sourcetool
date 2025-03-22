@@ -42,20 +42,18 @@ func NewRouter(
 func (router *Router) Build() chi.Router {
 	r := chi.NewRouter()
 
-	r.Use(router.middleware.SetHTTPHeader)
-
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/users", func(r chi.Router) {
-			r.Post("/signin", router.user.SignIn)
-			r.Post("/signup/instructions", router.user.SendSignUpInstructions)
-			r.Post("/signup", router.user.SignUp)
-			r.Post("/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURL)
-			r.Post("/oauth/google/signin", router.user.SignInWithGoogle)
-			r.Post("/oauth/google/signup", router.user.SignUpWithGoogle)
 			r.Get("/oauth/google/callback", router.user.GoogleOAuthCallback)
 
 			r.Group(func(r chi.Router) {
-				r.Use(router.middleware.AuthOrganization)
+				r.Use(router.middleware.AuthOrganizationIfSubdomainExists)
+				r.Post("/signin", router.user.SignIn)
+				r.Post("/signup/instructions", router.user.SendSignUpInstructions)
+				r.Post("/signup", router.user.SignUp)
+				r.Post("/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURL)
+				r.Post("/oauth/google/signin", router.user.SignInWithGoogle)
+				r.Post("/oauth/google/signup", router.user.SignUpWithGoogle)
 				r.Post("/saveAuth", router.user.SaveAuth)
 				r.Post("/refreshToken", router.user.RefreshToken)
 				r.Post("/invitations/signin", router.user.SignInInvitation)
@@ -66,7 +64,7 @@ func (router *Router) Build() chi.Router {
 			})
 
 			r.Group(func(r chi.Router) {
-				r.Use(router.middleware.AuthUser)
+				r.Use(router.middleware.AuthUserWithOrganizationIfSubdomainExists)
 				r.Get("/me", router.user.GetMe)
 				r.Post("/obtainAuthToken", router.user.ObtainAuthToken)
 			})

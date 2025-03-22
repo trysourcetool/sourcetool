@@ -37,6 +37,7 @@ var (
 	ErrUserGoogleAuthRequestNotFound      = Status("user_google_auth_request_not_found", 404)
 	ErrUserOrganizationAccessNotFound     = Status("user_organization_access_not_found", 404)
 	ErrUserGroupNotFound                  = Status("user_group_not_found", 404)
+	ErrUserMultipleOrganizations          = Status("user_multiple_organizations", 422)
 )
 
 type Meta []any

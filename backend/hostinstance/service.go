@@ -13,7 +13,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )
 
@@ -30,18 +29,13 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
-	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
+	currentOrg := ctxutil.CurrentOrganization(ctx)
+	if currentOrg == nil {
+		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
 	hostInstanceOpts := []storeopts.HostInstanceOption{
-		storeopts.HostInstanceByOrganizationID(o.ID),
+		storeopts.HostInstanceByOrganizationID(currentOrg.ID),
 	}
 	if in.PageID != nil {
 		pageID, err := uuid.FromString(conv.SafeValue(in.PageID))

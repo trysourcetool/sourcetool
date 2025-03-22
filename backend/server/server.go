@@ -71,6 +71,7 @@ func New(d *infra.Dependency) *Server {
 
 func (s *Server) router() chi.Router {
 	r := chi.NewRouter()
+	r.Use(setSubdomain)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
