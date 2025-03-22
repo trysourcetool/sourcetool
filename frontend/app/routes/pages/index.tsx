@@ -4,7 +4,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
