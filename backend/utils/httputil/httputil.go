@@ -106,8 +106,40 @@ func ValidateRequest(p any) error {
 }
 
 func validatePassword(fl validator.FieldLevel) bool {
-	r := regexp.MustCompile(`^[!-~]{8,32}$`)
-	return r.MatchString(fl.Field().String())
+	password := fl.Field().String()
+
+	// Check minimum length
+	if len(password) < 8 {
+		return false
+	}
+
+	// Check for at least one letter
+	hasLetter := false
+	for _, c := range password {
+		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') {
+			hasLetter = true
+			break
+		}
+	}
+	if !hasLetter {
+		return false
+	}
+
+	// Check for at least one digit
+	hasDigit := false
+	for _, c := range password {
+		if c >= '0' && c <= '9' {
+			hasDigit = true
+			break
+		}
+	}
+	if !hasDigit {
+		return false
+	}
+
+	// Check for valid characters only
+	validChars := regexp.MustCompile(`^[a-zA-Z0-9!?_+*'"\` + "`" + `#$%&\-^\\@;:,./=~|[\](){}<>]+$`)
+	return validChars.MatchString(password)
 }
 
 func ValidateJSONString(s string) error {

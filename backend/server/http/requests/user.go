@@ -17,8 +17,8 @@ type SignUpRequest struct {
 	Token                string `json:"token" validate:"required"`
 	FirstName            string `json:"firstName" validate:"required"`
 	LastName             string `json:"lastName" validate:"required"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required"`
+	Password             string `json:"password" validate:"required,password"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 type SignUpWithGoogleRequest struct {
@@ -51,8 +51,8 @@ type SignUpInvitationRequest struct {
 	InvitationToken      string `json:"invitationToken" validate:"required"`
 	FirstName            string `json:"firstName" validate:"required"`
 	LastName             string `json:"lastName" validate:"required"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required"`
+	Password             string `json:"password" validate:"required,password"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 type GoogleOAuthCallbackRequest struct {
@@ -81,8 +81,8 @@ type UpdateUserRequest struct {
 
 type UpdateUserPasswordRequest struct {
 	CurrentPassword      string `json:"currentPassword" validate:"required"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required"`
+	Password             string `json:"password" validate:"required,password"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 type SendUpdateUserEmailInstructionsRequest struct {

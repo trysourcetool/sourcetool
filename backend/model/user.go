@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
@@ -128,14 +127,6 @@ type UserGroup struct {
 
 func (m *User) FullName() string {
 	return fmt.Sprintf("%s %s", m.FirstName, m.LastName)
-}
-
-func ValidatePassword(p string) error {
-	if err := validation.Validate(p, validation.Length(8, 32)); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type UserStore interface {
