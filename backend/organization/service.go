@@ -15,7 +15,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type Service interface {
@@ -154,17 +153,12 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 		return nil, err
 	}
 
-	subdomain, err := httputil.GetSubdomainFromHost(ctxutil.HTTPHost(ctx))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
+	if currentOrg == nil {
+		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
-	o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, err
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(o.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +206,6 @@ func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUse
 	}
 
 	return &dto.UpdateOrganizationUserOutput{
-		User: dto.UserFromModel(u, o, orgAccess.Role),
+		User: dto.UserFromModel(u, currentOrg, orgAccess.Role),
 	}, nil
 }

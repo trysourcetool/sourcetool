@@ -11,7 +11,7 @@ type ctxKey string
 const (
 	CurrentUserCtxKey         ctxKey = "currentUser"
 	CurrentOrganizationCtxKey ctxKey = "currentOrganization"
-	HTTPHostCtxKey            ctxKey = "host"
+	SubdomainCtxKey           ctxKey = "subdomain"
 )
 
 func CurrentUser(ctx context.Context) *model.User {
@@ -30,8 +30,8 @@ func CurrentOrganization(ctx context.Context) *model.Organization {
 	return v
 }
 
-func HTTPHost(ctx context.Context) string {
-	v, ok := ctx.Value(HTTPHostCtxKey).(string)
+func Subdomain(ctx context.Context) string {
+	v, ok := ctx.Value(SubdomainCtxKey).(string)
 	if !ok {
 		return ""
 	}
@@ -46,8 +46,8 @@ func withOrganization(ctx context.Context, org *model.Organization) context.Cont
 	return context.WithValue(ctx, CurrentOrganizationCtxKey, org)
 }
 
-func withHTTPHost(ctx context.Context, host string) context.Context {
-	return context.WithValue(ctx, HTTPHostCtxKey, host)
+func withSubdomain(ctx context.Context, subdomain string) context.Context {
+	return context.WithValue(ctx, SubdomainCtxKey, subdomain)
 }
 
 func NewBackgroundContext(ctx context.Context) context.Context {
@@ -59,8 +59,8 @@ func NewBackgroundContext(ctx context.Context) context.Context {
 	if org := CurrentOrganization(ctx); org != nil {
 		bgCtx = withOrganization(bgCtx, org)
 	}
-	if host := HTTPHost(ctx); host != "" {
-		bgCtx = withHTTPHost(bgCtx, host)
+	if subdomain := Subdomain(ctx); subdomain != "" {
+		bgCtx = withSubdomain(bgCtx, subdomain)
 	}
 
 	return bgCtx
