@@ -335,15 +335,22 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	// TODO: replace these with a single function
 	subdomain := ctxutil.Subdomain(ctx)
 	var orgAccess *model.UserOrganizationAccess
+	var orgSubdomain string
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(u.ID), storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 			if err != nil {
 				return nil, err
 			}
+			orgSubdomain = subdomain
 		} else {
 			if len(orgAccesses) == 1 {
 				orgAccess = orgAccesses[0]
+				o, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				orgSubdomain = conv.SafeValue(o.Subdomain)
 			} else {
 				loginURLs := make([]string, 0, len(orgAccesses))
 
@@ -394,7 +401,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	u.Secret = hashedSecret
 
-	authURL, err := buildSaveAuthURL(subdomain)
+	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +418,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		IsOrganizationExists: orgAccess != nil,
-		Domain:               config.Config.OrgDomain(subdomain),
+		Domain:               config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
