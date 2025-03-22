@@ -331,12 +331,11 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	subdomain := ctxutil.Subdomain(ctx)
 	var orgAccess *model.UserOrganizationAccess
 	var orgSubdomain string
-	var org *model.Organization
 
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// For specific organization subdomain, resolve org and access
-			org, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
@@ -346,7 +345,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 			if len(orgAccesses) == 1 {
 				// Single organization - redirect to it
 				orgAccess = orgAccesses[0]
-				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 				if err != nil {
 					return nil, err
 				}
@@ -359,7 +358,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	} else {
 		// Self-hosted mode has only one organization
 		orgAccess = orgAccesses[0]
-		org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+		_, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 		if err != nil {
 			return nil, err
 		}
@@ -472,7 +471,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// For specific organization subdomain, verify user has access
-			org, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
 			if err != nil {
 				return nil, err
 			}
@@ -499,7 +498,7 @@ func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogl
 		}
 	} else {
 		// Self-hosted edition - get the user's organization
-		org, orgAccess, err = s.getOrganizationInfo(ctx, u)
+		_, orgAccess, err = s.getOrganizationInfo(ctx, u)
 		if err != nil {
 			if !errdefs.IsUserOrganizationAccessNotFound(err) {
 				return nil, err
