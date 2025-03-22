@@ -24,7 +24,6 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { SelectValue } from '@radix-ui/react-select';
-import clsx from 'clsx';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -35,7 +34,6 @@ export default function Pages() {
   const dispatch = useDispatch();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
-  const codeBlockRef = useRef<HTMLDivElement>(null);
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const user = useSelector(usersStore.selector.getMe);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
@@ -74,10 +72,16 @@ export default function Pages() {
             resultAction,
           )
         ) {
+          const localStorageEnvironmentId =
+            getLocalStorageSelectedEnvironmentId();
           const environmentId =
-            getLocalStorageSelectedEnvironmentId() ||
+            localStorageEnvironmentId ||
             resultAction.payload.environments[0].id;
+          console.log({ environmentId });
           setSelectedEnvironmentId(environmentId);
+          if (!localStorageEnvironmentId) {
+            setLocalStorageSelectedEnvironmentId(environmentId);
+          }
 
           await Promise.all([
             dispatch(
@@ -93,6 +97,8 @@ export default function Pages() {
       })();
     }
   }, [dispatch]);
+
+  console.log({ selectedEnvironmentId, environments });
 
   return (
     <div>
@@ -115,21 +121,23 @@ export default function Pages() {
           </div>
 
           <div className="w-full md:max-w-72">
-            <Select
-              value={selectedEnvironmentId ?? ''}
-              onValueChange={handleSelectEnvironment}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a environment" />
-              </SelectTrigger>
-              <SelectContent>
-                {environments.map((environment) => (
-                  <SelectItem key={environment.id} value={environment.id}>
-                    {environment.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {selectedEnvironmentId && (
+              <Select
+                value={selectedEnvironmentId ?? ''}
+                onValueChange={handleSelectEnvironment}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a environment" />
+                </SelectTrigger>
+                <SelectContent>
+                  {environments.map((environment) => (
+                    <SelectItem key={environment.id} value={environment.id}>
+                      {environment.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
         {isInitialLoaded && pages.length === 0 && (
