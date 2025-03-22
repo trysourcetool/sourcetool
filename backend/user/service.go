@@ -267,10 +267,6 @@ func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput
 }
 
 func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error) {
-	if in.Password != in.PasswordConfirmation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("password and password confirmation do not match"))
-	}
-
 	currentUser := ctxutil.CurrentUser(ctx)
 
 	h, err := hex.DecodeString(currentUser.Password)
@@ -280,10 +276,6 @@ func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswor
 
 	if err = bcrypt.CompareHashAndPassword(h, []byte(in.CurrentPassword)); err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
-	if err := model.ValidatePassword(in.Password); err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
 	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
@@ -622,14 +614,6 @@ func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUp
 	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(c.Email))
 	if err != nil {
 		return nil, err
-	}
-
-	if err := model.ValidatePassword(in.Password); err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	if in.Password != in.PasswordConfirmation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("password and password confirmation does not match"))
 	}
 
 	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
@@ -1230,14 +1214,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		if invitedOrg.ID != hostOrg.ID {
 			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
-	}
-
-	if err := model.ValidatePassword(in.Password); err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	if in.Password != in.PasswordConfirmation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("password and password confirmation does not match"))
 	}
 
 	encodedPass, err := bcrypt.GenerateFromPassword([]byte(in.Password), 10)
