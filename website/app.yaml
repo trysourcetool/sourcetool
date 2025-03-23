@@ -1,0 +1,23 @@
+runtime: python39
+service: default
+
+handlers:
+  - url: /(.*\.(js|css|png|jpg|jpeg|gif|ico|svg|webmanifest))$
+    static_files: \1
+    upload: .*\.(js|css|png|jpg|jpeg|gif|ico|svg|webmanifest)$
+    secure: always
+
+  - url: /assets/(.*)
+    static_files: assets/\1
+    upload: assets/(.*)
+    secure: always
+
+  - url: /
+    static_files: index.html
+    upload: index.html
+    secure: always
+
+  - url: /.*
+    static_files: index.html
+    upload: index.html
+    secure: always
