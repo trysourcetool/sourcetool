@@ -16,8 +16,8 @@ const (
 	EnvironmentNameDevelopment  = "Development"
 	EnvironmentSlugProduction   = "production"
 	EnvironmentSlugDevelopment  = "development"
-	EnvironmentColorProduction  = "#00ABD1"
-	EnvironmentColorDevelopment = "#00FF00"
+	EnvironmentColorProduction  = "#9333EA"
+	EnvironmentColorDevelopment = "#33ADEA"
 )
 
 type Environment struct {
