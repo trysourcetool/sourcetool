@@ -23,19 +23,23 @@ Built with Go's type system for reliability. Create robust applications with typ
 
 ## 🏗️ Architecture
 
-Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development:
+Sourcetool uses a three-tier architecture to connect your backend code directly to web browsers:
 
-```mermaid
-graph LR
-    A[Your Backend<br/>Backend logic & UI definitions] <-->|WebSocket| B[Sourcetool Server<br/>Authentication & Authorization]
-    B <-->|WebSocket| C[Web Browser<br/>Auto-generates browser UI]
+1. **Your Backend**
+   - Contains your business logic and UI definitions
+   - Written in Go using Sourcetool SDK
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style C fill:#bfb,stroke:#333,stroke-width:2px
-```
+2. **Sourcetool Server**
+   - Handles authentication and authorization
+   - Manages WebSocket connections
+   - Secures communication between components
 
-All components communicate bidirectionally in real-time.
+3. **Web Browser**
+   - Automatically generates the UI
+   - Provides real-time interaction
+   - No frontend code required
+
+All components communicate bidirectionally in real-time through secure WebSocket connections.
 
 ### How It Works:
 1. You define UI components in your backend code
