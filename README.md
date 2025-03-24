@@ -99,12 +99,15 @@ Sourcetool provides UI components you can use directly from Go code:
    }
 
    func main() {
-       st := sourcetool.New("your-api-key")
+       s := sourcetool.New(&sourcetool.Config{
+           APIKey:   "your_api_key",
+           Endpoint: "wss://hello.trysourcetool.com"
+       })
        
        // Register pages
-       st.Page("/users", "Users List", listUsersPage)
+       s.Page("/users", "Users List", listUsersPage)
        
-       if err := st.Listen(); err != nil {
+       if err := s.Listen(); err != nil {
            log.Fatal(err)
        }
    }
