@@ -54,7 +54,7 @@ Sourcetool provides UI components you can use directly from Go code:
 ## 🚀 Get Started
 
 1. **Get your API key**
-   - Sign up at [Sourcetool Dashboard](https://sourcetool-staging.uc.r.appspot.com/)
+   - Sign up at [Sourcetool Dashboard](https://auth.trysourcetool.com/)
 
 2. **Install the Sourcetool SDK**
    ```bash
