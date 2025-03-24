@@ -15,19 +15,23 @@ We take the security of sourcetool-go seriously. If you believe you have found a
 
 Instead, please report them via email to security@trysourcetool.com (if this email address is not yet set up, please report via private discussion in GitHub Security tab).
 
-You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+When reporting a vulnerability, please include:
+* Description of the issue
+* Steps to reproduce
+* Impact of the issue
+* Any relevant code or configuration
 
-Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
+We will acknowledge receipt within 48 hours and work to address the issue as soon as possible.
 
-* Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
-* Full paths of source file(s) related to the manifestation of the issue
-* The location of the affected source code (tag/branch/commit or direct URL)
-* Any special configuration required to reproduce the issue
-* Step-by-step instructions to reproduce the issue
-* Proof-of-concept or exploit code (if possible)
-* Impact of the issue, including how an attacker might exploit the issue
+## Security Updates
+Security updates will be released as soon as possible after a vulnerability is confirmed and fixed. We will:
+1. Confirm the vulnerability
+2. Develop and test a fix
+3. Release a security update
+4. Credit the reporter (if desired)
 
-This information will help us triage your report more quickly.
+## Contact
+For any security-related questions or concerns, please contact us at security@trysourcetool.com.
 
 ## Preferred Languages
 
