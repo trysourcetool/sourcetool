@@ -16,6 +16,8 @@ Built with Go's type system for reliability. Create robust applications with typ
 
 ## ✨ Features
 
+| Feature | Description |
+|---------|-------------|
 | 💻 Backend-only, Code-first development | Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows |
 | 🎨 Rich UI components | Pre-built components (forms, tables, inputs, etc.) |
 | 🔐 Granular permissions | Manage access to your internal tools with flexible group-based permissions |
@@ -51,6 +53,8 @@ All components communicate bidirectionally in real-time through secure WebSocket
 
 Sourcetool provides UI components you can use directly from Go code:
 
+| Component Type | Available Components |
+|---------------|---------------------|
 | 📝 Input Components | TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput |
 | 📋 Selection Components | Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup |
 | 🔳 Layout Components | Columns, Form |
