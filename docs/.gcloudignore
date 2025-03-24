@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+yarn.lock
+
+# Build artifacts
+.docusaurus/
+build/
+
+# Development files
+.git/
+.gitignore
+.vscode/
+*.log
+.env
+.env.*
+
+# Source files (not needed for deployment)
+src/
+docs/
+blog/
+static/
+
+# Configuration files
+.eslintrc*
+.prettierrc*
+tsconfig.json 
