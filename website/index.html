@@ -512,12 +512,15 @@
 }
 
 <span class="code-keyword">func</span> main() {
-    st := sourcetool.New(<span class="code-string">"your-api-key"</span>)
+    s := sourcetool.New(&sourcetool.Config{
+        APIKey:   <span class="code-string">"your_api_key"</span>,
+        Endpoint: <span class="code-string">"wss://hello.trysourcetool.com"</span>
+    })
     
     <span class="code-comment">// Register pages</span>
-    st.Page(<span class="code-string">"/users"</span>, <span class="code-string">"Users List"</span>, listUsersPage)
+    s.Page(<span class="code-string">"/users"</span>, <span class="code-string">"Users List"</span>, listUsersPage)
     
-    <span class="code-keyword">if</span> err := st.Listen(); err != <span class="code-keyword">nil</span> {
+    <span class="code-keyword">if</span> err := s.Listen(); err != <span class="code-keyword">nil</span> {
         log.Fatal(err)
     }
 }</code></pre>
