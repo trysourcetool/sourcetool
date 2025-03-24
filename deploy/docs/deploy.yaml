@@ -1,0 +1,28 @@
+timeout: '1600s'
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Build Docusaurus site
+  - name: node:20
+    entrypoint: yarn
+    args:
+      - 'install'
+    dir: 'docs'
+    timeout: '600s'
+
+  - name: node:20
+    entrypoint: yarn
+    args:
+      - 'build'
+    dir: 'docs'
+    timeout: '600s'
+
+  # Deploy to App Engine
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'app'
+      - 'deploy'
+      - 'docs/app.yaml'
+      - '--quiet'
+    timeout: '1600s'

@@ -1,0 +1,40 @@
+runtime: python39
+service: docs
+
+handlers:
+  # static files with a URL ending with a file extension
+  # (e.g. favicon.ico, manifest.json, jylade.png)
+  - url: /(.*\..+)$
+    static_files: build/\1
+    upload: build/(.*\..+)$
+    secure: always
+    http_headers:
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
+
+  # index page
+  - url: /
+    static_files: build/index.html
+    upload: build/index.html
+    secure: always
+    http_headers:
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
+
+  # anything that ends with a slash (e.g. /docs/)
+  - url: /(.*)/$
+    static_files: build/\1/index.html
+    upload: build/(.*)
+    secure: always
+    http_headers:
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
+
+  # anything else (e.g. /docs)
+  - url: /(.*)
+    static_files: build/\1/index.html
+    upload: build/(.*)
+    secure: always
+    http_headers:
+      X-Frame-Options: DENY
+      X-Content-Type-Options: nosniff
