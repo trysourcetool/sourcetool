@@ -1,102 +1,137 @@
 # Sourcetool
 
-This repository contains the Sourcetool application with both backend and frontend components.
+**Build Internal Tools with Just Backend Code**
 
-## Quick Start
+Sourcetool is an open-source internal tool builder that enables you to create full-featured applications without writing any frontend code.
 
-### Prerequisites
+## 🌟 About Sourcetool
 
-- Docker and Docker Compose
-- Go 1.22+ (for local development)
-- Node.js 20+ (for local development)
-- Make
+We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.
 
-### Setup
+### Backend-First Development
+Focus on your business logic while we handle the UI. Build complete internal tools using only Go code. No frontend expertise required.
 
-1. Copy the sample environment file:
+### Type-Safe & Flexible
+Built with Go's type system for reliability. Create robust applications with type-safe APIs and seamless integration.
+
+## ✨ Features
+
+| 💻 Backend-only, Code-first development | Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows |
+| 🎨 Rich UI components | Pre-built components (forms, tables, inputs, etc.) |
+| 🔐 Granular permissions | Manage access to your internal tools with flexible group-based permissions |
+| 🌐 Multiple environment support | Easily switch between different environments (development, staging, production) |
+
+## 🏗️ Architecture
+
+Sourcetool uses a three-tier architecture to connect your backend code directly to web browsers:
+
+1. **Your Backend**
+   - Contains your business logic and UI definitions
+   - Written in Go using Sourcetool SDK
+
+2. **Sourcetool Server**
+   - Handles authentication and authorization
+   - Manages WebSocket connections
+   - Secures communication between components
+
+3. **Web Browser**
+   - Automatically generates the UI
+   - Provides real-time interaction
+   - No frontend code required
+
+All components communicate bidirectionally in real-time through secure WebSocket connections.
+
+### How It Works:
+1. You define UI components in your backend code
+2. Sourcetool Server handles auth & permissions
+3. UI is automatically rendered in browser
+4. User interactions return to your backend code
+
+## 🎯 Components
+
+Sourcetool provides UI components you can use directly from Go code:
+
+| 📝 Input Components | TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput |
+| 📋 Selection Components | Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup |
+| 🔳 Layout Components | Columns, Form |
+| 📊 Display Components | Markdown, Table |
+| 🔘 Interactive Components | Button |
+
+## 🚀 Get Started
+
+1. **Get your API key**
+   - Sign up at [Sourcetool Dashboard](https://auth.trysourcetool.com/)
+
+2. **Install the Sourcetool SDK**
    ```bash
-   cp .env.example .env
+   go get github.com/trysourcetool/sourcetool-go
    ```
 
-2. Generate required keys and add them to your `.env` file:
-   ```bash
-   make gen-encryption-key
-   make gen-jwt-key
+3. **Write your first internal tool**
+   ```go
+   package main
+
+   import (
+       "github.com/trysourcetool/sourcetool-go"
+       "github.com/trysourcetool/sourcetool-go/textinput"
+       "github.com/trysourcetool/sourcetool-go/table"
+   )
+
+   func listUsersPage(ui sourcetool.UIBuilder) error {
+       ui.Markdown("## Users")
+
+       // Search form
+       name := ui.TextInput("Name", textinput.Placeholder("Enter name to search"))
+       
+       // Display users table
+       users, err := listUsers(name)
+       if err != nil {
+           return err
+       }
+       
+       ui.Table(users, table.Header("Users List"))
+       
+       return nil
+   }
+
+   func main() {
+       st := sourcetool.New("your-api-key")
+       
+       // Register pages
+       st.Page("/users", "Users List", listUsersPage)
+       
+       if err := st.Listen(); err != nil {
+           log.Fatal(err)
+       }
+   }
    ```
 
-3. Start the application:
-   ```bash
-   # For Community Edition (CE)
-   make up
-   
-   # For Enterprise Edition (EE)
-   make up-ee
-   ```
+## ❓ FAQ
 
-4. Access the application:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8080
-   - API Documentation: http://localhost:8080/swagger/index.html
+### What is Sourcetool?
+Sourcetool is an open-source internal tool builder that enables you to build full-featured internal tools without writing any frontend code. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.
 
-## Project Structure
+### Do I need frontend skills to use Sourcetool?
+No. As an internal tool builder, Sourcetool lets you create complete applications using only Go. The system automatically handles all UI rendering and interactions without requiring any frontend code.
 
-- `/backend` - Go backend service
-- `/frontend` - React frontend application
-- `/proto` - Protocol Buffers definitions
-- `/compose.yaml` - Docker Compose configuration for CE
-- `/compose.ee.yaml` - Docker Compose configuration for EE
-- `/Makefile` - Consolidated commands for development
+### What types of applications can I build with Sourcetool?
+Admin panels, dashboards, data management systems, monitoring tools, and any application where development speed is more important than custom UI/UX.
 
-## Available Commands
+### Is Sourcetool secure?
+Yes, Sourcetool is designed with security in mind. You deploy and run Sourcetool applications on your own infrastructure, keeping your code and sensitive data within your control.
 
-Run `make help` to see all available commands. Here are the most commonly used ones:
+### Is Sourcetool free to use?
+Check out the [Sourcetool website](https://sourcetool-staging.uc.r.appspot.com/) for pricing information. The SDK is open source under the Apache 2.0 license.
 
-### Docker Compose Commands
+## 📚 Resources
 
-- `make up` - Start the Community Edition (CE) services
-- `make up-ee` - Start the Enterprise Edition (EE) services
-- `make down` - Stop the CE services
-- `make down-ee` - Stop the EE services
-- `make logs` - View logs for CE services
-- `make logs-ee` - View logs for EE services
+- [Documentation](https://docs.trysourcetool.com)
+- [GitHub Repository](https://github.com/trysourcetool/sourcetool)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 
-### Development Commands
+---
 
-- `make gen-keys` - Generate both encryption and JWT keys
-- `make swagger` - Generate Swagger documentation
-- `make swagger-open` - Open Swagger UI in browser
-- `make lint` - Run linters on the CE codebase
-- `make lint-ee` - Run linters on the EE codebase
-
-### Database Commands
-
-- `make db-migrate` - Run database migrations
-
-### Protocol Buffer Commands
-
-- `make proto-generate` - Generate Go code from proto files
-- `make proto-lint` - Lint proto files
-- `make proto-format` - Format proto files
-
-### Maintenance Commands
-
-- `make remove-docker-images` - Remove untagged Docker images
-- `make remove-docker-builder` - Prune Docker builder cache
-
-## Environment Variables
-
-The application uses a single `.env` file at the root level for all services. See `.env.example` for the required variables.
-
-## Development
-
-### Backend
-
-The backend is a Go application that provides the API for the frontend. See the [backend README](backend/README.md) for more details.
-
-### Frontend
-
-The frontend is a React application built with Vite. See the [frontend README](frontend/README.md) for more details.
-
-### Protocol Buffers
-
-The application uses Protocol Buffers for API definitions. See the [proto README](proto/README.md) for more details.
+<div align="center">
+Made with ❤️ by the Sourcetool Team
+</div>
