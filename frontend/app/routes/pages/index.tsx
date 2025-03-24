@@ -9,7 +9,7 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
 import { File } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
@@ -36,7 +36,25 @@ export default function Pages() {
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const user = useSelector(usersStore.selector.getMe);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
+  const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const environments = useSelector(environmentsStore.selector.getEnvironments);
+
+  const selectedApiKey = useMemo(() => {
+    if (!selectedEnvironmentId) {
+      return null;
+    }
+    if (
+      environments.find((e) => e.id === selectedEnvironmentId)?.slug ===
+      'development'
+    ) {
+      return devKey;
+    }
+    return (
+      apiKeys.find((apiKey) => apiKey.id === selectedEnvironmentId) ?? null
+    );
+  }, [apiKeys, devKey, environments, selectedEnvironmentId]);
+
+  console.log({ selectedApiKey });
 
   // TODO: Consider using redux-persist if localStorage is used frequently
   const setLocalStorageSelectedEnvironmentId = (environmentId: string) => {
@@ -63,19 +81,26 @@ export default function Pages() {
     if (!isInitialLoading.current) {
       isInitialLoading.current = true;
       (async () => {
-        const resultAction = await dispatch(
-          environmentsStore.asyncActions.listEnvironments(),
-        );
+        const resultActions = await Promise.all([
+          dispatch(environmentsStore.asyncActions.listEnvironments()),
+          dispatch(apiKeysStore.asyncActions.listApiKeys()),
+        ]);
         if (
           environmentsStore.asyncActions.listEnvironments.fulfilled.match(
-            resultAction,
+            resultActions[0],
           )
         ) {
           const localStorageEnvironmentId =
             getLocalStorageSelectedEnvironmentId();
-          const environmentId =
+          let environmentId =
             localStorageEnvironmentId ||
-            resultAction.payload.environments[0].id;
+            resultActions[0].payload.environments[0].id;
+          const hasEnvironmentId = resultActions[0].payload.environments.some(
+            (e) => e.id === environmentId,
+          );
+          if (!hasEnvironmentId) {
+            environmentId = resultActions[0].payload.environments[0].id;
+          }
           console.log({ environmentId });
           setSelectedEnvironmentId(environmentId);
           if (!localStorageEnvironmentId) {
@@ -150,7 +175,7 @@ export default function Pages() {
             <CodeBlock
               code={`func main() {
 	s := sourcetool.New(&sourcetool.Config{
-		APIKey:   "${devKey?.key}",
+		APIKey:   "${selectedApiKey?.key ?? 'your_api_key'}",
 		Endpoint: "${user?.organization?.webSocketEndpoint}"
 	})
 
