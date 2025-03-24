@@ -121,7 +121,7 @@ Admin panels, dashboards, data management systems, monitoring tools, and any app
 Yes, Sourcetool is designed with security in mind. You deploy and run Sourcetool applications on your own infrastructure, keeping your code and sensitive data within your control.
 
 ### Is Sourcetool free to use?
-Check out the [Sourcetool website](https://sourcetool-staging.uc.r.appspot.com/) for pricing information. The SDK is open source under the Apache 2.0 license.
+Check out the [Sourcetool website](https://trysourcetool.com/) for pricing information.
 
 ## 📚 Resources
 
