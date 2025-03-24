@@ -202,6 +202,7 @@ Now that you've created your first Sourcetool application, you can:
 
 1. Learn more about [Sourcetool concepts](../concepts/pages)
 2. Explore the [component reference](../reference/components)
-3. Check out [best practices](../best-practices) for building robust applications
+<!-- TODO: Add best practices documentation -->
+<!-- 3. Check out [best practices](../best-practices) for building robust applications -->
 
 For detailed documentation and examples, visit our [documentation site](https://docs.trysourcetool.com).

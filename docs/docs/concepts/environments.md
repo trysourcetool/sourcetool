@@ -51,4 +51,5 @@ Now that you understand environments, learn about:
 
 - [Organizations](./organizations) for managing users and access control
 - [Pages](./pages) for building your application's UI
-- [API Keys](../reference/api-keys) for authenticating your application
+<!-- TODO: Add API Keys documentation -->
+<!-- - [API Keys](../reference/api-keys) for authenticating your application -->
