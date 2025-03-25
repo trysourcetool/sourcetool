@@ -1,0 +1,31 @@
+{
+  "name": "sourcetool",
+  "version": "0.0.1",
+  "description": "Sourcetool JavaScript SDK",
+  "author": "Sourcetool",
+  "license": "MIT",
+  "main": "dist/cjs/index.js",
+  "type": "module",
+  "module": "dist/esm/index.js",
+  "engines": {
+    "node": ">=18.20.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "arg": "^5.0.2",
+    "esbuild": "^0.25.1",
+    "eslint": "^9.23.0",
+    "eslint-plugin-vitest": "^0.5.4",
+    "glob": "^11.0.1",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  },
+  "scripts": {
+    "build": "npx tsx build/build.ts",
+    "build:watch": "npx tsx build/build.ts --watch"
+  }
+}
