@@ -8,7 +8,7 @@ import {
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
-import { File } from 'lucide-react';
+import { AlertCircle, File } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,9 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { SelectValue } from '@radix-ui/react-select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { $path } from 'safe-routes';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -50,7 +53,9 @@ export default function Pages() {
       return devKey;
     }
     return (
-      apiKeys.find((apiKey) => apiKey.id === selectedEnvironmentId) ?? null
+      apiKeys.find(
+        (apiKey) => apiKey.environment.id === selectedEnvironmentId,
+      ) ?? null
     );
   }, [apiKeys, devKey, environments, selectedEnvironmentId]);
 
@@ -165,13 +170,31 @@ export default function Pages() {
           </div>
         </div>
         {isInitialLoaded && pages.length === 0 && (
-          <div className="flex w-full flex-col gap-6">
+          <div className="flex w-full flex-col gap-4 rounded-md md:border md:p-6">
             <h2 className="text-xl font-bold">
               {t('routes_pages_placeholder_title')}
             </h2>
             <p className="font-normal text-sidebar-foreground">
               {t('routes_pages_placeholder_description')}
             </p>
+            {!selectedApiKey?.key && (
+              <Alert
+                variant="destructive"
+                className="border-destructive bg-destructive/10"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>No API Key Found for This Environment</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    Create an API key for this environment to access the setup
+                    code and get started with your integration.
+                  </p>
+                  <Button variant="destructive" asChild>
+                    <Link to={$path('/apiKeys/new')}>Edit API Key</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             <CodeBlock
               code={`func main() {
 	s := sourcetool.New(&sourcetool.Config{
@@ -215,7 +238,7 @@ export default function Pages() {
           </div>
         )}
         {pages.length > 0 && (
-          <div className="rounded-md border p-4">
+          <div className="rounded-md md:border md:p-4">
             <SidebarMenu>
               {/* TODO: Recursive processing and folder support */}
               {/* <Collapsible className="group/collapsible">
