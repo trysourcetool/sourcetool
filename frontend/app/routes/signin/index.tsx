@@ -36,7 +36,7 @@ export default function Signin() {
 
   const { isSourcetoolDomain, subDomain } = useAuth();
 
-  const isSigninWaiting = useSelector((state) => state.users.isSigninWaiting);
+  const isRequestMagicLinkWaiting = useSelector((state) => state.users.isRequestMagicLinkWaiting);
   const isOauthGoogleAuthWaiting = useSelector(
     (state) => state.users.isOauthGoogleAuthWaiting,
   );
@@ -120,8 +120,8 @@ export default function Signin() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={isSigninWaiting}>
-              {isSigninWaiting && <Loader2 className="size-4 animate-spin" />}
+            <Button type="submit" className="w-full" disabled={isRequestMagicLinkWaiting}>
+              {isRequestMagicLinkWaiting && <Loader2 className="size-4 animate-spin" />}
               {t('routes_signin_login_button')}
             </Button>
 

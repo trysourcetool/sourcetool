@@ -87,26 +87,6 @@ export const listUsers = createAsyncThunk(
   },
 );
 
-export const signin = createAsyncThunk(
-  'users/signin',
-  async (
-    params: { data: { email: string; password: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignin(params);
-
-      return res;
-    } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
 export const signout = createAsyncThunk(
   'users/signout',
   async (_, { dispatch, rejectWithValue }) => {
@@ -120,48 +100,6 @@ export const signout = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const signup = createAsyncThunk(
-  'users/signup',
-  async (
-    params: {
-      data: {
-        firstName: string;
-        lastName: string;
-        password: string;
-        passwordConfirmation: string;
-        token: string;
-      };
-    },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignup(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const signupInstructions = createAsyncThunk(
-  'users/signupInstructions',
-  async (
-    params: { data: { email: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignupInstructions(params);
-
-      return res;
-    } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
