@@ -45,9 +45,6 @@ export default function Signin() {
     email: string({
       required_error: t('zod_errors_email_required'),
     }).email(t('zod_errors_email_format')),
-    password: string({
-      required_error: t('zod_errors_password_required'),
-    }),
   });
 
   type Schema = z.infer<typeof schema>;
@@ -61,25 +58,10 @@ export default function Signin() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.signin({ data }),
+      usersStore.asyncActions.requestMagicLink({ data }),
     );
-    if (usersStore.asyncActions.signin.fulfilled.match(resultAction)) {
-      const result = await dispatch(
-        usersStore.asyncActions.saveAuth({
-          authUrl: resultAction.payload.authUrl,
-          data: { token: resultAction.payload.token },
-        }),
-      );
-      if (usersStore.asyncActions.saveAuth.fulfilled.match(result)) {
-        window.location.replace(result.payload.redirectUrl);
-      } else {
-        const result = await dispatch(usersStore.asyncActions.getUsersMe());
-        if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
-          if (!result.payload.user.organization) {
-            navigate($path('/organizations/new'));
-          }
-        }
-      }
+    if (usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)) {
+      navigate($path('/signin/emailSent', { email: data.email }));
     } else {
       toast({
         title: t('routes_signin_toast_failed'),
@@ -130,32 +112,6 @@ export default function Signin() {
                   <FormControl>
                     <Input
                       placeholder={t('routes_signin_email_placeholder')}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>{t('routes_signin_password_label')}</FormLabel>
-                    <Link
-                      className="text-sm font-normal text-muted-foreground underline"
-                      to={$path('/resetPassword')}
-                      tabIndex={-1}
-                    >
-                      {t('routes_signin_forgot_password')}
-                    </Link>
-                  </div>
-                  <FormControl>
-                    <Input
-                      placeholder={t('routes_signin_password_placeholder')}
-                      type="password"
                       {...field}
                     />
                   </FormControl>

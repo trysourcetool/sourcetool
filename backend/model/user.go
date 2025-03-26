@@ -192,9 +192,26 @@ type SendMultipleOrganizationsEmail struct {
 	LoginURLs []string
 }
 
+// Email structure for sending magic link email
+type SendMagicLinkEmail struct {
+	To        string
+	FirstName string
+	URL       string
+}
+
+// Email structure for sending multiple organizations magic link email
+type SendMultipleOrganizationsMagicLinkEmail struct {
+	To        string
+	FirstName string
+	Email     string
+	LoginURLs []string
+}
+
 type UserMailer interface {
 	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(context.Context, *SendInvitationEmail) error
 	SendMultipleOrganizationsEmail(context.Context, *SendMultipleOrganizationsEmail) error
+	SendMagicLinkEmail(context.Context, *SendMagicLinkEmail) error
+	SendMultipleOrganizationsMagicLinkEmail(context.Context, *SendMultipleOrganizationsMagicLinkEmail) error
 }

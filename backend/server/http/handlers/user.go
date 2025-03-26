@@ -1,3 +1,5 @@
+//go:build !ee
+
 package handlers
 
 import (
@@ -200,6 +202,117 @@ func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserPasswordOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// RequestMagicLink godoc
+// @ID request-magic-link
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.RequestMagicLinkRequest true " "
+// @Success 200 {object} responses.RequestMagicLinkResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/signin/magic/request [post].
+func (h *UserHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RequestMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	res, err := h.service.RequestMagicLink(r.Context(), adapters.RequestMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestMagicLinkOutputToResponse(res)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// AuthenticateWithMagicLink godoc
+// @ID authenticate-with-magic-link
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.AuthenticateWithMagicLinkRequest true " "
+// @Success 200 {object} responses.AuthenticateWithMagicLinkResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/auth/magic/authenticate [post].
+func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.AuthenticateWithMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.AuthenticateWithMagicLink(r.Context(), adapters.AuthenticateWithMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if !out.IsOrganizationExists {
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// RegisterWithMagicLink godoc
+// @ID register-with-magic-link
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param request body requests.RegisterWithMagicLinkRequest true "Register with magic link request"
+// @Success 200 {object} responses.RegisterWithMagicLinkResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/auth/magic/register [post]
+func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RegisterWithMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		return
+	}
+
+	out, err := h.service.RegisterWithMagicLink(r.Context(), adapters.RegisterWithMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if config.Config.IsCloudEdition {
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+	} else {
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+			int(model.TokenExpiration().Seconds()),
+			int(model.SecretExpiration.Seconds()),
+			int(model.XSRFTokenExpiration.Seconds()),
+			config.Config.BaseDomain)
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Successfully signed up",
+	}); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

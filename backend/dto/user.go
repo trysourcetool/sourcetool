@@ -133,6 +133,35 @@ type UpdateUserPasswordOutput struct {
 	User *User
 }
 
+// RequestMagicLinkInput is the input for requesting a magic link for passwordless auth
+type RequestMagicLinkInput struct {
+	Email string
+}
+
+// RequestMagicLinkOutput is the output for the magic link request operation
+type RequestMagicLinkOutput struct {
+	Email string
+	IsNew bool // Indicates if this is a new user
+}
+
+// AuthenticateWithMagicLinkInput is the input for authenticating with a magic link token
+type AuthenticateWithMagicLinkInput struct {
+	Token     string
+	FirstName string // Optional: used for new users
+	LastName  string // Optional: used for new users
+}
+
+// AuthenticateWithMagicLinkOutput is the output for authenticating with a magic link token
+type AuthenticateWithMagicLinkOutput struct {
+	AuthURL              string
+	Token                string
+	IsOrganizationExists bool
+	Secret               string
+	XSRFToken            string
+	Domain               string
+	IsNewUser            bool // Indicates if a new user was created
+}
+
 // SignInInput is the input for Sign In operation.
 type SignInInput struct {
 	Email    string
@@ -359,4 +388,18 @@ type ResendInvitationInput struct {
 // ResendInvitationOutput is the output for Resend Invitation operation.
 type ResendInvitationOutput struct {
 	UserInvitation *UserInvitation
+}
+
+// RegisterWithMagicLinkInput is the input for registering with a magic link
+type RegisterWithMagicLinkInput struct {
+	Token     string
+	FirstName string
+	LastName  string
+}
+
+// RegisterWithMagicLinkOutput is the output for registering with a magic link
+type RegisterWithMagicLinkOutput struct {
+	Token     string
+	Secret    string
+	XSRFToken string
 }

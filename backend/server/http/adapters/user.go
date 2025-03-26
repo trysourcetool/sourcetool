@@ -137,6 +137,49 @@ func UpdateUserPasswordOutputToResponse(out *dto.UpdateUserPasswordOutput) *resp
 	}
 }
 
+// RequestMagicLinkRequestToDTOInput converts from requests.RequestMagicLinkRequest to dto.RequestMagicLinkInput.
+func RequestMagicLinkRequestToDTOInput(in requests.RequestMagicLinkRequest) dto.RequestMagicLinkInput {
+	return dto.RequestMagicLinkInput{
+		Email: in.Email,
+	}
+}
+
+// AuthenticateWithMagicLinkRequestToDTOInput converts from requests.AuthenticateWithMagicLinkRequest to dto.AuthenticateWithMagicLinkInput.
+func AuthenticateWithMagicLinkRequestToDTOInput(in requests.AuthenticateWithMagicLinkRequest) dto.AuthenticateWithMagicLinkInput {
+	return dto.AuthenticateWithMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
+// AuthenticateWithMagicLinkOutputToResponse converts from dto.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
+func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
+	return &responses.AuthenticateWithMagicLinkResponse{
+		AuthURL:              out.AuthURL,
+		Token:                out.Token,
+		IsOrganizationExists: out.IsOrganizationExists,
+		IsNewUser:            out.IsNewUser,
+	}
+}
+
+// RequestMagicLinkOutputToResponse converts from dto.RequestMagicLinkOutput to responses.RequestMagicLinkResponse.
+func RequestMagicLinkOutputToResponse(out *dto.RequestMagicLinkOutput) responses.RequestMagicLinkResponse {
+	return responses.RequestMagicLinkResponse{
+		Email: out.Email,
+		IsNew: out.IsNew,
+	}
+}
+
+// RegisterWithMagicLinkRequestToDTOInput converts from requests.RegisterWithMagicLinkRequest to dto.RegisterWithMagicLinkInput.
+func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkRequest) dto.RegisterWithMagicLinkInput {
+	return dto.RegisterWithMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
 // SignInRequestToDTOInput converts from requests.SignInRequest to dto.SignInInput.
 func SignInRequestToDTOInput(in requests.SignInRequest) dto.SignInInput {
 	return dto.SignInInput{

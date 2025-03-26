@@ -4,6 +4,16 @@ type SendSignUpInstructionsRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
+type RequestMagicLinkRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type AuthenticateWithMagicLinkRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
 type SignInRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
@@ -96,4 +106,11 @@ type UpdateUserEmailRequest struct {
 
 type ResendInvitationRequest struct {
 	InvitationID string `json:"invitationId" validate:"required,uuid"`
+}
+
+// RegisterWithMagicLinkRequest represents the request body for registering with a magic link
+type RegisterWithMagicLinkRequest struct {
+	Token     string `json:"token"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }

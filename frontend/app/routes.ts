@@ -8,6 +8,8 @@ import {
 export default [
   layout('./routes/layout-default.tsx', [
     route('/signin', './routes/signin/index.tsx'),
+    route('/signin/emailSent', './routes/signin/emailSent/index.tsx'),
+    route('/auth/magic/authenticate', './routes/auth/magic/authenticate/index.tsx'),
     route('/signup', './routes/signup/index.tsx'),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
     route('/signup/emailSent', './routes/signup/emailSent/index.tsx'),

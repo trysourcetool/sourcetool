@@ -50,6 +50,9 @@ func (router *Router) Build() chi.Router {
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthOrganizationIfSubdomainExists)
 				r.Post("/signin", router.user.SignIn)
+				r.Post("/auth/magic/request", router.user.RequestMagicLink)
+				r.Post("/auth/magic/authenticate", router.user.AuthenticateWithMagicLink)
+				r.Post("/auth/magic/register", router.user.RegisterWithMagicLink)
 				r.Post("/signup/instructions", router.user.SendSignUpInstructions)
 				r.Post("/signup", router.user.SignUp)
 				r.Post("/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURL)

@@ -413,3 +413,48 @@ export const usersSendUpdateEmailInstructions = async (params: {
 
   return res;
 };
+
+export const usersRequestMagicLink = async (params: {
+  data: {
+    email: string;
+  };
+}) => {
+  const res = await api.post({
+    path: '/users/auth/magic/request',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithMagicLink = async (params: {
+  data: {
+    token: string;
+  };
+}) => {
+  const res = await api.post<{
+    authUrl: string;
+    token: string;
+    isNewUser: boolean;
+  }>({
+    path: '/users/auth/magic/authenticate',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersRegisterWithMagicLink = async (params: {
+  data: {
+    token: string;
+    firstName: string;
+    lastName: string;
+  };
+}) => {
+  const res = await api.post({
+    path: '/users/auth/magic/register',
+    data: params.data,
+  });
+
+  return res;
+};

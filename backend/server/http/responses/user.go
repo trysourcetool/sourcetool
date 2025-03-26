@@ -26,6 +26,18 @@ type SignUpWithGoogleResponse struct {
 	XSRFToken string
 }
 
+type RequestMagicLinkResponse struct {
+	Email string `json:"email"`
+	IsNew bool   `json:"isNew"`
+}
+
+type AuthenticateWithMagicLinkResponse struct {
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	IsNewUser            bool   `json:"isNewUser"`
+}
+
 type RefreshTokenResponse struct {
 	ExpiresAt string `json:"expiresAt"`
 }

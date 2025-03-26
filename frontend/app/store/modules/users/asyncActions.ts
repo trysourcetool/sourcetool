@@ -459,3 +459,60 @@ export const usersSendUpdateEmailInstructions = createAsyncThunk(
     }
   },
 );
+
+export const requestMagicLink = createAsyncThunk(
+  'users/requestMagicLink',
+  async (
+    params: { data: { email: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRequestMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const authenticateWithMagicLink = createAsyncThunk(
+  'users/authenticateWithMagicLink',
+  async (
+    params: { data: { token: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersAuthenticateWithMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const registerWithMagicLink = createAsyncThunk(
+  'users/registerWithMagicLink',
+  async (
+    params: { data: { token: string; firstName: string; lastName: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRegisterWithMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);

@@ -150,3 +150,67 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 		return nil
 	})
 }
+
+func (m *MailerCE) SendMagicLinkEmail(ctx context.Context, in *model.SendMagicLinkEmail) error {
+	subject := "Sign in to your Sourcetool account"
+	content := fmt.Sprintf(`Hi %s,
+
+Here's your magic link to sign in to your Sourcetool account. Click the link below to access your account securely without a password:
+
+%s
+
+- This link will expire in 15 minutes for security reasons.
+- If you didn't request this link, you can safely ignore this email.
+
+Thank you for using Sourcetool!
+
+The Sourcetool Team`, in.FirstName, in.URL)
+
+	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
+
+	return emailutil.SendWithLogging(ctx, msg, func() error {
+		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+		return nil
+	})
+}
+
+func (m *MailerCE) SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *model.SendMultipleOrganizationsMagicLinkEmail) error {
+	subject := "Sign in to your Sourcetool organizations"
+
+	urlList := ""
+	for _, url := range in.LoginURLs {
+		urlList += url + "\n"
+	}
+
+	content := fmt.Sprintf(`Hi %s,
+
+Your email, %s, is associated with multiple Sourcetool organizations. You may sign in to each one by clicking its magic link below:
+
+%s
+
+- These links will expire in 15 minutes for security reasons.
+- If you didn't request these links, you can safely ignore this email.
+
+Thank you for using Sourcetool!
+
+The Sourcetool Team`, in.FirstName, in.Email, urlList)
+
+	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
+
+	return emailutil.SendWithLogging(ctx, msg, func() error {
+		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+		return nil
+	})
+}
