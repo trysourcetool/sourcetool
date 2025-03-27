@@ -5,10 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 )
 
 // hashSecret creates a SHA-256 hash of a plaintext secret.
@@ -28,14 +24,4 @@ func generateSecret() (plainSecret, hashedSecret string, err error) {
 	hashedSecret = hashSecret(plainSecret)
 
 	return plainSecret, hashedSecret, nil
-}
-
-// hashPassword creates a bcrypt hash of the password.
-func hashPassword(password string) (string, error) {
-	encodedPass, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return "", errdefs.ErrInternal(err)
-	}
-
-	return hex.EncodeToString(encodedPass[:]), nil
 }
