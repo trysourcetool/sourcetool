@@ -142,7 +142,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
           <SidebarGroup>
             {pages.map((page) => (
               <SidebarMenu key={page.id}>
-                <SidebarMenuButton asChild isActive={path === page.route}>
+                <SidebarMenuButton asChild isActive={`/${path}` === page.route}>
                   <Link to={`/pages${page.route}`}>
                     <span>{page.name}</span>
                   </Link>
