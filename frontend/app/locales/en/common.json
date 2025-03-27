@@ -358,5 +358,12 @@
   "routes_users_toast_invitation_resent": "Invitation resent",
   "routes_users_toast_invitation_resent_description": "The invitation has been resent to the user",
   "routes_users_toast_invitation_resend_failed": "Failed to resend invitation",
-  "routes_users_toast_invitation_resend_failed_description": "Please try again"
+  "routes_users_toast_invitation_resend_failed_description": "Please try again",
+
+  "routes_signin_invitation_title": "Welcome to the team.",
+  "routes_signin_invitation_description": "Sign in to your account below",
+  "routes_signin_invitation_login_button": "Sign in",
+  "routes_signup_invitation_title": "Welcome to the team.",
+  "routes_signup_invitation_description": "Complete your registration below",
+  "routes_signup_invitation_register_button": "Complete registration"
 }

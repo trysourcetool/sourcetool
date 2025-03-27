@@ -454,3 +454,57 @@ export const registerWithMagicLink = createAsyncThunk(
     }
   },
 );
+
+export const requestInvitationMagicLink = createAsyncThunk(
+  'users/requestInvitationMagicLink',
+  async (
+    params: { data: { invitationToken: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRequestInvitationMagicLink(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const authenticateWithInvitationMagicLink = createAsyncThunk(
+  'users/authenticateWithInvitationMagicLink',
+  async (
+    params: { data: { token: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersAuthenticateWithInvitationMagicLink(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const registerWithInvitationMagicLink = createAsyncThunk(
+  'users/registerWithInvitationMagicLink',
+  async (
+    params: {
+      data: {
+        token: string;
+        firstName: string;
+        lastName: string;
+      };
+    },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRegisterWithInvitationMagicLink(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);

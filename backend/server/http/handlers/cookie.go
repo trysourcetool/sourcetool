@@ -55,13 +55,13 @@ func (c *CookieConfig) deleteCookie(w http.ResponseWriter, r *http.Request, name
 	}
 }
 
-func (c *CookieConfig) SetTmpAuthCookie(w http.ResponseWriter, token, xsrfToken string) {
+func (c *CookieConfig) SetTmpAuthCookie(w http.ResponseWriter, token, xsrfToken, domain string) {
 	maxAge := int(model.TmpTokenExpiration.Seconds())
 	xsrfTokenSameSite := c.getXSRFTokenSameSite()
 
-	c.setCookie(w, "access_token", token, maxAge, true, http.SameSiteStrictMode, c.tmpAuthDomain)
-	c.setCookie(w, "xsrf_token", xsrfToken, maxAge, false, xsrfTokenSameSite, c.tmpAuthDomain)
-	c.setCookie(w, "xsrf_token_same_site", xsrfToken, maxAge, true, http.SameSiteStrictMode, c.tmpAuthDomain)
+	c.setCookie(w, "access_token", token, maxAge, true, http.SameSiteStrictMode, domain)
+	c.setCookie(w, "xsrf_token", xsrfToken, maxAge, false, xsrfTokenSameSite, domain)
+	c.setCookie(w, "xsrf_token_same_site", xsrfToken, maxAge, true, http.SameSiteStrictMode, domain)
 }
 
 func (c *CookieConfig) DeleteTmpAuthCookie(w http.ResponseWriter, r *http.Request) {

@@ -95,34 +95,31 @@ func TestBuildInvitationURL(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		subdomain    string
-		token        string
-		email        string
-		isUserExists bool
-		expected     string
+		name      string
+		subdomain string
+		token     string
+		email     string
+		expected  string
 	}{
 		{
-			name:         "new user invitation",
-			subdomain:    "test",
-			token:        "test-token",
-			email:        "test@example.com",
-			isUserExists: false,
-			expected:     "https://example.com/users/invitation/activate?email=test%40example.com&isUserExists=false&token=test-token",
+			name:      "new user invitation",
+			subdomain: "test",
+			token:     "test-token",
+			email:     "test@example.com",
+			expected:  "https://example.com/users/invitation/activate?email=test%40example.com&token=test-token",
 		},
 		{
-			name:         "existing user invitation",
-			subdomain:    "test",
-			token:        "test-token",
-			email:        "existing@example.com",
-			isUserExists: true,
-			expected:     "https://example.com/users/invitation/activate?email=existing%40example.com&isUserExists=true&token=test-token",
+			name:      "existing user invitation",
+			subdomain: "test",
+			token:     "test-token",
+			email:     "existing@example.com",
+			expected:  "https://example.com/users/invitation/activate?email=existing%40example.com&token=test-token",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := buildInvitationURL(tt.subdomain, tt.token, tt.email, tt.isUserExists)
+			result, err := buildInvitationURL(tt.subdomain, tt.token, tt.email)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
 		})

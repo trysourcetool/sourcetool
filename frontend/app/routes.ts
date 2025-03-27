@@ -9,6 +9,9 @@ export default [
   layout('./routes/layout-default.tsx', [
     route('/signin', './routes/signin/index.tsx'),
     route('/signin/emailSent', './routes/signin/emailSent/index.tsx'),
+    route('/auth/invitations/login', './routes/auth/invitations/login/index.tsx'),
+    route('/auth/invitations/magic/authenticate', './routes/auth/invitations/magic/authenticate/index.tsx'),
+    route('/auth/invitations/signup/followup', './routes/auth/invitations/signup/followup/index.tsx'),
     route('/auth/magic/authenticate', './routes/auth/magic/authenticate/index.tsx'),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
     route('/signup/emailSent', './routes/signup/emailSent/index.tsx'),

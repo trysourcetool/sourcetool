@@ -207,11 +207,19 @@ type SendMultipleOrganizationsMagicLinkEmail struct {
 	LoginURLs []string
 }
 
+// SendInvitationMagicLinkEmail represents the data needed to send an invitation magic link email
+type SendInvitationMagicLinkEmail struct {
+	To        string
+	URL       string
+	FirstName string
+}
+
 type UserMailer interface {
-	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
-	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
-	SendInvitationEmail(context.Context, *SendInvitationEmail) error
-	SendMultipleOrganizationsEmail(context.Context, *SendMultipleOrganizationsEmail) error
-	SendMagicLinkEmail(context.Context, *SendMagicLinkEmail) error
-	SendMultipleOrganizationsMagicLinkEmail(context.Context, *SendMultipleOrganizationsMagicLinkEmail) error
+	SendSignUpInstructions(ctx context.Context, in *SendSignUpInstructions) error
+	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
+	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
+	SendMultipleOrganizationsEmail(ctx context.Context, in *SendMultipleOrganizationsEmail) error
+	SendMagicLinkEmail(ctx context.Context, in *SendMagicLinkEmail) error
+	SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *SendMultipleOrganizationsMagicLinkEmail) error
+	SendInvitationMagicLinkEmail(ctx context.Context, in *SendInvitationMagicLinkEmail) error
 }

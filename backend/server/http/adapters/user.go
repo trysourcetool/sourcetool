@@ -368,3 +368,50 @@ func SignOutOutputToResponse(out *dto.SignOutOutput) *responses.SignOutResponse 
 		Domain: out.Domain,
 	}
 }
+
+// RequestInvitationMagicLinkRequestToDTOInput converts from requests.RequestInvitationMagicLinkRequest to dto.RequestInvitationMagicLinkInput.
+func RequestInvitationMagicLinkRequestToDTOInput(in requests.RequestInvitationMagicLinkRequest) dto.RequestInvitationMagicLinkInput {
+	return dto.RequestInvitationMagicLinkInput{
+		InvitationToken: in.InvitationToken,
+	}
+}
+
+// RequestInvitationMagicLinkOutputToResponse converts from dto.RequestInvitationMagicLinkOutput to responses.RequestInvitationMagicLinkResponse.
+func RequestInvitationMagicLinkOutputToResponse(out *dto.RequestInvitationMagicLinkOutput) *responses.RequestInvitationMagicLinkResponse {
+	return &responses.RequestInvitationMagicLinkResponse{
+		Email: out.Email,
+	}
+}
+
+// AuthenticateWithInvitationMagicLinkRequestToDTOInput converts from requests.AuthenticateWithInvitationMagicLinkRequest to dto.AuthenticateWithInvitationMagicLinkInput.
+func AuthenticateWithInvitationMagicLinkRequestToDTOInput(in requests.AuthenticateWithInvitationMagicLinkRequest) dto.AuthenticateWithInvitationMagicLinkInput {
+	return dto.AuthenticateWithInvitationMagicLinkInput{
+		Token: in.Token,
+	}
+}
+
+// AuthenticateWithInvitationMagicLinkOutputToResponse converts from dto.AuthenticateWithInvitationMagicLinkOutput to responses.AuthenticateWithInvitationMagicLinkResponse.
+func AuthenticateWithInvitationMagicLinkOutputToResponse(out *dto.AuthenticateWithInvitationMagicLinkOutput) *responses.AuthenticateWithInvitationMagicLinkResponse {
+	return &responses.AuthenticateWithInvitationMagicLinkResponse{
+		AuthURL:   out.AuthURL,
+		Token:     out.Token,
+		IsNewUser: out.IsNewUser,
+	}
+}
+
+// RegisterWithInvitationMagicLinkRequestToDTOInput converts from requests.RegisterWithInvitationMagicLinkRequest to dto.RegisterWithInvitationMagicLinkInput.
+func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithInvitationMagicLinkRequest) dto.RegisterWithInvitationMagicLinkInput {
+	return dto.RegisterWithInvitationMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
+// RegisterWithInvitationMagicLinkOutputToResponse converts from dto.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
+func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
+	return &responses.RegisterWithInvitationMagicLinkResponse{
+		Token:     out.Token,
+		XSRFToken: out.XSRFToken,
+	}
+}

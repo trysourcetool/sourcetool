@@ -235,7 +235,7 @@ func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 	}
 
 	if !out.IsOrganizationExists {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithMagicLinkOutputToResponse(out)); err != nil {
@@ -259,7 +259,7 @@ func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	} else {
 		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
 			int(model.TokenExpiration().Seconds()),
@@ -305,7 +305,7 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !out.IsOrganizationExists {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
@@ -342,7 +342,7 @@ func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	} else {
 		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
 			int(model.TokenExpiration().Seconds()),
@@ -819,6 +819,102 @@ func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up with Google",
+	}); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// RequestInvitationMagicLink handles the request for an invitation magic link
+func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RequestInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link
+func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.AuthenticateWithInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), adapters.AuthenticateWithInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if out.IsNewUser {
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+			int(model.TokenExpiration().Seconds()),
+			int(model.SecretExpiration.Seconds()),
+			int(model.XSRFTokenExpiration.Seconds()),
+			out.Domain)
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// RegisterWithInvitationMagicLink handles registration with an invitation magic link
+func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RegisterWithInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), adapters.RegisterWithInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if config.Config.IsCloudEdition {
+		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, out.Domain)
+	} else {
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+			int(model.TokenExpiration().Seconds()),
+			int(model.SecretExpiration.Seconds()),
+			int(model.XSRFTokenExpiration.Seconds()),
+			config.Config.BaseDomain)
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Successfully signed up",
 	}); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

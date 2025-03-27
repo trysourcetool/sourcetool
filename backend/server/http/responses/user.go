@@ -114,3 +114,19 @@ type UserGroupResponse struct {
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
 }
+
+type RequestInvitationMagicLinkResponse struct {
+	Email string `json:"email"`
+}
+
+type AuthenticateWithInvitationMagicLinkResponse struct {
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	IsNewUser            bool   `json:"isNewUser"`
+}
+
+type RegisterWithInvitationMagicLinkResponse struct {
+	Token     string `json:"token"`
+	XSRFToken string `json:"xsrfToken"`
+}

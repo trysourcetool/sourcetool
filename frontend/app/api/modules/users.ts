@@ -458,3 +458,55 @@ export const usersRegisterWithMagicLink = async (params: {
 
   return res;
 };
+
+export const usersRequestInvitationMagicLink = async (params: {
+  data: {
+    invitationToken: string;
+  };
+}) => {
+  const res = await api.post<{
+    email: string;
+  }>({
+    path: '/users/auth/invitations/magic/request',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithInvitationMagicLink = async (params: {
+  data: {
+    token: string;
+  };
+}) => {
+  const res = await api.post<{
+    authUrl: string;
+    token: string;
+    isOrganizationExists: boolean;
+    isNewUser: boolean;
+  }>({
+    path: '/users/auth/invitations/magic/authenticate',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersRegisterWithInvitationMagicLink = async (params: {
+  data: {
+    token: string;
+    firstName: string;
+    lastName: string;
+  };
+}) => {
+  const res = await api.post<{
+    token: string;
+    secret: string;
+    xsrfToken: string;
+  }>({
+    path: '/users/auth/invitations/magic/register',
+    data: params.data,
+  });
+
+  return res;
+};

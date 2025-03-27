@@ -2,7 +2,6 @@ package user
 
 import (
 	"path"
-	"strconv"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -31,14 +30,21 @@ func buildUpdateEmailURL(subdomain, token string) (string, error) {
 	})
 }
 
-func buildInvitationURL(subdomain, token, email string, isUserExists bool) (string, error) {
-	return urlutil.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("users", "invitation", "activate"), map[string]string{
-		"token":        token,
-		"email":        email,
-		"isUserExists": strconv.FormatBool(isUserExists),
+func buildInvitationURL(subdomain, token, email string) (string, error) {
+	return urlutil.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("auth", "invitations", "login"), map[string]string{
+		"token": token,
+		"email": email,
 	})
 }
 
 func buildSaveAuthURL(subdomain string) (string, error) {
 	return config.Config.OrgBaseURL(subdomain) + model.SaveAuthPath, nil
+}
+
+// buildInvitationMagicLinkURL builds a URL for invitation magic link authentication
+func buildInvitationMagicLinkURL(subdomain, token string) (string, error) {
+	baseURL := config.Config.OrgBaseURL(subdomain)
+	return urlutil.BuildURL(baseURL, path.Join("auth", "invitations", "magic", "authenticate"), map[string]string{
+		"token": token,
+	})
 }

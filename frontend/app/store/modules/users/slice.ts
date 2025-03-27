@@ -45,6 +45,9 @@ export type State = {
   isUpdateUserEmailWaiting: boolean;
   isUsersSendUpdateEmailInstructionsWaiting: boolean;
   isInvitationsResendWaiting: boolean;
+  isRequestInvitationMagicLinkWaiting: boolean;
+  isAuthenticateWithInvitationMagicLinkWaiting: boolean;
+  isRegisterWithInvitationMagicLinkWaiting: boolean;
 };
 
 const initialState: State = {
@@ -69,6 +72,9 @@ const initialState: State = {
   isUpdateUserEmailWaiting: false,
   isUsersSendUpdateEmailInstructionsWaiting: false,
   isInvitationsResendWaiting: false,
+  isRequestInvitationMagicLinkWaiting: false,
+  isAuthenticateWithInvitationMagicLinkWaiting: false,
+  isRegisterWithInvitationMagicLinkWaiting: false,
 };
 // =============================================
 // slice
@@ -312,6 +318,51 @@ export const slice = createSlice({
       })
       .addCase(asyncActions.invitationsResend.rejected, (state) => {
         state.isInvitationsResendWaiting = false;
+      })
+
+      // requestInvitationMagicLink
+      .addCase(asyncActions.requestInvitationMagicLink.pending, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.requestInvitationMagicLink.fulfilled, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = false;
+      })
+      .addCase(asyncActions.requestInvitationMagicLink.rejected, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = false;
+      })
+
+      // authenticateWithInvitationMagicLink
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.pending, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.fulfilled, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.rejected, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithInvitationMagicLink
+      .addCase(asyncActions.registerWithInvitationMagicLink.pending, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.registerWithInvitationMagicLink.fulfilled, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(asyncActions.registerWithInvitationMagicLink.rejected, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
       });
   },
   initialState,

@@ -214,3 +214,30 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 		return nil
 	})
 }
+
+func (m *MailerCE) SendInvitationMagicLinkEmail(ctx context.Context, in *model.SendInvitationMagicLinkEmail) error {
+	subject := "Your invitation to join SourceTool"
+	content := fmt.Sprintf(`Hi %s,
+
+You've been invited to join SourceTool. Click the link below to accept the invitation:
+
+%s
+
+This link will expire in 15 minutes.
+
+Best regards,
+The SourceTool Team`, in.FirstName, in.URL)
+
+	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
+
+	return emailutil.SendWithLogging(ctx, msg, func() error {
+		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+		return nil
+	})
+}

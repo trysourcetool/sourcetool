@@ -90,3 +90,17 @@ type RegisterWithMagicLinkRequest struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
+
+type RequestInvitationMagicLinkRequest struct {
+	InvitationToken string `json:"invitationToken" validate:"required"`
+}
+
+type AuthenticateWithInvitationMagicLinkRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type RegisterWithInvitationMagicLinkRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+}

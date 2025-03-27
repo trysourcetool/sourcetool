@@ -16,7 +16,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
@@ -38,6 +37,11 @@ type Service interface {
 	RequestMagicLink(context.Context, dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error)
 	AuthenticateWithMagicLink(context.Context, dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error)
 	RegisterWithMagicLink(context.Context, dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error)
+
+	// Invitation Magic Link methods
+	RequestInvitationMagicLink(context.Context, dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error)
+	AuthenticateWithInvitationMagicLink(context.Context, dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error)
+	RegisterWithInvitationMagicLink(context.Context, dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error)
 
 	// Authentication methods
 	SignOut(context.Context) (*dto.SignOutOutput, error)
@@ -1016,26 +1020,17 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 			continue
 		}
 
-		userExists, err := s.Store.User().IsEmailExists(ctx, email)
+		tok, err := createUserEmailToken(email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 		if err != nil {
 			return nil, err
 		}
 
-		tok, err := createUserToken("", email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
-		if err != nil {
-			return nil, err
-		}
-
-		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email, userExists)
+		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email)
 		if err != nil {
 			return nil, err
 		}
 
 		emailInput.URLs[email] = url
-
-		logger.Logger.Sugar().Debug("================= URL =================")
-		logger.Logger.Sugar().Debug(url)
-		logger.Logger.Sugar().Debug("================= URL =================")
 
 		invitations = append(invitations, &model.UserInvitation{
 			ID:             uuid.Must(uuid.NewV4()),
@@ -1634,7 +1629,6 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Email:                googleAuthReq.Email,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
-		GoogleID:             googleAuthReq.GoogleID,
 	}
 
 	orgAccess := &model.UserOrganizationAccess{
@@ -1705,17 +1699,12 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 
 	u := ctxutil.CurrentUser(ctx)
 
-	userExists, err := s.Store.User().IsEmailExists(ctx, userInvitation.Email)
-	if err != nil {
-		return nil, err
-	}
-
 	tok, err := createUserEmailToken(userInvitation.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 	if err != nil {
 		return nil, err
 	}
 
-	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email, userExists)
+	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -1724,10 +1713,6 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 		Invitees: u.FullName(),
 		URLs:     map[string]string{userInvitation.Email: url},
 	}
-
-	logger.Logger.Sugar().Debug("================= URL =================")
-	logger.Logger.Sugar().Debug(url)
-	logger.Logger.Sugar().Debug("================= URL =================")
 
 	if err := s.Mailer.User().SendInvitationEmail(ctx, emailInput); err != nil {
 		return nil, err
@@ -1864,4 +1849,297 @@ func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.
 	}
 
 	return org, orgAccess, nil
+}
+
+// RequestInvitationMagicLink sends a magic link for invitation authentication
+func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error) {
+	// Parse and validate invitation token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectInvitation {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+	}
+
+	// Check if user exists
+	exists, err := s.Store.User().IsEmailExists(ctx, c.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create magic link token
+	tok, err := createUserEmailToken(c.Email, time.Now().Add(15*time.Minute), jwt.UserSignatureSubjectInvitationMagicLink)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build magic link URL
+	url, err := buildInvitationMagicLinkURL(conv.SafeValue(invitedOrg.Subdomain), tok)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send magic link email
+	if err := s.Mailer.User().SendInvitationMagicLinkEmail(ctx, &model.SendInvitationMagicLinkEmail{
+		To:        c.Email,
+		URL:       url,
+		FirstName: "there", // Default greeting for new users
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.RequestInvitationMagicLinkOutput{
+		Email: c.Email,
+		IsNew: !exists,
+	}, nil
+}
+
+// AuthenticateWithInvitationMagicLink authenticates a user with an invitation magic link
+func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error) {
+	// Parse and validate token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectInvitationMagicLink {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	var orgSubdomain string
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+
+		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+	}
+
+	// Check if user exists
+	exists, err := s.Store.User().IsEmailExists(ctx, c.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		// Generate registration token for new user
+		registrationToken, err := createRegistrationToken(c.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate registration token: %w", err)
+		}
+
+		return &dto.AuthenticateWithInvitationMagicLinkOutput{
+			Token:     registrationToken,
+			IsNewUser: true,
+		}, nil
+	}
+
+	// Get existing user
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Create organization access
+	orgAccess := &model.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: invitedOrg.ID,
+		Role:           userInvitation.Role,
+	}
+
+	// Generate token and secret
+	now := time.Now()
+	expiresAt := now.Add(model.TokenExpiration())
+	xsrfToken := uuid.Must(uuid.NewV4()).String()
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	plainSecret, hashedSecret, err := generateSecret()
+	if err != nil {
+		return nil, errdefs.ErrInternal(err)
+	}
+
+	u.Secret = hashedSecret
+
+	// Save changes
+	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
+			return err
+		}
+
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
+			return err
+		}
+
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
+
+		return tx.User().Update(ctx, u)
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.AuthenticateWithInvitationMagicLinkOutput{
+		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + model.SaveAuthPath,
+		Token:     token,
+		Secret:    plainSecret,
+		XSRFToken: xsrfToken,
+		Domain:    config.Config.OrgDomain(orgSubdomain),
+		IsNewUser: false,
+	}, nil
+}
+
+// RegisterWithInvitationMagicLink registers a new user with an invitation magic link
+func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error) {
+	// Parse and validate token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectMagicLinkRegistration {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	var orgSubdomain string
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+
+		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+	}
+
+	// Generate secret
+	plainSecret, hashedSecret, err := generateSecret()
+	if err != nil {
+		return nil, errdefs.ErrInternal(err)
+	}
+
+	// Create new user
+	now := time.Now()
+	expiresAt := now.Add(model.TokenExpiration())
+	u := &model.User{
+		ID:                   uuid.Must(uuid.NewV4()),
+		FirstName:            in.FirstName,
+		LastName:             in.LastName,
+		Email:                c.Email,
+		Secret:               hashedSecret,
+		EmailAuthenticatedAt: &now,
+	}
+
+	// Create organization access
+	orgAccess := &model.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: invitedOrg.ID,
+		Role:           userInvitation.Role,
+	}
+
+	// Generate token
+	xsrfToken := uuid.Must(uuid.NewV4()).String()
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save changes
+	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
+			return err
+		}
+
+		if err := tx.User().Create(ctx, u); err != nil {
+			return err
+		}
+
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
+			return err
+		}
+
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.RegisterWithInvitationMagicLinkOutput{
+		Token:     token,
+		Secret:    plainSecret,
+		XSRFToken: xsrfToken,
+		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
+		Domain:    config.Config.OrgDomain(orgSubdomain),
+	}, nil
 }
