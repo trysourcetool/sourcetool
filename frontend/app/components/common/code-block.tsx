@@ -12,6 +12,7 @@ export const CodeBlock: FC<{
     if (isInitialLoading.current) {
       return;
     }
+    isInitialLoading.current = true;
     (async () => {
       const highlighter = await createHighlighter({
         themes: ['github-dark-dimmed'],
@@ -25,10 +26,8 @@ export const CodeBlock: FC<{
         theme: 'github-dark-dimmed',
       });
 
-      console.log({ html });
-
       setFormattedCode(html);
-      isInitialLoading.current = true;
+      isInitialLoading.current = false;
     })();
   }, [code, language]);
 

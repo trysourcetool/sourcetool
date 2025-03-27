@@ -146,14 +146,6 @@ export const useAuth = () => {
     }
   }, [subDomain]);
 
-  console.log({
-    subDomain,
-    isSubDomainMatched,
-    isAuthChecked,
-    isSourcetoolDomain,
-    environments,
-  });
-
   return {
     subDomain,
     isSubDomainMatched,
