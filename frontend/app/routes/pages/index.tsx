@@ -108,7 +108,10 @@ export default function Pages() {
           }
           console.log({ environmentId });
           setSelectedEnvironmentId(environmentId);
-          if (!localStorageEnvironmentId) {
+          if (
+            !localStorageEnvironmentId ||
+            localStorageEnvironmentId !== environmentId
+          ) {
             setLocalStorageSelectedEnvironmentId(environmentId);
           }
 

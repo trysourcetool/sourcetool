@@ -13,17 +13,18 @@ import {
 } from '../ui/sidebar';
 
 import { ModeToggle } from '../common/mode-toggle';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { $path } from 'safe-routes';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
 import { usersStore } from '@/store/modules/users';
+import { environmentsStore } from '@/store/modules/environments';
 
 export function AppPreviewLayout(props: PropsWithChildren) {
   const isInitialLoading = useRef(false);
-  const { pageId } = useParams();
+  const { '*': path } = useParams();
   const {
     isSubDomainMatched,
     isAuthChecked,
@@ -34,6 +35,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
   const user = useSelector(usersStore.selector.getMe);
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (
@@ -45,11 +47,55 @@ export function AppPreviewLayout(props: PropsWithChildren) {
     }
   }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
 
+  const getLocalStorageSelectedEnvironmentId = (): string | null => {
+    const environmentId = localStorage.getItem('selectedEnvironmentId');
+    return environmentId || null;
+  };
+
   useEffect(() => {
     if (!isInitialLoading.current) {
       isInitialLoading.current = true;
       (async () => {
-        await dispatch(pagesStore.asyncActions.listPages());
+        const resultAction = await dispatch(
+          environmentsStore.asyncActions.listEnvironments(),
+        );
+        if (
+          environmentsStore.asyncActions.listEnvironments.fulfilled.match(
+            resultAction,
+          )
+        ) {
+          const localStorageEnvironmentId =
+            getLocalStorageSelectedEnvironmentId();
+          console.log({ localStorageEnvironmentId });
+          if (!localStorageEnvironmentId) {
+            navigate($path('/'));
+            return;
+          }
+          const hasEnvironmentId = resultAction.payload.environments.some(
+            (e) => e.id === localStorageEnvironmentId,
+          );
+          console.log({ hasEnvironmentId }, resultAction.payload.environments);
+          if (!hasEnvironmentId) {
+            navigate($path('/'));
+            return;
+          }
+          const resultActionPages = await dispatch(
+            pagesStore.asyncActions.listPages({
+              environmentId: localStorageEnvironmentId,
+            }),
+          );
+          if (
+            pagesStore.asyncActions.listPages.fulfilled.match(resultActionPages)
+          ) {
+            const hasPage = resultActionPages.payload.pages.some(
+              (p) => p.route === `/${path}`,
+            );
+            console.log({ hasPage, path }, resultActionPages.payload.pages);
+            if (!hasPage) {
+              navigate($path('/'));
+            }
+          }
+        }
         isInitialLoading.current = false;
       })();
     } else if (isAuthChecked === 'checked' && !isSourcetoolDomain && !user) {
@@ -96,7 +142,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
           <SidebarGroup>
             {pages.map((page) => (
               <SidebarMenu key={page.id}>
-                <SidebarMenuButton asChild isActive={pageId === page.id}>
+                <SidebarMenuButton asChild isActive={path === page.route}>
                   <Link to={`/pages${page.route}`}>
                     <span>{page.name}</span>
                   </Link>
