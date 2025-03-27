@@ -353,14 +353,17 @@ export const WebSocketController = () => {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      ((!isSourcetoolDomain && isSubDomainMatched) || isSourcetoolDomain) &&
+      ((isSourcetoolDomain && isSubDomainMatched) || !isSourcetoolDomain) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
     }
-  }, [location.pathname, isSubDomainMatched, isSourcetoolDomain]);
-
-  console.log({ isSocketReady });
+  }, [
+    location.pathname,
+    isSubDomainMatched,
+    isSourcetoolDomain,
+    isAuthChecked,
+  ]);
 
   return (
     <>

@@ -8,8 +8,8 @@ import {
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
-import { File } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { AlertCircle, File } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
@@ -23,6 +23,9 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { SelectValue } from '@radix-ui/react-select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { $path } from 'safe-routes';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -36,7 +39,27 @@ export default function Pages() {
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const user = useSelector(usersStore.selector.getMe);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
+  const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const environments = useSelector(environmentsStore.selector.getEnvironments);
+
+  const selectedApiKey = useMemo(() => {
+    if (!selectedEnvironmentId) {
+      return null;
+    }
+    if (
+      environments.find((e) => e.id === selectedEnvironmentId)?.slug ===
+      'development'
+    ) {
+      return devKey;
+    }
+    return (
+      apiKeys.find(
+        (apiKey) => apiKey.environment.id === selectedEnvironmentId,
+      ) ?? null
+    );
+  }, [apiKeys, devKey, environments, selectedEnvironmentId]);
+
+  console.log({ selectedApiKey });
 
   // TODO: Consider using redux-persist if localStorage is used frequently
   const setLocalStorageSelectedEnvironmentId = (environmentId: string) => {
@@ -63,22 +86,32 @@ export default function Pages() {
     if (!isInitialLoading.current) {
       isInitialLoading.current = true;
       (async () => {
-        const resultAction = await dispatch(
-          environmentsStore.asyncActions.listEnvironments(),
-        );
+        const resultActions = await Promise.all([
+          dispatch(environmentsStore.asyncActions.listEnvironments()),
+          dispatch(apiKeysStore.asyncActions.listApiKeys()),
+        ]);
         if (
           environmentsStore.asyncActions.listEnvironments.fulfilled.match(
-            resultAction,
+            resultActions[0],
           )
         ) {
           const localStorageEnvironmentId =
             getLocalStorageSelectedEnvironmentId();
-          const environmentId =
+          let environmentId =
             localStorageEnvironmentId ||
-            resultAction.payload.environments[0].id;
+            resultActions[0].payload.environments[0].id;
+          const hasEnvironmentId = resultActions[0].payload.environments.some(
+            (e) => e.id === environmentId,
+          );
+          if (!hasEnvironmentId) {
+            environmentId = resultActions[0].payload.environments[0].id;
+          }
           console.log({ environmentId });
           setSelectedEnvironmentId(environmentId);
-          if (!localStorageEnvironmentId) {
+          if (
+            !localStorageEnvironmentId ||
+            localStorageEnvironmentId !== environmentId
+          ) {
             setLocalStorageSelectedEnvironmentId(environmentId);
           }
 
@@ -140,17 +173,35 @@ export default function Pages() {
           </div>
         </div>
         {isInitialLoaded && pages.length === 0 && (
-          <div className="flex w-full flex-col gap-6">
+          <div className="flex w-full flex-col gap-4 rounded-md md:border md:p-6">
             <h2 className="text-xl font-bold">
               {t('routes_pages_placeholder_title')}
             </h2>
             <p className="font-normal text-sidebar-foreground">
               {t('routes_pages_placeholder_description')}
             </p>
+            {!selectedApiKey?.key && (
+              <Alert
+                variant="destructive"
+                className="border-destructive bg-destructive/10"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>No API Key Found for This Environment</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    Create an API key for this environment to access the setup
+                    code and get started with your integration.
+                  </p>
+                  <Button variant="destructive" asChild>
+                    <Link to={$path('/apiKeys/new')}>Edit API Key</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             <CodeBlock
               code={`func main() {
 	s := sourcetool.New(&sourcetool.Config{
-		APIKey:   "${devKey?.key}",
+		APIKey:   "${selectedApiKey?.key ?? 'your_api_key'}",
 		Endpoint: "${user?.organization?.webSocketEndpoint}"
 	})
 
@@ -190,7 +241,7 @@ export default function Pages() {
           </div>
         )}
         {pages.length > 0 && (
-          <div className="rounded-md border p-4">
+          <div className="rounded-md md:border md:p-4">
             <SidebarMenu>
               {/* TODO: Recursive processing and folder support */}
               {/* <Collapsible className="group/collapsible">

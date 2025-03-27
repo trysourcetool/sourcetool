@@ -27,7 +27,7 @@ import { Separator } from '@/components/ui/separator';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
-import { ChevronRight, Ellipsis, Loader2, Plus } from 'lucide-react';
+import { Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
