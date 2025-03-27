@@ -49,12 +49,9 @@ func (router *Router) Build() chi.Router {
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthOrganizationIfSubdomainExists)
-				r.Post("/signin", router.user.SignIn)
 				r.Post("/auth/magic/request", router.user.RequestMagicLink)
 				r.Post("/auth/magic/authenticate", router.user.AuthenticateWithMagicLink)
 				r.Post("/auth/magic/register", router.user.RegisterWithMagicLink)
-				r.Post("/signup/instructions", router.user.SendSignUpInstructions)
-				r.Post("/signup", router.user.SignUp)
 				r.Post("/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURL)
 				r.Post("/oauth/google/signin", router.user.SignInWithGoogle)
 				r.Post("/oauth/google/signup", router.user.SignUpWithGoogle)
@@ -79,7 +76,6 @@ func (router *Router) Build() chi.Router {
 				r.Put("/", router.user.Update)
 				r.Post("/sendUpdateEmailInstructions", router.user.SendUpdateEmailInstructions)
 				r.Put("/email", router.user.UpdateEmail)
-				r.Put("/password", router.user.UpdatePassword)
 				r.Post("/invite", router.user.Invite)
 				r.Post("/invitations/resend", router.user.ResendInvitation)
 				r.Post("/signout", router.user.SignOut)

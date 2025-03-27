@@ -39,17 +39,3 @@ func hashPassword(password string) (string, error) {
 
 	return hex.EncodeToString(encodedPass[:]), nil
 }
-
-// verifyPassword checks if the provided password matches the stored hash.
-func verifyPassword(storedHash, password string) error {
-	h, err := hex.DecodeString(storedHash)
-	if err != nil {
-		return errdefs.ErrUnauthenticated(err)
-	}
-
-	if err = bcrypt.CompareHashAndPassword(h, []byte(password)); err != nil {
-		return errdefs.ErrUnauthenticated(err)
-	}
-
-	return nil
-}

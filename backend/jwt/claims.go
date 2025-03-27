@@ -44,7 +44,7 @@ type UserAuthClaims struct {
 	jwt.RegisteredClaims
 }
 
-// UserMagicLinkRegistrationClaims represents claims for magic link registration
+// UserMagicLinkRegistrationClaims represents claims for magic link registration.
 type UserMagicLinkRegistrationClaims struct {
 	Email string
 	jwt.RegisteredClaims

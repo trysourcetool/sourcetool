@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/jwt"
 
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/jwt"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
@@ -33,7 +33,6 @@ type Service interface {
 	// Email operations
 	SendUpdateEmailInstructions(context.Context, dto.SendUpdateUserEmailInstructionsInput) error
 	UpdateEmail(context.Context, dto.UpdateUserEmailInput) (*dto.UpdateUserEmailOutput, error)
-	UpdatePassword(context.Context, dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error)
 
 	// Passwordless Authentication methods
 	RequestMagicLink(context.Context, dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error)
@@ -41,15 +40,10 @@ type Service interface {
 	RegisterWithMagicLink(context.Context, dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error)
 
 	// Authentication methods
-	SignIn(context.Context, dto.SignInInput) (*dto.SignInOutput, error)
 	SignOut(context.Context) (*dto.SignOutOutput, error)
 	RefreshToken(context.Context, dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error)
 	SaveAuth(context.Context, dto.SaveAuthInput) (*dto.SaveAuthOutput, error)
 	ObtainAuthToken(context.Context) (*dto.ObtainAuthTokenOutput, error)
-
-	// Registration methods
-	SendSignUpInstructions(context.Context, dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error)
-	SignUp(context.Context, dto.SignUpInput) (*dto.SignUpOutput, error)
 
 	// Invitation methods
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
@@ -271,47 +265,7 @@ func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput
 	}, nil
 }
 
-// UpdatePassword changes the user's password after verifying their current password.
-func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error) {
-	currentUser := ctxutil.CurrentUser(ctx)
-
-	// Verify current password
-	if err := verifyPassword(currentUser.Password, in.CurrentPassword); err != nil {
-		return nil, err
-	}
-
-	// Hash new password
-	hashedPassword, err := hashPassword(in.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update user record
-	currentUser.Password = hashedPassword
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().Update(ctx, currentUser)
-	}); err != nil {
-		return nil, err
-	}
-
-	// Get organization information for response
-	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var role model.UserOrganizationRole
-	if orgAccess != nil {
-		role = orgAccess.Role
-	}
-
-	return &dto.UpdateUserPasswordOutput{
-		User: dto.UserFromModel(currentUser, org, role),
-	}, nil
-}
-
-// RequestMagicLink sends a magic link for passwordless authentication
-// Works for both existing users (login) and new users (signup)
+// Works for both existing users (login) and new users (signup).
 func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error) {
 	// Check if email exists
 	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
@@ -420,8 +374,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 	}, nil
 }
 
-// AuthenticateWithMagicLink authenticates a user with a magic link token
-// Can handle both login and signup based on input parameters
+// Can handle both login and signup based on input parameters.
 func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
@@ -535,7 +488,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 	}, nil
 }
 
-// RegisterWithMagicLink registers a new user with a magic link
+// RegisterWithMagicLink registers a new user with a magic link.
 func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error) {
 	// Parse and validate the registration token
 	claims, err := jwt.ParseToken[*jwt.UserMagicLinkRegistrationClaims](in.Token)
@@ -598,103 +551,6 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	}, nil
 }
 
-// SignIn authenticates a user with email and password.
-func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignInOutput, error) {
-	// Get user by email
-	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
-	// Verify password
-	if err = verifyPassword(u.Password, in.Password); err != nil {
-		return nil, err
-	}
-
-	// Get user's organization access information
-	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	if len(orgAccesses) == 0 {
-		return nil, errdefs.ErrUnauthenticated(errors.New("user has no organization access"))
-	}
-
-	// Handle organization subdomain logic
-	subdomain := ctxutil.Subdomain(ctx)
-	var orgAccess *model.UserOrganizationAccess
-	var orgSubdomain string
-
-	if config.Config.IsCloudEdition {
-		if subdomain != "auth" {
-			// For specific organization subdomain, resolve org and access
-			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
-			if err != nil {
-				return nil, err
-			}
-			orgSubdomain = subdomain
-		} else {
-			// For auth subdomain
-			if len(orgAccesses) == 1 {
-				// Single organization - redirect to it
-				orgAccess = orgAccesses[0]
-				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-				if err != nil {
-					return nil, err
-				}
-				orgSubdomain = conv.SafeValue(org.Subdomain)
-			} else {
-				// Multiple organizations - send email with options
-				if err := s.handleMultipleOrganizations(ctx, u, orgAccesses); err != nil {
-					return nil, err
-				}
-				return &dto.SignInOutput{
-					IsOrganizationExists: true,
-					Domain:               config.Config.OrgDomain(orgSubdomain),
-				}, nil
-			}
-		}
-	} else {
-		// Self-hosted mode has only one organization
-		orgAccess = orgAccesses[0]
-		_, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Create token, secret, etc.
-	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(
-		u.ID, model.TmpTokenExpiration)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update user with new secret
-	u.Secret = hashedSecret
-	authURL, err := buildSaveAuthURL(orgSubdomain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Save changes
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().Update(ctx, u)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignInOutput{
-		AuthURL:              authURL,
-		Token:                token,
-		Secret:               plainSecret,
-		XSRFToken:            xsrfToken,
-		IsOrganizationExists: orgAccess != nil,
-		Domain:               config.Config.OrgDomain(orgSubdomain),
-	}, nil
-}
-
 // resolveOrganizationBySubdomain gets an organization by subdomain and verifies the user has access.
 // Deprecated: Use getOrganizationBySubdomain instead.
 func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
@@ -703,30 +559,6 @@ func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model
 	}
 
 	return s.getOrganizationBySubdomain(ctx, u, subdomain)
-}
-
-// handleMultipleOrganizations sends an email with login links when a user belongs to multiple organizations.
-func (s *ServiceCE) handleMultipleOrganizations(ctx context.Context, u *model.User, orgAccesses []*model.UserOrganizationAccess) error {
-	loginURLs := make([]string, 0, len(orgAccesses))
-
-	for _, access := range orgAccesses {
-		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
-		if err != nil {
-			return err
-		}
-		loginURLs = append(loginURLs, config.Config.OrgBaseURL(conv.SafeValue(org.Subdomain))+"/signin")
-	}
-
-	if err := s.Mailer.User().SendMultipleOrganizationsEmail(ctx, &model.SendMultipleOrganizationsEmail{
-		To:        u.Email,
-		FirstName: u.FirstName,
-		Email:     u.Email,
-		LoginURLs: loginURLs,
-	}); err != nil {
-		return err
-	}
-
-	return errdefs.ErrUserMultipleOrganizations(errors.New("email belongs to multiple organizations"))
 }
 
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
@@ -855,154 +687,6 @@ func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-// SendSignUpInstructions sends an email with a sign-up activation link.
-func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error) {
-	// Check self-hosted organization restriction
-	if err := s.validateSelfHostedOrganization(ctx); err != nil {
-		return nil, err
-	}
-
-	// Check if email already exists
-	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, errdefs.ErrUserEmailAlreadyExists(errors.New("email already exists"))
-	}
-
-	// In staging environment, only allow @trysourcetool.com email addresses
-	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(in.Email, "@trysourcetool.com") {
-		return &dto.SendSignUpInstructionsOutput{
-			Email: in.Email,
-		}, nil
-	}
-
-	// Check if registration request already exists
-	requestExists, err := s.Store.User().IsRegistrationRequestExists(ctx, in.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create or update registration request and send instructions
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		// Create registration request if needed
-		if !requestExists {
-			if err := tx.User().CreateRegistrationRequest(ctx, &model.UserRegistrationRequest{
-				ID:    uuid.Must(uuid.NewV4()),
-				Email: in.Email,
-			}); err != nil {
-				return err
-			}
-		}
-
-		// Create token for activation
-		tok, err := createUserToken("", in.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectActivate)
-		if err != nil {
-			return err
-		}
-
-		// Build activation URL
-		url, err := buildUserActivateURL(tok)
-		if err != nil {
-			return err
-		}
-
-		return s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
-			To:  in.Email,
-			URL: url,
-		})
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SendSignUpInstructionsOutput{
-		Email: in.Email,
-	}, nil
-}
-
-// SignUp registers a new user with the activated token.
-func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUpOutput, error) {
-	// Verify token
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.Subject != jwt.UserSignatureSubjectActivate {
-		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	// Get registration request
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	// Create password hash
-	hashedPassword, err := hashPassword(in.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate user secret
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	// Prepare user object
-	now := time.Now()
-	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                c.Email,
-		Password:             hashedPassword,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-	}
-
-	// Prepare token expiration time based on edition
-	var token string
-	var xsrfToken string
-
-	// Create user and setup related data in transaction
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().Create(ctx, u); err != nil {
-			return err
-		}
-
-		// Handle different editions
-		expiration := model.TmpTokenExpiration
-		if !config.Config.IsCloudEdition {
-			// For self-hosted, create initial organization
-			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
-				return err
-			}
-			expiration = model.TokenExpiration()
-		}
-
-		// Create token
-		var err error
-		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(u.ID, expiration)
-		if err != nil {
-			return err
-		}
-
-		// Delete registration request
-		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignUpOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-	}, nil
 }
 
 func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, tx infra.Transaction, u *model.User) error {

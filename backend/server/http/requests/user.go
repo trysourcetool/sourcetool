@@ -1,9 +1,5 @@
 package requests
 
-type SendSignUpInstructionsRequest struct {
-	Email string `json:"email" validate:"required,email"`
-}
-
 type RequestMagicLinkRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
@@ -14,21 +10,8 @@ type AuthenticateWithMagicLinkRequest struct {
 	LastName  string `json:"lastName"`
 }
 
-type SignInRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
 type SignInWithGoogleRequest struct {
 	SessionToken string `json:"sessionToken" validate:"required"`
-}
-
-type SignUpRequest struct {
-	Token                string `json:"token" validate:"required"`
-	FirstName            string `json:"firstName" validate:"required"`
-	LastName             string `json:"lastName" validate:"required"`
-	Password             string `json:"password" validate:"required,password"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 type SignUpWithGoogleRequest struct {
@@ -89,12 +72,6 @@ type UpdateUserRequest struct {
 	LastName  *string `json:"lastName"`
 }
 
-type UpdateUserPasswordRequest struct {
-	CurrentPassword      string `json:"currentPassword" validate:"required"`
-	Password             string `json:"password" validate:"required,password"`
-	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
-}
-
 type SendUpdateUserEmailInstructionsRequest struct {
 	Email             string `json:"email" validate:"required,email"`
 	EmailConfirmation string `json:"emailConfirmation" validate:"required,email"`
@@ -108,7 +85,6 @@ type ResendInvitationRequest struct {
 	InvitationID string `json:"invitationId" validate:"required,uuid"`
 }
 
-// RegisterWithMagicLinkRequest represents the request body for registering with a magic link
 type RegisterWithMagicLinkRequest struct {
 	Token     string `json:"token"`
 	FirstName string `json:"firstName"`

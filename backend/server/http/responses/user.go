@@ -1,24 +1,9 @@
 package responses
 
-type SendSignUpInstructionsResponse struct {
-	Email string `json:"email"`
-}
-
-type SignInResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-}
-
 type SignInWithGoogleResponse struct {
 	AuthURL              string `json:"authUrl"`
 	Token                string `json:"token"`
 	IsOrganizationExists bool   `json:"isOrganizationExists"`
-}
-
-type SignUpResponse struct {
-	Token     string
-	XSRFToken string
 }
 
 type SignUpWithGoogleResponse struct {
@@ -111,10 +96,6 @@ type GetMeResponse struct {
 }
 
 type UpdateUserResponse struct {
-	User *UserResponse `json:"user"`
-}
-
-type UpdateUserPasswordResponse struct {
 	User *UserResponse `json:"user"`
 }
 

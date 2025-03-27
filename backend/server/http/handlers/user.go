@@ -174,39 +174,6 @@ func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdatePassword godoc
-// @ID update-user-password
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.UpdateUserPasswordRequest true " "
-// @Success 200 {object} responses.UpdateUserPasswordResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/password [put].
-func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	var req requests.UpdateUserPasswordRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.UpdatePassword(r.Context(), adapters.UpdateUserPasswordRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserPasswordOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
 // RequestMagicLink godoc
 // @ID request-magic-link
 // @Accept json
@@ -277,15 +244,7 @@ func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 	}
 }
 
-// RegisterWithMagicLink godoc
-// @ID register-with-magic-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param request body requests.RegisterWithMagicLinkRequest true "Register with magic link request"
-// @Success 200 {object} responses.RegisterWithMagicLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/auth/magic/register [post]
+// @Router /users/auth/magic/register [post].
 func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -313,43 +272,6 @@ func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
 	}); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SignIn godoc
-// @ID signin
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SignInRequest true " "
-// @Success 200 {object} responses.SignInResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/signin [post].
-func (h *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	var req requests.SignInRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SignIn(r.Context(), adapters.SignInRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if !out.IsOrganizationExists {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -387,85 +309,6 @@ func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SendSignUpInstructions godoc
-// @ID signup-instructions
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SendSignUpInstructionsRequest true " "
-// @Success 200 {object} responses.SendSignUpInstructionsResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/signup/instructions [post].
-func (h *UserHandler) SendSignUpInstructions(w http.ResponseWriter, r *http.Request) {
-	var req requests.SendSignUpInstructionsRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SendSignUpInstructions(r.Context(), adapters.SendSignUpInstructionsRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SendSignUpInstructionsOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SignUp godoc
-// @ID signup
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SignUpRequest true " "
-// @Success 200 {object} responses.StatusResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/signup [post].
-func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var req requests.SignUpRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SignUp(r.Context(), adapters.SignUpRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken)
-	} else {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.SecretExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
-			config.Config.BaseDomain)
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
-		Code:    http.StatusOK,
-		Message: "Successfully signed up",
-	}); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

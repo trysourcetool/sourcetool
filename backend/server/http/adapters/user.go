@@ -121,22 +121,6 @@ func UpdateUserEmailOutputToResponse(out *dto.UpdateUserEmailOutput) *responses.
 	}
 }
 
-// UpdateUserPasswordRequestToDTOInput converts from requests.UpdateUserPasswordRequest to dto.UpdateUserPasswordInput.
-func UpdateUserPasswordRequestToDTOInput(in requests.UpdateUserPasswordRequest) dto.UpdateUserPasswordInput {
-	return dto.UpdateUserPasswordInput{
-		CurrentPassword:      in.CurrentPassword,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
-	}
-}
-
-// UpdateUserPasswordOutputToResponse converts from dto.UpdateUserPasswordOutput to responses.UpdateUserPasswordResponse.
-func UpdateUserPasswordOutputToResponse(out *dto.UpdateUserPasswordOutput) *responses.UpdateUserPasswordResponse {
-	return &responses.UpdateUserPasswordResponse{
-		User: UserDTOToResponse(out.User),
-	}
-}
-
 // RequestMagicLinkRequestToDTOInput converts from requests.RequestMagicLinkRequest to dto.RequestMagicLinkInput.
 func RequestMagicLinkRequestToDTOInput(in requests.RequestMagicLinkRequest) dto.RequestMagicLinkInput {
 	return dto.RequestMagicLinkInput{
@@ -180,23 +164,6 @@ func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkReq
 	}
 }
 
-// SignInRequestToDTOInput converts from requests.SignInRequest to dto.SignInInput.
-func SignInRequestToDTOInput(in requests.SignInRequest) dto.SignInInput {
-	return dto.SignInInput{
-		Email:    in.Email,
-		Password: in.Password,
-	}
-}
-
-// SignInOutputToResponse converts from dto.SignInOutput to responses.SignInResponse.
-func SignInOutputToResponse(out *dto.SignInOutput) *responses.SignInResponse {
-	return &responses.SignInResponse{
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
-	}
-}
-
 // SignInWithGoogleRequestToDTOInput converts from requests.SignInWithGoogleRequest to dto.SignInWithGoogleInput.
 func SignInWithGoogleRequestToDTOInput(in requests.SignInWithGoogleRequest) dto.SignInWithGoogleInput {
 	return dto.SignInWithGoogleInput{
@@ -210,39 +177,6 @@ func SignInWithGoogleOutputToResponse(out *dto.SignInWithGoogleOutput) *response
 		AuthURL:              out.AuthURL,
 		Token:                out.Token,
 		IsOrganizationExists: out.IsOrganizationExists,
-	}
-}
-
-// SendSignUpInstructionsRequestToDTOInput converts from requests.SendSignUpInstructionsRequest to dto.SendSignUpInstructionsInput.
-func SendSignUpInstructionsRequestToDTOInput(in requests.SendSignUpInstructionsRequest) dto.SendSignUpInstructionsInput {
-	return dto.SendSignUpInstructionsInput{
-		Email: in.Email,
-	}
-}
-
-// SendSignUpInstructionsOutputToResponse converts from dto.SendSignUpInstructionsOutput to responses.SendSignUpInstructionsResponse.
-func SendSignUpInstructionsOutputToResponse(out *dto.SendSignUpInstructionsOutput) *responses.SendSignUpInstructionsResponse {
-	return &responses.SendSignUpInstructionsResponse{
-		Email: out.Email,
-	}
-}
-
-// SignUpRequestToDTOInput converts from requests.SignUpRequest to dto.SignUpInput.
-func SignUpRequestToDTOInput(in requests.SignUpRequest) dto.SignUpInput {
-	return dto.SignUpInput{
-		Token:                in.Token,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
-	}
-}
-
-// SignUpOutputToResponse converts from dto.SignUpOutput to responses.SignUpResponse.
-func SignUpOutputToResponse(out *dto.SignUpOutput) *responses.SignUpResponse {
-	return &responses.SignUpResponse{
-		Token:     out.Token,
-		XSRFToken: out.XSRFToken,
 	}
 }
 

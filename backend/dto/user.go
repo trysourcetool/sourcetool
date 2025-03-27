@@ -121,37 +121,25 @@ type UpdateUserEmailOutput struct {
 	User *User
 }
 
-// UpdateUserPasswordInput is the input for Update User Password operation.
-type UpdateUserPasswordInput struct {
-	CurrentPassword      string
-	Password             string
-	PasswordConfirmation string
-}
-
-// UpdateUserPasswordOutput is the output for Update User Password operation.
-type UpdateUserPasswordOutput struct {
-	User *User
-}
-
-// RequestMagicLinkInput is the input for requesting a magic link for passwordless auth
+// RequestMagicLinkInput is the input for requesting a magic link for passwordless auth.
 type RequestMagicLinkInput struct {
 	Email string
 }
 
-// RequestMagicLinkOutput is the output for the magic link request operation
+// RequestMagicLinkOutput is the output for the magic link request operation.
 type RequestMagicLinkOutput struct {
 	Email string
 	IsNew bool // Indicates if this is a new user
 }
 
-// AuthenticateWithMagicLinkInput is the input for authenticating with a magic link token
+// AuthenticateWithMagicLinkInput is the input for authenticating with a magic link token.
 type AuthenticateWithMagicLinkInput struct {
 	Token     string
 	FirstName string // Optional: used for new users
 	LastName  string // Optional: used for new users
 }
 
-// AuthenticateWithMagicLinkOutput is the output for authenticating with a magic link token
+// AuthenticateWithMagicLinkOutput is the output for authenticating with a magic link token.
 type AuthenticateWithMagicLinkOutput struct {
 	AuthURL              string
 	Token                string
@@ -160,22 +148,6 @@ type AuthenticateWithMagicLinkOutput struct {
 	XSRFToken            string
 	Domain               string
 	IsNewUser            bool // Indicates if a new user was created
-}
-
-// SignInInput is the input for Sign In operation.
-type SignInInput struct {
-	Email    string
-	Password string
-}
-
-// SignInOutput is the output for Sign In operation.
-type SignInOutput struct {
-	AuthURL              string
-	Token                string
-	IsOrganizationExists bool
-	Secret               string
-	XSRFToken            string
-	Domain               string
 }
 
 // SignInWithGoogleInput is the input for Sign In With Google operation.
@@ -191,32 +163,6 @@ type SignInWithGoogleOutput struct {
 	Secret               string
 	XSRFToken            string
 	Domain               string
-}
-
-// SendSignUpInstructionsInput is the input for Send SignUp Instructions operation.
-type SendSignUpInstructionsInput struct {
-	Email string
-}
-
-// SendSignUpInstructionsOutput is the output for Send SignUp Instructions operation.
-type SendSignUpInstructionsOutput struct {
-	Email string
-}
-
-// SignUpInput is the input for Sign Up operation.
-type SignUpInput struct {
-	Token                string
-	FirstName            string
-	LastName             string
-	Password             string
-	PasswordConfirmation string
-}
-
-// SignUpOutput is the output for Sign Up operation.
-type SignUpOutput struct {
-	Token     string
-	Secret    string // only for self-hosted edition
-	XSRFToken string
 }
 
 // SignUpWithGoogleInput is the input for Sign Up With Google operation.
@@ -390,14 +336,14 @@ type ResendInvitationOutput struct {
 	UserInvitation *UserInvitation
 }
 
-// RegisterWithMagicLinkInput is the input for registering with a magic link
+// RegisterWithMagicLinkInput is the input for registering with a magic link.
 type RegisterWithMagicLinkInput struct {
 	Token     string
 	FirstName string
 	LastName  string
 }
 
-// RegisterWithMagicLinkOutput is the output for registering with a magic link
+// RegisterWithMagicLinkOutput is the output for registering with a magic link.
 type RegisterWithMagicLinkOutput struct {
 	Token     string
 	Secret    string

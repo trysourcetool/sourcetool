@@ -192,14 +192,14 @@ type SendMultipleOrganizationsEmail struct {
 	LoginURLs []string
 }
 
-// Email structure for sending magic link email
+// Email structure for sending magic link email.
 type SendMagicLinkEmail struct {
 	To        string
 	FirstName string
 	URL       string
 }
 
-// Email structure for sending multiple organizations magic link email
+// Email structure for sending multiple organizations magic link email.
 type SendMultipleOrganizationsMagicLinkEmail struct {
 	To        string
 	FirstName string
