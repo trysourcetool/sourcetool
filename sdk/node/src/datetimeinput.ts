@@ -183,21 +183,22 @@ export function dateTimeInput(
       dateTimeInputOpts.minValue,
       dateTimeInputOpts.location,
     );
+  } else {
+    dateTimeInputState.label = dateTimeInputOpts.label;
+    dateTimeInputState.placeholder = dateTimeInputOpts.placeholder;
+    dateTimeInputState.defaultValue = dateTimeInputOpts.defaultValue;
+    dateTimeInputState.required = dateTimeInputOpts.required;
+    dateTimeInputState.disabled = dateTimeInputOpts.disabled;
+    dateTimeInputState.format = dateTimeInputOpts.format;
+    dateTimeInputState.maxValue = dateTimeInputOpts.maxValue;
+    dateTimeInputState.minValue = dateTimeInputOpts.minValue;
+    dateTimeInputState.location = dateTimeInputOpts.location;
   }
-
-  dateTimeInputState.label = dateTimeInputOpts.label;
-  dateTimeInputState.placeholder = dateTimeInputOpts.placeholder;
-  dateTimeInputState.defaultValue = dateTimeInputOpts.defaultValue;
-  dateTimeInputState.required = dateTimeInputOpts.required;
-  dateTimeInputState.disabled = dateTimeInputOpts.disabled;
-  dateTimeInputState.format = dateTimeInputOpts.format;
-  dateTimeInputState.maxValue = dateTimeInputOpts.maxValue;
-  dateTimeInputState.minValue = dateTimeInputOpts.minValue;
-  dateTimeInputState.location = dateTimeInputOpts.location;
   session.state.set(widgetID, dateTimeInputState);
 
-  const dateTimeInputProto =
-    convertStateToDateTimeInputProto(dateTimeInputState);
+  const dateTimeInputProto = convertStateToDateTimeInputProto(
+    dateTimeInputState as DateTimeInputState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

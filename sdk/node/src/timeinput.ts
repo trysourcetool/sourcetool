@@ -134,17 +134,20 @@ export function timeInput(
       timeInputOpts.disabled,
       timeInputOpts.location,
     );
+    session.state.set(widgetID, timeInputState);
+  } else {
+    timeInputState.label = timeInputOpts.label;
+    timeInputState.placeholder = timeInputOpts.placeholder;
+    timeInputState.defaultValue = timeInputOpts.defaultValue;
+    timeInputState.required = timeInputOpts.required;
+    timeInputState.disabled = timeInputOpts.disabled;
+    timeInputState.location = timeInputOpts.location;
+    session.state.set(widgetID, timeInputState);
   }
 
-  timeInputState.label = timeInputOpts.label;
-  timeInputState.placeholder = timeInputOpts.placeholder;
-  timeInputState.defaultValue = timeInputOpts.defaultValue;
-  timeInputState.required = timeInputOpts.required;
-  timeInputState.disabled = timeInputOpts.disabled;
-  timeInputState.location = timeInputOpts.location;
-  session.state.set(widgetID, timeInputState);
-
-  const timeInputProto = convertStateToTimeInputProto(timeInputState);
+  const timeInputProto = convertStateToTimeInputProto(
+    timeInputState as TimeInputState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

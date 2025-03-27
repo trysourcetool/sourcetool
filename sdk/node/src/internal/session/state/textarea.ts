@@ -17,9 +17,13 @@ export class TextAreaState implements WidgetState {
     public maxLines: number | null = null,
     public minLines: number | null = 2,
     public autoResize: boolean = true,
-  ) {}
+  ) {
+    this.type = WidgetTypeTextArea;
+  }
 
   getType(): WidgetType {
     return WidgetTypeTextArea;
   }
+
+  public type: WidgetType = WidgetTypeTextArea;
 }

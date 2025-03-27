@@ -203,21 +203,23 @@ export function textArea(
       textAreaOpts.minLines,
       textAreaOpts.autoResize,
     );
+  } else {
+    textAreaState.label = textAreaOpts.label;
+    textAreaState.placeholder = textAreaOpts.placeholder;
+    textAreaState.defaultValue = textAreaOpts.defaultValue;
+    textAreaState.required = textAreaOpts.required;
+    textAreaState.disabled = textAreaOpts.disabled;
+    textAreaState.maxLength = textAreaOpts.maxLength;
+    textAreaState.minLength = textAreaOpts.minLength;
+    textAreaState.maxLines = textAreaOpts.maxLines;
+    textAreaState.minLines = textAreaOpts.minLines;
+    textAreaState.autoResize = textAreaOpts.autoResize;
+    session.state.set(widgetID, textAreaState);
   }
 
-  textAreaState.label = textAreaOpts.label;
-  textAreaState.placeholder = textAreaOpts.placeholder;
-  textAreaState.defaultValue = textAreaOpts.defaultValue;
-  textAreaState.required = textAreaOpts.required;
-  textAreaState.disabled = textAreaOpts.disabled;
-  textAreaState.maxLength = textAreaOpts.maxLength;
-  textAreaState.minLength = textAreaOpts.minLength;
-  textAreaState.maxLines = textAreaOpts.maxLines;
-  textAreaState.minLines = textAreaOpts.minLines;
-  textAreaState.autoResize = textAreaOpts.autoResize;
-  session.state.set(widgetID, textAreaState);
-
-  const textAreaProto = convertStateToTextAreaProto(textAreaState);
+  const textAreaProto = convertStateToTextAreaProto(
+    textAreaState as TextAreaState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

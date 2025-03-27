@@ -7,9 +7,13 @@ export class ColumnItemState implements WidgetState {
   constructor(
     public id: string = uuidv4(),
     public weight: number = 1,
-  ) {}
+  ) {
+    this.type = WidgetTypeColumnItem;
+  }
 
   getType(): WidgetType {
     return WidgetTypeColumnItem;
   }
+
+  public type: WidgetType = WidgetTypeColumnItem;
 }

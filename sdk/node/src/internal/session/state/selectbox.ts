@@ -13,11 +13,15 @@ export class SelectboxState implements WidgetState {
     public defaultValue: number | null = null,
     public required: boolean = false,
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeSelectbox;
+  }
 
   getType(): WidgetType {
     return WidgetTypeSelectbox;
   }
+
+  public type: WidgetType = WidgetTypeSelectbox;
 }
 
 export interface SelectboxValue {

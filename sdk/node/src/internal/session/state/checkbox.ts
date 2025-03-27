@@ -11,9 +11,13 @@ export class CheckboxState implements WidgetState {
     public defaultValue: boolean = false,
     public required: boolean = false,
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeCheckbox;
+  }
 
   getType(): WidgetType {
     return WidgetTypeCheckbox;
   }
+
+  public type: WidgetType = WidgetTypeCheckbox;
 }

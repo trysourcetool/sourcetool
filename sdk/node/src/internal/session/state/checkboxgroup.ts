@@ -12,11 +12,15 @@ export class CheckboxGroupState implements WidgetState {
     public defaultValue: number[] = [],
     public required: boolean = false,
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeCheckboxGroup;
+  }
 
   getType(): WidgetType {
     return WidgetTypeCheckboxGroup;
   }
+
+  public type: WidgetType = WidgetTypeCheckboxGroup;
 }
 
 export interface CheckboxGroupValue {

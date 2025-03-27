@@ -160,18 +160,18 @@ export function table(
       tableOpts.rowSelection,
       {},
     );
+  } else {
+    tableState.data = data;
+    tableState.header = tableOpts.header;
+    tableState.description = tableOpts.description;
+    tableState.height = tableOpts.height;
+    tableState.columnOrder = tableOpts.columnOrder;
+    tableState.onSelect = tableOpts.onSelect;
+    tableState.rowSelection = tableOpts.rowSelection;
+    session.state.set(widgetID, tableState);
   }
 
-  tableState.data = data;
-  tableState.header = tableOpts.header;
-  tableState.description = tableOpts.description;
-  tableState.height = tableOpts.height;
-  tableState.columnOrder = tableOpts.columnOrder;
-  tableState.onSelect = tableOpts.onSelect;
-  tableState.rowSelection = tableOpts.rowSelection;
-  session.state.set(widgetID, tableState);
-
-  const tableProto = convertStateToTableProto(tableState);
+  const tableProto = convertStateToTableProto(tableState as TableState);
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

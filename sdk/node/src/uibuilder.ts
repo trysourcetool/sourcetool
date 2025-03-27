@@ -15,9 +15,11 @@ import { textArea } from './textarea';
 import { table } from './table';
 import { form } from './form';
 import { columns } from './columns';
+import { Page } from './internal/page';
+import { Session } from './internal/session';
+import { Runtime } from './runtime';
 
 export type UIBuilderType = {
-  context(): any;
   markdown(content: string): void;
   textInput(label: string, options?: any): string;
   numberInput(label: string, options?: any): number | null;
@@ -37,20 +39,16 @@ export type UIBuilderType = {
 };
 
 export class UIBuilder implements UIBuilderType {
-  runtime: any;
+  runtime: Runtime;
   cursor: Cursor;
-  session: any;
-  page: any;
+  session: Session;
+  page: Page;
 
-  constructor(runtime: any, session: any, page: any) {
+  constructor(runtime: Runtime, session: Session, page: Page) {
     this.runtime = runtime;
     this.cursor = new Cursor();
     this.session = session;
     this.page = page;
-  }
-
-  context(): any {
-    return this.runtime?.context || {};
   }
 
   markdown(content: string): void {

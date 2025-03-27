@@ -162,21 +162,25 @@ export function selectbox(
       selectboxOpts.required,
       selectboxOpts.disabled,
     );
+  } else {
+    // Apply format function to options
+    const formatFunc =
+      selectboxOpts.formatFunc || ((v: string, i: number) => v);
+    const displayVals = selectboxOpts.options.map((v, i) => formatFunc(v, i));
+
+    selectboxState.label = selectboxOpts.label;
+    selectboxState.options = displayVals;
+    selectboxState.placeholder = selectboxOpts.placeholder;
+    selectboxState.defaultValue = defaultVal;
+    selectboxState.required = selectboxOpts.required;
+    selectboxState.disabled = selectboxOpts.disabled;
   }
 
-  // Apply format function to options
-  const formatFunc = selectboxOpts.formatFunc || ((v: string, i: number) => v);
-  const displayVals = selectboxOpts.options.map((v, i) => formatFunc(v, i));
-
-  selectboxState.label = selectboxOpts.label;
-  selectboxState.options = displayVals;
-  selectboxState.placeholder = selectboxOpts.placeholder;
-  selectboxState.defaultValue = defaultVal;
-  selectboxState.required = selectboxOpts.required;
-  selectboxState.disabled = selectboxOpts.disabled;
   session.state.set(widgetID, selectboxState);
 
-  const selectboxProto = convertStateToSelectboxProto(selectboxState);
+  const selectboxProto = convertStateToSelectboxProto(
+    selectboxState as SelectboxState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

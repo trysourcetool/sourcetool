@@ -65,13 +65,13 @@ export function button(
       buttonOpts.label,
       buttonOpts.disabled,
     );
+  } else {
+    buttonState.label = buttonOpts.label;
+    buttonState.disabled = buttonOpts.disabled;
   }
-
-  buttonState.label = buttonOpts.label;
-  buttonState.disabled = buttonOpts.disabled;
   session.state.set(widgetID, buttonState);
 
-  const buttonProto = convertStateToButtonProto(buttonState);
+  const buttonProto = convertStateToButtonProto(buttonState as ButtonState);
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

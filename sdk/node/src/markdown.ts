@@ -31,12 +31,15 @@ export function markdown(builder: UIBuilder, body: string): void {
   let markdownState = session.state.getMarkdown(widgetID);
   if (!markdownState) {
     markdownState = new MarkdownState(widgetID, markdownOpts.body);
+  } else {
+    markdownState.body = markdownOpts.body;
   }
 
-  markdownState.body = markdownOpts.body;
   session.state.set(widgetID, markdownState);
 
-  const markdownProto = convertStateToMarkdownProto(markdownState);
+  const markdownProto = convertStateToMarkdownProto(
+    markdownState as MarkdownState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

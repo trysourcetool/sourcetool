@@ -12,11 +12,15 @@ export class RadioState implements WidgetState {
     public defaultValue: number | null = null,
     public required: boolean = false,
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeRadio;
+  }
 
   getType(): WidgetType {
     return WidgetTypeRadio;
   }
+
+  public type: WidgetType = WidgetTypeRadio;
 }
 
 export interface RadioValue {

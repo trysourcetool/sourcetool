@@ -102,15 +102,17 @@ export function checkbox(
       checkboxOpts.required,
       checkboxOpts.disabled,
     );
+  } else {
+    checkboxState.label = checkboxOpts.label;
+    checkboxState.defaultValue = checkboxOpts.defaultValue;
+    checkboxState.required = checkboxOpts.required;
+    checkboxState.disabled = checkboxOpts.disabled;
   }
-
-  checkboxState.label = checkboxOpts.label;
-  checkboxState.defaultValue = checkboxOpts.defaultValue;
-  checkboxState.required = checkboxOpts.required;
-  checkboxState.disabled = checkboxOpts.disabled;
   session.state.set(widgetID, checkboxState);
 
-  const checkboxProto = convertStateToCheckboxProto(checkboxState);
+  const checkboxProto = convertStateToCheckboxProto(
+    checkboxState as CheckboxState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,
