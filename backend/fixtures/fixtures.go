@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -31,11 +30,6 @@ func Load(ctx context.Context, store infra.Store) error {
 		return nil
 	}
 
-	encodedPass, err := bcrypt.GenerateFromPassword([]byte("password"), 10)
-	if err != nil {
-		return err
-	}
-
 	_, hashedSecret, err := generateSecret()
 	if err != nil {
 		return err
@@ -48,7 +42,6 @@ func Load(ctx context.Context, store infra.Store) error {
 			FirstName:            "John",
 			LastName:             "Doe",
 			Email:                email,
-			Password:             hex.EncodeToString(encodedPass[:]),
 			Secret:               hashedSecret,
 			EmailAuthenticatedAt: &now,
 		}

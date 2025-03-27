@@ -35,7 +35,6 @@ type User struct {
 	Email                string     `db:"email"`
 	FirstName            string     `db:"first_name"`
 	LastName             string     `db:"last_name"`
-	Password             string     `db:"password"`
 	Secret               string     `db:"secret"`
 	GoogleID             string     `db:"google_id"`
 	EmailAuthenticatedAt *time.Time `db:"email_authenticated_at"`

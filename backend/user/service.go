@@ -1213,12 +1213,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		}
 	}
 
-	// Hash password
-	hashedPassword, err := hashPassword(in.Password)
-	if err != nil {
-		return nil, err
-	}
-
 	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
@@ -1231,7 +1225,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                c.Email,
-		Password:             hashedPassword,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
