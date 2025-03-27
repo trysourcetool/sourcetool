@@ -825,7 +825,7 @@ func (h *UserHandler) SignUpWithGoogleInvitation(w http.ResponseWriter, r *http.
 	}
 }
 
-// RequestInvitationMagicLink handles the request for an invitation magic link
+// RequestInvitationMagicLink handles the request for an invitation magic link.
 func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -850,7 +850,7 @@ func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.
 	}
 }
 
-// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link
+// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link.
 func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -875,7 +875,7 @@ func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter,
 	}
 }
 
-// RegisterWithInvitationMagicLink handles registration with an invitation magic link
+// RegisterWithInvitationMagicLink handles registration with an invitation magic link.
 func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

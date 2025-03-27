@@ -350,23 +350,23 @@ type RegisterWithMagicLinkOutput struct {
 	XSRFToken string
 }
 
-// RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation
+// RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation.
 type RequestInvitationMagicLinkInput struct {
 	InvitationToken string
 }
 
-// RequestInvitationMagicLinkOutput represents the output for requesting a magic link for invitation
+// RequestInvitationMagicLinkOutput represents the output for requesting a magic link for invitation.
 type RequestInvitationMagicLinkOutput struct {
 	Email string
 	IsNew bool
 }
 
-// AuthenticateWithInvitationMagicLinkInput represents the input for authenticating with an invitation magic link
+// AuthenticateWithInvitationMagicLinkInput represents the input for authenticating with an invitation magic link.
 type AuthenticateWithInvitationMagicLinkInput struct {
 	Token string
 }
 
-// AuthenticateWithInvitationMagicLinkOutput represents the output for authenticating with an invitation magic link
+// AuthenticateWithInvitationMagicLinkOutput represents the output for authenticating with an invitation magic link.
 type AuthenticateWithInvitationMagicLinkOutput struct {
 	AuthURL   string
 	Token     string
@@ -374,14 +374,14 @@ type AuthenticateWithInvitationMagicLinkOutput struct {
 	IsNewUser bool
 }
 
-// RegisterWithInvitationMagicLinkInput represents the input for registering with an invitation magic link
+// RegisterWithInvitationMagicLinkInput represents the input for registering with an invitation magic link.
 type RegisterWithInvitationMagicLinkInput struct {
 	Token     string
 	FirstName string
 	LastName  string
 }
 
-// RegisterWithInvitationMagicLinkOutput represents the output for registering with an invitation magic link
+// RegisterWithInvitationMagicLinkOutput represents the output for registering with an invitation magic link.
 type RegisterWithInvitationMagicLinkOutput struct {
 	Token     string
 	Secret    string

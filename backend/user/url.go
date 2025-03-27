@@ -41,7 +41,7 @@ func buildSaveAuthURL(subdomain string) (string, error) {
 	return config.Config.OrgBaseURL(subdomain) + model.SaveAuthPath, nil
 }
 
-// buildInvitationMagicLinkURL builds a URL for invitation magic link authentication
+// buildInvitationMagicLinkURL builds a URL for invitation magic link authentication.
 func buildInvitationMagicLinkURL(subdomain, token string) (string, error) {
 	baseURL := config.Config.OrgBaseURL(subdomain)
 	return urlutil.BuildURL(baseURL, path.Join("auth", "invitations", "magic", "authenticate"), map[string]string{

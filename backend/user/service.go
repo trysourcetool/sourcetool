@@ -303,7 +303,6 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 				if err != nil {
 					return nil, errdefs.ErrUnauthenticated(errors.New("user does not have access to this organization"))
 				}
-				firstName = u.FirstName
 			} else {
 				// For new users, registration is only allowed through invitations
 				return nil, errdefs.ErrPermissionDenied(errors.New("registration is only allowed through invitations"))
@@ -1882,7 +1881,7 @@ func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.
 	return org, orgAccess, nil
 }
 
-// RequestInvitationMagicLink sends a magic link for invitation authentication
+// RequestInvitationMagicLink sends a magic link for invitation authentication.
 func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error) {
 	// Parse and validate invitation token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
@@ -1952,7 +1951,7 @@ func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.Reque
 	}, nil
 }
 
-// AuthenticateWithInvitationMagicLink authenticates a user with an invitation magic link
+// AuthenticateWithInvitationMagicLink authenticates a user with an invitation magic link.
 func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
@@ -2061,7 +2060,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 	}, nil
 }
 
-// RegisterWithInvitationMagicLink registers a new user with an invitation magic link
+// RegisterWithInvitationMagicLink registers a new user with an invitation magic link.
 func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)

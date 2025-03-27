@@ -207,7 +207,7 @@ type SendMultipleOrganizationsMagicLinkEmail struct {
 	LoginURLs []string
 }
 
-// SendInvitationMagicLinkEmail represents the data needed to send an invitation magic link email
+// SendInvitationMagicLinkEmail represents the data needed to send an invitation magic link email.
 type SendInvitationMagicLinkEmail struct {
 	To        string
 	URL       string
