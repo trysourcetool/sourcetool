@@ -2027,19 +2027,12 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 
 	// Generate token and secret
 	now := time.Now()
-	expiresAt := now.Add(model.TokenExpiration())
+	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return nil, err
 	}
-
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	u.Secret = hashedSecret
 
 	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -2055,7 +2048,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 			return err
 		}
 
-		return tx.User().Update(ctx, u)
+		return nil
 	}); err != nil {
 		return nil, err
 	}
@@ -2063,8 +2056,6 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 	return &dto.AuthenticateWithInvitationMagicLinkOutput{
 		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + model.SaveAuthPath,
 		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
 		Domain:    config.Config.OrgDomain(orgSubdomain),
 		IsNewUser: false,
 	}, nil

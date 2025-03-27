@@ -869,14 +869,6 @@ func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter,
 		return
 	}
 
-	if out.IsNewUser {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.SecretExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
-			out.Domain)
-	}
-
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -902,15 +894,11 @@ func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 		return
 	}
 
-	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, out.Domain)
-	} else {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.SecretExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
-			config.Config.BaseDomain)
-	}
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,

@@ -352,42 +352,40 @@ type RegisterWithMagicLinkOutput struct {
 
 // RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation
 type RequestInvitationMagicLinkInput struct {
-	InvitationToken string `json:"invitationToken"`
+	InvitationToken string
 }
 
 // RequestInvitationMagicLinkOutput represents the output for requesting a magic link for invitation
 type RequestInvitationMagicLinkOutput struct {
-	Email string `json:"email"`
-	IsNew bool   `json:"isNew"`
+	Email string
+	IsNew bool
 }
 
 // AuthenticateWithInvitationMagicLinkInput represents the input for authenticating with an invitation magic link
 type AuthenticateWithInvitationMagicLinkInput struct {
-	Token string `json:"token"`
+	Token string
 }
 
 // AuthenticateWithInvitationMagicLinkOutput represents the output for authenticating with an invitation magic link
 type AuthenticateWithInvitationMagicLinkOutput struct {
-	AuthURL   string `json:"authUrl"`
-	Token     string `json:"token"`
-	Secret    string `json:"secret"`
-	XSRFToken string `json:"xsrfToken"`
-	Domain    string `json:"domain"`
-	IsNewUser bool   `json:"isNewUser"`
+	AuthURL   string
+	Token     string
+	Domain    string
+	IsNewUser bool
 }
 
 // RegisterWithInvitationMagicLinkInput represents the input for registering with an invitation magic link
 type RegisterWithInvitationMagicLinkInput struct {
-	Token     string `json:"token"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	Token     string
+	FirstName string
+	LastName  string
 }
 
 // RegisterWithInvitationMagicLinkOutput represents the output for registering with an invitation magic link
 type RegisterWithInvitationMagicLinkOutput struct {
-	Token     string `json:"token"`
-	Secret    string `json:"secret"`
-	XSRFToken string `json:"xsrfToken"`
-	ExpiresAt string `json:"expiresAt"`
-	Domain    string `json:"domain"`
+	Token     string
+	Secret    string
+	XSRFToken string
+	ExpiresAt string
+	Domain    string
 }
