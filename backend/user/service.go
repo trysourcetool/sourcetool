@@ -310,7 +310,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 		}
 	}
 
-	if exists && !config.Config.IsCloudEdition {
+	if exists {
 		// Get user by email for existing users
 		u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
 		if err != nil {
