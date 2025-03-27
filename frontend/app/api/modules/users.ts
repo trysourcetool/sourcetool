@@ -360,7 +360,11 @@ export const updateUser = async (params: {
 }) => {
   const res = await api.put<{
     user: User;
-  }>({ path: '/users', data: params.data, auth: true });
+  }>({
+    path: '/users',
+    data: params.data,
+    auth: true,
+  });
 
   return res;
 };
@@ -374,24 +378,6 @@ export const updateUserEmail = async (params: {
     user: User;
   }>({
     path: '/users/email',
-    data: params.data,
-    auth: true,
-  });
-
-  return res;
-};
-
-export const updateUserPassword = async (params: {
-  data: {
-    currentPassword: string;
-    password: string;
-    passwordConfirmation: string;
-  };
-}) => {
-  const res = await api.put<{
-    user: User;
-  }>({
-    path: '/users/password',
     data: params.data,
     auth: true,
   });

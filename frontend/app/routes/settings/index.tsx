@@ -32,9 +32,6 @@ export default function Settings() {
   const isUpdateUserWaiting = useSelector(
     (state) => state.users.isUpdateUserWaiting,
   );
-  const isUpdateUserPasswordWaiting = useSelector(
-    (state) => state.users.isUpdateUserPasswordWaiting,
-  );
   const isUsersSendUpdateEmailInstructionsWaiting = useSelector(
     (state) => state.users.isUsersSendUpdateEmailInstructionsWaiting,
   );
@@ -65,46 +62,8 @@ export default function Settings() {
     }
   });
 
-  const passwordSchema = object({
-    currentPassword: string({
-      required_error: t('zod_errors_current_password_required'),
-    }),
-    password: string({
-      required_error: t('zod_errors_password_required'),
-    })
-      .min(8, t('zod_errors_password_min'))
-      .regex(
-        /^(?=.*[A-Za-z])(?=.*\d)[a-zA-Z0-9!?_+*'"`#$%&\-^\\@;:,./=~|[\](){}<>]{8,}$/,
-        t('zod_errors_password_format'),
-      ),
-    passwordConfirmation: string({
-      required_error: t('zod_errors_passwordConfirmation_required'),
-    }),
-  }).superRefine(({ password, passwordConfirmation, currentPassword }, ctx) => {
-    if (currentPassword === password) {
-      ctx.addIssue({
-        code: 'custom',
-        message: t('zod_errors_password_same_as_current'),
-        path: ['password'],
-      });
-      ctx.addIssue({
-        code: 'custom',
-        message: t('zod_errors_password_same_as_current'),
-        path: ['passwordConfirmation'],
-      });
-    }
-    if (password !== passwordConfirmation) {
-      ctx.addIssue({
-        code: 'custom',
-        message: t('zod_errors_passwordConfirmation_match'),
-        path: ['passwordConfirmation'],
-      });
-    }
-  });
-
   type AccountSchema = z.infer<typeof accountSchema>;
   type EmailSchema = z.infer<typeof emailSchema>;
-  type PasswordSchema = z.infer<typeof passwordSchema>;
 
   const accountForm = useForm<AccountSchema>({
     resolver: zodResolver(accountSchema),
@@ -113,10 +72,6 @@ export default function Settings() {
 
   const emailForm = useForm<EmailSchema>({
     resolver: zodResolver(emailSchema),
-  });
-
-  const passwordForm = useForm<PasswordSchema>({
-    resolver: zodResolver(passwordSchema),
   });
 
   const handleSubmitAccount = accountForm.handleSubmit(
@@ -168,33 +123,6 @@ export default function Settings() {
       } else {
         toast({
           title: t('routes_settings_toast_email_send_failed'),
-          variant: 'destructive',
-        });
-      }
-    },
-  );
-
-  const handleSubmitPassword = passwordForm.handleSubmit(
-    async (data: PasswordSchema) => {
-      if (isUpdateUserPasswordWaiting) {
-        return;
-      }
-      console.log({ data });
-      const resultAction = await dispatch(
-        usersStore.asyncActions.updateUserPassword({
-          data,
-        }),
-      );
-
-      if (
-        usersStore.asyncActions.updateUserPassword.fulfilled.match(resultAction)
-      ) {
-        toast({
-          title: t('routes_settings_toast_password_updated'),
-        });
-      } else {
-        toast({
-          title: t('routes_settings_toast_password_update_failed'),
           variant: 'destructive',
         });
       }
@@ -338,96 +266,6 @@ export default function Settings() {
                 <div>
                   <Button type="submit" className="cursor-pointer">
                     {t('routes_settings_send_verification_email_button')}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
-
-          <div className="hidden md:block">
-            <Separator />
-          </div>
-
-          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-            <div className="flex flex-1 flex-col gap-2">
-              <p className="text-xl font-semibold text-foreground">
-                {t('routes_settings_password_title')}
-              </p>
-              <p className="text-sm font-normal text-muted-foreground">
-                {t('routes_settings_password_description')}
-              </p>
-            </div>
-            <Form {...passwordForm}>
-              <form
-                className="flex flex-1 flex-col gap-6"
-                onSubmit={handleSubmitPassword}
-              >
-                <FormField
-                  control={passwordForm.control}
-                  name="currentPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('routes_settings_current_password_label')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder={t(
-                            'routes_settings_current_password_placeholder',
-                          )}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={passwordForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('routes_settings_new_password_label')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder={t(
-                            'routes_settings_new_password_placeholder',
-                          )}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={passwordForm.control}
-                  name="passwordConfirmation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {t('routes_settings_confirm_password_label')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder={t(
-                            'routes_settings_confirm_password_placeholder',
-                          )}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div>
-                  <Button type="submit" className="cursor-pointer">
-                    {t('routes_settings_save_button')}
                   </Button>
                 </div>
               </form>

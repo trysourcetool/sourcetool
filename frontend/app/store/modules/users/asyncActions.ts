@@ -342,37 +342,20 @@ export const updateUserEmail = createAsyncThunk(
   },
 );
 
-export const updateUserPassword = createAsyncThunk(
-  'users/updateUserPassword',
+export const updateUser = createAsyncThunk(
+  'users/updateUser',
   async (
     params: {
       data: {
-        currentPassword: string;
-        password: string;
-        passwordConfirmation: string;
+        firstName: string;
+        lastName: string;
       };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.updateUserPassword(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const updateUser = createAsyncThunk(
-  'users/updateUser',
-  async (
-    params: { data: { firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
       const res = await api.users.updateUser(params);
+
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
