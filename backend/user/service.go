@@ -280,7 +280,38 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 	var firstName string
 	isNewUser := !exists
 
-	if exists {
+	// Handle Cloud Edition with subdomain
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		if subdomain != "" && subdomain != "auth" {
+			// Get organization by subdomain
+			org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+			if err != nil {
+				return nil, err
+			}
+
+			if exists {
+				// For existing users, check if they have access to this organization
+				u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = s.Store.User().GetOrganizationAccess(ctx,
+					storeopts.UserOrganizationAccessByUserID(u.ID),
+					storeopts.UserOrganizationAccessByOrganizationID(org.ID))
+				if err != nil {
+					return nil, errdefs.ErrUnauthenticated(errors.New("user does not have access to this organization"))
+				}
+				firstName = u.FirstName
+			} else {
+				// For new users, registration is only allowed through invitations
+				return nil, errdefs.ErrPermissionDenied(errors.New("registration is only allowed through invitations"))
+			}
+		}
+	}
+
+	if exists && !config.Config.IsCloudEdition {
 		// Get user by email for existing users
 		u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
 		if err != nil {
