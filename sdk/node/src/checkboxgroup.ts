@@ -148,22 +148,26 @@ export function checkboxGroup(
       checkboxGroupOpts.required,
       checkboxGroupOpts.disabled,
     );
+  } else {
+    // Apply format function to options
+    const formatFunc =
+      checkboxGroupOpts.formatFunc || ((v: string, i: number) => v);
+    const displayVals = checkboxGroupOpts.options.map((v, i) =>
+      formatFunc(v, i),
+    );
+
+    checkboxGroupState.label = checkboxGroupOpts.label;
+    checkboxGroupState.options = displayVals;
+    checkboxGroupState.defaultValue = defaultVal;
+    checkboxGroupState.required = checkboxGroupOpts.required;
+    checkboxGroupState.disabled = checkboxGroupOpts.disabled;
   }
 
-  // Apply format function to options
-  const formatFunc =
-    checkboxGroupOpts.formatFunc || ((v: string, i: number) => v);
-  const displayVals = checkboxGroupOpts.options.map((v, i) => formatFunc(v, i));
-
-  checkboxGroupState.label = checkboxGroupOpts.label;
-  checkboxGroupState.options = displayVals;
-  checkboxGroupState.defaultValue = defaultVal;
-  checkboxGroupState.required = checkboxGroupOpts.required;
-  checkboxGroupState.disabled = checkboxGroupOpts.disabled;
   session.state.set(widgetID, checkboxGroupState);
 
-  const checkboxGroupProto =
-    convertStateToCheckboxGroupProto(checkboxGroupState);
+  const checkboxGroupProto = convertStateToCheckboxGroupProto(
+    checkboxGroupState as CheckboxGroupState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

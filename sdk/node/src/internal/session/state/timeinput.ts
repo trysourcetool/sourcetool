@@ -13,9 +13,13 @@ export class TimeInputState implements WidgetState {
     public required: boolean = false,
     public disabled: boolean = false,
     public location: string = 'local',
-  ) {}
+  ) {
+    this.type = WidgetTypeTimeInput;
+  }
 
   getType(): WidgetType {
     return WidgetTypeTimeInput;
   }
+
+  public type: WidgetType = WidgetTypeTimeInput;
 }

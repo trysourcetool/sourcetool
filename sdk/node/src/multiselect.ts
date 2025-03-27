@@ -164,22 +164,24 @@ export function multiSelect(
       multiSelectOpts.required,
       multiSelectOpts.disabled,
     );
+  } else {
+    // Apply format function to options
+    const formatFunc =
+      multiSelectOpts.formatFunc || ((v: string, i: number) => v);
+    const displayVals = multiSelectOpts.options.map((v, i) => formatFunc(v, i));
+
+    multiSelectState.label = multiSelectOpts.label;
+    multiSelectState.options = displayVals;
+    multiSelectState.placeholder = multiSelectOpts.placeholder;
+    multiSelectState.defaultValue = defaultVal;
+    multiSelectState.required = multiSelectOpts.required;
+    multiSelectState.disabled = multiSelectOpts.disabled;
   }
-
-  // Apply format function to options
-  const formatFunc =
-    multiSelectOpts.formatFunc || ((v: string, i: number) => v);
-  const displayVals = multiSelectOpts.options.map((v, i) => formatFunc(v, i));
-
-  multiSelectState.label = multiSelectOpts.label;
-  multiSelectState.options = displayVals;
-  multiSelectState.placeholder = multiSelectOpts.placeholder;
-  multiSelectState.defaultValue = defaultVal;
-  multiSelectState.required = multiSelectOpts.required;
-  multiSelectState.disabled = multiSelectOpts.disabled;
   session.state.set(widgetID, multiSelectState);
 
-  const multiSelectProto = convertStateToMultiSelectProto(multiSelectState);
+  const multiSelectProto = convertStateToMultiSelectProto(
+    multiSelectState as MultiSelectState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

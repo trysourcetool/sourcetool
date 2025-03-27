@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { Page, PageManager, newPageManager } from './internal/page';
+import { newSession } from './internal/session';
 
 /**
  * Runtime class
@@ -86,14 +87,7 @@ export class Runtime {
     const pageID = msg.pageId;
 
     // Create session
-    const session = {
-      id: sessionID,
-      pageID,
-      state: {
-        resetStates: () => {},
-        set: (id: string, state: any) => {},
-      },
-    };
+    const session = newSession(sessionID, pageID);
 
     this.sessionManager.setSession(session);
 

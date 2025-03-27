@@ -16,9 +16,13 @@ export class DateInputState implements WidgetState {
     public maxValue: Date | null = null,
     public minValue: Date | null = null,
     public location: string = 'local',
-  ) {}
+  ) {
+    this.type = WidgetTypeDateInput;
+  }
 
   getType(): WidgetType {
     return WidgetTypeDateInput;
   }
+
+  public type: WidgetType = WidgetTypeDateInput;
 }

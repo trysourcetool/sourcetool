@@ -23,11 +23,15 @@ export class TableState implements WidgetState {
     public onSelect: string = 'ignore',
     public rowSelection: string = 'single',
     public value: TableStateValue = {},
-  ) {}
+  ) {
+    this.type = WidgetTypeTable;
+  }
 
   getType(): WidgetType {
     return WidgetTypeTable;
   }
+
+  public type: WidgetType = WidgetTypeTable;
 }
 
 export interface TableSelection {

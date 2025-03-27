@@ -146,20 +146,21 @@ export function radio(
       radioOpts.required,
       radioOpts.disabled,
     );
+  } else {
+    // Apply format function to options
+    const formatFunc = radioOpts.formatFunc || ((v: string, i: number) => v);
+    const displayVals = radioOpts.options.map((v, i) => formatFunc(v, i));
+
+    radioState.label = radioOpts.label;
+    radioState.options = displayVals;
+    radioState.defaultValue = defaultVal;
+    radioState.required = radioOpts.required;
+    radioState.disabled = radioOpts.disabled;
+    session.state.set(widgetID, radioState);
   }
 
-  // Apply format function to options
-  const formatFunc = radioOpts.formatFunc || ((v: string, i: number) => v);
-  const displayVals = radioOpts.options.map((v, i) => formatFunc(v, i));
+  const radioProto = convertStateToRadioProto(radioState as RadioState);
 
-  radioState.label = radioOpts.label;
-  radioState.options = displayVals;
-  radioState.defaultValue = defaultVal;
-  radioState.required = radioOpts.required;
-  radioState.disabled = radioOpts.disabled;
-  session.state.set(widgetID, radioState);
-
-  const radioProto = convertStateToRadioProto(radioState);
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

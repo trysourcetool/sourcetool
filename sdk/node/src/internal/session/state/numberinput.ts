@@ -14,9 +14,13 @@ export class NumberInputState implements WidgetState {
     public disabled: boolean = false,
     public maxValue: number | null = null,
     public minValue: number | null = null,
-  ) {}
+  ) {
+    this.type = WidgetTypeNumberInput;
+  }
 
   getType(): WidgetType {
     return WidgetTypeNumberInput;
   }
+
+  public type: WidgetType = WidgetTypeNumberInput;
 }

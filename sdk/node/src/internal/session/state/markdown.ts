@@ -7,9 +7,13 @@ export class MarkdownState implements WidgetState {
   constructor(
     public id: string = uuidv4(),
     public body: string = '',
-  ) {}
+  ) {
+    this.type = WidgetTypeMarkdown;
+  }
 
   getType(): WidgetType {
     return WidgetTypeMarkdown;
   }
+
+  public type: WidgetType = WidgetTypeMarkdown;
 }

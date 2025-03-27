@@ -183,20 +183,22 @@ export function dateInput(
       dateInputOpts.minValue,
       dateInputOpts.location,
     );
+  } else {
+    dateInputState.label = dateInputOpts.label;
+    dateInputState.placeholder = dateInputOpts.placeholder;
+    dateInputState.defaultValue = dateInputOpts.defaultValue;
+    dateInputState.required = dateInputOpts.required;
+    dateInputState.disabled = dateInputOpts.disabled;
+    dateInputState.format = dateInputOpts.format;
+    dateInputState.maxValue = dateInputOpts.maxValue;
+    dateInputState.minValue = dateInputOpts.minValue;
+    dateInputState.location = dateInputOpts.location;
   }
-
-  dateInputState.label = dateInputOpts.label;
-  dateInputState.placeholder = dateInputOpts.placeholder;
-  dateInputState.defaultValue = dateInputOpts.defaultValue;
-  dateInputState.required = dateInputOpts.required;
-  dateInputState.disabled = dateInputOpts.disabled;
-  dateInputState.format = dateInputOpts.format;
-  dateInputState.maxValue = dateInputOpts.maxValue;
-  dateInputState.minValue = dateInputOpts.minValue;
-  dateInputState.location = dateInputOpts.location;
   session.state.set(widgetID, dateInputState);
 
-  const dateInputProto = convertStateToDateInputProto(dateInputState);
+  const dateInputProto = convertStateToDateInputProto(
+    dateInputState as DateInputState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

@@ -124,7 +124,9 @@ export function columns(
     session.state.set(columnItemID, columnItemState);
 
     // Send column item widget
-    const columnItemProto = convertStateToColumnItemProto(columnItemState);
+    const columnItemProto = convertStateToColumnItemProto(
+      columnItemState as ColumnItemState,
+    );
     runtime.wsClient.enqueue(uuidv4(), {
       sessionId: session.id,
       pageId: page.id,

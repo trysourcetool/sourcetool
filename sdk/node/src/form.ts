@@ -82,14 +82,14 @@ export function form(
       formOpts.buttonDisabled,
       formOpts.clearOnSubmit,
     );
+  } else {
+    formState.buttonLabel = formOpts.buttonLabel;
+    formState.buttonDisabled = formOpts.buttonDisabled;
+    formState.clearOnSubmit = formOpts.clearOnSubmit;
   }
-
-  formState.buttonLabel = formOpts.buttonLabel;
-  formState.buttonDisabled = formOpts.buttonDisabled;
-  formState.clearOnSubmit = formOpts.clearOnSubmit;
   session.state.set(widgetID, formState);
 
-  const formProto = convertStateToFormProto(formState);
+  const formProto = convertStateToFormProto(formState as FormState);
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

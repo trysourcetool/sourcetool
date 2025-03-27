@@ -14,9 +14,13 @@ export class TextInputState implements WidgetState {
     public disabled: boolean = false,
     public maxLength: number | null = null,
     public minLength: number | null = null,
-  ) {}
+  ) {
+    this.type = WidgetTypeTextInput;
+  }
 
   getType(): WidgetType {
     return WidgetTypeTextInput;
   }
+
+  public type: WidgetType = WidgetTypeTextInput;
 }

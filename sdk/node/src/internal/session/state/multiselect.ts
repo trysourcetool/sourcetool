@@ -13,11 +13,15 @@ export class MultiSelectState implements WidgetState {
     public defaultValue: number[] = [],
     public required: boolean = false,
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeMultiSelect;
+  }
 
   getType(): WidgetType {
     return WidgetTypeMultiSelect;
   }
+
+  public type: WidgetType = WidgetTypeMultiSelect;
 }
 
 export interface MultiSelectValue {

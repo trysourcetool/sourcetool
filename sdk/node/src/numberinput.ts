@@ -150,18 +150,20 @@ export function numberInput(
       numberInputOpts.maxValue,
       numberInputOpts.minValue,
     );
+  } else {
+    numberInputState.label = numberInputOpts.label;
+    numberInputState.placeholder = numberInputOpts.placeholder;
+    numberInputState.defaultValue = numberInputOpts.defaultValue;
+    numberInputState.required = numberInputOpts.required;
+    numberInputState.disabled = numberInputOpts.disabled;
+    numberInputState.maxValue = numberInputOpts.maxValue;
+    numberInputState.minValue = numberInputOpts.minValue;
+    session.state.set(widgetID, numberInputState);
   }
 
-  numberInputState.label = numberInputOpts.label;
-  numberInputState.placeholder = numberInputOpts.placeholder;
-  numberInputState.defaultValue = numberInputOpts.defaultValue;
-  numberInputState.required = numberInputOpts.required;
-  numberInputState.disabled = numberInputOpts.disabled;
-  numberInputState.maxValue = numberInputOpts.maxValue;
-  numberInputState.minValue = numberInputOpts.minValue;
-  session.state.set(widgetID, numberInputState);
-
-  const numberInputProto = convertStateToNumberInputProto(numberInputState);
+  const numberInputProto = convertStateToNumberInputProto(
+    numberInputState as NumberInputState,
+  );
   runtime.wsClient.enqueue(uuidv4(), {
     sessionId: session.id,
     pageId: page.id,

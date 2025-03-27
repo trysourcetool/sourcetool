@@ -10,9 +10,13 @@ export class FormState implements WidgetState {
     public buttonLabel: string = 'Submit',
     public buttonDisabled: boolean = false,
     public clearOnSubmit: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeForm;
+  }
 
   getType(): WidgetType {
     return WidgetTypeForm;
   }
+
+  public type: WidgetType = WidgetTypeForm;
 }

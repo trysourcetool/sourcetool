@@ -9,9 +9,13 @@ export class ButtonState implements WidgetState {
     public value: boolean = false,
     public label: string = '',
     public disabled: boolean = false,
-  ) {}
+  ) {
+    this.type = WidgetTypeButton;
+  }
 
   getType(): WidgetType {
     return WidgetTypeButton;
   }
+
+  public type: WidgetType = WidgetTypeButton;
 }
