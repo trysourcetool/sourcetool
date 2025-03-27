@@ -106,14 +106,14 @@ func TestBuildInvitationURL(t *testing.T) {
 			subdomain: "test",
 			token:     "test-token",
 			email:     "test@example.com",
-			expected:  "https://example.com/users/invitation/activate?email=test%40example.com&token=test-token",
+			expected:  "https://example.com/auth/invitations/login?email=test%40example.com&token=test-token",
 		},
 		{
 			name:      "existing user invitation",
 			subdomain: "test",
 			token:     "test-token",
 			email:     "existing@example.com",
-			expected:  "https://example.com/users/invitation/activate?email=existing%40example.com&token=test-token",
+			expected:  "https://example.com/auth/invitations/login?email=existing%40example.com&token=test-token",
 		},
 	}
 
