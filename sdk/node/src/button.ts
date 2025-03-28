@@ -2,6 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { ButtonState, WidgetTypeButton } from './internal/session/state/button';
 import { ButtonOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  ButtonSchema,
+  Button as ButtonProto,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * Button component options
@@ -72,16 +79,21 @@ export function button(
   session.state.set(widgetID, buttonState);
 
   const buttonProto = convertStateToButtonProto(buttonState as ButtonState);
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Button',
-      button: buttonProto,
-    },
+      type: {
+        case: 'button',
+        value: buttonProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -93,12 +105,12 @@ export function button(
  * @param state Button state
  * @returns Button proto
  */
-function convertStateToButtonProto(state: ButtonState): any {
-  return {
+function convertStateToButtonProto(state: ButtonState): ButtonProto {
+  return fromJson(ButtonSchema, {
     value: state.value,
     label: state.label,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -109,13 +121,15 @@ function convertStateToButtonProto(state: ButtonState): any {
  */
 export function convertButtonProtoToState(
   id: string,
-  data: any,
+  data: ButtonProto | null,
 ): ButtonState | null {
   if (!data) {
     return null;
   }
 
-  return new ButtonState(id, data.value, data.label, data.disabled);
+  const d = toJson(ButtonSchema, data);
+
+  return new ButtonState(id, d.value, d.label, d.disabled);
 }
 
 /**

@@ -5,7 +5,13 @@ import {
   WidgetTypeNumberInput,
 } from './internal/session/state/numberinput';
 import { NumberInputOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  NumberInput as NumberInputProto,
+  NumberInputSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * NumberInput component options
  */
@@ -164,16 +170,21 @@ export function numberInput(
   const numberInputProto = convertStateToNumberInputProto(
     numberInputState as NumberInputState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'NumberInput',
-      numberInput: numberInputProto,
-    },
+      type: {
+        case: 'numberInput',
+        value: numberInputProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -185,8 +196,10 @@ export function numberInput(
  * @param state Number input state
  * @returns Number input proto
  */
-function convertStateToNumberInputProto(state: NumberInputState): any {
-  return {
+function convertStateToNumberInputProto(
+  state: NumberInputState,
+): NumberInputProto {
+  return fromJson(NumberInputSchema, {
     value: state.value,
     label: state.label,
     placeholder: state.placeholder,
@@ -195,7 +208,7 @@ function convertStateToNumberInputProto(state: NumberInputState): any {
     disabled: state.disabled,
     maxValue: state.maxValue,
     minValue: state.minValue,
-  };
+  });
 }
 
 /**
@@ -206,22 +219,24 @@ function convertStateToNumberInputProto(state: NumberInputState): any {
  */
 export function convertNumberInputProtoToState(
   id: string,
-  data: any,
+  data: NumberInputProto | null,
 ): NumberInputState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(NumberInputSchema, data);
+
   return new NumberInputState(
     id,
-    data.value,
-    data.label,
-    data.placeholder,
-    data.defaultValue,
-    data.required,
-    data.disabled,
-    data.maxValue,
-    data.minValue,
+    d.value as number,
+    d.label,
+    d.placeholder,
+    d.defaultValue as number,
+    d.required,
+    d.disabled,
+    d.maxValue as number,
+    d.minValue as number,
   );
 }
 

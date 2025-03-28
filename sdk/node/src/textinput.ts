@@ -5,7 +5,13 @@ import {
   WidgetTypeTextInput,
 } from './internal/session/state/textinput';
 import { TextInputOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  TextInput as TextInputProto,
+  TextInputSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * TextInput component options
  */
@@ -150,28 +156,35 @@ export function textInput(
       textInputOpts.maxLength,
       textInputOpts.minLength,
     );
+  } else {
+    textInputState.label = textInputOpts.label;
+    textInputState.placeholder = textInputOpts.placeholder;
+    textInputState.defaultValue = textInputOpts.defaultValue;
+    textInputState.required = textInputOpts.required;
+    textInputState.disabled = textInputOpts.disabled;
+    textInputState.maxLength = textInputOpts.maxLength;
+    textInputState.minLength = textInputOpts.minLength;
+    session.state.set(widgetID, textInputState);
   }
 
-  textInputState.label = textInputOpts.label;
-  textInputState.placeholder = textInputOpts.placeholder;
-  textInputState.defaultValue = textInputOpts.defaultValue;
-  textInputState.required = textInputOpts.required;
-  textInputState.disabled = textInputOpts.disabled;
-  textInputState.maxLength = textInputOpts.maxLength;
-  textInputState.minLength = textInputOpts.minLength;
-  session.state.set(widgetID, textInputState);
+  const textInputProto = convertStateToTextInputProto(
+    textInputState as TextInputState,
+  );
 
-  const textInputProto = convertStateToTextInputProto(textInputState);
-  runtime.wsClient.enqueue(uuidv4(), {
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'TextInput',
-      textInput: textInputProto,
-    },
+      type: {
+        case: 'textInput',
+        value: textInputProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -183,8 +196,8 @@ export function textInput(
  * @param state Text input state
  * @returns Text input proto
  */
-function convertStateToTextInputProto(state: TextInputState): any {
-  return {
+function convertStateToTextInputProto(state: TextInputState): TextInputProto {
+  return fromJson(TextInputSchema, {
     value: state.value,
     label: state.label,
     placeholder: state.placeholder,
@@ -193,7 +206,7 @@ function convertStateToTextInputProto(state: TextInputState): any {
     disabled: state.disabled,
     maxLength: state.maxLength,
     minLength: state.minLength,
-  };
+  });
 }
 
 /**
@@ -204,22 +217,24 @@ function convertStateToTextInputProto(state: TextInputState): any {
  */
 export function convertTextInputProtoToState(
   id: string,
-  data: any,
+  data: TextInputProto | null,
 ): TextInputState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(TextInputSchema, data);
+
   return new TextInputState(
     id,
-    data.value,
-    data.label,
-    data.placeholder,
-    data.defaultValue,
-    data.required,
-    data.disabled,
-    data.maxLength,
-    data.minLength,
+    d.value,
+    d.label,
+    d.placeholder,
+    d.defaultValue,
+    d.required,
+    d.disabled,
+    d.maxLength,
+    d.minLength,
   );
 }
 

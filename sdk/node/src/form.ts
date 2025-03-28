@@ -2,7 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder, Cursor } from './uibuilder';
 import { FormState, WidgetTypeForm } from './internal/session/state/form';
 import { FormOptions } from './internal/options';
-
+import { create, fromJson } from '@bufbuild/protobuf';
+import {
+  Form as FormProto,
+  FormSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * Form component options
  */
@@ -90,16 +96,21 @@ export function form(
   session.state.set(widgetID, formState);
 
   const formProto = convertStateToFormProto(formState as FormState);
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Form',
-      form: formProto,
-    },
+      type: {
+        case: 'form',
+        value: formProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -118,13 +129,13 @@ export function form(
  * @param state Form state
  * @returns Form proto
  */
-function convertStateToFormProto(state: FormState): any {
-  return {
+function convertStateToFormProto(state: FormState): FormProto {
+  return fromJson(FormSchema, {
     value: state.value,
     buttonLabel: state.buttonLabel,
     buttonDisabled: state.buttonDisabled,
     clearOnSubmit: state.clearOnSubmit,
-  };
+  });
 }
 
 /**
@@ -135,7 +146,7 @@ function convertStateToFormProto(state: FormState): any {
  */
 export function convertFormProtoToState(
   id: string,
-  data: any,
+  data: FormProto | null,
 ): FormState | null {
   if (!data) {
     return null;

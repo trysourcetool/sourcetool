@@ -6,7 +6,13 @@ import {
   WidgetTypeSelectbox,
 } from './internal/session/state/selectbox';
 import { SelectboxOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  Selectbox as SelectboxProto,
+  SelectboxSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * Selectbox component options
  */
@@ -181,16 +187,21 @@ export function selectbox(
   const selectboxProto = convertStateToSelectboxProto(
     selectboxState as SelectboxState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Selectbox',
-      selectbox: selectboxProto,
-    },
+      type: {
+        case: 'selectbox',
+        value: selectboxProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -211,8 +222,8 @@ export function selectbox(
  * @param state Selectbox state
  * @returns Selectbox proto
  */
-function convertStateToSelectboxProto(state: SelectboxState): any {
-  return {
+function convertStateToSelectboxProto(state: SelectboxState): SelectboxProto {
+  return fromJson(SelectboxSchema, {
     label: state.label,
     value: state.value,
     options: state.options,
@@ -220,7 +231,7 @@ function convertStateToSelectboxProto(state: SelectboxState): any {
     defaultValue: state.defaultValue,
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -231,21 +242,23 @@ function convertStateToSelectboxProto(state: SelectboxState): any {
  */
 export function convertSelectboxProtoToState(
   id: string,
-  data: any,
+  data: SelectboxProto | null,
 ): SelectboxState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(SelectboxSchema, data);
+
   return new SelectboxState(
     id,
-    data.value,
-    data.label,
-    data.options,
-    data.placeholder,
-    data.defaultValue,
-    data.required,
-    data.disabled,
+    d.value as number,
+    d.label,
+    d.options,
+    d.placeholder,
+    d.defaultValue as number,
+    d.required,
+    d.disabled,
   );
 }
 

@@ -5,7 +5,13 @@ import {
   WidgetTypeCheckbox,
 } from './internal/session/state/checkbox';
 import { CheckboxOptions } from './internal/options';
-
+import {
+  Checkbox as CheckboxProto,
+  CheckboxSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * Checkbox component options
  */
@@ -113,16 +119,21 @@ export function checkbox(
   const checkboxProto = convertStateToCheckboxProto(
     checkboxState as CheckboxState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Checkbox',
-      checkbox: checkboxProto,
-    },
+      type: {
+        case: 'checkbox',
+        value: checkboxProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -134,14 +145,14 @@ export function checkbox(
  * @param state Checkbox state
  * @returns Checkbox proto
  */
-function convertStateToCheckboxProto(state: CheckboxState): any {
-  return {
+function convertStateToCheckboxProto(state: CheckboxState): CheckboxProto {
+  return fromJson(CheckboxSchema, {
     value: state.value,
     label: state.label,
     defaultValue: state.defaultValue,
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -152,19 +163,21 @@ function convertStateToCheckboxProto(state: CheckboxState): any {
  */
 export function convertCheckboxProtoToState(
   id: string,
-  data: any,
+  data: CheckboxProto | null,
 ): CheckboxState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(CheckboxSchema, data);
+
   return new CheckboxState(
     id,
-    data.label,
-    data.value,
-    data.defaultValue,
-    data.required,
-    data.disabled,
+    d.label,
+    d.value,
+    d.defaultValue,
+    d.required,
+    d.disabled,
   );
 }
 

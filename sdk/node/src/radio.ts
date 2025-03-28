@@ -6,7 +6,12 @@ import {
   WidgetTypeRadio,
 } from './internal/session/state/radio';
 import { RadioOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  Radio as RadioProto,
+  RadioSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * Radio component options
  */
@@ -161,16 +166,20 @@ export function radio(
 
   const radioProto = convertStateToRadioProto(radioState as RadioState);
 
-  runtime.wsClient.enqueue(uuidv4(), {
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: {
       id: widgetID,
-      type: 'Radio',
-      radio: radioProto,
+      type: {
+        case: 'radio',
+        value: radioProto,
+      },
     },
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -191,15 +200,15 @@ export function radio(
  * @param state Radio state
  * @returns Radio proto
  */
-function convertStateToRadioProto(state: RadioState): any {
-  return {
+function convertStateToRadioProto(state: RadioState): RadioProto {
+  return fromJson(RadioSchema, {
     label: state.label,
     value: state.value,
     options: state.options,
     defaultValue: state.defaultValue,
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -210,20 +219,22 @@ function convertStateToRadioProto(state: RadioState): any {
  */
 export function convertRadioProtoToState(
   id: string,
-  data: any,
+  data: RadioProto | null,
 ): RadioState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(RadioSchema, data);
+
   return new RadioState(
     id,
-    data.value,
-    data.label,
-    data.options,
-    data.defaultValue,
-    data.required,
-    data.disabled,
+    d.value as number,
+    d.label,
+    d.options,
+    d.defaultValue as number,
+    d.required,
+    d.disabled,
   );
 }
 
