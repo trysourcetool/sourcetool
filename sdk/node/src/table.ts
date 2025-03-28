@@ -11,6 +11,13 @@ import {
   TableSelection,
 } from './internal/session/state/table';
 import { TableOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  Table as TableProto,
+  TableSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * Table component options
@@ -172,16 +179,21 @@ export function table(
   }
 
   const tableProto = convertStateToTableProto(tableState as TableState);
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Table',
-      table: tableProto,
-    },
+      type: {
+        case: 'table',
+        value: tableProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -206,32 +218,27 @@ export function table(
  * @param state Table state
  * @returns Table proto
  */
-function convertStateToTableProto(state: TableState): any {
-  try {
-    const dataBytes = JSON.stringify(state.data);
-    const tableValue: any = {};
+function convertStateToTableProto(state: TableState): TableProto {
+  const dataBytes = JSON.stringify(state.data);
+  const tableValue: any = {};
 
-    if (state.value.selection) {
-      tableValue.selection = {
-        row: state.value.selection.row,
-        rows: state.value.selection.rows,
-      };
-    }
-
-    return {
-      data: dataBytes,
-      header: state.header,
-      description: state.description,
-      height: state.height,
-      columnOrder: state.columnOrder,
-      onSelect: state.onSelect,
-      rowSelection: state.rowSelection,
-      value: tableValue,
+  if (state.value.selection) {
+    tableValue.selection = {
+      row: state.value.selection.row,
+      rows: state.value.selection.rows,
     };
-  } catch (error) {
-    console.error('Error converting table state to proto:', error);
-    return {};
   }
+
+  return fromJson(TableSchema, {
+    data: dataBytes,
+    header: state.header,
+    description: state.description,
+    height: state.height,
+    columnOrder: state.columnOrder,
+    onSelect: state.onSelect,
+    rowSelection: state.rowSelection,
+    value: tableValue,
+  });
 }
 
 /**
@@ -248,34 +255,30 @@ export function convertTableProtoToState(
     return null;
   }
 
-  try {
-    const tableData =
-      typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-    const tableValue: TableStateValue = {};
+  const d = toJson(TableSchema, data);
 
-    if (data.value && data.value.selection) {
-      const selection: TableStateValueSelection = {
-        row: data.value.selection.row,
-        rows: data.value.selection.rows || [],
-      };
-      tableValue.selection = selection;
-    }
+  const tableData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
+  const tableValue: TableStateValue = {};
 
-    return new TableState(
-      id,
-      tableData,
-      data.header,
-      data.description,
-      data.height,
-      data.columnOrder || [],
-      data.onSelect,
-      data.rowSelection,
-      tableValue,
-    );
-  } catch (error) {
-    console.error('Error converting table proto to state:', error);
-    return null;
+  if (data.value && data.value.selection) {
+    const selection: TableStateValueSelection = {
+      row: data.value.selection.row,
+      rows: data.value.selection.rows || [],
+    };
+    tableValue.selection = selection;
   }
+
+  return new TableState(
+    id,
+    tableData,
+    d.header,
+    d.description,
+    d.height,
+    d.columnOrder || [],
+    d.onSelect,
+    d.rowSelection,
+    tableValue,
+  );
 }
 
 /**

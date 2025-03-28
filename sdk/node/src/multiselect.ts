@@ -6,7 +6,13 @@ import {
   WidgetTypeMultiSelect,
 } from './internal/session/state/multiselect';
 import { MultiSelectOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  MultiSelect as MultiSelectProto,
+  MultiSelectSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * MultiSelect component options
  */
@@ -182,16 +188,21 @@ export function multiSelect(
   const multiSelectProto = convertStateToMultiSelectProto(
     multiSelectState as MultiSelectState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'MultiSelect',
-      multiSelect: multiSelectProto,
-    },
+      type: {
+        case: 'multiSelect',
+        value: multiSelectProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -214,8 +225,10 @@ export function multiSelect(
  * @param state MultiSelect state
  * @returns MultiSelect proto
  */
-function convertStateToMultiSelectProto(state: MultiSelectState): any {
-  return {
+function convertStateToMultiSelectProto(
+  state: MultiSelectState,
+): MultiSelectProto {
+  return fromJson(MultiSelectSchema, {
     label: state.label,
     value: state.value,
     options: state.options,
@@ -223,7 +236,7 @@ function convertStateToMultiSelectProto(state: MultiSelectState): any {
     defaultValue: state.defaultValue,
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -234,21 +247,23 @@ function convertStateToMultiSelectProto(state: MultiSelectState): any {
  */
 export function convertMultiSelectProtoToState(
   id: string,
-  data: any,
+  data: MultiSelectProto | null,
 ): MultiSelectState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(MultiSelectSchema, data);
+
   return new MultiSelectState(
     id,
-    data.value || [],
-    data.label,
-    data.options || [],
-    data.placeholder,
-    data.defaultValue || [],
-    data.required,
-    data.disabled,
+    d.value || [],
+    d.label,
+    d.options || [],
+    d.placeholder,
+    d.defaultValue || [],
+    d.required,
+    d.disabled,
   );
 }
 

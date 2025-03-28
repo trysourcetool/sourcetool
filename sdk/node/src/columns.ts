@@ -9,6 +9,15 @@ import {
   WidgetTypeColumnItem,
 } from './internal/session/state/columnitem';
 import { ColumnsOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  ColumnItem,
+  ColumnItemSchema,
+  Columns as ColumnsProto,
+  ColumnsSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * Columns component options
@@ -127,16 +136,21 @@ export function columns(
     const columnItemProto = convertStateToColumnItemProto(
       columnItemState as ColumnItemState,
     );
-    runtime.wsClient.enqueue(uuidv4(), {
+
+    const renderWidget = create(RenderWidgetSchema, {
       sessionId: session.id,
       pageId: page.id,
       path: convertPathToInt32Array(columnPath),
-      widget: {
+      widget: create(WidgetSchema, {
         id: columnItemID,
-        type: 'ColumnItem',
-        columnItem: columnItemProto,
-      },
+        type: {
+          case: 'columnItem',
+          value: columnItemProto,
+        },
+      }),
     });
+
+    runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
     // Create builder for this column
     const columnBuilder = new UIBuilder(runtime, session, page);
@@ -154,10 +168,10 @@ export function columns(
  * @param state Columns state
  * @returns Columns proto
  */
-function convertStateToColumnsProto(state: ColumnsState): any {
-  return {
+function convertStateToColumnsProto(state: ColumnsState): ColumnsProto {
+  return fromJson(ColumnsSchema, {
     columns: state.columns,
-  };
+  });
 }
 
 /**
@@ -168,13 +182,15 @@ function convertStateToColumnsProto(state: ColumnsState): any {
  */
 export function convertColumnsProtoToState(
   id: string,
-  data: any,
+  data: ColumnsProto | null,
 ): ColumnsState | null {
   if (!data) {
     return null;
   }
 
-  return new ColumnsState(id, data.columns);
+  const d = toJson(ColumnsSchema, data);
+
+  return new ColumnsState(id, d.columns);
 }
 
 /**
@@ -182,10 +198,10 @@ export function convertColumnsProtoToState(
  * @param state Column item state
  * @returns Column item proto
  */
-function convertStateToColumnItemProto(state: ColumnItemState): any {
-  return {
+function convertStateToColumnItemProto(state: ColumnItemState): ColumnItem {
+  return fromJson(ColumnItemSchema, {
     weight: state.weight,
-  };
+  });
 }
 
 /**
@@ -196,13 +212,15 @@ function convertStateToColumnItemProto(state: ColumnItemState): any {
  */
 export function convertColumnItemProtoToState(
   id: string,
-  data: any,
+  data: ColumnItem | null,
 ): ColumnItemState | null {
   if (!data) {
     return null;
   }
 
-  return new ColumnItemState(id, data.weight);
+  const d = toJson(ColumnItemSchema, data);
+
+  return new ColumnItemState(id, d.weight as number);
 }
 
 /**

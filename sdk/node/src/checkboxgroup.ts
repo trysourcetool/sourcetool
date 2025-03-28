@@ -6,6 +6,13 @@ import {
   WidgetTypeCheckboxGroup,
 } from './internal/session/state/checkboxgroup';
 import { CheckboxGroupOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  CheckboxGroup as CheckboxGroupProto,
+  CheckboxGroupSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * CheckboxGroup component options
@@ -168,16 +175,21 @@ export function checkboxGroup(
   const checkboxGroupProto = convertStateToCheckboxGroupProto(
     checkboxGroupState as CheckboxGroupState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'CheckboxGroup',
-      checkboxGroup: checkboxGroupProto,
-    },
+      type: {
+        case: 'checkboxGroup',
+        value: checkboxGroupProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -203,15 +215,17 @@ export function checkboxGroup(
  * @param state CheckboxGroup state
  * @returns CheckboxGroup proto
  */
-function convertStateToCheckboxGroupProto(state: CheckboxGroupState): any {
-  return {
+function convertStateToCheckboxGroupProto(
+  state: CheckboxGroupState,
+): CheckboxGroupProto {
+  return fromJson(CheckboxGroupSchema, {
     label: state.label,
     value: state.value,
     options: state.options,
     defaultValue: state.defaultValue,
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -222,20 +236,22 @@ function convertStateToCheckboxGroupProto(state: CheckboxGroupState): any {
  */
 export function convertCheckboxGroupProtoToState(
   id: string,
-  data: any,
+  data: CheckboxGroupProto | null,
 ): CheckboxGroupState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(CheckboxGroupSchema, data);
+
   return new CheckboxGroupState(
     id,
-    data.value || [],
-    data.label,
-    data.options || [],
-    data.defaultValue || [],
-    data.required,
-    data.disabled,
+    d.value || [],
+    d.label,
+    d.options || [],
+    d.defaultValue || [],
+    d.required,
+    d.disabled,
   );
 }
 

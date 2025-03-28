@@ -5,6 +5,13 @@ import {
   WidgetTypeTextArea,
 } from './internal/session/state/textarea';
 import { TextAreaOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  TextArea as TextAreaProto,
+  TextAreaSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * TextArea component options
@@ -220,16 +227,21 @@ export function textArea(
   const textAreaProto = convertStateToTextAreaProto(
     textAreaState as TextAreaState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'TextArea',
-      textArea: textAreaProto,
-    },
+      type: {
+        case: 'textArea',
+        value: textAreaProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -241,8 +253,8 @@ export function textArea(
  * @param state TextArea state
  * @returns TextArea proto
  */
-function convertStateToTextAreaProto(state: TextAreaState): any {
-  return {
+function convertStateToTextAreaProto(state: TextAreaState): TextAreaProto {
+  return fromJson(TextAreaSchema, {
     value: state.value,
     label: state.label,
     placeholder: state.placeholder,
@@ -254,7 +266,7 @@ function convertStateToTextAreaProto(state: TextAreaState): any {
     maxLines: state.maxLines,
     minLines: state.minLines,
     autoResize: state.autoResize,
-  };
+  });
 }
 
 /**
@@ -265,25 +277,27 @@ function convertStateToTextAreaProto(state: TextAreaState): any {
  */
 export function convertTextAreaProtoToState(
   id: string,
-  data: any,
+  data: TextAreaProto | null,
 ): TextAreaState | null {
   if (!data) {
     return null;
   }
 
+  const d = toJson(TextAreaSchema, data);
+
   return new TextAreaState(
     id,
-    data.value,
-    data.label,
-    data.placeholder,
-    data.defaultValue,
-    data.required,
-    data.disabled,
-    data.maxLength,
-    data.minLength,
-    data.maxLines,
-    data.minLines,
-    data.autoResize,
+    d.value,
+    d.label,
+    d.placeholder,
+    d.defaultValue,
+    d.required,
+    d.disabled,
+    d.maxLength,
+    d.minLength,
+    d.maxLines,
+    d.minLines,
+    d.autoResize,
   );
 }
 

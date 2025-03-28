@@ -5,6 +5,13 @@ import {
   WidgetTypeDateTimeInput,
 } from './internal/session/state/datetimeinput';
 import { DateTimeInputOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  DateTimeInput as DateTimeInputProto,
+  DateTimeInputSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * DateTimeInput component options
@@ -199,16 +206,21 @@ export function dateTimeInput(
   const dateTimeInputProto = convertStateToDateTimeInputProto(
     dateTimeInputState as DateTimeInputState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'DateTimeInput',
-      dateTimeInput: dateTimeInputProto,
-    },
+      type: {
+        case: 'dateTimeInput',
+        value: dateTimeInputProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -220,7 +232,9 @@ export function dateTimeInput(
  * @param state Date and time input state
  * @returns Date and time input proto
  */
-function convertStateToDateTimeInputProto(state: DateTimeInputState): any {
+function convertStateToDateTimeInputProto(
+  state: DateTimeInputState,
+): DateTimeInputProto {
   const formatDateTime = (date: Date | null): string | null => {
     if (!date) {
       return null;
@@ -228,7 +242,7 @@ function convertStateToDateTimeInputProto(state: DateTimeInputState): any {
     return date.toISOString(); // ISO format: YYYY-MM-DDTHH:mm:ss.sssZ
   };
 
-  return {
+  return fromJson(DateTimeInputSchema, {
     value: formatDateTime(state.value),
     label: state.label,
     placeholder: state.placeholder,
@@ -238,7 +252,7 @@ function convertStateToDateTimeInputProto(state: DateTimeInputState): any {
     format: state.format,
     maxValue: formatDateTime(state.maxValue),
     minValue: formatDateTime(state.minValue),
-  };
+  });
 }
 
 /**
@@ -249,7 +263,7 @@ function convertStateToDateTimeInputProto(state: DateTimeInputState): any {
  */
 export function convertDateTimeInputProtoToState(
   id: string,
-  data: any,
+  data: DateTimeInputProto | null,
   location: string = 'local',
 ): DateTimeInputState | null {
   if (!data) {
@@ -263,17 +277,19 @@ export function convertDateTimeInputProtoToState(
     return new Date(dateTimeStr);
   };
 
+  const d = toJson(DateTimeInputSchema, data);
+
   return new DateTimeInputState(
     id,
-    parseDateTime(data.value),
-    data.label,
-    data.placeholder,
-    parseDateTime(data.defaultValue),
-    data.required,
-    data.disabled,
-    data.format,
-    parseDateTime(data.maxValue),
-    parseDateTime(data.minValue),
+    parseDateTime(d.value || null),
+    d.label,
+    d.placeholder,
+    parseDateTime(d.defaultValue || null),
+    d.required,
+    d.disabled,
+    d.format,
+    parseDateTime(d.maxValue || null),
+    parseDateTime(d.minValue || null),
     location,
   );
 }

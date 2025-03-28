@@ -5,6 +5,13 @@ import {
   WidgetTypeDateInput,
 } from './internal/session/state/dateinput';
 import { DateInputOptions } from './internal/options';
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  DateInput as DateInputProto,
+  DateInputSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * DateInput component options
@@ -199,16 +206,21 @@ export function dateInput(
   const dateInputProto = convertStateToDateInputProto(
     dateInputState as DateInputState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'DateInput',
-      dateInput: dateInputProto,
-    },
+      type: {
+        case: 'dateInput',
+        value: dateInputProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -220,7 +232,7 @@ export function dateInput(
  * @param state Date input state
  * @returns Date input proto
  */
-function convertStateToDateInputProto(state: DateInputState): any {
+function convertStateToDateInputProto(state: DateInputState): DateInputProto {
   const formatDate = (date: Date | null): string | null => {
     if (!date) {
       return null;
@@ -228,7 +240,7 @@ function convertStateToDateInputProto(state: DateInputState): any {
     return date.toISOString().split('T')[0]; // YYYY-MM-DD format
   };
 
-  return {
+  return fromJson(DateInputSchema, {
     value: formatDate(state.value),
     label: state.label,
     placeholder: state.placeholder,
@@ -238,7 +250,7 @@ function convertStateToDateInputProto(state: DateInputState): any {
     format: state.format,
     maxValue: formatDate(state.maxValue),
     minValue: formatDate(state.minValue),
-  };
+  });
 }
 
 /**
@@ -249,12 +261,14 @@ function convertStateToDateInputProto(state: DateInputState): any {
  */
 export function convertDateInputProtoToState(
   id: string,
-  data: any,
+  data: DateInputProto | null,
   location: string = 'local',
 ): DateInputState | null {
   if (!data) {
     return null;
   }
+
+  const d = toJson(DateInputSchema, data);
 
   const parseDate = (dateStr: string | null): Date | null => {
     if (!dateStr) {
@@ -265,15 +279,15 @@ export function convertDateInputProtoToState(
 
   return new DateInputState(
     id,
-    parseDate(data.value),
-    data.label,
-    data.placeholder,
-    parseDate(data.defaultValue),
-    data.required,
-    data.disabled,
-    data.format,
-    parseDate(data.maxValue),
-    parseDate(data.minValue),
+    parseDate(d.value || null),
+    d.label,
+    d.placeholder,
+    parseDate(d.defaultValue || null),
+    d.required,
+    d.disabled,
+    d.format,
+    parseDate(d.maxValue || null),
+    parseDate(d.minValue || null),
     location,
   );
 }

@@ -5,7 +5,13 @@ import {
   WidgetTypeMarkdown,
 } from './internal/session/state/markdown';
 import { MarkdownOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  Markdown as MarkdownProto,
+  MarkdownSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * Add markdown content to the UI
  * @param builder The UI builder
@@ -40,16 +46,21 @@ export function markdown(builder: UIBuilder, body: string): void {
   const markdownProto = convertStateToMarkdownProto(
     markdownState as MarkdownState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'Markdown',
-      markdown: markdownProto,
-    },
+      type: {
+        case: 'markdown',
+        value: markdownProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 }
@@ -59,10 +70,10 @@ export function markdown(builder: UIBuilder, body: string): void {
  * @param state Markdown state
  * @returns Markdown proto
  */
-function convertStateToMarkdownProto(state: MarkdownState): any {
-  return {
+function convertStateToMarkdownProto(state: MarkdownState): MarkdownProto {
+  return fromJson(MarkdownSchema, {
     body: state.body,
-  };
+  });
 }
 
 /**
@@ -73,13 +84,15 @@ function convertStateToMarkdownProto(state: MarkdownState): any {
  */
 export function convertMarkdownProtoToState(
   id: string,
-  data: any,
+  data: MarkdownProto | null,
 ): MarkdownState | null {
   if (!data) {
     return null;
   }
 
-  return new MarkdownState(id, data.body);
+  const d = toJson(MarkdownSchema, data);
+
+  return new MarkdownState(id, d.body);
 }
 
 /**

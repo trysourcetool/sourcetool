@@ -5,7 +5,13 @@ import {
   WidgetTypeTimeInput,
 } from './internal/session/state/timeinput';
 import { TimeInputOptions } from './internal/options';
-
+import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import {
+  TimeInput as TimeInputProto,
+  TimeInputSchema,
+  WidgetSchema,
+} from '@trysourcetool/proto/widget/v1/widget';
+import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
 /**
  * TimeInput component options
  */
@@ -148,16 +154,21 @@ export function timeInput(
   const timeInputProto = convertStateToTimeInputProto(
     timeInputState as TimeInputState,
   );
-  runtime.wsClient.enqueue(uuidv4(), {
+
+  const renderWidget = create(RenderWidgetSchema, {
     sessionId: session.id,
     pageId: page.id,
     path: convertPathToInt32Array(path),
-    widget: {
+    widget: create(WidgetSchema, {
       id: widgetID,
-      type: 'TimeInput',
-      timeInput: timeInputProto,
-    },
+      type: {
+        case: 'timeInput',
+        value: timeInputProto,
+      },
+    }),
   });
+
+  runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
   cursor.next();
 
@@ -169,7 +180,7 @@ export function timeInput(
  * @param state Time input state
  * @returns Time input proto
  */
-function convertStateToTimeInputProto(state: TimeInputState): any {
+function convertStateToTimeInputProto(state: TimeInputState): TimeInputProto {
   const formatTime = (date: Date | null): string | null => {
     if (!date) {
       return null;
@@ -183,14 +194,14 @@ function convertStateToTimeInputProto(state: TimeInputState): any {
     return `${hours}:${minutes}:${seconds}`;
   };
 
-  return {
+  return fromJson(TimeInputSchema, {
     value: formatTime(state.value),
     label: state.label,
     placeholder: state.placeholder,
     defaultValue: formatTime(state.defaultValue),
     required: state.required,
     disabled: state.disabled,
-  };
+  });
 }
 
 /**
@@ -201,7 +212,7 @@ function convertStateToTimeInputProto(state: TimeInputState): any {
  */
 export function convertTimeInputProtoToState(
   id: string,
-  data: any,
+  data: TimeInputProto | null,
   location: string = 'local',
 ): TimeInputState | null {
   if (!data) {
@@ -223,14 +234,16 @@ export function convertTimeInputProtoToState(
     return date;
   };
 
+  const d = toJson(TimeInputSchema, data);
+
   return new TimeInputState(
     id,
-    parseTime(data.value),
-    data.label,
-    data.placeholder,
-    parseTime(data.defaultValue),
-    data.required,
-    data.disabled,
+    parseTime(d.value || null),
+    d.label,
+    d.placeholder,
+    parseTime(d.defaultValue || null),
+    d.required,
+    d.disabled,
     location,
   );
 }
