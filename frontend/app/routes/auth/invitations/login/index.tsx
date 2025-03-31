@@ -14,7 +14,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -71,7 +70,7 @@ export default function InvitationLogin() {
     );
 
     if (usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(resultAction)) {
-      navigate($path('/signin/emailSent', { email: data.email }));
+      navigate($path('/auth/invitations/emailSent', { email: data.email, token }));
     } else {
       toast({
         title: t('routes_signin_toast_failed'),
@@ -107,21 +106,37 @@ export default function InvitationLogin() {
   return (
     <div className="m-auto flex w-full items-center justify-center">
       <Form {...form}>
-        <Card className="flex w-full max-w-sm flex-col gap-6 p-6">
-          <CardHeader className="p-0">
-            <CardTitle>{t('routes_signin_invitation_title')}</CardTitle>
-            <CardDescription>{t('routes_signin_invitation_description')}</CardDescription>
+        <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
+          <CardHeader className="space-y-1.5 p-0">
+            <CardTitle className="text-2xl font-semibold text-foreground">
+              {t('routes_signin_invitation_title')}
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              {t('routes_signin_invitation_description')}
+            </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <SocialButtonGoogle
+              onClick={handleGoogleAuth}
+              label={t('routes_signin_google_button')}
+            />
+
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+              <span className="relative bg-background px-2 text-sm font-medium text-foreground">
+                {t('routes_signin_or')}
+              </span>
+            </div>
+
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('routes_signin_email_label')}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={t('routes_signin_email_placeholder')}
+                      className="h-[42px] border-border text-sm"
                       {...field}
                       disabled={!!email}
                     />
@@ -133,19 +148,16 @@ export default function InvitationLogin() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="h-[42px] w-full bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
               disabled={isRequestInvitationMagicLinkWaiting}
             >
-              {isRequestInvitationMagicLinkWaiting && (
-                <Loader2 className="size-4 animate-spin" />
-              )}
+              {isRequestInvitationMagicLinkWaiting && <Loader2 className="size-4 animate-spin mr-2" />}
               {t('routes_signin_invitation_login_button')}
             </Button>
 
-            <SocialButtonGoogle
-              onClick={handleGoogleAuth}
-              label={t('routes_signin_google_button')}
-            />
+            <p className="text-center text-xs text-muted-foreground">
+              {t('routes_signin_terms_text')}
+            </p>
           </form>
         </Card>
       </Form>

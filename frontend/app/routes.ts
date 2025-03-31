@@ -10,6 +10,7 @@ export default [
     route('/signin', './routes/signin/index.tsx'),
     route('/signin/emailSent', './routes/signin/emailSent/index.tsx'),
     route('/auth/invitations/login', './routes/auth/invitations/login/index.tsx'),
+    route('/auth/invitations/emailSent', './routes/auth/invitations/emailSent/index.tsx'),
     route('/auth/invitations/magic/authenticate', './routes/auth/invitations/magic/authenticate/index.tsx'),
     route('/auth/invitations/signup/followup', './routes/auth/invitations/signup/followup/index.tsx'),
     route('/auth/magic/authenticate', './routes/auth/magic/authenticate/index.tsx'),

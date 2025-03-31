@@ -59,7 +59,7 @@
   "routes_groups_no_groups_description": "You haven't created any Permission Groups yet. Create your first Permission Groups to get started.",
 
   "routes_signin_title": "Welcome to Sourcetool.",
-  "routes_signin_description": "Sign in to build your first app.",
+  "routes_signin_description": "Log in to build your first app.",
   "routes_signin_email_label": "Email",
   "routes_signin_email_placeholder": "Enter your personal or work email",
   "routes_signin_password_label": "Password",
@@ -73,14 +73,6 @@
   "routes_signin_toast_url_failed_description": "Please try again",
   "routes_signin_or": "or",
   "routes_signin_terms_text": "By continuing, you agree to Sourcetool's Consumer Terms and Usage Policy, and acknowledge their Privacy Policy.",
-
-  "routes_reset_password_title": "Forgot password?",
-  "routes_reset_password_description": "Enter your email address and we will send you a link to reset your password.",
-  "routes_reset_password_email_label": "Email",
-  "routes_reset_password_email_placeholder": "email",
-  "routes_reset_password_button": "Continue",
-  "routes_reset_password_already_using": "Already using Sourcetool?",
-  "routes_reset_password_signin_link": "Sign in",
 
   "routes_apikeys_edit_page_header": "Edit API key",
   "routes_apikeys_edit_name_label": "API Key Name",
@@ -338,8 +330,8 @@
   "routes_users_toast_invitation_resend_failed_description": "Please try again",
 
   "routes_signin_invitation_title": "Welcome to the team.",
-  "routes_signin_invitation_description": "Sign in to your account below",
-  "routes_signin_invitation_login_button": "Sign in",
+  "routes_signin_invitation_description": "Log in to your account below",
+  "routes_signin_invitation_login_button": "Continue with email",
   "routes_signup_invitation_title": "Welcome to the team.",
   "routes_signup_invitation_description": "Complete your registration below",
   "routes_signup_invitation_register_button": "Complete registration",
