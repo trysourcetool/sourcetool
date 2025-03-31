@@ -20,21 +20,18 @@ import {
 import { SocialButtonGoogle } from '@/components/common/social-button-google';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 
 export default function Signin() {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation('common');
-
-  const { isSourcetoolDomain, subDomain } = useAuth();
 
   const isRequestMagicLinkWaiting = useSelector((state) => state.users.isRequestMagicLinkWaiting);
   const isOauthGoogleAuthWaiting = useSelector(
@@ -129,16 +126,6 @@ export default function Signin() {
               onClick={handleGoogleAuth}
               label={t('routes_signin_google_button')}
             />
-
-            {((isSourcetoolDomain && subDomain === 'auth') ||
-              !isSourcetoolDomain) && (
-              <p className="text-center text-sm font-normal text-foreground">
-                {t('routes_signin_no_account')}{' '}
-                <Link className="underline" to={$path('/signup')}>
-                  {t('routes_signin_signup_link')}
-                </Link>
-              </p>
-            )}
           </form>
         </Card>
       </Form>
