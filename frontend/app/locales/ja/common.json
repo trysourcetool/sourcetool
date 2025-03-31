@@ -71,6 +71,8 @@
   "routes_signin_toast_failed_description": "メールアドレスとパスワードを確認してください",
   "routes_signin_toast_url_failed": "URLの取得に失敗しました",
   "routes_signin_toast_url_failed_description": "もう一度お試しください",
+  "routes_signin_or": "または",
+  "routes_signin_terms_text": "続行することで、Sourcetoolの利用規約とプライバシーポリシーに同意したことになります。",
 
   "routes_reset_password_title": "パスワードをお忘れですか？",
   "routes_reset_password_description": "メールアドレスを入力すると、パスワードをリセットするためのリンクをお送りします。",
