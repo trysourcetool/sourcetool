@@ -335,5 +335,13 @@
   "routes_users_toast_invitation_resent": "招待が再送信されました",
   "routes_users_toast_invitation_resent_description": "招待がユーザーに再送信されました",
   "routes_users_toast_invitation_resend_failed": "招待の再送信に失敗しました",
-  "routes_users_toast_invitation_resend_failed_description": "もう一度お試しください"
+  "routes_users_toast_invitation_resend_failed_description": "もう一度お試しください",
+
+  "routes_signin_email_sent_title": "メールアドレスを確認",
+  "routes_signin_email_sent_description": "続行するには、以下のEmailに送信されたリンクをクリックしてください",
+  "routes_signin_email_sent_resend_text": "メールが届いていませんか？",
+  "routes_signin_email_sent_resend_button": "メールを再送信",
+  "routes_signin_email_sent_back": "戻る",
+  "routes_signin_email_sent_resend_success": "メールを送信しました",
+  "routes_signin_email_sent_resend_success_description": "新しい確認リンクをメールで送信しました"
 }

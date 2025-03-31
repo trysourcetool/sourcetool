@@ -342,5 +342,13 @@
   "routes_signin_invitation_login_button": "Sign in",
   "routes_signup_invitation_title": "Welcome to the team.",
   "routes_signup_invitation_description": "Complete your registration below",
-  "routes_signup_invitation_register_button": "Complete registration"
+  "routes_signup_invitation_register_button": "Complete registration",
+
+  "routes_signin_email_sent_title": "Verify email address",
+  "routes_signin_email_sent_description": "To continue, click the link sent to",
+  "routes_signin_email_sent_resend_text": "Not seeing the email in your inbox?",
+  "routes_signin_email_sent_resend_button": "Try sending again",
+  "routes_signin_email_sent_back": "Go back",
+  "routes_signin_email_sent_resend_success": "Email sent",
+  "routes_signin_email_sent_resend_success_description": "A new verification link has been sent to your email"
 }
