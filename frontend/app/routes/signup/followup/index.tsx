@@ -135,7 +135,7 @@ export default function Followup() {
             </div>
 
             <Button type="submit" className="w-full">
-              {t('routes_signup_followup_button')}
+              {t('routes_signup_followup_continue_button')}
             </Button>
           </form>
         </Card>

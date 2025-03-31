@@ -14,8 +14,6 @@ export default [
     route('/auth/invitations/signup/followup', './routes/auth/invitations/signup/followup/index.tsx'),
     route('/auth/magic/authenticate', './routes/auth/magic/authenticate/index.tsx'),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
-    route('/signup/emailSent', './routes/signup/emailSent/index.tsx'),
-    route('/resetPassword', './routes/resetPassword/index.tsx'),
     route(
       '/users/invitation/activate',
       './routes/users/invitation/activate/index.tsx',
