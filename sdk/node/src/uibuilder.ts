@@ -115,7 +115,7 @@ export class UIBuilder implements UIBuilderType {
     return columns(this, count, options);
   }
 
-  generatePageID(widgetType: any, path: number[]): string {
+  generatePageID(widgetType: string, path: number[]): string {
     if (!this.page) {
       return uuidNil;
     }

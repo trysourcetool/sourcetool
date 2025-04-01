@@ -1,7 +1,26 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { Page, PageManager, newPageManager } from './internal/page';
-import { newSession } from './internal/session';
+import { createSessionManager, newSession } from './internal/session';
+import { Message, toJson } from '@bufbuild/protobuf';
+import { createWebSocketClient, WebSocketClient } from './internal/websocket';
+import { CloseSession, InitializeClient, MessageSchema, RerunPage } from '@trysourcetool/proto/websocket/v1/message';
+import { convertTextInputProtoToState } from './textinput';
+import { convertButtonProtoToState } from './button';
+import { convertNumberInputProtoToState } from './numberinput';
+import { convertDateInputProtoToState } from './dateinput';
+import { convertDateTimeInputProtoToState } from './datetimeinput';
+import { convertTimeInputProtoToState } from './timeinput';
+import { convertFormProtoToState } from './form';
+import { convertMarkdownProtoToState } from './markdown';
+import { convertColumnItemProtoToState, convertColumnsProtoToState } from './columns';
+import { convertCheckboxProtoToState } from './checkbox';
+import { convertCheckboxGroupProtoToState } from './checkboxgroup';
+import { convertRadioProtoToState } from './radio';
+import { convertSelectboxProtoToState } from './selectbox';
+import { convertTextAreaProtoToState } from './textarea';
+import { convertTableProtoToState } from './table';
+import { convertMultiSelectProtoToState } from './multiselect';
 
 /**
  * Runtime class
@@ -28,7 +47,7 @@ export class Runtime {
    * @param sessionManager Session manager
    * @param pageManager Page manager
    */
-  constructor(wsClient: any, sessionManager: any, pageManager: PageManager) {
+  constructor(wsClient: WebSocketClient, sessionManager: any, pageManager: PageManager) {
     this.wsClient = wsClient;
     this.sessionManager = sessionManager;
     this.pageManager = pageManager;
@@ -78,7 +97,7 @@ export class Runtime {
    * @param msg Message
    * @returns Promise
    */
-  async handleInitializeClient(msg: any): Promise<void> {
+  async handleInitializeClient(msg: InitializeClient): Promise<void> {
     if (!msg.sessionId) {
       throw new Error('Session ID is required');
     }
@@ -125,7 +144,7 @@ export class Runtime {
    * @param msg Message
    * @returns Promise
    */
-  async handleRerunPage(msg: any): Promise<void> {
+  async handleRerunPage(msg: RerunPage): Promise<void> {
     const sessionID = msg.sessionId;
     const pageID = msg.pageId;
 
@@ -153,14 +172,59 @@ export class Runtime {
 
       // Convert widget state based on type
       // This is a simplified version, the actual implementation would handle all widget types
-      switch (widget.type) {
-        case 'TextInput':
-          newWidgetStates[id] = { id, value: widget.textInput.value };
+      switch (widget.type.case) {
+        case 'textInput':
+          newWidgetStates[id] = convertTextInputProtoToState(id, widget.type.value);
           break;
-        case 'Button':
-          newWidgetStates[id] = { id, value: widget.button.value };
+        case 'numberInput':
+          newWidgetStates[id] = convertNumberInputProtoToState(id, widget.type.value);
           break;
-        // Add other widget types here
+        case 'dateInput':
+          newWidgetStates[id] = convertDateInputProtoToState(id, widget.type.value);
+          break;
+        case 'dateTimeInput':
+          newWidgetStates[id] = convertDateTimeInputProtoToState(id, widget.type.value);
+          break;
+        case 'timeInput':
+          newWidgetStates[id] = convertTimeInputProtoToState(id, widget.type.value);
+          break;
+        case 'form':
+          newWidgetStates[id] = convertFormProtoToState(id, widget.type.value);
+          break;
+        case 'button':
+          newWidgetStates[id] = convertButtonProtoToState(id, widget.type.value);
+          break;
+        case 'markdown':
+          newWidgetStates[id] = convertMarkdownProtoToState(id, widget.type.value);
+          break;
+        case 'columns':
+          newWidgetStates[id] = convertColumnsProtoToState(id, widget.type.value);
+          break;
+        case 'columnItem':
+          newWidgetStates[id] = convertColumnItemProtoToState(id, widget.type.value);
+          break;
+        case 'checkbox':
+          newWidgetStates[id] = convertCheckboxProtoToState(id, widget.type.value);
+          break;
+        case 'checkboxGroup':
+          newWidgetStates[id] = convertCheckboxGroupProtoToState(id, widget.type.value);
+          break;
+        case 'radio':
+          newWidgetStates[id] = convertRadioProtoToState(id, widget.type.value);
+          break;
+        case 'selectbox':
+          newWidgetStates[id] = convertSelectboxProtoToState(id, widget.type.value);
+          break;
+        case 'multiSelect':
+          newWidgetStates[id] = convertMultiSelectProtoToState(id, widget.type.value);
+          break;
+        case 'table':
+          newWidgetStates[id] = convertTableProtoToState(id, widget.type.value);
+          break;
+        case 'textArea':
+          newWidgetStates[id] = convertTextAreaProtoToState(id, widget.type.value);
+          break;
+
         default:
           throw new Error(`Unknown widget type: ${widget.type}`);
       }
@@ -199,7 +263,7 @@ export class Runtime {
    * Handle close session message
    * @param msg Message
    */
-  handleCloseSession(msg: any): void {
+  handleCloseSession(msg: CloseSession): void {
     const sessionID = msg.sessionId;
     this.sessionManager.disconnectSession(sessionID);
   }
@@ -235,54 +299,58 @@ export async function startRuntime(
   pages: Record<string, Page>,
 ): Promise<Runtime> {
   // Create session manager
-  const sessionManager = {
-    setSession: (session: any) => {},
-    getSession: (id: string) => null,
-    disconnectSession: (id: string) => {},
-  };
+  const sessionManager = createSessionManager();
 
   // Create page manager
   const pageManager = newPageManager(pages);
 
   // Create WebSocket client
-  const wsClient = {
-    enqueue: (id: string, msg: any) => {},
-    enqueueWithResponse: async (id: string, msg: any) => ({}),
-    registerHandler: (handler: (msg: any) => Promise<void>) => {},
-    wait: async () => {},
-    close: async () => {},
-  };
+  const wsClient = createWebSocketClient({
+    url: endpoint,
+    apiKey,
+    instanceID: uuidv4(),
+    pingInterval: 1000,
+    reconnectDelay: 1000,
+    onReconnecting: () => {
+      console.info('Reconnecting...');
+    },
+    onReconnected: () => {
+      console.info('Reconnected!');
+      runtime.sendInitializeHost(apiKey, pages);
+    },
+  });
 
   // Create runtime
   const runtime = new Runtime(wsClient, sessionManager, pageManager);
 
   // Register message handlers
-  wsClient.registerHandler(async (msg: any) => {
+  wsClient.registerHandler(async (msg) => {
     try {
-      switch (msg.type) {
-        case 'InitializeClient':
-          await runtime.handleInitializeClient(msg.initializeClient);
+      switch (msg.type.case) {
+        case 'initializeClient':
+          await runtime.handleInitializeClient(msg.type.value);
           break;
-        case 'RerunPage':
-          await runtime.handleRerunPage(msg.rerunPage);
+        case 'rerunPage':
+          await runtime.handleRerunPage(msg.type.value);
           break;
-        case 'CloseSession':
-          runtime.handleCloseSession(msg.closeSession);
+        case 'closeSession':
+          runtime.handleCloseSession(msg.type.value);
           break;
         default:
-          throw new Error(`Unknown message type: ${msg.type}`);
+          throw new Error(`Unknown message type: ${msg.type.case}`);
       }
     } catch (err) {
-      if (msg.type === 'InitializeClient') {
+      console.error('Error processing message:', err);
+      if (msg.type.case === 'initializeClient') {
         runtime.sendException(
           msg.id,
-          msg.initializeClient.sessionId,
+          msg.type.value.sessionId ?? '',
           err as Error,
         );
-      } else if (msg.type === 'RerunPage') {
-        runtime.sendException(msg.id, msg.rerunPage.sessionId, err as Error);
-      } else if (msg.type === 'CloseSession') {
-        runtime.sendException(msg.id, msg.closeSession.sessionId, err as Error);
+      } else if (msg.type.case === 'rerunPage') {
+        runtime.sendException(msg.id, msg.type.value.sessionId, err as Error);
+      } else if (msg.type.case === 'closeSession') {
+        runtime.sendException(msg.id, msg.type.value.sessionId, err as Error);
       }
     }
   });

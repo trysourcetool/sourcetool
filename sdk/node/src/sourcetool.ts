@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { Page, PageManager, newPageManager } from './internal/page';
 import { RouterInterface, newRouter } from './router';
