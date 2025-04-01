@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import * as logger from './logger';
+import { Message } from '@trysourcetool/proto/websocket/v1/message';
 
 /**
  * WebSocket client configuration
@@ -17,7 +18,7 @@ export interface WebSocketClientConfig {
 /**
  * Message handler function
  */
-export type MessageHandlerFunc = (message: any) => Promise<void> | void;
+export type MessageHandlerFunc = (message: Message) => Promise<void> | void;
 
 /**
  * WebSocket client interface
