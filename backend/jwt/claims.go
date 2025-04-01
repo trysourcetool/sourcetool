@@ -7,11 +7,14 @@ import (
 const (
 	Issuer = "trysourcetool.com"
 
-	UserSignatureSubjectEmail             = "email"
-	UserSignatureSubjectUpdateEmail       = "update_email"
-	UserSignatureSubjectActivate          = "activate"
-	UserSignatureSubjectInvitation        = "invitaiton"
-	UserSignatureSubjectGoogleAuthRequest = "google_auth_request"
+	UserSignatureSubjectEmail                 = "email"
+	UserSignatureSubjectUpdateEmail           = "update_email"
+	UserSignatureSubjectActivate              = "activate"
+	UserSignatureSubjectInvitation            = "invitation"
+	UserSignatureSubjectInvitationMagicLink   = "invitation_magic_link"
+	UserSignatureSubjectGoogleAuthRequest     = "google_auth_request"
+	UserSignatureSubjectMagicLink             = "magic_link"
+	UserSignatureSubjectMagicLinkRegistration = "magic_link_registration"
 )
 
 type RegisteredClaims jwt.RegisteredClaims
@@ -39,5 +42,11 @@ type UserGoogleAuthRequestClaims struct {
 type UserAuthClaims struct {
 	UserID    string
 	XSRFToken string
+	jwt.RegisteredClaims
+}
+
+// UserMagicLinkRegistrationClaims represents claims for magic link registration.
+type UserMagicLinkRegistrationClaims struct {
+	Email string
 	jwt.RegisteredClaims
 }

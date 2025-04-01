@@ -121,36 +121,46 @@ func UpdateUserEmailOutputToResponse(out *dto.UpdateUserEmailOutput) *responses.
 	}
 }
 
-// UpdateUserPasswordRequestToDTOInput converts from requests.UpdateUserPasswordRequest to dto.UpdateUserPasswordInput.
-func UpdateUserPasswordRequestToDTOInput(in requests.UpdateUserPasswordRequest) dto.UpdateUserPasswordInput {
-	return dto.UpdateUserPasswordInput{
-		CurrentPassword:      in.CurrentPassword,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
+// RequestMagicLinkRequestToDTOInput converts from requests.RequestMagicLinkRequest to dto.RequestMagicLinkInput.
+func RequestMagicLinkRequestToDTOInput(in requests.RequestMagicLinkRequest) dto.RequestMagicLinkInput {
+	return dto.RequestMagicLinkInput{
+		Email: in.Email,
 	}
 }
 
-// UpdateUserPasswordOutputToResponse converts from dto.UpdateUserPasswordOutput to responses.UpdateUserPasswordResponse.
-func UpdateUserPasswordOutputToResponse(out *dto.UpdateUserPasswordOutput) *responses.UpdateUserPasswordResponse {
-	return &responses.UpdateUserPasswordResponse{
-		User: UserDTOToResponse(out.User),
+// AuthenticateWithMagicLinkRequestToDTOInput converts from requests.AuthenticateWithMagicLinkRequest to dto.AuthenticateWithMagicLinkInput.
+func AuthenticateWithMagicLinkRequestToDTOInput(in requests.AuthenticateWithMagicLinkRequest) dto.AuthenticateWithMagicLinkInput {
+	return dto.AuthenticateWithMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
 	}
 }
 
-// SignInRequestToDTOInput converts from requests.SignInRequest to dto.SignInInput.
-func SignInRequestToDTOInput(in requests.SignInRequest) dto.SignInInput {
-	return dto.SignInInput{
-		Email:    in.Email,
-		Password: in.Password,
-	}
-}
-
-// SignInOutputToResponse converts from dto.SignInOutput to responses.SignInResponse.
-func SignInOutputToResponse(out *dto.SignInOutput) *responses.SignInResponse {
-	return &responses.SignInResponse{
+// AuthenticateWithMagicLinkOutputToResponse converts from dto.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
+func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
+	return &responses.AuthenticateWithMagicLinkResponse{
 		AuthURL:              out.AuthURL,
 		Token:                out.Token,
 		IsOrganizationExists: out.IsOrganizationExists,
+		IsNewUser:            out.IsNewUser,
+	}
+}
+
+// RequestMagicLinkOutputToResponse converts from dto.RequestMagicLinkOutput to responses.RequestMagicLinkResponse.
+func RequestMagicLinkOutputToResponse(out *dto.RequestMagicLinkOutput) responses.RequestMagicLinkResponse {
+	return responses.RequestMagicLinkResponse{
+		Email: out.Email,
+		IsNew: out.IsNew,
+	}
+}
+
+// RegisterWithMagicLinkRequestToDTOInput converts from requests.RegisterWithMagicLinkRequest to dto.RegisterWithMagicLinkInput.
+func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkRequest) dto.RegisterWithMagicLinkInput {
+	return dto.RegisterWithMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
 	}
 }
 
@@ -167,39 +177,6 @@ func SignInWithGoogleOutputToResponse(out *dto.SignInWithGoogleOutput) *response
 		AuthURL:              out.AuthURL,
 		Token:                out.Token,
 		IsOrganizationExists: out.IsOrganizationExists,
-	}
-}
-
-// SendSignUpInstructionsRequestToDTOInput converts from requests.SendSignUpInstructionsRequest to dto.SendSignUpInstructionsInput.
-func SendSignUpInstructionsRequestToDTOInput(in requests.SendSignUpInstructionsRequest) dto.SendSignUpInstructionsInput {
-	return dto.SendSignUpInstructionsInput{
-		Email: in.Email,
-	}
-}
-
-// SendSignUpInstructionsOutputToResponse converts from dto.SendSignUpInstructionsOutput to responses.SendSignUpInstructionsResponse.
-func SendSignUpInstructionsOutputToResponse(out *dto.SendSignUpInstructionsOutput) *responses.SendSignUpInstructionsResponse {
-	return &responses.SendSignUpInstructionsResponse{
-		Email: out.Email,
-	}
-}
-
-// SignUpRequestToDTOInput converts from requests.SignUpRequest to dto.SignUpInput.
-func SignUpRequestToDTOInput(in requests.SignUpRequest) dto.SignUpInput {
-	return dto.SignUpInput{
-		Token:                in.Token,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
-	}
-}
-
-// SignUpOutputToResponse converts from dto.SignUpOutput to responses.SignUpResponse.
-func SignUpOutputToResponse(out *dto.SignUpOutput) *responses.SignUpResponse {
-	return &responses.SignUpResponse{
-		Token:     out.Token,
-		XSRFToken: out.XSRFToken,
 	}
 }
 
@@ -389,5 +366,52 @@ func ResendInvitationOutputToResponse(out *dto.ResendInvitationOutput) *response
 func SignOutOutputToResponse(out *dto.SignOutOutput) *responses.SignOutResponse {
 	return &responses.SignOutResponse{
 		Domain: out.Domain,
+	}
+}
+
+// RequestInvitationMagicLinkRequestToDTOInput converts from requests.RequestInvitationMagicLinkRequest to dto.RequestInvitationMagicLinkInput.
+func RequestInvitationMagicLinkRequestToDTOInput(in requests.RequestInvitationMagicLinkRequest) dto.RequestInvitationMagicLinkInput {
+	return dto.RequestInvitationMagicLinkInput{
+		InvitationToken: in.InvitationToken,
+	}
+}
+
+// RequestInvitationMagicLinkOutputToResponse converts from dto.RequestInvitationMagicLinkOutput to responses.RequestInvitationMagicLinkResponse.
+func RequestInvitationMagicLinkOutputToResponse(out *dto.RequestInvitationMagicLinkOutput) *responses.RequestInvitationMagicLinkResponse {
+	return &responses.RequestInvitationMagicLinkResponse{
+		Email: out.Email,
+	}
+}
+
+// AuthenticateWithInvitationMagicLinkRequestToDTOInput converts from requests.AuthenticateWithInvitationMagicLinkRequest to dto.AuthenticateWithInvitationMagicLinkInput.
+func AuthenticateWithInvitationMagicLinkRequestToDTOInput(in requests.AuthenticateWithInvitationMagicLinkRequest) dto.AuthenticateWithInvitationMagicLinkInput {
+	return dto.AuthenticateWithInvitationMagicLinkInput{
+		Token: in.Token,
+	}
+}
+
+// AuthenticateWithInvitationMagicLinkOutputToResponse converts from dto.AuthenticateWithInvitationMagicLinkOutput to responses.AuthenticateWithInvitationMagicLinkResponse.
+func AuthenticateWithInvitationMagicLinkOutputToResponse(out *dto.AuthenticateWithInvitationMagicLinkOutput) *responses.AuthenticateWithInvitationMagicLinkResponse {
+	return &responses.AuthenticateWithInvitationMagicLinkResponse{
+		AuthURL:   out.AuthURL,
+		Token:     out.Token,
+		IsNewUser: out.IsNewUser,
+	}
+}
+
+// RegisterWithInvitationMagicLinkRequestToDTOInput converts from requests.RegisterWithInvitationMagicLinkRequest to dto.RegisterWithInvitationMagicLinkInput.
+func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithInvitationMagicLinkRequest) dto.RegisterWithInvitationMagicLinkInput {
+	return dto.RegisterWithInvitationMagicLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
+// RegisterWithInvitationMagicLinkOutputToResponse converts from dto.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
+func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
+	return &responses.RegisterWithInvitationMagicLinkResponse{
+		Token:     out.Token,
+		XSRFToken: out.XSRFToken,
 	}
 }

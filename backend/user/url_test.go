@@ -9,40 +9,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-func TestHashSecret(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "empty string",
-			input:    "",
-			expected: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-		},
-		{
-			name:     "non-empty string",
-			input:    "test-secret",
-			expected: "9caf06bb4436cdbfa20af9121a626bc1093c4f54b31c0fa937957856135345b6",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := hashSecret(tt.input)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestGenerateSecret(t *testing.T) {
-	plainSecret, hashedSecret, err := generateSecret()
-	assert.NoError(t, err)
-	assert.NotEmpty(t, plainSecret)
-	assert.NotEmpty(t, hashedSecret)
-	assert.Equal(t, hashSecret(plainSecret), hashedSecret)
-}
-
 func TestBuildUserActivateURL(t *testing.T) {
 	// Setup test config
 	config.Config = &config.Cfg{
@@ -129,34 +95,31 @@ func TestBuildInvitationURL(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		subdomain    string
-		token        string
-		email        string
-		isUserExists bool
-		expected     string
+		name      string
+		subdomain string
+		token     string
+		email     string
+		expected  string
 	}{
 		{
-			name:         "new user invitation",
-			subdomain:    "test",
-			token:        "test-token",
-			email:        "test@example.com",
-			isUserExists: false,
-			expected:     "https://example.com/users/invitation/activate?email=test%40example.com&isUserExists=false&token=test-token",
+			name:      "new user invitation",
+			subdomain: "test",
+			token:     "test-token",
+			email:     "test@example.com",
+			expected:  "https://example.com/auth/invitations/login?email=test%40example.com&token=test-token",
 		},
 		{
-			name:         "existing user invitation",
-			subdomain:    "test",
-			token:        "test-token",
-			email:        "existing@example.com",
-			isUserExists: true,
-			expected:     "https://example.com/users/invitation/activate?email=existing%40example.com&isUserExists=true&token=test-token",
+			name:      "existing user invitation",
+			subdomain: "test",
+			token:     "test-token",
+			email:     "existing@example.com",
+			expected:  "https://example.com/auth/invitations/login?email=existing%40example.com&token=test-token",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := buildInvitationURL(tt.subdomain, tt.token, tt.email, tt.isUserExists)
+			result, err := buildInvitationURL(tt.subdomain, tt.token, tt.email)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
 		})

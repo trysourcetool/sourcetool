@@ -35,7 +35,6 @@ type User struct {
 	Email                string     `db:"email"`
 	FirstName            string     `db:"first_name"`
 	LastName             string     `db:"last_name"`
-	Password             string     `db:"password"`
 	Secret               string     `db:"secret"`
 	GoogleID             string     `db:"google_id"`
 	EmailAuthenticatedAt *time.Time `db:"email_authenticated_at"`
@@ -192,9 +191,34 @@ type SendMultipleOrganizationsEmail struct {
 	LoginURLs []string
 }
 
+// Email structure for sending magic link email.
+type SendMagicLinkEmail struct {
+	To        string
+	FirstName string
+	URL       string
+}
+
+// Email structure for sending multiple organizations magic link email.
+type SendMultipleOrganizationsMagicLinkEmail struct {
+	To        string
+	FirstName string
+	Email     string
+	LoginURLs []string
+}
+
+// SendInvitationMagicLinkEmail represents the data needed to send an invitation magic link email.
+type SendInvitationMagicLinkEmail struct {
+	To        string
+	URL       string
+	FirstName string
+}
+
 type UserMailer interface {
-	SendSignUpInstructions(context.Context, *SendSignUpInstructions) error
-	SendUpdateEmailInstructions(context.Context, *SendUpdateUserEmailInstructions) error
-	SendInvitationEmail(context.Context, *SendInvitationEmail) error
-	SendMultipleOrganizationsEmail(context.Context, *SendMultipleOrganizationsEmail) error
+	SendSignUpInstructions(ctx context.Context, in *SendSignUpInstructions) error
+	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
+	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
+	SendMultipleOrganizationsEmail(ctx context.Context, in *SendMultipleOrganizationsEmail) error
+	SendMagicLinkEmail(ctx context.Context, in *SendMagicLinkEmail) error
+	SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *SendMultipleOrganizationsMagicLinkEmail) error
+	SendInvitationMagicLinkEmail(ctx context.Context, in *SendInvitationMagicLinkEmail) error
 }

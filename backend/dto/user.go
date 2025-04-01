@@ -121,32 +121,33 @@ type UpdateUserEmailOutput struct {
 	User *User
 }
 
-// UpdateUserPasswordInput is the input for Update User Password operation.
-type UpdateUserPasswordInput struct {
-	CurrentPassword      string
-	Password             string
-	PasswordConfirmation string
+// RequestMagicLinkInput is the input for requesting a magic link for passwordless auth.
+type RequestMagicLinkInput struct {
+	Email string
 }
 
-// UpdateUserPasswordOutput is the output for Update User Password operation.
-type UpdateUserPasswordOutput struct {
-	User *User
+// RequestMagicLinkOutput is the output for the magic link request operation.
+type RequestMagicLinkOutput struct {
+	Email string
+	IsNew bool // Indicates if this is a new user
 }
 
-// SignInInput is the input for Sign In operation.
-type SignInInput struct {
-	Email    string
-	Password string
+// AuthenticateWithMagicLinkInput is the input for authenticating with a magic link token.
+type AuthenticateWithMagicLinkInput struct {
+	Token     string
+	FirstName string // Optional: used for new users
+	LastName  string // Optional: used for new users
 }
 
-// SignInOutput is the output for Sign In operation.
-type SignInOutput struct {
+// AuthenticateWithMagicLinkOutput is the output for authenticating with a magic link token.
+type AuthenticateWithMagicLinkOutput struct {
 	AuthURL              string
 	Token                string
 	IsOrganizationExists bool
 	Secret               string
 	XSRFToken            string
 	Domain               string
+	IsNewUser            bool // Indicates if a new user was created
 }
 
 // SignInWithGoogleInput is the input for Sign In With Google operation.
@@ -162,32 +163,6 @@ type SignInWithGoogleOutput struct {
 	Secret               string
 	XSRFToken            string
 	Domain               string
-}
-
-// SendSignUpInstructionsInput is the input for Send SignUp Instructions operation.
-type SendSignUpInstructionsInput struct {
-	Email string
-}
-
-// SendSignUpInstructionsOutput is the output for Send SignUp Instructions operation.
-type SendSignUpInstructionsOutput struct {
-	Email string
-}
-
-// SignUpInput is the input for Sign Up operation.
-type SignUpInput struct {
-	Token                string
-	FirstName            string
-	LastName             string
-	Password             string
-	PasswordConfirmation string
-}
-
-// SignUpOutput is the output for Sign Up operation.
-type SignUpOutput struct {
-	Token     string
-	Secret    string // only for self-hosted edition
-	XSRFToken string
 }
 
 // SignUpWithGoogleInput is the input for Sign Up With Google operation.
@@ -359,4 +334,58 @@ type ResendInvitationInput struct {
 // ResendInvitationOutput is the output for Resend Invitation operation.
 type ResendInvitationOutput struct {
 	UserInvitation *UserInvitation
+}
+
+// RegisterWithMagicLinkInput is the input for registering with a magic link.
+type RegisterWithMagicLinkInput struct {
+	Token     string
+	FirstName string
+	LastName  string
+}
+
+// RegisterWithMagicLinkOutput is the output for registering with a magic link.
+type RegisterWithMagicLinkOutput struct {
+	Token     string
+	Secret    string
+	XSRFToken string
+}
+
+// RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation.
+type RequestInvitationMagicLinkInput struct {
+	InvitationToken string
+}
+
+// RequestInvitationMagicLinkOutput represents the output for requesting a magic link for invitation.
+type RequestInvitationMagicLinkOutput struct {
+	Email string
+	IsNew bool
+}
+
+// AuthenticateWithInvitationMagicLinkInput represents the input for authenticating with an invitation magic link.
+type AuthenticateWithInvitationMagicLinkInput struct {
+	Token string
+}
+
+// AuthenticateWithInvitationMagicLinkOutput represents the output for authenticating with an invitation magic link.
+type AuthenticateWithInvitationMagicLinkOutput struct {
+	AuthURL   string
+	Token     string
+	Domain    string
+	IsNewUser bool
+}
+
+// RegisterWithInvitationMagicLinkInput represents the input for registering with an invitation magic link.
+type RegisterWithInvitationMagicLinkInput struct {
+	Token     string
+	FirstName string
+	LastName  string
+}
+
+// RegisterWithInvitationMagicLinkOutput represents the output for registering with an invitation magic link.
+type RegisterWithInvitationMagicLinkOutput struct {
+	Token     string
+	Secret    string
+	XSRFToken string
+	ExpiresAt string
+	Domain    string
 }

@@ -14,6 +14,17 @@ definitions:
       title:
         type: string
     type: object
+  requests.AuthenticateWithMagicLinkRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      token:
+        type: string
+    required:
+    - token
+    type: object
   requests.CreateAPIKeyRequest:
     properties:
       environmentId:
@@ -80,6 +91,13 @@ definitions:
     - emails
     - role
     type: object
+  requests.RequestMagicLinkRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   requests.ResendInvitationRequest:
     properties:
       invitationId:
@@ -93,13 +111,6 @@ definitions:
         type: string
     required:
     - token
-    type: object
-  requests.SendSignUpInstructionsRequest:
-    properties:
-      email:
-        type: string
-    required:
-    - email
     type: object
   requests.SendUpdateUserEmailInstructionsRequest:
     properties:
@@ -119,16 +130,6 @@ definitions:
         type: string
     required:
     - invitationToken
-    - password
-    type: object
-  requests.SignInRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
     - password
     type: object
   requests.SignInWithGoogleInvitationRequest:
@@ -163,25 +164,6 @@ definitions:
     - lastName
     - password
     - passwordConfirmation
-    type: object
-  requests.SignUpRequest:
-    properties:
-      firstName:
-        type: string
-      lastName:
-        type: string
-      password:
-        type: string
-      passwordConfirmation:
-        type: string
-      token:
-        type: string
-    required:
-    - firstName
-    - lastName
-    - password
-    - passwordConfirmation
-    - token
     type: object
   requests.SignUpWithGoogleInvitationRequest:
     properties:
@@ -256,19 +238,6 @@ definitions:
     required:
     - token
     type: object
-  requests.UpdateUserPasswordRequest:
-    properties:
-      currentPassword:
-        type: string
-      password:
-        type: string
-      passwordConfirmation:
-        type: string
-    required:
-    - currentPassword
-    - password
-    - passwordConfirmation
-    type: object
   requests.UpdateUserRequest:
     properties:
       firstName:
@@ -289,6 +258,17 @@ definitions:
       name:
         type: string
       updatedAt:
+        type: string
+    type: object
+  responses.AuthenticateWithMagicLinkResponse:
+    properties:
+      authUrl:
+        type: string
+      isNewUser:
+        type: boolean
+      isOrganizationExists:
+        type: boolean
+      token:
         type: string
     type: object
   responses.CreateAPIKeyResponse:
@@ -527,6 +507,13 @@ definitions:
       expiresAt:
         type: string
     type: object
+  responses.RequestMagicLinkResponse:
+    properties:
+      email:
+        type: string
+      isNew:
+        type: boolean
+    type: object
   responses.ResendInvitationResponse:
     properties:
       userInvitation:
@@ -537,20 +524,6 @@ definitions:
       expiresAt:
         type: string
       redirectUrl:
-        type: string
-    type: object
-  responses.SendSignUpInstructionsResponse:
-    properties:
-      email:
-        type: string
-    type: object
-  responses.SignInResponse:
-    properties:
-      authUrl:
-        type: string
-      isOrganizationExists:
-        type: boolean
-      token:
         type: string
     type: object
   responses.SignInWithGoogleResponse:
@@ -585,11 +558,6 @@ definitions:
         $ref: '#/definitions/responses.GroupResponse'
     type: object
   responses.UpdateUserEmailResponse:
-    properties:
-      user:
-        $ref: '#/definitions/responses.UserResponse'
-    type: object
-  responses.UpdateUserPasswordResponse:
     properties:
       user:
         $ref: '#/definitions/responses.UserResponse'
@@ -1171,6 +1139,34 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
+  /users/auth/magic/authenticate:
+    post:
+      consumes:
+      - application/json
+      operationId: authenticate-with-magic-link
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AuthenticateWithMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AuthenticateWithMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/auth/magic/register:
+    post:
+      responses: {}
   /users/email:
     put:
       consumes:
@@ -1475,31 +1471,6 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/password:
-    put:
-      consumes:
-      - application/json
-      operationId: update-user-password
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateUserPasswordRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.UpdateUserPasswordResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
   /users/refreshToken:
     post:
       consumes:
@@ -1568,25 +1539,25 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/signin:
+  /users/signin/magic/request:
     post:
       consumes:
       - application/json
-      operationId: signin
+      operationId: request-magic-link
       parameters:
       - description: ' '
         in: body
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/requests.SignInRequest'
+          $ref: '#/definitions/requests.RequestMagicLinkRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.SignInResponse'
+            $ref: '#/definitions/responses.RequestMagicLinkResponse'
         default:
           description: ""
           schema:
@@ -1605,56 +1576,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/signup:
-    post:
-      consumes:
-      - application/json
-      operationId: signup
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignUpRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/signup/instructions:
-    post:
-      consumes:
-      - application/json
-      operationId: signup-instructions
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SendSignUpInstructionsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.SendSignUpInstructionsResponse'
         default:
           description: ""
           schema:

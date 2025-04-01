@@ -1,29 +1,26 @@
 package responses
 
-type SendSignUpInstructionsResponse struct {
-	Email string `json:"email"`
-}
-
-type SignInResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-}
-
 type SignInWithGoogleResponse struct {
 	AuthURL              string `json:"authUrl"`
 	Token                string `json:"token"`
 	IsOrganizationExists bool   `json:"isOrganizationExists"`
 }
 
-type SignUpResponse struct {
+type SignUpWithGoogleResponse struct {
 	Token     string
 	XSRFToken string
 }
 
-type SignUpWithGoogleResponse struct {
-	Token     string
-	XSRFToken string
+type RequestMagicLinkResponse struct {
+	Email string `json:"email"`
+	IsNew bool   `json:"isNew"`
+}
+
+type AuthenticateWithMagicLinkResponse struct {
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	IsNewUser            bool   `json:"isNewUser"`
 }
 
 type RefreshTokenResponse struct {
@@ -102,10 +99,6 @@ type UpdateUserResponse struct {
 	User *UserResponse `json:"user"`
 }
 
-type UpdateUserPasswordResponse struct {
-	User *UserResponse `json:"user"`
-}
-
 type UpdateUserEmailResponse struct {
 	User *UserResponse `json:"user"`
 }
@@ -120,4 +113,20 @@ type UserGroupResponse struct {
 	GroupID   string `json:"groupId"`
 	CreatedAt string `json:"createdAt"`
 	UpdatedAt string `json:"updatedAt"`
+}
+
+type RequestInvitationMagicLinkResponse struct {
+	Email string `json:"email"`
+}
+
+type AuthenticateWithInvitationMagicLinkResponse struct {
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	IsNewUser            bool   `json:"isNewUser"`
+}
+
+type RegisterWithInvitationMagicLinkResponse struct {
+	Token     string `json:"token"`
+	XSRFToken string `json:"xsrfToken"`
 }

@@ -87,26 +87,6 @@ export const listUsers = createAsyncThunk(
   },
 );
 
-export const signin = createAsyncThunk(
-  'users/signin',
-  async (
-    params: { data: { email: string; password: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignin(params);
-
-      return res;
-    } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
 export const signout = createAsyncThunk(
   'users/signout',
   async (_, { dispatch, rejectWithValue }) => {
@@ -120,48 +100,6 @@ export const signout = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const signup = createAsyncThunk(
-  'users/signup',
-  async (
-    params: {
-      data: {
-        firstName: string;
-        lastName: string;
-        password: string;
-        passwordConfirmation: string;
-        token: string;
-      };
-    },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignup(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const signupInstructions = createAsyncThunk(
-  'users/signupInstructions',
-  async (
-    params: { data: { email: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSignupInstructions(params);
-
-      return res;
-    } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
@@ -404,37 +342,20 @@ export const updateUserEmail = createAsyncThunk(
   },
 );
 
-export const updateUserPassword = createAsyncThunk(
-  'users/updateUserPassword',
+export const updateUser = createAsyncThunk(
+  'users/updateUser',
   async (
     params: {
       data: {
-        currentPassword: string;
-        password: string;
-        passwordConfirmation: string;
+        firstName: string;
+        lastName: string;
       };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.updateUserPassword(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-export const updateUser = createAsyncThunk(
-  'users/updateUser',
-  async (
-    params: { data: { firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
       const res = await api.users.updateUser(params);
+
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -452,6 +373,117 @@ export const usersSendUpdateEmailInstructions = createAsyncThunk(
     try {
       const res = await api.users.usersSendUpdateEmailInstructions(params);
 
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const requestMagicLink = createAsyncThunk(
+  'users/requestMagicLink',
+  async (
+    params: { data: { email: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRequestMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const authenticateWithMagicLink = createAsyncThunk(
+  'users/authenticateWithMagicLink',
+  async (
+    params: { data: { token: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersAuthenticateWithMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const registerWithMagicLink = createAsyncThunk(
+  'users/registerWithMagicLink',
+  async (
+    params: { data: { token: string; firstName: string; lastName: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRegisterWithMagicLink(params);
+      return res;
+    } catch (error: any) {
+      if (ENVIRONMENTS.MODE === 'development') {
+        console.log({ error });
+      }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const requestInvitationMagicLink = createAsyncThunk(
+  'users/requestInvitationMagicLink',
+  async (
+    params: { data: { invitationToken: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRequestInvitationMagicLink(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const authenticateWithInvitationMagicLink = createAsyncThunk(
+  'users/authenticateWithInvitationMagicLink',
+  async (
+    params: { data: { token: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersAuthenticateWithInvitationMagicLink(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+export const registerWithInvitationMagicLink = createAsyncThunk(
+  'users/registerWithInvitationMagicLink',
+  async (
+    params: {
+      data: {
+        token: string;
+        firstName: string;
+        lastName: string;
+      };
+    },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.usersRegisterWithInvitationMagicLink(params);
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));

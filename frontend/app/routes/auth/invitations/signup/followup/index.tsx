@@ -21,22 +21,17 @@ import { object, string, boolean } from 'zod';
 import type { z } from 'zod';
 
 export type SearchParams = {
-  isUserExists: string; // 'true' or 'false'
   token: string;
-  email: string;
 };
 
-export default function InvitationSignupFollowup() {
+export default function InvitationSignUpFollowUp() {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
-  const isUserExists = searchParams.get('isUserExists');
-  const email = searchParams.get('email');
   const token = searchParams.get('token');
 
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation('common');
-  console.log({ token, email, isUserExists });
 
   const schema = object({
     firstName: string({
@@ -45,28 +40,9 @@ export default function InvitationSignupFollowup() {
     lastName: string({
       required_error: t('zod_errors_lastName_required'),
     }),
-    password: string({
-      required_error: t('zod_errors_password_required'),
-    })
-      .min(8, t('zod_errors_password_min'))
-      .regex(
-        /^(?=.*[A-Za-z])(?=.*\d)[a-zA-Z0-9!?_+*'"`#$%&\-^\\@;:,./=~|[\](){}<>]{8,}$/,
-        t('zod_errors_password_format'),
-      ),
-    passwordConfirmation: string({
-      required_error: t('zod_errors_passwordConfirmation_required'),
-    }),
     agreeToTerms: boolean({
       required_error: t('zod_errors_agreeToTerms_required'),
     }),
-  }).superRefine(({ password, passwordConfirmation }, ctx) => {
-    if (password !== passwordConfirmation) {
-      ctx.addIssue({
-        code: 'custom',
-        message: t('zod_errors_passwordConfirmation_match'),
-        path: ['passwordConfirmation'],
-      });
-    }
   });
 
   type Schema = z.infer<typeof schema>;
@@ -84,16 +60,20 @@ export default function InvitationSignupFollowup() {
       });
       return;
     }
+
     const resultAction = await dispatch(
-      usersStore.asyncActions.invitationsSignup({
+      usersStore.asyncActions.registerWithInvitationMagicLink({
         data: {
-          invitationToken: token,
+          token,
           ...data,
         },
       }),
     );
+
     if (
-      usersStore.asyncActions.invitationsSignup.fulfilled.match(resultAction)
+      usersStore.asyncActions.registerWithInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
     ) {
       const result = await dispatch(usersStore.asyncActions.getUsersMe());
       if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
@@ -168,51 +148,6 @@ export default function InvitationSignupFollowup() {
 
             <FormField
               control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t('routes_invitation_signup_followup_password_label')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t(
-                        'routes_invitation_signup_followup_password_placeholder',
-                      )}
-                      {...field}
-                      type="password"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="passwordConfirmation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t(
-                      'routes_invitation_signup_followup_confirm_password_label',
-                    )}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t(
-                        'routes_invitation_signup_followup_password_placeholder',
-                      )}
-                      {...field}
-                      type="password"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="agreeToTerms"
               render={({ field }) => (
                 <FormItem>
@@ -225,7 +160,7 @@ export default function InvitationSignupFollowup() {
                       />
                       <label
                         htmlFor="terms1"
-                        className="text-sm font-normal leading-4 text-foreground"
+                        className="text-sm leading-4 font-normal text-foreground"
                         dangerouslySetInnerHTML={{
                           __html: t(
                             'routes_invitation_signup_followup_terms_text',

@@ -16,24 +16,33 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { SocialButtonGoogle } from '@/components/common/social-button-google';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { $path } from 'safe-routes';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { SocialButtonGoogle } from '@/components/common/social-button-google';
 
-export default function Signin() {
+export type SearchParams = {
+  token: string;
+  email: string;
+};
+
+export default function InvitationLogin() {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation('common');
 
-  const isRequestMagicLinkWaiting = useSelector(
-    (state) => state.users.isRequestMagicLinkWaiting,
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
+
+  const isRequestInvitationMagicLinkWaiting = useSelector(
+    (state) => state.users.isRequestInvitationMagicLinkWaiting,
   );
   const isOauthGoogleAuthWaiting = useSelector(
     (state) => state.users.isOauthGoogleAuthWaiting,
@@ -49,19 +58,30 @@ export default function Signin() {
 
   const form = useForm<Schema>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      email: email || '',
+    },
   });
 
   const onSubmit = form.handleSubmit(async (data) => {
-    if (isOauthGoogleAuthWaiting) {
+    if (!token) {
       return;
     }
+
     const resultAction = await dispatch(
-      usersStore.asyncActions.requestMagicLink({ data }),
+      usersStore.asyncActions.requestInvitationMagicLink({
+        data: { invitationToken: token },
+      }),
     );
+
     if (
-      usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
+      usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
     ) {
-      navigate($path('/signin/emailSent', { email: data.email }));
+      navigate(
+        $path('/auth/invitations/emailSent', { email: data.email, token }),
+      );
     } else {
       toast({
         title: t('routes_signin_toast_failed'),
@@ -100,10 +120,10 @@ export default function Signin() {
         <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
           <CardHeader className="space-y-1.5 p-0">
             <CardTitle className="text-2xl font-semibold text-foreground">
-              {t('routes_signin_title')}
+              {t('routes_signin_invitation_title')}
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              {t('routes_signin_description')}
+              {t('routes_signin_invitation_description')}
             </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
@@ -113,7 +133,8 @@ export default function Signin() {
             />
 
             <div className="relative flex items-center justify-center">
-              <span className="text-sm font-medium text-foreground">
+              <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+              <span className="relative bg-background px-2 text-sm font-medium text-foreground">
                 {t('routes_signin_or')}
               </span>
             </div>
@@ -128,6 +149,7 @@ export default function Signin() {
                       placeholder={t('routes_signin_email_placeholder')}
                       className="h-[42px] border-border text-sm"
                       {...field}
+                      disabled={!!email}
                     />
                   </FormControl>
                   <FormMessage />
@@ -139,12 +161,12 @@ export default function Signin() {
               type="submit"
               size="default"
               className="cursor-pointer"
-              disabled={isRequestMagicLinkWaiting}
+              disabled={isRequestInvitationMagicLinkWaiting}
             >
-              {isRequestMagicLinkWaiting && (
+              {isRequestInvitationMagicLinkWaiting && (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
-              {t('routes_signin_login_button')}
+              {t('routes_signin_invitation_login_button')}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">

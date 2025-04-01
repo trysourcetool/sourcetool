@@ -30,9 +30,9 @@ export type State = {
   isGetMeWaiting: boolean;
   isRefreshTokenWaiting: boolean;
   isListUsersWaiting: boolean;
-  isSigninWaiting: boolean;
-  isSignupWaiting: boolean;
-  isSignupInstructionsWaiting: boolean;
+  isRequestMagicLinkWaiting: boolean;
+  isRegisterWithMagicLinkWaiting: boolean;
+  isAuthenticateWithMagicLinkWaiting: boolean;
   isAuthChecked: boolean;
   isAuthSucceeded: boolean;
   isAuthFailed: boolean;
@@ -42,10 +42,12 @@ export type State = {
   isObtainAuthTokenWaiting: boolean;
   isOauthGoogleAuthWaiting: boolean;
   isUpdateUserWaiting: boolean;
-  isUpdateUserPasswordWaiting: boolean;
   isUpdateUserEmailWaiting: boolean;
   isUsersSendUpdateEmailInstructionsWaiting: boolean;
   isInvitationsResendWaiting: boolean;
+  isRequestInvitationMagicLinkWaiting: boolean;
+  isAuthenticateWithInvitationMagicLinkWaiting: boolean;
+  isRegisterWithInvitationMagicLinkWaiting: boolean;
 };
 
 const initialState: State = {
@@ -55,9 +57,9 @@ const initialState: State = {
   isGetMeWaiting: false,
   isRefreshTokenWaiting: false,
   isListUsersWaiting: false,
-  isSigninWaiting: false,
-  isSignupWaiting: false,
-  isSignupInstructionsWaiting: false,
+  isRequestMagicLinkWaiting: false,
+  isRegisterWithMagicLinkWaiting: false,
+  isAuthenticateWithMagicLinkWaiting: false,
   isAuthChecked: false,
   isAuthSucceeded: false,
   isAuthFailed: false,
@@ -67,10 +69,12 @@ const initialState: State = {
   isSignoutWaiting: false,
   isOauthGoogleAuthWaiting: false,
   isUpdateUserWaiting: false,
-  isUpdateUserPasswordWaiting: false,
   isUpdateUserEmailWaiting: false,
   isUsersSendUpdateEmailInstructionsWaiting: false,
   isInvitationsResendWaiting: false,
+  isRequestInvitationMagicLinkWaiting: false,
+  isAuthenticateWithInvitationMagicLinkWaiting: false,
+  isRegisterWithInvitationMagicLinkWaiting: false,
 };
 // =============================================
 // slice
@@ -145,18 +149,46 @@ export const slice = createSlice({
         state.isListUsersWaiting = false;
       })
 
-      // signin
-      .addCase(asyncActions.signin.pending, (state) => {
-        state.isSigninWaiting = true;
+      // requestMagicLink
+      .addCase(asyncActions.requestMagicLink.pending, (state) => {
+        state.isRequestMagicLinkWaiting = true;
       })
-      .addCase(asyncActions.signin.fulfilled, (state) => {
-        state.isSigninWaiting = false;
+      .addCase(asyncActions.requestMagicLink.fulfilled, (state) => {
+        state.isRequestMagicLinkWaiting = false;
+      })
+      .addCase(asyncActions.requestMagicLink.rejected, (state) => {
+        state.isRequestMagicLinkWaiting = false;
+      })
+
+      // authenticateWithMagicLink
+      .addCase(asyncActions.authenticateWithMagicLink.pending, (state) => {
+        state.isAuthenticateWithMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.authenticateWithMagicLink.fulfilled, (state) => {
+        state.isAuthenticateWithMagicLinkWaiting = false;
         state.isAuthChecked = true;
         state.isAuthSucceeded = true;
         state.isAuthFailed = false;
       })
-      .addCase(asyncActions.signin.rejected, (state) => {
-        state.isSigninWaiting = false;
+      .addCase(asyncActions.authenticateWithMagicLink.rejected, (state) => {
+        state.isAuthenticateWithMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithMagicLink
+      .addCase(asyncActions.registerWithMagicLink.pending, (state) => {
+        state.isRegisterWithMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.registerWithMagicLink.fulfilled, (state) => {
+        state.isRegisterWithMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(asyncActions.registerWithMagicLink.rejected, (state) => {
+        state.isRegisterWithMagicLinkWaiting = false;
         state.isAuthChecked = true;
         state.isAuthSucceeded = false;
         state.isAuthFailed = true;
@@ -171,34 +203,6 @@ export const slice = createSlice({
       })
       .addCase(asyncActions.signout.rejected, (state) => {
         state.isSignoutWaiting = false;
-      })
-
-      // signup
-      .addCase(asyncActions.signup.pending, (state) => {
-        state.isSignupWaiting = true;
-      })
-      .addCase(asyncActions.signup.fulfilled, (state) => {
-        state.isSignupWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(asyncActions.signup.rejected, (state) => {
-        state.isSignupWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // signupInstructions
-      .addCase(asyncActions.signupInstructions.pending, (state) => {
-        state.isSignupInstructionsWaiting = true;
-      })
-      .addCase(asyncActions.signupInstructions.fulfilled, (state) => {
-        state.isSignupInstructionsWaiting = false;
-      })
-      .addCase(asyncActions.signupInstructions.rejected, (state) => {
-        state.isSignupInstructionsWaiting = false;
       })
 
       // invite
@@ -245,17 +249,6 @@ export const slice = createSlice({
       })
       .addCase(asyncActions.updateUser.rejected, (state) => {
         state.isUpdateUserWaiting = false;
-      })
-
-      // updateUserPassword
-      .addCase(asyncActions.updateUserPassword.pending, (state) => {
-        state.isUpdateUserPasswordWaiting = true;
-      })
-      .addCase(asyncActions.updateUserPassword.fulfilled, (state) => {
-        state.isUpdateUserPasswordWaiting = false;
-      })
-      .addCase(asyncActions.updateUserPassword.rejected, (state) => {
-        state.isUpdateUserPasswordWaiting = false;
       })
 
       // updateUserEmail
@@ -325,6 +318,51 @@ export const slice = createSlice({
       })
       .addCase(asyncActions.invitationsResend.rejected, (state) => {
         state.isInvitationsResendWaiting = false;
+      })
+
+      // requestInvitationMagicLink
+      .addCase(asyncActions.requestInvitationMagicLink.pending, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.requestInvitationMagicLink.fulfilled, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = false;
+      })
+      .addCase(asyncActions.requestInvitationMagicLink.rejected, (state) => {
+        state.isRequestInvitationMagicLinkWaiting = false;
+      })
+
+      // authenticateWithInvitationMagicLink
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.pending, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.fulfilled, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(asyncActions.authenticateWithInvitationMagicLink.rejected, (state) => {
+        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithInvitationMagicLink
+      .addCase(asyncActions.registerWithInvitationMagicLink.pending, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = true;
+      })
+      .addCase(asyncActions.registerWithInvitationMagicLink.fulfilled, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(asyncActions.registerWithInvitationMagicLink.rejected, (state) => {
+        state.isRegisterWithInvitationMagicLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
       });
   },
   initialState,
