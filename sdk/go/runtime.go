@@ -294,8 +294,7 @@ func (r *runtime) sendException(id, sessionID string, err error) {
 }
 
 func (r *runtime) Close() error {
-	if r.wsClient == nil {
-		return nil
-	}
-	return r.wsClient.Close()
+	err := r.wsClient.Close()
+	r.wsClient = nil
+	return err
 }
