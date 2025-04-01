@@ -50,7 +50,7 @@ func (s *Sourcetool) Listen() error {
 	if err != nil {
 		return err
 	}
-	defer r.wsClient.Close()
+	defer r.Close()
 
 	s.runtime = r
 
@@ -58,10 +58,10 @@ func (s *Sourcetool) Listen() error {
 }
 
 func (s *Sourcetool) Close() error {
-	if s.runtime == nil || s.runtime.wsClient == nil {
+	if s.runtime == nil {
 		return nil
 	}
-	return s.runtime.wsClient.Close()
+	return s.runtime.Close()
 }
 
 func (s *Sourcetool) validatePages() error {

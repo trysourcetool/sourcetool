@@ -292,3 +292,10 @@ func (r *runtime) sendException(id, sessionID string, err error) {
 
 	r.wsClient.Enqueue(id, exception)
 }
+
+func (r *runtime) Close() error {
+	if r.wsClient == nil {
+		return nil
+	}
+	return r.wsClient.Close()
+}
