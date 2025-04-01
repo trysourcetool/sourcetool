@@ -202,7 +202,7 @@ export default function Pages() {
               code={`func main() {
 	s := sourcetool.New(&sourcetool.Config{
 		APIKey:   "${selectedApiKey?.key ?? 'your_api_key'}",
-		Endpoint: "${user?.organization?.webSocketEndpoint}"
+		Endpoint: "${user?.organization?.webSocketEndpoint}",
 	})
 
 	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
