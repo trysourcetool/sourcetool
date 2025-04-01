@@ -26,6 +26,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { SocialButtonGoogle } from '@/components/common/social-button-google';
 
+export type SearchParams = {
+  token: string;
+  email: string;
+};
+
 export default function InvitationLogin() {
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -69,8 +74,14 @@ export default function InvitationLogin() {
       }),
     );
 
-    if (usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(resultAction)) {
-      navigate($path('/auth/invitations/emailSent', { email: data.email, token }));
+    if (
+      usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
+    ) {
+      navigate(
+        $path('/auth/invitations/emailSent', { email: data.email, token }),
+      );
     } else {
       toast({
         title: t('routes_signin_toast_failed'),
@@ -148,10 +159,13 @@ export default function InvitationLogin() {
 
             <Button
               type="submit"
-              className="h-[42px] w-full bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              size="default"
+              className="cursor-pointer"
               disabled={isRequestInvitationMagicLinkWaiting}
             >
-              {isRequestInvitationMagicLinkWaiting && <Loader2 className="size-4 animate-spin mr-2" />}
+              {isRequestInvitationMagicLinkWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
               {t('routes_signin_invitation_login_button')}
             </Button>
 
@@ -163,4 +177,4 @@ export default function InvitationLogin() {
       </Form>
     </div>
   );
-} 
+}

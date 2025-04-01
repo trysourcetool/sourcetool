@@ -70,7 +70,11 @@ export default function InvitationSignUpFollowUp() {
       }),
     );
 
-    if (usersStore.asyncActions.registerWithInvitationMagicLink.fulfilled.match(resultAction)) {
+    if (
+      usersStore.asyncActions.registerWithInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
+    ) {
       const result = await dispatch(usersStore.asyncActions.getUsersMe());
       if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
         if (result.payload.user.organization) {
@@ -156,7 +160,7 @@ export default function InvitationSignUpFollowUp() {
                       />
                       <label
                         htmlFor="terms1"
-                        className="text-sm font-normal leading-4 text-foreground"
+                        className="text-sm leading-4 font-normal text-foreground"
                         dangerouslySetInnerHTML={{
                           __html: t(
                             'routes_invitation_signup_followup_terms_text',
@@ -181,4 +185,4 @@ export default function InvitationSignUpFollowUp() {
       </Form>
     </div>
   );
-} 
+}

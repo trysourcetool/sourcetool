@@ -73,6 +73,9 @@
   "routes_signin_toast_url_failed_description": "Please try again",
   "routes_signin_or": "or",
   "routes_signin_terms_text": "By continuing, you agree to Sourcetool's Consumer Terms and Usage Policy, and acknowledge their Privacy Policy.",
+  "routes_signin_magic_link_toast_invalid_token": "Invalid token",
+  "routes_signin_magic_link_toast_try_again": "Please try again",
+  "routes_signin_magic_link_toast_error": "Failed to authenticate",
 
   "routes_apikeys_edit_page_header": "Edit API key",
   "routes_apikeys_edit_name_label": "API Key Name",

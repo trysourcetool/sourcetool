@@ -32,7 +32,9 @@ export default function Signin() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
 
-  const isRequestMagicLinkWaiting = useSelector((state) => state.users.isRequestMagicLinkWaiting);
+  const isRequestMagicLinkWaiting = useSelector(
+    (state) => state.users.isRequestMagicLinkWaiting,
+  );
   const isOauthGoogleAuthWaiting = useSelector(
     (state) => state.users.isOauthGoogleAuthWaiting,
   );
@@ -56,7 +58,9 @@ export default function Signin() {
     const resultAction = await dispatch(
       usersStore.asyncActions.requestMagicLink({ data }),
     );
-    if (usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)) {
+    if (
+      usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
+    ) {
       navigate($path('/signin/emailSent', { email: data.email }));
     } else {
       toast({
@@ -109,8 +113,7 @@ export default function Signin() {
             />
 
             <div className="relative flex items-center justify-center">
-              <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
-              <span className="relative bg-background px-2 text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-foreground">
                 {t('routes_signin_or')}
               </span>
             </div>
@@ -134,10 +137,13 @@ export default function Signin() {
 
             <Button
               type="submit"
-              className="h-[42px] w-full bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              size="default"
+              className="cursor-pointer"
               disabled={isRequestMagicLinkWaiting}
             >
-              {isRequestMagicLinkWaiting && <Loader2 className="size-4 animate-spin mr-2" />}
+              {isRequestMagicLinkWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
               {t('routes_signin_login_button')}
             </Button>
 

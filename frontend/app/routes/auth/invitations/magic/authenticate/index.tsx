@@ -7,6 +7,10 @@ import { $path } from 'safe-routes';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 
+export type SearchParams = {
+  token: string;
+};
+
 export default function InvitationMagicLinkAuthenticate() {
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -40,11 +44,17 @@ export default function InvitationMagicLinkAuthenticate() {
         }),
       );
 
-      if (usersStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(resultAction)) {
+      if (
+        usersStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(
+          resultAction,
+        )
+      ) {
         const result = resultAction.payload;
-        
+
         if (result.isNewUser) {
-          navigate($path('/auth/invitations/signup/followup', { token: result.token }));
+          navigate(
+            $path('/auth/invitations/signup/followup', { token: result.token }),
+          );
         } else {
           const saveAuthResult = await dispatch(
             usersStore.asyncActions.saveAuth({
@@ -53,10 +63,14 @@ export default function InvitationMagicLinkAuthenticate() {
             }),
           );
 
-          if (usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
+          if (
+            usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)
+          ) {
             window.location.replace(saveAuthResult.payload.redirectUrl);
           } else {
-            const meResult = await dispatch(usersStore.asyncActions.getUsersMe());
+            const meResult = await dispatch(
+              usersStore.asyncActions.getUsersMe(),
+            );
             if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
               if (!meResult.payload.user.organization) {
                 navigate($path('/organizations/new'));
@@ -78,11 +92,8 @@ export default function InvitationMagicLinkAuthenticate() {
   }, [dispatch, token, navigate, toast, t]);
 
   return (
-    <div className="m-auto flex w-full items-center justify-center">
-      <div className="flex items-center gap-2">
-        <Loader2 className="size-4 animate-spin" />
-        <span>{t('routes_signin_authenticating')}</span>
-      </div>
+    <div className="m-auto flex items-center justify-center">
+      <Loader2 className="size-8 animate-spin" />
     </div>
   );
-} 
+}

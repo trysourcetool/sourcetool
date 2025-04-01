@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
+import { $path } from 'safe-routes';
 
 export type SearchParams = {
   email: string;
@@ -40,7 +41,11 @@ export default function InvitationEmailSent() {
         data: { invitationToken: token },
       }),
     );
-    if (usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(resultAction)) {
+    if (
+      usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
+    ) {
       toast({
         title: t('routes_signin_email_sent_resend_success'),
         description: t('routes_signin_email_sent_resend_success_description'),
@@ -56,41 +61,43 @@ export default function InvitationEmailSent() {
 
   return (
     <div className="m-auto flex w-full items-center justify-center">
-      <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
+      <Card className="flex w-full max-w-[384px] flex-col gap-4 p-6">
         <CardHeader className="space-y-6 p-0">
           <CardTitle className="text-2xl font-semibold text-foreground">
             {t('routes_signin_email_sent_title')}
           </CardTitle>
           <div className="flex items-center gap-3 rounded-md border border-border p-3">
-            <Mail className="h-5 w-5 stroke-2 text-foreground" />
-            <CardDescription className="text-sm text-muted-foreground">
+            <Mail className="h-5 w-5" />
+            <CardDescription className="flex-1 text-sm text-muted-foreground">
               {t('routes_signin_email_sent_description')}{' '}
               <span className="font-medium text-foreground">{email}</span>
             </CardDescription>
           </div>
         </CardHeader>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs font-normal text-muted-foreground">
           {t('routes_signin_email_sent_resend_text')}{' '}
-          <Button
-            variant="link"
-            className="h-auto p-0 text-xs font-normal text-muted-foreground hover:text-foreground underline"
+          <button
+            type="button"
             onClick={handleResendEmail}
             disabled={isRequestInvitationMagicLinkWaiting}
+            className="cursor-pointer underline"
           >
             {t('routes_signin_email_sent_resend_button')}
-          </Button>
+          </button>
         </p>
       </Card>
 
       <Button
         variant="secondary"
         className="fixed bottom-8 flex items-center gap-2"
-        onClick={() => navigate(-1)}
+        onClick={() =>
+          navigate($path('/auth/invitations/login', { token, email }))
+        }
       >
         <ArrowLeft className="h-4 w-4" />
         {t('routes_signin_email_sent_back')}
       </Button>
     </div>
   );
-} 
+}

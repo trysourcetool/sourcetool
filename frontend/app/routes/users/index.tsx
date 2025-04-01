@@ -321,7 +321,7 @@ export default function Users() {
   return (
     <div>
       <PageHeader label={t('routes_users_page_header')} />
-      <div className="flex w-screen flex-col gap-4 px-4 py-6 md:gap-6 md:px-6">
+      <div className="flex flex-col gap-4 px-4 py-6 md:gap-6 md:px-6">
         <div className="flex flex-col justify-between gap-2 md:flex-row md:pt-6">
           <p className="text-xl font-bold text-foreground">
             {t('routes_users_title')}
