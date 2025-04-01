@@ -58,6 +58,9 @@ func (s *Sourcetool) Listen() error {
 }
 
 func (s *Sourcetool) Close() error {
+	if s.runtime == nil || s.runtime.wsClient == nil {
+		return nil
+	}
 	return s.runtime.wsClient.Close()
 }
 
