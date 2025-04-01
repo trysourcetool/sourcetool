@@ -820,6 +820,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/auth/magic/authenticate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "authenticate-with-magic-link",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AuthenticateWithMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AuthenticateWithMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/auth/magic/register": {
+            "post": {
+                "responses": {}
+            }
+        },
         "/users/email": {
             "put": {
                 "consumes": [
@@ -1294,45 +1338,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/password": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "update-user-password",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateUserPasswordRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.UpdateUserPasswordResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/users/refreshToken": {
             "post": {
                 "consumes": [
@@ -1439,7 +1444,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/signin": {
+        "/users/signin/magic/request": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1450,7 +1455,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "signin",
+                "operationId": "request-magic-link",
                 "parameters": [
                     {
                         "description": " ",
@@ -1458,7 +1463,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SignInRequest"
+                            "$ref": "#/definitions/requests.RequestMagicLinkRequest"
                         }
                     }
                 ],
@@ -1466,7 +1471,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.SignInResponse"
+                            "$ref": "#/definitions/responses.RequestMagicLinkResponse"
                         }
                     },
                     "default": {
@@ -1505,84 +1510,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/users/signup": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signup",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignUpRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/signup/instructions": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signup-instructions",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SendSignUpInstructionsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.SendSignUpInstructionsResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1603,6 +1530,23 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.AuthenticateWithMagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "token": {
                     "type": "string"
                 }
             }
@@ -1705,6 +1649,17 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.RequestMagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.ResendInvitationRequest": {
             "type": "object",
             "required": [
@@ -1723,17 +1678,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SendSignUpInstructionsRequest": {
-            "type": "object",
-            "required": [
-                "email"
-            ],
-            "properties": {
-                "email": {
                     "type": "string"
                 }
             }
@@ -1761,21 +1705,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "invitationToken": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignInRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
                     "type": "string"
                 },
                 "password": {
@@ -1828,33 +1757,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "passwordConfirmation": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignUpRequest": {
-            "type": "object",
-            "required": [
-                "firstName",
-                "lastName",
-                "password",
-                "passwordConfirmation",
-                "token"
-            ],
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "passwordConfirmation": {
-                    "type": "string"
-                },
-                "token": {
                     "type": "string"
                 }
             }
@@ -1968,25 +1870,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateUserPasswordRequest": {
-            "type": "object",
-            "required": [
-                "currentPassword",
-                "password",
-                "passwordConfirmation"
-            ],
-            "properties": {
-                "currentPassword": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "passwordConfirmation": {
-                    "type": "string"
-                }
-            }
-        },
         "requests.UpdateUserRequest": {
             "type": "object",
             "properties": {
@@ -2017,6 +1900,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.AuthenticateWithMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "isNewUser": {
+                    "type": "boolean"
+                },
+                "isOrganizationExists": {
+                    "type": "boolean"
+                },
+                "token": {
                     "type": "string"
                 }
             }
@@ -2389,6 +2289,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.RequestMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "isNew": {
+                    "type": "boolean"
+                }
+            }
+        },
         "responses.ResendInvitationResponse": {
             "type": "object",
             "properties": {
@@ -2404,28 +2315,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "redirectUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.SendSignUpInstructionsResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.SignInResponse": {
-            "type": "object",
-            "properties": {
-                "authUrl": {
-                    "type": "string"
-                },
-                "isOrganizationExists": {
-                    "type": "boolean"
-                },
-                "token": {
                     "type": "string"
                 }
             }
@@ -2480,14 +2369,6 @@ const docTemplate = `{
             }
         },
         "responses.UpdateUserEmailResponse": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/responses.UserResponse"
-                }
-            }
-        },
-        "responses.UpdateUserPasswordResponse": {
             "type": "object",
             "properties": {
                 "user": {
