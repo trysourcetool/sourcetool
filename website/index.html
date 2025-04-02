@@ -381,73 +381,94 @@
         <h2 id="architecture" class="section-title">Architecture</h2>
         <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development:</p>
 
-        <div class="text-center my-[30px]">
-          <div class="flex justify-center items-center gap-[10px] flex-wrap mb-5">
-            <!-- Step 1: Your Backend -->
-            <div class="relative min-w-[220px] max-w-[250px]">
-              <div class="arch-box">
-                <strong>Your Backend</strong>
-                <span>Backend logic & UI definitions</span>
+        <div class="mt-12">
+          <h3 class="text-xl font-semibold mb-6">System Overview</h3>
+          <div class="text-center">
+            <div class="flex justify-center items-center gap-[10px] flex-wrap mb-5">
+              <!-- Step 1: Your Backend -->
+              <div class="relative min-w-[220px] max-w-[250px]">
+                <div class="arch-box">
+                  <strong>Your Backend</strong>
+                  <span>Backend logic & UI definitions</span>
+                </div>
+              </div>
+
+              <!-- Bidirectional Arrow -->
+              <div class="flex flex-col items-center mx-[2px]">
+                <span class="arch-arrow-symbol">⟷</span>
+                <span class="arch-arrow-label">WebSocket</span>
+              </div>
+
+              <!-- Step 2: Sourcetool Server -->
+              <div class="relative min-w-[220px] max-w-[250px]">
+                <div class="arch-box">
+                  <strong>Sourcetool Server</strong>
+                  <span>Authentication & Authorization</span>
+                </div>
+              </div>
+
+              <!-- Bidirectional Arrow -->
+              <div class="flex flex-col items-center mx-[2px]">
+                <span class="arch-arrow-symbol">⟷</span>
+                <span class="arch-arrow-label">WebSocket</span>
+              </div>
+
+              <!-- Step 3: Web Browser -->
+              <div class="relative min-w-[220px] max-w-[250px]">
+                <div class="arch-box">
+                  <strong>Web Browser</strong>
+                  <span>Auto-generates browser UI</span>
+                </div>
               </div>
             </div>
-
-            <!-- Bidirectional Arrow -->
-            <div class="flex flex-col items-center mx-[2px]">
-              <span class="arch-arrow-symbol">⟷</span>
-              <span class="arch-arrow-label">WebSocket</span>
+            
+            <!-- Note about bidirectional communication -->
+            <div class="text-center mt-[10px] text-[12px] text-[#666]">
+              All components communicate bidirectionally in real-time
             </div>
-
-            <!-- Step 2: Sourcetool Server -->
-            <div class="relative min-w-[220px] max-w-[250px]">
-              <div class="arch-box">
-                <strong>Sourcetool Server</strong>
-                <span>Authentication & Authorization</span>
-              </div>
-            </div>
-
-            <!-- Bidirectional Arrow -->
-            <div class="flex flex-col items-center mx-[2px]">
-              <span class="arch-arrow-symbol">⟷</span>
-              <span class="arch-arrow-label">WebSocket</span>
-            </div>
-
-            <!-- Step 3: Web Browser -->
-            <div class="relative min-w-[220px] max-w-[250px]">
-              <div class="arch-box">
-                <strong>Web Browser</strong>
-                <span>Auto-generates browser UI</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Note about bidirectional communication -->
-          <div class="text-center mt-[10px] text-[12px] text-[#666]">
-            All components communicate bidirectionally in real-time
           </div>
         </div>
 
-        <div class="flex flex-wrap my-5 gap-5">
-          <div class="flex-1 min-w-[280px]">
-            <h4 class="text-primary mt-0">How It Works:</h4>
-            <ol>
-              <li>You define UI components in your backend code</li>
-              <li>Sourcetool Server handles auth & permissions</li>
-              <li>UI is automatically rendered in browser</li>
-              <li>User interactions return to your backend code</li>
-            </ol>
-          </div>
-          <div class="flex-1 min-w-[280px]">
-            <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] my-[15px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)] mt-0"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] p-0 text-[13.6px] font-light text-[#24292F] dark:text-[#E6EDF3]"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
+        <div class="mt-12">
+          <h3 class="text-xl font-semibold mb-6">How It Works</h3>
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <ol class="space-y-4">
+                <li>You define UI components in your backend code</li>
+                <li>Sourcetool Server handles auth & permissions</li>
+                <li>UI is automatically rendered in browser</li>
+                <li>User interactions return to your backend code</li>
+              </ol>
+            </div>
+            <div>
+              <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] p-0 text-[13.6px] font-light text-[#24292F] dark:text-[#E6EDF3]"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
 <span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
     ui.Markdown(<span class="code-string">"## Users"</span>)
     users, _ := listUsers()
     ui.Table(users)
     <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
 }</code></pre>
+            </div>
           </div>
         </div>
 
-        <p class="my-[10px] font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold">no frontend expertise required</span>.</p>
+        <div class="mt-12">
+          <h3 class="text-xl font-semibold mb-6">Example Implementation</h3>
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <h4 class="text-primary">Backend Code</h4>
+              <p class="text-muted-foreground">Define your UI components directly in Go code</p>
+              <img src="assets/images/service-image-code.png" alt="Sourcetool Code Example" class="w-full rounded-lg shadow-lg border border-zinc-100 dark:border-zinc-800">
+            </div>
+            <div class="space-y-4">
+              <h4 class="text-primary">Generated Interface</h4>
+              <p class="text-muted-foreground">Beautiful UI automatically generated from your code</p>
+              <img src="assets/images/service-image-interface.png" alt="Sourcetool Interface" class="w-full rounded-lg shadow-lg border border-zinc-100 dark:border-zinc-800">
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-8 font-normal text-[17px] leading-[1.5]">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-bold">no frontend expertise required</span>.</p>
       </div>
     </section>
 
