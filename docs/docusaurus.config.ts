@@ -61,7 +61,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/ogimage.jpg',
+    image: 'img/ogimg.jpg',
     navbar: {
       title: 'Sourcetool Docs',
       logo: {
