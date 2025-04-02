@@ -9,11 +9,10 @@ import (
 	"net"
 	"net/http"
 	"regexp"
-	"runtime"
 	"strings"
 
-	"github.com/blendle/zapdriver"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 	"golang.org/x/net/html"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
@@ -59,9 +58,9 @@ func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
 	if !ok {
 		logger.Logger.Error(
 			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
+			zap.Stack("stack_trace"),
+			zap.String("email", email),
+			zap.String("cause", "application"),
 		)
 
 		WriteJSON(
@@ -72,23 +71,19 @@ func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
 		return
 	}
 
+	fields := []zap.Field{
+		zap.String("email", email),
+		zap.String("frames", v.Frames[0].String()),
+		zap.Stack("stack_trace"),
+	}
+
 	switch {
 	case v.Status >= 500:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
-			zapdriver.Labels(zapdriver.Label("frames", v.Frames[0].String())),
-		)
+		fields = append(fields, zap.String("cause", "application"))
+		logger.Logger.Error(err.Error(), fields...)
 	case v.Status >= 402, v.Status == 400:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "user")),
-			zapdriver.Labels(zapdriver.Label("frames", v.Frames[0].String())),
-		)
+		fields = append(fields, zap.String("cause", "user"))
+		logger.Logger.Error(err.Error(), fields...)
 	}
 
 	WriteJSON(w, v.Status, v)

@@ -2,12 +2,11 @@ package ws
 
 import (
 	"context"
-	"runtime"
 
-	"github.com/blendle/zapdriver"
 	"github.com/gorilla/websocket"
 	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
@@ -39,32 +38,28 @@ func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err e
 	if !ok {
 		logger.Logger.Error(
 			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
+			zap.Stack("stack_trace"),
+			zap.String("email", email),
+			zap.String("cause", "application"),
 		)
 
 		v := errdefs.ErrInternal(err)
 		e, _ = v.(*errdefs.Error)
 	}
 
+	fields := []zap.Field{
+		zap.String("email", email),
+		zap.String("frames", e.Frames[0].String()),
+		zap.Stack("stack_trace"),
+	}
+
 	switch {
 	case e.Status >= 500:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
-			zapdriver.Labels(zapdriver.Label("frames", e.Frames[0].String())),
-		)
+		fields = append(fields, zap.String("cause", "application"))
+		logger.Logger.Error(err.Error(), fields...)
 	case e.Status >= 402, e.Status == 400:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "user")),
-			zapdriver.Labels(zapdriver.Label("frames", e.Frames[0].String())),
-		)
+		fields = append(fields, zap.String("cause", "user"))
+		logger.Logger.Error(err.Error(), fields...)
 	}
 
 	msg := &websocketv1.Message{
