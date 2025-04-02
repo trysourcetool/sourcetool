@@ -5,20 +5,21 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Sourcetool Docs',
+  tagline:
+    'Sourcetool is an open-source internal tool builder that enables you to create full-featured applications without writing any frontend code.',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://docs.trysourcetool.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'trysourcetool', // Usually your GitHub org/user name.
+  projectName: 'sourcetool', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -38,9 +39,6 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
         blog: {
           showReadingTime: true,
@@ -49,9 +47,6 @@ const config: Config = {
             xslt: true,
           },
           // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -66,12 +61,13 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: 'img/ogimage.jpg',
     navbar: {
-      title: 'My Site',
+      title: 'Sourcetool Docs',
       logo: {
         alt: 'Sourcetool Logo',
         src: 'img/logo.png',
+        href: '/docs/getting-started',
       },
       items: [
         {
@@ -81,7 +77,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/trysourcetool/sourcetool',
           label: 'GitHub',
           position: 'right',
         },
@@ -94,43 +90,38 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Quickstart',
               to: '/docs/getting-started/quickstart',
             },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'How It Works',
+              to: '/docs/getting-started/how-it-works',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              label: 'Concepts',
+              to: '/docs/concepts',
             },
             {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'Components',
+              to: '/docs/reference/components',
             },
           ],
         },
+        // {
+        //   title: 'Community',
+        //   items: [],
+        // },
         {
           title: 'More',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/trysourcetool/sourcetool',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `© ${new Date().getFullYear()} Sourcetool. All rights reserved.`,
     },
     prism: {
       theme: prismThemes.github,
