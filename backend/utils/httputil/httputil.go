@@ -73,8 +73,7 @@ func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
 
 	fields := []zap.Field{
 		zap.String("email", email),
-		zap.String("frames", v.Frames[0].String()),
-		zap.Stack("stack_trace"),
+		zap.String("error_stacktrace", strings.Join(v.StackTrace(), "\n")),
 	}
 
 	switch {
@@ -84,6 +83,9 @@ func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
 	case v.Status >= 402, v.Status == 400:
 		fields = append(fields, zap.String("cause", "user"))
 		logger.Logger.Error(err.Error(), fields...)
+	default:
+		fields = append(fields, zap.String("cause", "internal_info"))
+		logger.Logger.Warn(err.Error(), fields...)
 	}
 
 	WriteJSON(w, v.Status, v)

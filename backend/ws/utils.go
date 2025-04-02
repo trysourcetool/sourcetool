@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
@@ -45,21 +46,23 @@ func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err e
 
 		v := errdefs.ErrInternal(err)
 		e, _ = v.(*errdefs.Error)
-	}
+	} else {
+		fields := []zap.Field{
+			zap.String("email", email),
+			zap.String("error_stacktrace", strings.Join(e.StackTrace(), "\n")),
+		}
 
-	fields := []zap.Field{
-		zap.String("email", email),
-		zap.String("frames", e.Frames[0].String()),
-		zap.Stack("stack_trace"),
-	}
-
-	switch {
-	case e.Status >= 500:
-		fields = append(fields, zap.String("cause", "application"))
-		logger.Logger.Error(err.Error(), fields...)
-	case e.Status >= 402, e.Status == 400:
-		fields = append(fields, zap.String("cause", "user"))
-		logger.Logger.Error(err.Error(), fields...)
+		switch {
+		case e.Status >= 500:
+			fields = append(fields, zap.String("cause", "application"))
+			logger.Logger.Error(err.Error(), fields...)
+		case e.Status >= 402, e.Status == 400:
+			fields = append(fields, zap.String("cause", "user"))
+			logger.Logger.Error(err.Error(), fields...)
+		default:
+			fields = append(fields, zap.String("cause", "internal_info"))
+			logger.Logger.Warn(err.Error(), fields...)
+		}
 	}
 
 	msg := &websocketv1.Message{
@@ -75,12 +78,12 @@ func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err e
 
 	data, err := proto.Marshal(msg)
 	if err != nil {
-		logger.Logger.Sugar().Errorf("Failed to marshal error message: %v", err)
+		logger.Logger.Error("Failed to marshal WS error message", zap.Error(err))
 		return
 	}
 
 	if err := conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
-		logger.Logger.Sugar().Errorf("Failed to write error message: %v", err)
+		logger.Logger.Error("Failed to write WS error message", zap.Error(err))
 		return
 	}
 }
