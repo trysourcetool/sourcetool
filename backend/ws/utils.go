@@ -2,12 +2,12 @@ package ws
 
 import (
 	"context"
-	"runtime"
+	"strings"
 
-	"github.com/blendle/zapdriver"
 	"github.com/gorilla/websocket"
 	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
@@ -39,32 +39,30 @@ func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err e
 	if !ok {
 		logger.Logger.Error(
 			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
+			zap.Stack("stack_trace"),
+			zap.String("email", email),
+			zap.String("cause", "application"),
 		)
 
 		v := errdefs.ErrInternal(err)
 		e, _ = v.(*errdefs.Error)
-	}
+	} else {
+		fields := []zap.Field{
+			zap.String("email", email),
+			zap.String("error_stacktrace", strings.Join(e.StackTrace(), "\n")),
+		}
 
-	switch {
-	case e.Status >= 500:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "application")),
-			zapdriver.Labels(zapdriver.Label("frames", e.Frames[0].String())),
-		)
-	case e.Status >= 402, e.Status == 400:
-		logger.Logger.Error(
-			err.Error(),
-			zapdriver.ErrorReport(runtime.Caller(0)),
-			zapdriver.Labels(zapdriver.Label("email", email)),
-			zapdriver.Labels(zapdriver.Label("cause", "user")),
-			zapdriver.Labels(zapdriver.Label("frames", e.Frames[0].String())),
-		)
+		switch {
+		case e.Status >= 500:
+			fields = append(fields, zap.String("cause", "application"))
+			logger.Logger.Error(err.Error(), fields...)
+		case e.Status >= 402, e.Status == 400:
+			fields = append(fields, zap.String("cause", "user"))
+			logger.Logger.Error(err.Error(), fields...)
+		default:
+			fields = append(fields, zap.String("cause", "internal_info"))
+			logger.Logger.Warn(err.Error(), fields...)
+		}
 	}
 
 	msg := &websocketv1.Message{
@@ -80,12 +78,12 @@ func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err e
 
 	data, err := proto.Marshal(msg)
 	if err != nil {
-		logger.Logger.Sugar().Errorf("Failed to marshal error message: %v", err)
+		logger.Logger.Error("Failed to marshal WS error message", zap.Error(err))
 		return
 	}
 
 	if err := conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
-		logger.Logger.Sugar().Errorf("Failed to write error message: %v", err)
+		logger.Logger.Error("Failed to write WS error message", zap.Error(err))
 		return
 	}
 }

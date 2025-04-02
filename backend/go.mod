@@ -6,7 +6,6 @@ replace github.com/trysourcetool/sourcetool/proto => ../proto
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/blendle/zapdriver v1.3.1
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
@@ -24,7 +23,6 @@ require (
 	github.com/swaggo/swag v1.16.4
 	github.com/trysourcetool/sourcetool/proto v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.31.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.33.0
 	golang.org/x/oauth2 v0.24.0
@@ -72,6 +70,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
