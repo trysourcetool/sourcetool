@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../../';
+import type { RootState } from '../';
 import { createWidgetState, validateWidgetValue } from '@/lib/widgetState';
 import {
   createEntityAdapter,
@@ -550,7 +550,7 @@ const getWidgetType = createSelector(
 export const widgetsStore = {
   actions: slice.actions,
   reducer: slice.reducer,
-  selectors: {
+  selector: {
     getWidgetIds,
     getWidgetEntities,
     getPathWidgetIdAndTypes,

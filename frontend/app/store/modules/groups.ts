@@ -1,8 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../../';
+import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from '../error';
+import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import {
   createEntityAdapter,
@@ -10,7 +10,7 @@ import {
   type EntityState,
 } from '@reduxjs/toolkit';
 import type { Group, GroupPage, UserGroup } from '@/api/modules/groups';
-import { pagesStore } from '../pages';
+import { pagesStore } from './pages';
 
 // =============================================
 // asyncActions
@@ -278,7 +278,7 @@ export const groupsStore = {
     deleteGroup,
   },
   reducer: slice.reducer,
-  selectors: {
+  selector: {
     getGroupIds,
     getGroupEntities,
     getGroups,

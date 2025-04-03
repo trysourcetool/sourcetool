@@ -23,7 +23,7 @@ import {
   type Widget,
 } from '@trysourcetool/proto/widget/v1/widget';
 import { pagesStore } from '@/store/modules/pages';
-import type { WidgetType } from '@/store/modules/widgets/slice';
+import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
 import { $path } from 'safe-routes';
 

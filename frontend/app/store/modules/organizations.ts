@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from '../error';
+import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import type { UserRole } from '@/api/modules/users';
 import { createSlice } from '@reduxjs/toolkit';

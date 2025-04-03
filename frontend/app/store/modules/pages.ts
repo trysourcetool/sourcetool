@@ -1,8 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../../';
+import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from '../error';
+import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import {
   createEntityAdapter,
@@ -166,7 +166,7 @@ export const pagesStore = {
     listPages,
   },
   reducer: slice.reducer,
-  selectors: {
+  selector: {
     getPageIds,
     getPageEntities,
     getPages,

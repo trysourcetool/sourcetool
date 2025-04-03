@@ -1,9 +1,9 @@
 import { createSelector } from '@reduxjs/toolkit';
-import type { RootState } from '../../';
+import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ENVIRONMENTS } from '@/environments';
 import { api } from '@/api';
-import { errorStore } from '../error';
+import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import type { UserRole } from '@/api/modules/users';
 import {
@@ -12,9 +12,9 @@ import {
   type EntityState,
 } from '@reduxjs/toolkit';
 import type { User, UserInvitation } from '@/api/modules/users';
-import { groupsStore } from '../groups';
-import { pagesStore } from '../pages';
-import { organizationsStore } from '../organizations';
+import { groupsStore } from './groups';
+import { pagesStore } from './pages';
+import { organizationsStore } from './organizations';
 
 // =============================================
 // asyncActions
@@ -955,7 +955,7 @@ export const usersStore = {
     registerWithInvitationMagicLink,
   },
   reducer: slice.reducer,
-  selectors: {
+  selector: {
     getMe,
     getUserIds,
     getUserEntities,
