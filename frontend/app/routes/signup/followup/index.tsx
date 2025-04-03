@@ -63,7 +63,11 @@ export default function Followup() {
         },
       }),
     );
-    if (usersStore.asyncActions.registerWithMagicLink.fulfilled.match(resultAction)) {
+    if (
+      usersStore.asyncActions.registerWithMagicLink.fulfilled.match(
+        resultAction,
+      )
+    ) {
       const result = await dispatch(usersStore.asyncActions.getUsersMe());
       if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
         if (!result.payload.user.organization) {
