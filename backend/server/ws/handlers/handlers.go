@@ -10,9 +10,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/dto"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )

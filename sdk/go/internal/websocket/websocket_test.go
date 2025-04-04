@@ -12,8 +12,8 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
-	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 )
 
 func TestMain(m *testing.M) {

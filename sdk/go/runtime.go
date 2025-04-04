@@ -11,11 +11,11 @@ import (
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
-	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/exception/v1"
-	pagev1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/page/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/pb/exception/v1"
+	pagev1 "github.com/trysourcetool/sourcetool-go/internal/pb/page/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
 )

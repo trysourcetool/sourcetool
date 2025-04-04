@@ -9,9 +9,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	exceptionv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/exception/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
+	exceptionv1 "github.com/trysourcetool/sourcetool/backend/pb/go/exception/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 

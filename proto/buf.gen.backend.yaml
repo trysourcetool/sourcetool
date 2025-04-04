@@ -2,16 +2,16 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/trysourcetool/sourcetool/backend/generated/proto
+    default: github.com/trysourcetool/sourcetool/backend/pb/go
     except:
       - buf.build/googleapis/googleapis
 plugins:
   - plugin: buf.build/protocolbuffers/go
-    out: ../backend/generated/proto
+    out: ../backend/pb/go
     opt:
       - paths=source_relative
   - plugin: buf.build/grpc/go
-    out: ../backend/generated/proto
+    out: ../backend/pb/go
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false 

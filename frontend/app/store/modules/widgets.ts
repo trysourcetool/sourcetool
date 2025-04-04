@@ -8,7 +8,7 @@ import {
   type EntityState,
   type PayloadAction,
 } from '@reduxjs/toolkit';
-import type { RenderWidgetJson } from '@/generated/proto/websocket/v1/message_pb';
+import type { RenderWidgetJson } from '@/pb/ts/websocket/v1/message_pb';
 import type {
   ButtonJson,
   CheckboxGroupJson,
@@ -25,7 +25,7 @@ import type {
   TextInputJson,
   TimeInputJson,
   WidgetJson,
-} from '@/generated/proto/widget/v1/widget_pb';
+} from '@/pb/ts/widget/v1/widget_pb';
 import dayjs from 'dayjs';
 
 // =============================================

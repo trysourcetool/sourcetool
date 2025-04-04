@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	redisv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/redis/v1"
+	redisv1 "github.com/trysourcetool/sourcetool/backend/pb/go/redis/v1"
 )
 
 type redisClient struct {

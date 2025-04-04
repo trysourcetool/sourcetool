@@ -8,9 +8,9 @@ import (
 
 	"github.com/trysourcetool/sourcetool-go/dateinput"
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
-	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 )
 

@@ -4,9 +4,9 @@ on:
   pull_request:
     paths:
       - 'proto/**'
-      - 'frontend/app/generated/proto/**'
-      - 'backend/generated/proto/**'
-      - 'sdk/go/generated/proto/**'
+      - 'frontend/app/pb/ts/**'
+      - 'backend/pb/go/**'
+      - 'sdk/go/internal/pb/**'
       - '.github/workflows/proto-check.yml'
 
 jobs:

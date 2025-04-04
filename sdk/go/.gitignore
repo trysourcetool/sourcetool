@@ -1,5 +1,2 @@
 .DS_Store
 .env
-
-# Generated proto files
-/generated/proto/

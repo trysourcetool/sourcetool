@@ -11,11 +11,11 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
-	redisv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/redis/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	redisv1 "github.com/trysourcetool/sourcetool/backend/pb/go/redis/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 )
 
 const (

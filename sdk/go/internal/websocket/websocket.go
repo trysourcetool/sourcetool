@@ -11,8 +11,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 )
 
 type Client interface {
