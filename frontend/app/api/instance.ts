@@ -152,8 +152,7 @@ export const get: <T>(params: {
   }
 
   if (!res.ok) {
-    const errorResponse = json as ErrorResponse;
-    throw new Error(errorResponse.detail || errorResponse.title || 'API Error');
+    throw json;
   }
 
   throw new Error('Unknown error');
