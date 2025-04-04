@@ -1,4 +1,4 @@
-import { ENVIRONMENTS, CLOUD_DOMAIN } from '@/environments';
+import { ENVIRONMENTS } from '@/environments';
 
 export function checkDomain() {
   const returnValue: {
@@ -18,7 +18,7 @@ export function checkDomain() {
 
   if (isSourcetoolDomain) {
     const subdomainRegex = new RegExp(
-      `^(?:http[s]?:\\/\\/)?([^.]+)\\.${CLOUD_DOMAIN}`,
+      `^(?:http[s]?:\\/\\/)?([^.]+)\\.trysourcetool\\.com`,
     );
     const matches = hostname.match(subdomainRegex);
     if (matches && matches[1]) {
