@@ -63,7 +63,11 @@ export default function InvitationSignin() {
             data: { invitationToken },
           }),
         );
-        if (usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(resultAction)) {
+        if (
+          usersStore.asyncActions.requestInvitationMagicLink.fulfilled.match(
+            resultAction,
+          )
+        ) {
           form.setValue('email', resultAction.payload.email);
         } else {
           toast({
@@ -88,7 +92,11 @@ export default function InvitationSignin() {
       }),
     );
 
-    if (usersStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(resultAction)) {
+    if (
+      usersStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(
+        resultAction,
+      )
+    ) {
       const { isNewUser } = resultAction.payload;
       if (isNewUser) {
         navigate($path('/signup/invitation', { token: invitationToken }));
@@ -110,7 +118,9 @@ export default function InvitationSignin() {
         <Card className="flex w-full max-w-sm flex-col gap-6 p-6">
           <CardHeader className="p-0">
             <CardTitle>{t('routes_signin_invitation_title')}</CardTitle>
-            <CardDescription>{t('routes_signin_invitation_description')}</CardDescription>
+            <CardDescription>
+              {t('routes_signin_invitation_description')}
+            </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <FormField
@@ -134,9 +144,13 @@ export default function InvitationSignin() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isRequestInvitationMagicLinkWaiting || isAuthenticateWithInvitationMagicLinkWaiting}
+              disabled={
+                isRequestInvitationMagicLinkWaiting ||
+                isAuthenticateWithInvitationMagicLinkWaiting
+              }
             >
-              {(isRequestInvitationMagicLinkWaiting || isAuthenticateWithInvitationMagicLinkWaiting) && (
+              {(isRequestInvitationMagicLinkWaiting ||
+                isAuthenticateWithInvitationMagicLinkWaiting) && (
                 <Loader2 className="size-4 animate-spin" />
               )}
               {t('routes_signin_invitation_login_button')}
@@ -146,4 +160,4 @@ export default function InvitationSignin() {
       </Form>
     </div>
   );
-} 
+}

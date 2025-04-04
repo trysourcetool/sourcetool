@@ -40,7 +40,6 @@ export type RootState = {
 };
 
 export const configureStore = () => {
-
   const rootReducer = combineReducers({
     users: usersStore.reducer,
     organizations: organizationsStore.reducer,
@@ -52,7 +51,6 @@ export const configureStore = () => {
     hostInstances: hostInstancesStore.reducer,
     error: errorStore.reducer,
   });
-
 
   const store = createConfigureStore({
     devTools:
