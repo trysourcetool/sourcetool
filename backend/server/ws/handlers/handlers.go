@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/dto"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"

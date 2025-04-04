@@ -5,12 +5,12 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	exceptionv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/exception/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )

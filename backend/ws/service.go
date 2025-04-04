@@ -6,10 +6,10 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"

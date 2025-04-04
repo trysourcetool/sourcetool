@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
-	redisv1 "github.com/trysourcetool/sourcetool/proto/go/redis/v1"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	redisv1 "github.com/trysourcetool/sourcetool/backend/generated/proto/redis/v1"
 )
 
 type redisClient struct {
