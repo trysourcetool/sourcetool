@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-lint.yml'
+      - '!backend/README.md'
 
 jobs:
   lint:

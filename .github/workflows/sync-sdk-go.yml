@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'sdk/go/**'
+      - '.github/workflows/sync-sdk-go.yml'
   workflow_dispatch:
 
 jobs:
