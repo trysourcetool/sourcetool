@@ -1,4 +1,4 @@
-import { ENVIRONMENTS } from '@/environments';
+import { ENVIRONMENTS, CLOUD_DOMAIN } from '@/environments';
 
 export function checkDomain() {
   const returnValue: {
@@ -12,29 +12,28 @@ export function checkDomain() {
   };
 
   const hostname = window.location.hostname;
-  const isSourcetoolDomain = ENVIRONMENTS.DOMAIN.match(
-    /^((staging|local)\.)?trysourcetool\.com$/,
-  );
+  const isSourcetoolDomain = ENVIRONMENTS.IS_CLOUD_EDITION;
 
-  returnValue.isSourcetoolDomain = !!isSourcetoolDomain;
+  returnValue.isSourcetoolDomain = isSourcetoolDomain;
 
   if (isSourcetoolDomain) {
     const subdomainRegex = new RegExp(
-      `^(?:http[s]?:\\/\\/)?([^.]+)\\.${ENVIRONMENTS.DOMAIN}`,
+      `^(?:http[s]?:\\/\\/)?([^.]+)\\.${CLOUD_DOMAIN}`,
     );
     const matches = hostname.match(subdomainRegex);
     if (matches && matches[1]) {
       returnValue.subDomain = matches[1];
     }
-    if (isSourcetoolDomain[2] === 'staging') {
+    
+    if (hostname.includes('staging')) {
       returnValue.environments = 'staging';
-    } else if (isSourcetoolDomain[2] === 'local') {
+    } else if (hostname.includes('local')) {
       returnValue.environments = 'local';
     } else {
       returnValue.environments = 'production';
     }
   } else {
-    if (ENVIRONMENTS.DOMAIN.includes('localhost')) {
+    if (hostname.includes('localhost')) {
       returnValue.environments = 'local';
     } else {
       returnValue.environments = 'production';
