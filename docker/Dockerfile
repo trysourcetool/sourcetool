@@ -16,7 +16,6 @@ RUN yarn build
 
 FROM golang:1.23 AS backend-builder
 WORKDIR /go/src/github.com/trysourcetool/sourcetool
-COPY proto/ ./proto/
 COPY backend/ ./backend/
 WORKDIR /go/src/github.com/trysourcetool/sourcetool/backend
 RUN go mod download

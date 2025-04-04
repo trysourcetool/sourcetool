@@ -1,5 +1,5 @@
 import type { WidgetState } from '@/store/modules/widgets';
-import type { WidgetJson } from '@trysourcetool/proto/widget/v1/widget';
+import type { WidgetJson } from '@/generated/proto/widget/v1/widget_pb';
 import z from 'zod';
 
 export const createWidgetState = (widget: WidgetJson): WidgetState | null => {

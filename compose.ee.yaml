@@ -22,9 +22,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend/ee:/go/src/github.com/trysourcetool/sourcetool/backend/ee
       - ./backend:/go/src/github.com/trysourcetool/sourcetool/backend
-      - ./proto:/go/src/github.com/trysourcetool/sourcetool/proto
       - gomodcache:/gomodcache
     working_dir: /go/src/github.com/trysourcetool/sourcetool/backend/ee
 
