@@ -30,7 +30,6 @@ import { $path } from 'safe-routes';
 const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const dispatch = useDispatch();
   const { '*': path } = useParams();
-  const { environments } = useAuth();
   const currentPageId = useRef('');
   const currentSessionId = useRef('');
   const prevVisibilityStatus = useRef(!document.hidden);
@@ -41,8 +40,8 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const isInitialLoading = useRef(false);
   const socketUrl = useMemo(
     () =>
-      `${environments === 'local' ? 'ws' : 'wss'}://${window.location.host}/ws`,
-    [environments],
+      `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`,
+    [],
   );
 
   const pageId = useSelector(
