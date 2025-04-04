@@ -179,7 +179,7 @@ proto-mod-update:
 
 proto-clean:
 	@echo "Cleaning generated proto files..."
-	@rm -rf frontend/src/generated/proto
+	@rm -rf frontend/app/generated/proto
 	@rm -rf backend/generated/proto
 	@rm -rf sdk/go/generated/proto
 

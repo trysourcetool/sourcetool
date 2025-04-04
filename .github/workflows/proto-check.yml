@@ -1,0 +1,45 @@
+name: Proto Generation Check
+
+on:
+  pull_request:
+    paths:
+      - 'proto/**'
+      - 'frontend/app/generated/proto/**'
+      - 'backend/generated/proto/**'
+      - 'sdk/go/generated/proto/**'
+      - '.github/workflows/proto-check.yml'
+
+jobs:
+  check-proto-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install buf
+        run: |
+          go install github.com/bufbuild/buf/cmd/buf@latest
+
+      - name: Clean and regenerate proto files
+        run: |
+          make proto-clean
+          make proto-generate-all
+
+      - name: Check for changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Error: Generated proto files are not up to date"
+            echo "Please run 'make proto-generate-all' locally and commit the changes"
+            git status
+            git diff
+            exit 1
+          fi 
