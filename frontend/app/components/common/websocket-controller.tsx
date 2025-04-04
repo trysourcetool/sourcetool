@@ -41,12 +41,8 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const isInitialLoading = useRef(false);
   const socketUrl = useMemo(
     () =>
-      `${
-        environments === 'local' ? 'ws' : 'wss'
-      }://${isSourcetoolDomain && subDomain ? `${subDomain}.` : ''}${
-        ENVIRONMENTS.API_BASE_URL
-      }/ws`,
-    [subDomain, environments, isSourcetoolDomain],
+      `${environments === 'local' ? 'ws' : 'wss'}://${window.location.host}/ws`,
+    [environments],
   );
 
   const pageId = useSelector(

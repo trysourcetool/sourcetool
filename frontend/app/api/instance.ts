@@ -87,7 +87,8 @@ class Api {
   getParams(auth?: boolean) {
     const domain = checkDomain();
     console.log({ domain });
-    const url = `${window.location.protocol}//${domain.isSourcetoolDomain && domain.subDomain ? `${domain.subDomain}.` : ''}${ENVIRONMENTS.API_BASE_URL}/api/v1`;
+
+    const url = `/api/v1`;
 
     const headers = new Headers();
 
