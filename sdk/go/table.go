@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 
 	"github.com/gofrs/uuid/v5"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/options"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/table"
 )

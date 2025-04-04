@@ -3,9 +3,9 @@ package mock
 import (
 	"sync"
 
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
 )
 

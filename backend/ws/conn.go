@@ -9,13 +9,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	redisv1 "github.com/trysourcetool/sourcetool/proto/go/redis/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	redisv1 "github.com/trysourcetool/sourcetool/backend/pb/go/redis/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 )
 
 const (

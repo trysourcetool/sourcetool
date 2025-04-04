@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
-	pagev1 "github.com/trysourcetool/sourcetool/proto/go/page/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 	"go.uber.org/zap"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/pb/exception/v1"
+	pagev1 "github.com/trysourcetool/sourcetool-go/internal/pb/page/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
 )

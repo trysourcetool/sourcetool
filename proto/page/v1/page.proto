@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package page.v1;
+
+message Page {
+  string id = 1;
+  string name = 2;
+  string route = 3;
+  repeated int32 path = 4;
+  repeated string groups = 5;
+}

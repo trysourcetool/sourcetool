@@ -3,7 +3,7 @@
 	swagger swagger-open \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
 	db-migrate \
-	proto-generate proto-lint proto-format proto-breaking proto-mod-update proto-clean \
+	proto-generate proto-generate-all proto-generate-frontend proto-generate-backend proto-generate-sdk proto-lint proto-format proto-breaking proto-mod-update proto-clean \
 	go-sdk-test backend-test go-mod-tidy
 
 # Default target
@@ -144,9 +144,22 @@ db-migrate:
 	@cd backend && go run ./devtools/cmd/db/main.go migrate
 
 # Protocol Buffer commands
-proto-generate:
-	@echo "Generating Go code from proto files..."
-	@cd proto && buf generate
+proto-generate: proto-generate-all
+
+proto-generate-all: proto-generate-frontend proto-generate-backend proto-generate-sdk
+	@echo "Generated all proto files"
+
+proto-generate-frontend:
+	@echo "Generating TypeScript code from proto files..."
+	@cd proto && buf generate --template buf.gen.frontend.yaml
+
+proto-generate-backend:
+	@echo "Generating Go code for backend from proto files..."
+	@cd proto && buf generate --template buf.gen.backend.yaml
+
+proto-generate-sdk:
+	@echo "Generating Go code for SDK from proto files..."
+	@cd proto && buf generate --template buf.gen.sdk.yaml
 
 proto-lint:
 	@echo "Linting proto files..."
@@ -166,7 +179,9 @@ proto-mod-update:
 
 proto-clean:
 	@echo "Cleaning generated proto files..."
-	@cd proto && rm -rf go/
+	rm -rf frontend/app/pb/ts
+	rm -rf backend/pb/go
+	rm -rf sdk/go/internal/pb
 
 # Go SDK commands
 go-sdk-test:

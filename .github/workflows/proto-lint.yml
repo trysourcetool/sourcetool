@@ -1,0 +1,36 @@
+name: Proto Lint
+
+on:
+  pull_request:
+    paths:
+      - 'proto/**/*.proto'
+      - '.github/workflows/proto-lint.yml'
+
+jobs:
+  proto-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install buf
+        run: |
+          go install github.com/bufbuild/buf/cmd/buf@latest
+
+      - name: Run proto lint
+        run: make proto-lint
+
+      - name: Run proto format check
+        run: |
+          make proto-format
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Error: Proto files are not formatted"
+            echo "Please run 'make proto-format' locally and commit the changes"
+            git status
+            git diff
+            exit 1
+          fi 

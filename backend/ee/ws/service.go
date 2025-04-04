@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid/v5"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/ws"
 )

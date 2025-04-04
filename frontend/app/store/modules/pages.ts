@@ -11,7 +11,7 @@ import {
   type PayloadAction,
 } from '@reduxjs/toolkit';
 import type { Page } from '@/api/modules/pages';
-import type { ExceptionJson } from '@trysourcetool/proto/exception/v1/exception';
+import type { ExceptionJson } from '@/pb/ts/exception/v1/exception_pb';
 
 // =============================================
 // asyncActions

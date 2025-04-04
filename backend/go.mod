@@ -2,8 +2,6 @@ module github.com/trysourcetool/sourcetool/backend
 
 go 1.22.0
 
-replace github.com/trysourcetool/sourcetool/proto => ../proto
-
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/caarlos0/env/v11 v11.3.1
@@ -21,7 +19,6 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.4
-	github.com/trysourcetool/sourcetool/proto v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.33.0

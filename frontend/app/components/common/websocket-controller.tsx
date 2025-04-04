@@ -10,7 +10,7 @@ import {
   MessageSchema,
   type CloseSessionJson,
   type InitializeClientJson,
-} from '@trysourcetool/proto/websocket/v1/message';
+} from '@/pb/ts/websocket/v1/message_pb';
 import {
   create,
   fromBinary,
@@ -21,7 +21,7 @@ import {
 import {
   WidgetSchema,
   type Widget,
-} from '@trysourcetool/proto/widget/v1/widget';
+} from '@/pb/ts/widget/v1/widget_pb';
 import { pagesStore } from '@/store/modules/pages';
 import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
