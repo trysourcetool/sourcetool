@@ -100,8 +100,8 @@ const file_exception_v1_exception_proto_rawDesc = "" +
 	"\vstack_trace\x18\x03 \x03(\tR\n" +
 	"stackTrace\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x04 \x01(\tR\tsessionIdB\xcb\x01\n" +
-	"\x10com.exception.v1B\x0eExceptionProtoP\x01ZTgithub.com/trysourcetool/sourcetool/backend/generated/proto/exception/v1;exceptionv1\xa2\x02\x03EXX\xaa\x02\fException.V1\xca\x02\rException_\\V1\xe2\x02\x19Exception_\\V1\\GPBMetadata\xea\x02\rException::V1b\x06proto3"
+	"session_id\x18\x04 \x01(\tR\tsessionIdB\xcf\x01\n" +
+	"\x10com.exception.v1B\x0eExceptionProtoP\x01ZXgithub.com/trysourcetool/sourcetool-go/internal/generated/proto/exception/v1;exceptionv1\xa2\x02\x03EXX\xaa\x02\fException.V1\xca\x02\rException_\\V1\xe2\x02\x19Exception_\\V1\\GPBMetadata\xea\x02\rException::V1b\x06proto3"
 
 var (
 	file_exception_v1_exception_proto_rawDescOnce sync.Once

@@ -1,12 +1,10 @@
 syntax = "proto3";
 
-package sourcetool.websocket.v1;
+package websocket.v1;
 
 import "exception/v1/exception.proto";
 import "page/v1/page.proto";
 import "widget/v1/widget.proto";
-
-option go_package = "github.com/trysourcetool/sourcetool/proto/go/websocket/v1;websocketv1";
 
 message Message {
   string id = 1;

@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-package sourcetool.exception.v1;
-
-option go_package = "github.com/trysourcetool/sourcetool/proto/go/excaption/v1;exceptionv1";
+package exception.v1;
 
 message Exception {
   string title = 1;

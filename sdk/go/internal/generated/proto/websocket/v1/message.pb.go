@@ -7,9 +7,9 @@
 package websocketv1
 
 import (
-	v1 "github.com/trysourcetool/sourcetool/backend/generated/proto/exception/v1"
-	v11 "github.com/trysourcetool/sourcetool/backend/generated/proto/page/v1"
-	v12 "github.com/trysourcetool/sourcetool/backend/generated/proto/widget/v1"
+	v1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/exception/v1"
+	v11 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/page/v1"
+	v12 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/widget/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -763,8 +763,8 @@ const file_websocket_v1_message_proto_rawDesc = "" +
 	"\x06Status\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eSTATUS_SUCCESS\x10\x01\x12\x12\n" +
-	"\x0eSTATUS_FAILURE\x10\x02B\xc7\x01\n" +
-	"\x10com.websocket.v1B\fMessageProtoP\x01ZTgithub.com/trysourcetool/sourcetool/backend/generated/proto/websocket/v1;websocketv1\xa2\x02\x03WXX\xaa\x02\fWebsocket.V1\xca\x02\fWebsocket\\V1\xe2\x02\x18Websocket\\V1\\GPBMetadata\xea\x02\rWebsocket::V1b\x06proto3"
+	"\x0eSTATUS_FAILURE\x10\x02B\xcb\x01\n" +
+	"\x10com.websocket.v1B\fMessageProtoP\x01ZXgithub.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1;websocketv1\xa2\x02\x03WXX\xaa\x02\fWebsocket.V1\xca\x02\fWebsocket\\V1\xe2\x02\x18Websocket\\V1\\GPBMetadata\xea\x02\rWebsocket::V1b\x06proto3"
 
 var (
 	file_websocket_v1_message_proto_rawDescOnce sync.Once

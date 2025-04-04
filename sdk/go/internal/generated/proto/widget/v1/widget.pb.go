@@ -2049,8 +2049,8 @@ const file_widget_v1_widget_proto_rawDesc = "" +
 	"text_input\x18\x11 \x01(\v2\x14.widget.v1.TextInputH\x00R\ttextInput\x125\n" +
 	"\n" +
 	"time_input\x18\x12 \x01(\v2\x14.widget.v1.TimeInputH\x00R\ttimeInputB\x06\n" +
-	"\x04typeB\xb1\x01\n" +
-	"\rcom.widget.v1B\vWidgetProtoP\x01ZNgithub.com/trysourcetool/sourcetool/backend/generated/proto/widget/v1;widgetv1\xa2\x02\x03WXX\xaa\x02\tWidget.V1\xca\x02\tWidget\\V1\xe2\x02\x15Widget\\V1\\GPBMetadata\xea\x02\n" +
+	"\x04typeB\xb5\x01\n" +
+	"\rcom.widget.v1B\vWidgetProtoP\x01ZRgithub.com/trysourcetool/sourcetool-go/internal/generated/proto/widget/v1;widgetv1\xa2\x02\x03WXX\xaa\x02\tWidget.V1\xca\x02\tWidget\\V1\xe2\x02\x15Widget\\V1\\GPBMetadata\xea\x02\n" +
 	"Widget::V1b\x06proto3"
 
 var (

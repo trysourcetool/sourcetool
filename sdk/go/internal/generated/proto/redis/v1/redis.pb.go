@@ -80,9 +80,9 @@ const file_redis_v1_redis_proto_rawDesc = "" +
 	"\x14redis/v1/redis.proto\x12\bredis.v1\"8\n" +
 	"\fRedisMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\apayload\x18\x02 \x01(\fR\apayloadB\xa9\x01\n" +
+	"\apayload\x18\x02 \x01(\fR\apayloadB\xad\x01\n" +
 	"\fcom.redis.v1B\n" +
-	"RedisProtoP\x01ZLgithub.com/trysourcetool/sourcetool/backend/generated/proto/redis/v1;redisv1\xa2\x02\x03RXX\xaa\x02\bRedis.V1\xca\x02\bRedis\\V1\xe2\x02\x14Redis\\V1\\GPBMetadata\xea\x02\tRedis::V1b\x06proto3"
+	"RedisProtoP\x01ZPgithub.com/trysourcetool/sourcetool-go/internal/generated/proto/redis/v1;redisv1\xa2\x02\x03RXX\xaa\x02\bRedis.V1\xca\x02\bRedis\\V1\xe2\x02\x14Redis\\V1\\GPBMetadata\xea\x02\tRedis::V1b\x06proto3"
 
 var (
 	file_redis_v1_redis_proto_rawDescOnce sync.Once

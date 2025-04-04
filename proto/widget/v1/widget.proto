@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-package sourcetool.widget.v1;
-
-option go_package = "github.com/trysourcetool/sourcetool/proto/go/widget/v1;widgetv1";
+package widget.v1;
 
 message Button {
   bool value = 1;

@@ -3,9 +3,10 @@ package websocket
 import (
 	"fmt"
 
-	exceptionv1 "github.com/trysourcetool/sourcetool/proto/go/exception/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 	"google.golang.org/protobuf/proto"
+
+	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/exception/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
 )
 
 type MessageHandlerFunc func(*websocketv1.Message) error

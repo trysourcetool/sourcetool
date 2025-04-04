@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-package sourcetool.page.v1;
-
-option go_package = "github.com/trysourcetool/sourcetool/proto/go/page/v1;pagev1";
+package page.v1;
 
 message Page {
   string id = 1;

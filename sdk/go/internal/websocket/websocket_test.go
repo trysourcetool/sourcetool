@@ -10,9 +10,9 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/generated/proto/websocket/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 )
 

@@ -107,8 +107,8 @@ const file_page_v1_page_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05route\x18\x03 \x01(\tR\x05route\x12\x12\n" +
 	"\x04path\x18\x04 \x03(\x05R\x04path\x12\x16\n" +
-	"\x06groups\x18\x05 \x03(\tR\x06groupsB\xa1\x01\n" +
-	"\vcom.page.v1B\tPageProtoP\x01ZJgithub.com/trysourcetool/sourcetool/backend/generated/proto/page/v1;pagev1\xa2\x02\x03PXX\xaa\x02\aPage.V1\xca\x02\aPage\\V1\xe2\x02\x13Page\\V1\\GPBMetadata\xea\x02\bPage::V1b\x06proto3"
+	"\x06groups\x18\x05 \x03(\tR\x06groupsB\xa5\x01\n" +
+	"\vcom.page.v1B\tPageProtoP\x01ZNgithub.com/trysourcetool/sourcetool-go/internal/generated/proto/page/v1;pagev1\xa2\x02\x03PXX\xaa\x02\aPage.V1\xca\x02\aPage\\V1\xe2\x02\x13Page\\V1\\GPBMetadata\xea\x02\bPage::V1b\x06proto3"
 
 var (
 	file_page_v1_page_proto_rawDescOnce sync.Once
