@@ -1,4 +1,4 @@
-import type { WidgetState } from '@/store/modules/widgets/slice';
+import type { WidgetState } from '@/store/modules/widgets';
 import type { WidgetJson } from '@trysourcetool/proto/widget/v1/widget';
 import z from 'zod';
 
