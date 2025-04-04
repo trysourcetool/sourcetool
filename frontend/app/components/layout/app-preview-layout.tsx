@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
 import { usersStore } from '@/store/modules/users';
 import { environmentsStore } from '@/store/modules/environments';
+import { ENVIRONMENTS } from '@/environments';
 
 export function AppPreviewLayout(props: PropsWithChildren) {
   const isInitialLoading = useRef(false);
@@ -29,7 +30,6 @@ export function AppPreviewLayout(props: PropsWithChildren) {
     isSubDomainMatched,
     isAuthChecked,
     handleNoAuthRoute,
-    isSourcetoolDomain,
   } = useAuth();
   const dispatch = useDispatch();
   const user = useSelector(usersStore.selector.getMe);
@@ -40,7 +40,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      isSourcetoolDomain &&
+      ENVIRONMENTS.IS_CLOUD_EDITION &&
       !isSubDomainMatched
     ) {
       handleNoAuthRoute();
@@ -98,15 +98,15 @@ export function AppPreviewLayout(props: PropsWithChildren) {
         }
         isInitialLoading.current = false;
       })();
-    } else if (isAuthChecked === 'checked' && !isSourcetoolDomain && !user) {
+    } else if (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && !user) {
       handleNoAuthRoute();
     }
   }, [dispatch]);
 
   return (isAuthChecked === 'checked' &&
-    isSourcetoolDomain &&
+    ENVIRONMENTS.IS_CLOUD_EDITION &&
     isSubDomainMatched) ||
-    (isAuthChecked === 'checked' && !isSourcetoolDomain && user) ? (
+    (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && user) ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>
