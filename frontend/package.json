@@ -64,7 +64,6 @@
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
     "@tailwindcss/postcss": "^4.0.0",
-    "@trysourcetool/proto": "^0.1.13",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^8.25.0",

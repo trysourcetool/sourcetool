@@ -51,3 +51,6 @@ tmp/
 
 # Debug
 cookies.txt
+
+# Generated proto files
+/generated/proto/
