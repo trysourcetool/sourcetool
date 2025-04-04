@@ -6,7 +6,7 @@ Sourcetool is an open-source internal tool builder that enables you to create fu
 
 ## 🌟 About Sourcetool
 
-We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.
+We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only. This simplifies the development process and increases productivity.
 
 ### Backend-First Development
 Focus on your business logic while we handle the UI. Build complete internal tools using only Go code. No frontend expertise required.
