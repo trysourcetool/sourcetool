@@ -426,7 +426,7 @@ const slice = createSlice({
 
           if (!hasError) {
             widget.widget.form.value = true;
-            state.updateAt = dayjs().unix();
+            state.updateAt = dayjs().valueOf();
             state.isWidgetWaiting = true;
           }
         } else {
@@ -449,7 +449,7 @@ const slice = createSlice({
               }
             }
             if (!hasParentForm) {
-              state.updateAt = dayjs().unix();
+              state.updateAt = dayjs().valueOf();
               state.isWidgetWaiting = true;
             }
           }
