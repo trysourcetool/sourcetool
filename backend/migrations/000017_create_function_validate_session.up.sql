@@ -3,7 +3,7 @@ BEGIN;
 CREATE OR REPLACE FUNCTION validate_session()
 RETURNS TRIGGER AS $$
 DECLARE
-    page_org_id UUID;
+    api_key_org_id UUID;
     host_instance_org_id UUID;
 BEGIN
     IF NOT EXISTS (
@@ -15,12 +15,12 @@ BEGIN
         RAISE EXCEPTION 'User % must belong to organization % to create a session', NEW.user_id, NEW.organization_id;
     END IF;
 
-    SELECT organization_id INTO page_org_id
-    FROM "page"
-    WHERE id = NEW.page_id;
+    SELECT organization_id INTO api_key_org_id
+    FROM "api_key"
+    WHERE id = NEW.api_key_id;
 
-    IF page_org_id != NEW.organization_id THEN
-        RAISE EXCEPTION 'Page % must belong to organization % to create a session', NEW.page_id, NEW.organization_id;
+    IF api_key_org_id != NEW.organization_id THEN
+        RAISE EXCEPTION 'API key % must belong to organization % to create a session', NEW.api_key_id, NEW.organization_id;
     END IF;
 
     SELECT organization_id INTO host_instance_org_id
