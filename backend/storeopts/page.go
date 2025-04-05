@@ -64,7 +64,8 @@ func (o pageBySessionIDOption) isPageOption() {}
 
 func (o pageBySessionIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.
-		InnerJoin(`"session" s ON s."page_id" = p."id"`).
+		InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
+		InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
 		Where(sq.Eq{`s."id"`: o.id})
 }
 

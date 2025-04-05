@@ -46,7 +46,7 @@ func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.SessionOptio
 		`s."id"`,
 		`s."organization_id"`,
 		`s."user_id"`,
-		`s."page_id"`,
+		`s."api_key_id"`,
 		`s."host_instance_id"`,
 		`s."created_at"`,
 		`s."updated_at"`,
@@ -72,14 +72,14 @@ func (s *StoreCE) Create(ctx context.Context, m *model.Session) error {
 			`"id"`,
 			`"organization_id"`,
 			`"user_id"`,
-			`"page_id"`,
+			`"api_key_id"`,
 			`"host_instance_id"`,
 		).
 		Values(
 			m.ID,
 			m.OrganizationID,
 			m.UserID,
-			m.PageID,
+			m.APIKeyID,
 			m.HostInstanceID,
 		).
 		RunWith(s.db).
