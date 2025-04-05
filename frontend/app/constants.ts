@@ -7,7 +7,6 @@ const cookie = {
 const locale = {
   languages: {
     en: 'en',
-    // ja: 'ja',
   },
 } as const;
 
