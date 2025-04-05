@@ -49,6 +49,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { usersStore } from '@/store/modules/users';
 import { useDispatch, useSelector } from '@/store';
+import { ENVIRONMENTS } from '@/environments';
 
 export function AppExternalLayout(props: PropsWithChildren) {
   const dispatch = useDispatch();
@@ -59,7 +60,6 @@ export function AppExternalLayout(props: PropsWithChildren) {
     isSubDomainMatched,
     isAuthChecked,
     handleNoAuthRoute,
-    isSourcetoolDomain,
   } = useAuth();
   const user = useSelector(usersStore.selector.getMe);
   const { t } = useTranslation('common');
@@ -78,19 +78,19 @@ export function AppExternalLayout(props: PropsWithChildren) {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      isSourcetoolDomain &&
+      ENVIRONMENTS.IS_CLOUD_EDITION &&
       !isSubDomainMatched
     ) {
       handleNoAuthRoute();
-    } else if (isAuthChecked === 'checked' && !isSourcetoolDomain && !user) {
+    } else if (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && !user) {
       handleNoAuthRoute();
     }
   }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
 
   return (isAuthChecked === 'checked' &&
-    isSourcetoolDomain &&
+    ENVIRONMENTS.IS_CLOUD_EDITION &&
     isSubDomainMatched) ||
-    (isAuthChecked === 'checked' && !isSourcetoolDomain && user) ? (
+    (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && user) ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>

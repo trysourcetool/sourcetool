@@ -12,21 +12,20 @@ import {
   type FC,
   type ReactNode,
 } from 'react';
+import { ENVIRONMENTS } from '@/environments';
 
 type AuthState = {
   subDomain: string | null;
-  isSourcetoolDomain: boolean;
   isSubDomainMatched: boolean;
   isAuthChecked: 'checking' | 'checked';
-  environments: 'production' | 'staging' | 'local' | null;
+  environments: 'production' | 'staging' | 'local';
 };
 
 export const authContext = createContext<AuthState>({
   subDomain: null,
-  isSourcetoolDomain: false,
   isSubDomainMatched: false,
   isAuthChecked: 'checking',
-  environments: null,
+  environments: ENVIRONMENTS.MODE === 'development' ? 'local' : 'production',
 });
 
 export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
@@ -101,10 +100,9 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
     <authContext.Provider
       value={{
         subDomain: domain?.subDomain ?? null,
-        isSourcetoolDomain: !!domain?.isSourcetoolDomain,
         isSubDomainMatched: subDomainMatched.isMatched,
         isAuthChecked: subDomainMatched.status,
-        environments: domain?.environments ?? null,
+        environments: domain?.environments ?? (ENVIRONMENTS.MODE === 'development' ? 'local' : 'production'),
       }}
     >
       {isAuthChecked ? (
@@ -123,26 +121,23 @@ export const useAuth = () => {
     subDomain,
     isSubDomainMatched,
     isAuthChecked,
-    isSourcetoolDomain,
     environments,
   } = useContext(authContext);
 
   const handleNoAuthRoute = useCallback(() => {
-    if (isSourcetoolDomain && !subDomain) {
-      console.log(`auth.${window.location.host}`);
-      window.location.replace(
-        `${window.location.protocol}//auth.${window.location.host}/signin`,
-      );
-    } else if (isSourcetoolDomain && subDomain && subDomain !== 'auth') {
-      console.log(
-        `${window.location.protocol}//${window.location.host}/signin`,
-      );
-      window.location.replace(
-        `${window.location.protocol}//${window.location.host.replace(
-          subDomain,
-          'auth',
-        )}/signin`,
-      );
+    if (ENVIRONMENTS.IS_CLOUD_EDITION) {
+      if (!subDomain) {
+        window.location.replace(
+          `${window.location.protocol}//auth.${window.location.host}/signin`,
+        );
+      } else if (subDomain && subDomain !== 'auth') {
+        window.location.replace(
+          `${window.location.protocol}//${window.location.host.replace(
+            subDomain,
+            'auth',
+          )}/signin`,
+        );
+      }
     }
   }, [subDomain]);
 
@@ -151,7 +146,6 @@ export const useAuth = () => {
     isSubDomainMatched,
     isAuthChecked,
     handleNoAuthRoute,
-    isSourcetoolDomain,
     environments,
   };
 };

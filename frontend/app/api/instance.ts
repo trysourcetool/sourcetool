@@ -1,7 +1,6 @@
 import { ENVIRONMENTS } from '@/environments';
 import dayjs from 'dayjs';
 import { usersRefreshToken } from './modules/users';
-import { checkDomain } from '@/lib/checkDomain';
 
 type SuccessResponse = {
   code: 0;
@@ -85,9 +84,7 @@ class Api {
   }
 
   getParams(auth?: boolean) {
-    const domain = checkDomain();
-    console.log({ domain });
-    const url = `${window.location.protocol}//${domain.isSourcetoolDomain && domain.subDomain ? `${domain.subDomain}.` : ''}${ENVIRONMENTS.API_BASE_URL}/api/v1`;
+    const url = `/api/v1`;
 
     const headers = new Headers();
 
@@ -155,7 +152,7 @@ export const get: <T>(params: {
   }
 
   if (!res.ok) {
-    throw json as ErrorResponse;
+    throw json;
   }
 
   throw new Error('Unknown error');

@@ -2,6 +2,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { checkDomain } from '@/lib/checkDomain';
 import { useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
+import { ENVIRONMENTS } from '@/environments';
 import {
   createContext,
   useEffect,
@@ -23,7 +24,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
   }
 
   const account = useSelector(usersStore.selector.getMe);
-  const { isAuthChecked, isSourcetoolDomain, subDomain } = useAuth();
+  const { isAuthChecked, subDomain } = useAuth();
 
   const checkComplete = () => {
     setTimeout(() => {
@@ -93,7 +94,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
     }
     isChecking.current = true;
 
-    if (isSourcetoolDomain) {
+    if (ENVIRONMENTS.IS_CLOUD_EDITION) {
       if (subDomain && subDomain !== 'auth') {
         handleAuthorizedRoute();
       }

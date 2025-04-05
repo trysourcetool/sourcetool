@@ -1,14 +1,6 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
-# Add build-time arguments
-ARG VITE_API_BASE_URL
-ARG VITE_DOMAIN
-
-# Set environment variables for the build
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_DOMAIN=$VITE_DOMAIN
-
 COPY frontend/package.json frontend/yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY frontend/ ./
