@@ -16,6 +16,7 @@
 
 # Go workspace file
 go.work
+go.work.sum
 
 # Go debug binaries
 __debug_bin
