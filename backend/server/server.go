@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -77,8 +78,10 @@ func (s *Server) router() chi.Router {
 	r.Use(middleware.Timeout(time.Duration(600) * time.Second))
 	r.Use(cors.New(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
-			// TODO: check origin from environment variable
-			return true
+			// For self-hosted environments, we only need to check against the configured base URL
+			normalizedOrigin := strings.TrimRight(origin, "/")
+			normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
+			return normalizedOrigin == normalizedBaseURL
 		},
 		AllowedMethods: []string{
 			http.MethodGet,
