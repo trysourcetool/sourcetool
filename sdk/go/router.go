@@ -38,11 +38,18 @@ func (r *router) joinPath(relativePath string) string {
 		relativePath = "/" + relativePath
 	}
 	if r.basePath == "" {
-		return relativePath
+		if relativePath == "/" {
+			return relativePath
+		}
+		return strings.TrimSuffix(relativePath, "/")
 	}
 	basePath := strings.TrimSuffix(r.basePath, "/")
 	cleanPath := strings.TrimPrefix(relativePath, "/")
-	return basePath + "/" + cleanPath
+	result := basePath + "/" + cleanPath
+	if result == "/" {
+		return result
+	}
+	return strings.TrimSuffix(result, "/")
 }
 
 func removeDuplicates(groups []string) []string {
@@ -69,12 +76,17 @@ func (r *router) collectGroups() []string {
 }
 
 func (r *router) Page(relativePath, name string, handler func(UIBuilder) error) {
+	// Skip page creation only for top-level root path
+	if relativePath == "/" && r.basePath == "" {
+		return
+	}
+
 	var fullPath string
 	if relativePath == "" {
 		if r.basePath == "" {
 			fullPath = "/"
 		} else {
-			fullPath = r.basePath
+			fullPath = strings.TrimSuffix(r.basePath, "/")
 		}
 	} else {
 		fullPath = r.joinPath(relativePath)
