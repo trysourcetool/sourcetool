@@ -64,6 +64,8 @@ func Init() {
 		log.Fatal("[INIT] config: ", err)
 	}
 
+	cfg.BaseURL = strings.TrimRight(cfg.BaseURL, "/")
+
 	cfg.IsCloudEdition = urlutil.IsCloudEdition(cfg.BaseURL)
 
 	baseURLParts := strings.Split(cfg.BaseURL, "://")
@@ -81,6 +83,7 @@ func Init() {
 	Config = cfg
 }
 
+// AuthHostname returns the hostname for the Auth domain.
 func (c *Cfg) AuthHostname() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseHostname
@@ -88,6 +91,7 @@ func (c *Cfg) AuthHostname() string {
 	return c.BaseHostname
 }
 
+// OrgHostname returns the hostname for the organization.
 func (c *Cfg) OrgHostname(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseHostname
@@ -95,6 +99,7 @@ func (c *Cfg) OrgHostname(subdomain string) string {
 	return c.BaseHostname
 }
 
+// AuthDomain returns the domain for the Auth domain.
 func (c *Cfg) AuthDomain() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseDomain
@@ -102,6 +107,7 @@ func (c *Cfg) AuthDomain() string {
 	return c.BaseDomain
 }
 
+// OrgDomain returns the domain for the organization.
 func (c *Cfg) OrgDomain(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseDomain
@@ -109,14 +115,17 @@ func (c *Cfg) OrgDomain(subdomain string) string {
 	return c.BaseDomain
 }
 
+// AuthBaseURL returns the base URL for the Auth domain.
 func (c *Cfg) AuthBaseURL() string {
 	return c.Protocol + "://" + c.AuthHostname()
 }
 
+// OrgBaseURL returns the base URL for the organization domain.
 func (c *Cfg) OrgBaseURL(subdomain string) string {
 	return c.Protocol + "://" + c.OrgHostname(subdomain)
 }
 
+// WebSocketOrgBaseURL returns the base URL for the organization domain for WebSocket connections.
 func (c *Cfg) WebSocketOrgBaseURL(subdomain string) string {
 	if c.SSL {
 		return "wss://" + c.OrgHostname(subdomain)

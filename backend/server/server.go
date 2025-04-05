@@ -77,8 +77,8 @@ func (s *Server) router() chi.Router {
 	r.Use(middleware.Timeout(time.Duration(600) * time.Second))
 	r.Use(cors.New(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
-			// TODO: check origin from environment variable
-			return true
+			// For self-hosted environments, we only need to check against the configured base URL
+			return origin == config.Config.BaseURL
 		},
 		AllowedMethods: []string{
 			http.MethodGet,
