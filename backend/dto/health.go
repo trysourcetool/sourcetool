@@ -11,7 +11,6 @@ const (
 
 type Health struct {
 	Status    HealthStatus
-	Version   string
 	Uptime    time.Duration
 	Timestamp time.Time
 	Details   map[string]HealthStatus

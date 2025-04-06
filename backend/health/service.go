@@ -45,7 +45,6 @@ func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
 
 	return &dto.Health{
 		Status:    overallStatus,
-		Version:   "1.0", // Using the version from Swagger docs
 		Uptime:    time.Since(s.startTime),
 		Timestamp: time.Now().UTC(),
 		Details:   details,

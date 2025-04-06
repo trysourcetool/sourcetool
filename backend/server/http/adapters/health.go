@@ -20,7 +20,6 @@ func HealthDTOToResponse(health *dto.Health) *responses.HealthResponse {
 
 	return &responses.HealthResponse{
 		Status:    string(health.Status),
-		Version:   health.Version,
 		Uptime:    formatUptime(health.Uptime),
 		Timestamp: health.Timestamp.Format(time.RFC3339),
 		Details:   details,
