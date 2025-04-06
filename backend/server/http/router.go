@@ -46,7 +46,7 @@ func (router *Router) Build() chi.Router {
 	r := chi.NewRouter()
 	r.Use(router.middleware.SetSubdomain)
 
-	r.Get("/api/health", router.health.Check)
+	r.Get("/health", router.health.Check)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/users", func(r chi.Router) {
