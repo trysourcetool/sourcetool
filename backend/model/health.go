@@ -2,10 +2,15 @@ package model
 
 import (
 	"context"
+)
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
+type HealthStatus string
+
+const (
+	HealthStatusUp HealthStatus = "up"
+	HealthStatusDown HealthStatus = "down"
 )
 
 type HealthStore interface {
-	Ping(ctx context.Context) (map[string]dto.HealthStatus, error)
+	Ping(ctx context.Context) (map[string]HealthStatus, error)
 }

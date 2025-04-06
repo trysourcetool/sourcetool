@@ -2,15 +2,13 @@ package health
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/redis/go-redis/v9"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
 type Service interface {
@@ -30,36 +28,48 @@ func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
-	details := make(map[string]dto.HealthStatus)
-
-	if db, ok := s.Store.(interface{ DB() *sqlx.DB }); ok {
-		if err := db.DB().PingContext(ctx); err != nil {
-			details["postgres"] = dto.HealthStatusDown
-		} else {
-			details["postgres"] = dto.HealthStatusUp
-		}
-	} else {
-		details["postgres"] = dto.HealthStatusDown
+	pgDetails, err := s.Store.Health().Ping(ctx)
+	if err != nil {
+		return nil, err
 	}
-
+	
+	details := make(map[string]model.HealthStatus)
+	for k, v := range pgDetails {
+		details[k] = v
+	}
+	
 	if err := s.Memory.Redis().Ping(ctx); err != nil {
-		details["redis"] = dto.HealthStatusDown
+		details["redis"] = model.HealthStatusDown
 	} else {
-		details["redis"] = dto.HealthStatusUp
+		details["redis"] = model.HealthStatusUp
 	}
 
-	overallStatus := dto.HealthStatusUp
+	overallStatus := model.HealthStatusUp
 	for _, status := range details {
-		if status == dto.HealthStatusDown {
-			overallStatus = dto.HealthStatusDown
+		if status == model.HealthStatusDown {
+			overallStatus = model.HealthStatusDown
 			break
 		}
 	}
 
+	dtoDetails := make(map[string]dto.HealthStatus)
+	for k, v := range details {
+		if v == model.HealthStatusUp {
+			dtoDetails[k] = dto.HealthStatusUp
+		} else {
+			dtoDetails[k] = dto.HealthStatusDown
+		}
+	}
+
+	dtoStatus := dto.HealthStatusUp
+	if overallStatus == model.HealthStatusDown {
+		dtoStatus = dto.HealthStatusDown
+	}
+
 	return &dto.Health{
-		Status:    overallStatus,
+		Status:    dtoStatus,
 		Uptime:    time.Since(s.startTime),
 		Timestamp: time.Now().UTC(),
-		Details:   details,
+		Details:   dtoDetails,
 	}, nil
 }
