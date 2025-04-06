@@ -30,9 +30,22 @@ func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
-	details, err := s.Store.Health().Ping(ctx)
-	if err != nil {
-		return nil, err
+	details := make(map[string]dto.HealthStatus)
+
+	if db, ok := s.Store.(interface{ DB() *sqlx.DB }); ok {
+		if err := db.DB().PingContext(ctx); err != nil {
+			details["postgres"] = dto.HealthStatusDown
+		} else {
+			details["postgres"] = dto.HealthStatusUp
+		}
+	} else {
+		details["postgres"] = dto.HealthStatusDown
+	}
+
+	if err := s.Memory.Redis().Ping(ctx); err != nil {
+		details["redis"] = dto.HealthStatusDown
+	} else {
+		details["redis"] = dto.HealthStatusUp
 	}
 
 	overallStatus := dto.HealthStatusUp
