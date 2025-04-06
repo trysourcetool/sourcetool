@@ -15,6 +15,7 @@ type Router struct {
 	organization *handlers.OrganizationHandler
 	page         *handlers.PageHandler
 	user         *handlers.UserHandler
+	health       *handlers.HealthHandler
 }
 
 func NewRouter(
@@ -26,6 +27,7 @@ func NewRouter(
 	organizationHandler *handlers.OrganizationHandler,
 	pageHandler *handlers.PageHandler,
 	userHandler *handlers.UserHandler,
+	healthHandler *handlers.HealthHandler,
 ) *Router {
 	return &Router{
 		middleware:   middleware,
@@ -36,12 +38,15 @@ func NewRouter(
 		organization: organizationHandler,
 		page:         pageHandler,
 		user:         userHandler,
+		health:       healthHandler,
 	}
 }
 
 func (router *Router) Build() chi.Router {
 	r := chi.NewRouter()
 	r.Use(router.middleware.SetSubdomain)
+
+	r.Get("/health", router.health.Check)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/users", func(r chi.Router) {

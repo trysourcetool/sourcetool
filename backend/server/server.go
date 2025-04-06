@@ -55,6 +55,8 @@ func New(d *infra.Dependency) *Server {
 		},
 		ws.NewServiceCE(d),
 	)
+	healthHandler := httphandlers.NewHealthHandler(d.Health)
+	
 	return &Server{
 		wsRouter: wsserver.NewRouter(wsMiddle, wsHandler),
 		httpRouter: httpserver.NewRouter(
@@ -66,6 +68,7 @@ func New(d *infra.Dependency) *Server {
 			organizationHandler,
 			pageHandler,
 			userHandler,
+			healthHandler,
 		),
 	}
 }
