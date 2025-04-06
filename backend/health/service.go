@@ -12,23 +12,8 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/infra"
 )
 
-type Status string
-
-const (
-	StatusUp   Status = "up"
-	StatusDown Status = "down"
-)
-
 type Service interface {
-	Check(ctx context.Context) (*HealthStatus, error)
-}
-
-type HealthStatus struct {
-	Status    Status            `json:"status"`
-	Version   string            `json:"version"`
-	Uptime    string            `json:"uptime"`
-	Timestamp string            `json:"timestamp"`
-	Details   map[string]Status `json:"details"`
+	Check(ctx context.Context) (*HealthDTO, error)
 }
 
 type ServiceCE struct {
@@ -43,11 +28,10 @@ func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 	}
 }
 
-func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
+func (s *ServiceCE) Check(ctx context.Context) (*HealthDTO, error) {
 	details := make(map[string]Status)
 
 	details["postgres"] = s.checkPostgres(ctx)
-
 	details["redis"] = s.checkRedis(ctx)
 
 	overallStatus := StatusUp
@@ -58,11 +42,11 @@ func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
 		}
 	}
 
-	return &HealthStatus{
+	return &HealthDTO{
 		Status:    overallStatus,
 		Version:   "1.0", // Using the version from Swagger docs
-		Uptime:    formatUptime(time.Since(s.startTime)),
-		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Uptime:    time.Since(s.startTime),
+		Timestamp: time.Now().UTC(),
 		Details:   details,
 	}, nil
 }
@@ -88,23 +72,4 @@ func (s *ServiceCE) checkRedis(ctx context.Context) Status {
 		return StatusDown
 	}
 	return StatusUp
-}
-
-func formatUptime(d time.Duration) string {
-	d = d.Round(time.Second)
-	days := int(d.Hours() / 24)
-	hours := int(d.Hours()) % 24
-	minutes := int(d.Minutes()) % 60
-	seconds := int(d.Seconds()) % 60
-
-	if days > 0 {
-		return fmt.Sprintf("%dd %dh %dm %ds", days, hours, minutes, seconds)
-	}
-	if hours > 0 {
-		return fmt.Sprintf("%dh %dm %ds", hours, minutes, seconds)
-	}
-	if minutes > 0 {
-		return fmt.Sprintf("%dm %ds", minutes, seconds)
-	}
-	return fmt.Sprintf("%ds", seconds)
 }
