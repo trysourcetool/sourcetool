@@ -9,11 +9,12 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 )
 
 type Service interface {
-	Check(ctx context.Context) (*HealthDTO, error)
+	Check(ctx context.Context) (*dto.Health, error)
 }
 
 type ServiceCE struct {
@@ -28,21 +29,21 @@ func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 	}
 }
 
-func (s *ServiceCE) Check(ctx context.Context) (*HealthDTO, error) {
-	details := make(map[string]Status)
+func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
+	details := make(map[string]dto.HealthStatus)
 
 	details["postgres"] = s.checkPostgres(ctx)
 	details["redis"] = s.checkRedis(ctx)
 
-	overallStatus := StatusUp
+	overallStatus := dto.HealthStatusUp
 	for _, status := range details {
-		if status == StatusDown {
-			overallStatus = StatusDown
+		if status == dto.HealthStatusDown {
+			overallStatus = dto.HealthStatusDown
 			break
 		}
 	}
 
-	return &HealthDTO{
+	return &dto.Health{
 		Status:    overallStatus,
 		Version:   "1.0", // Using the version from Swagger docs
 		Uptime:    time.Since(s.startTime),
@@ -51,17 +52,17 @@ func (s *ServiceCE) Check(ctx context.Context) (*HealthDTO, error) {
 	}, nil
 }
 
-func (s *ServiceCE) checkPostgres(ctx context.Context) Status {
+func (s *ServiceCE) checkPostgres(ctx context.Context) dto.HealthStatus {
 	if db, ok := s.Store.(interface{ DB() *sqlx.DB }); ok {
 		if err := db.DB().PingContext(ctx); err != nil {
-			return StatusDown
+			return dto.HealthStatusDown
 		}
-		return StatusUp
+		return dto.HealthStatusUp
 	}
-	return StatusDown
+	return dto.HealthStatusDown
 }
 
-func (s *ServiceCE) checkRedis(ctx context.Context) Status {
+func (s *ServiceCE) checkRedis(ctx context.Context) dto.HealthStatus {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.Config.Redis.Host, config.Config.Redis.Port),
 		Password: config.Config.Redis.Password,
@@ -69,7 +70,7 @@ func (s *ServiceCE) checkRedis(ctx context.Context) Status {
 	defer client.Close()
 	
 	if err := client.Ping(ctx).Err(); err != nil {
-		return StatusDown
+		return dto.HealthStatusDown
 	}
-	return StatusUp
+	return dto.HealthStatusUp
 }

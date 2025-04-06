@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/health"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
@@ -28,7 +29,7 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	healthResponse := toHealthResponse(healthDTO)
 
 	statusCode := http.StatusOK
-	if healthDTO.Status == health.StatusDown {
+	if healthDTO.Status == dto.HealthStatusDown {
 		statusCode = http.StatusServiceUnavailable
 	}
 
@@ -38,7 +39,7 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func toHealthResponse(dto *health.HealthDTO) *responses.HealthResponse {
+func toHealthResponse(dto *dto.Health) *responses.HealthResponse {
 	details := make(map[string]string)
 	for k, v := range dto.Details {
 		details[k] = string(v)
