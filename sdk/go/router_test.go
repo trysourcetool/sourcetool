@@ -34,13 +34,25 @@ func TestJoinPath(t *testing.T) {
 			name:     "Both with slashes",
 			basePath: "/admin/",
 			path:     "/users/",
-			want:     "/admin/users/",
+			want:     "/admin/users",
 		},
 		{
 			name:     "Nested paths",
 			basePath: "/api/v1",
 			path:     "users/list",
 			want:     "/api/v1/users/list",
+		},
+		{
+			name:     "Root path",
+			basePath: "",
+			path:     "/",
+			want:     "/",
+		},
+		{
+			name:     "Root path with base path",
+			basePath: "/admin",
+			path:     "/",
+			want:     "/admin",
 		},
 	}
 
@@ -408,6 +420,61 @@ func TestRouter_Page(t *testing.T) {
 
 		if page.name != "Test Page" {
 			t.Errorf("Page name = %v, want %v", page.name, "Test Page")
+		}
+	})
+
+	t.Run("Skip top-level root path", func(t *testing.T) {
+		config := &Config{
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error { return nil }
+		st.Page("/", "Root Page", handler)
+
+		page := findPageByPath(st.pages, "/")
+		if page != nil {
+			t.Error("Top-level root path page should not be created")
+		}
+
+		// Verify that other pages can still be created
+		st.Page("/other", "Other Page", handler)
+		otherPage := findPageByPath(st.pages, "/other")
+		if otherPage == nil {
+			t.Error("Other page should be created")
+		}
+	})
+
+	t.Run("Allow nested root path", func(t *testing.T) {
+		config := &Config{
+			APIKey:   "test_api_key",
+			Endpoint: "ws://test.trysourcetool.com",
+		}
+		st := New(config)
+		handler := func(ui UIBuilder) error { return nil }
+
+		users := st.Group("/users")
+		users.Page("/", "Users List", handler)
+
+		page := findPageByPath(st.pages, "/users")
+		if page == nil {
+			t.Error("Nested root path page should be created")
+		}
+		if page != nil && page.name != "Users List" {
+			t.Errorf("Page name = %v, want %v", page.name, "Users List")
+		}
+
+		// Test deeply nested root path
+		admin := st.Group("/admin")
+		settings := admin.Group("/settings")
+		settings.Page("/", "Settings Home", handler)
+
+		settingsPage := findPageByPath(st.pages, "/admin/settings")
+		if settingsPage == nil {
+			t.Error("Deeply nested root path page should be created")
+		}
+		if settingsPage != nil && settingsPage.name != "Settings Home" {
+			t.Errorf("Page name = %v, want %v", settingsPage.name, "Settings Home")
 		}
 	})
 
