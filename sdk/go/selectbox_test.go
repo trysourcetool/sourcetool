@@ -132,10 +132,10 @@ func TestSelectbox(t *testing.T) {
 	placeholder := "Select an option"
 
 	value := builder.Selectbox(label,
-		selectbox.Options(options...),
-		selectbox.DefaultValue(defaultValue),
-		selectbox.Placeholder(placeholder),
-		selectbox.Required(true),
+		selectbox.WithOptions(options...),
+		selectbox.WithDefaultValue(defaultValue),
+		selectbox.WithPlaceholder(placeholder),
+		selectbox.WithRequired(true),
 	)
 
 	if value == nil {
@@ -210,8 +210,8 @@ func TestSelectbox_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.Selectbox(label,
-		selectbox.Options(options...),
-		selectbox.FormatFunc(formatFunc),
+		selectbox.WithOptions(options...),
+		selectbox.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeSelectbox, []int{0})

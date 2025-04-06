@@ -112,9 +112,9 @@ func TestCheckbox(t *testing.T) {
 
 	// Create Checkbox component with all options
 	value := builder.Checkbox(label,
-		checkbox.DefaultValue(true),
-		checkbox.Required(true),
-		checkbox.Disabled(true),
+		checkbox.WithDefaultValue(true),
+		checkbox.WithRequired(true),
+		checkbox.WithDisabled(true),
 	)
 
 	// Verify return value

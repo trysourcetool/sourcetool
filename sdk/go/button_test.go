@@ -102,7 +102,7 @@ func TestButton(t *testing.T) {
 	label := "Test Button"
 
 	value := builder.Button(label,
-		button.Disabled(true),
+		button.WithDisabled(true),
 	)
 
 	if value {

@@ -12,7 +12,7 @@ func (o optionsOption) Apply(opts *options.SelectboxOptions) {
 	opts.Options = []string(o)
 }
 
-func Options(options ...string) Option {
+func WithOptions(options ...string) Option {
 	return optionsOption(options)
 }
 
@@ -22,7 +22,7 @@ func (p placeholderOption) Apply(opts *options.SelectboxOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -32,7 +32,7 @@ func (d defaultValueOption) Apply(opts *options.SelectboxOptions) {
 	opts.DefaultValue = (*string)(&d)
 }
 
-func DefaultValue(defaultValue string) Option {
+func WithDefaultValue(defaultValue string) Option {
 	return defaultValueOption(defaultValue)
 }
 
@@ -42,7 +42,7 @@ func (r requiredOption) Apply(opts *options.SelectboxOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -52,7 +52,7 @@ func (d disabledOption) Apply(opts *options.SelectboxOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -62,6 +62,6 @@ func (f formatFuncOption) Apply(opts *options.SelectboxOptions) {
 	opts.FormatFunc = f
 }
 
-func FormatFunc(formatFunc func(string, int) string) Option {
+func WithFormatFunc(formatFunc func(string, int) string) Option {
 	return formatFuncOption(formatFunc)
 }

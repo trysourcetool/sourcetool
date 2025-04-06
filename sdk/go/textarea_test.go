@@ -152,15 +152,15 @@ func TestTextArea(t *testing.T) {
 	minLines := int32(3)
 
 	value := builder.TextArea(label,
-		textarea.DefaultValue(defaultValue),
-		textarea.Placeholder(placeholder),
-		textarea.Required(true),
-		textarea.Disabled(true),
-		textarea.MaxLength(maxLength),
-		textarea.MinLength(minLength),
-		textarea.MaxLines(maxLines),
-		textarea.MinLines(minLines),
-		textarea.AutoResize(false),
+		textarea.WithDefaultValue(defaultValue),
+		textarea.WithPlaceholder(placeholder),
+		textarea.WithRequired(true),
+		textarea.WithDisabled(true),
+		textarea.WithMaxLength(maxLength),
+		textarea.WithMinLength(minLength),
+		textarea.WithMaxLines(maxLines),
+		textarea.WithMinLines(minLines),
+		textarea.WithAutoResize(false),
 	)
 
 	if value != defaultValue {

@@ -134,12 +134,12 @@ func TestTextInput(t *testing.T) {
 	minLength := int32(10)
 
 	value := builder.TextInput(label,
-		textinput.DefaultValue(defaultValue),
-		textinput.Placeholder(placeholder),
-		textinput.Required(true),
-		textinput.Disabled(true),
-		textinput.MaxLength(maxLength),
-		textinput.MinLength(minLength),
+		textinput.WithDefaultValue(defaultValue),
+		textinput.WithPlaceholder(placeholder),
+		textinput.WithRequired(true),
+		textinput.WithDisabled(true),
+		textinput.WithMaxLength(maxLength),
+		textinput.WithMinLength(minLength),
 	)
 
 	if value != defaultValue {

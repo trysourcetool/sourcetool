@@ -14,8 +14,8 @@ import (
 
 func (b *uiBuilder) Table(data any, opts ...table.Option) table.Value {
 	tableOpts := &options.TableOptions{
-		OnSelect:     table.SelectionBehaviorIgnore.String(),
-		RowSelection: table.SelectionModeSingle.String(),
+		OnSelect:     table.OnSelectIgnore.String(),
+		RowSelection: table.RowSelectionSingle.String(),
 	}
 
 	for _, o := range opts {

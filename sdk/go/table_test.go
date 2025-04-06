@@ -36,8 +36,8 @@ func TestConvertStateToTableProto(t *testing.T) {
 		Data:         data,
 		Header:       "Test Table",
 		Description:  "Test Description",
-		OnSelect:     table.SelectionBehaviorRerun.String(),
-		RowSelection: table.SelectionModeSingle.String(),
+		OnSelect:     table.OnSelectRerun.String(),
+		RowSelection: table.RowSelectionSingle.String(),
 		Value: state.TableStateValue{
 			Selection: selection,
 		},
@@ -102,8 +102,8 @@ func TestConvertTableProtoToState(t *testing.T) {
 		Data:         dataBytes,
 		Header:       "Test Table",
 		Description:  "Test Description",
-		OnSelect:     table.SelectionBehaviorRerun.String(),
-		RowSelection: table.SelectionModeSingle.String(),
+		OnSelect:     table.OnSelectRerun.String(),
+		RowSelection: table.RowSelectionSingle.String(),
 		Value: &widgetv1.TableValue{
 			Selection: selection,
 		},
@@ -173,10 +173,10 @@ func TestTable(t *testing.T) {
 	description := "Test Description"
 
 	builder.Table(data,
-		table.Header(header),
-		table.Description(description),
-		table.OnSelect(table.SelectionBehaviorRerun),
-		table.RowSelection(table.SelectionModeSingle),
+		table.WithHeader(header),
+		table.WithDescription(description),
+		table.WithOnSelect(table.OnSelectRerun),
+		table.WithRowSelection(table.RowSelectionSingle),
 	)
 
 	messages := mockWS.Messages()
@@ -201,8 +201,8 @@ func TestTable(t *testing.T) {
 	}{
 		{"Header", state.Header, header},
 		{"Description", state.Description, description},
-		{"OnSelect", state.OnSelect, table.SelectionBehaviorRerun.String()},
-		{"RowSelection", state.RowSelection, table.SelectionModeSingle.String()},
+		{"OnSelect", state.OnSelect, table.OnSelectRerun.String()},
+		{"RowSelection", state.RowSelection, table.RowSelectionSingle.String()},
 	}
 
 	for _, tt := range tests {
@@ -250,11 +250,11 @@ func TestTable_DefaultValues(t *testing.T) {
 		t.Fatal("Table state not found")
 	}
 
-	if state.OnSelect != table.SelectionBehaviorIgnore.String() {
-		t.Errorf("Default OnSelect = %v, want %v", state.OnSelect, table.SelectionBehaviorIgnore)
+	if state.OnSelect != table.OnSelectIgnore.String() {
+		t.Errorf("Default OnSelect = %v, want %v", state.OnSelect, table.OnSelectIgnore)
 	}
-	if state.RowSelection != table.SelectionModeSingle.String() {
-		t.Errorf("Default RowSelection = %v, want %v", state.RowSelection, table.SelectionModeSingle)
+	if state.RowSelection != table.RowSelectionSingle.String() {
+		t.Errorf("Default RowSelection = %v, want %v", state.RowSelection, table.RowSelectionSingle)
 	}
 	if state.Header != "" {
 		t.Errorf("Default Header = %v, want empty string", state.Header)

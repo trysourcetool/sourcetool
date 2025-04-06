@@ -12,7 +12,7 @@ func (p placeholderOption) Apply(opts *options.TextInputOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -22,7 +22,7 @@ func (d defaultValueOption) Apply(opts *options.TextInputOptions) {
 	opts.DefaultValue = (*string)(&d)
 }
 
-func DefaultValue(value string) Option {
+func WithDefaultValue(value string) Option {
 	return defaultValueOption(value)
 }
 
@@ -32,7 +32,7 @@ func (r requiredOption) Apply(opts *options.TextInputOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -42,7 +42,7 @@ func (d disabledOption) Apply(opts *options.TextInputOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -52,7 +52,7 @@ func (m maxLengthOption) Apply(opts *options.TextInputOptions) {
 	opts.MaxLength = (*int32)(&m)
 }
 
-func MaxLength(length int32) Option {
+func WithMaxLength(length int32) Option {
 	return maxLengthOption(length)
 }
 
@@ -62,6 +62,6 @@ func (m minLengthOption) Apply(opts *options.TextInputOptions) {
 	opts.MinLength = (*int32)(&m)
 }
 
-func MinLength(length int32) Option {
+func WithMinLength(length int32) Option {
 	return minLengthOption(length)
 }

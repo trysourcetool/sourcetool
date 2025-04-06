@@ -16,7 +16,7 @@ func (p placeholderOption) Apply(opts *options.TimeInputOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -26,7 +26,7 @@ func (d defaultValueOption) Apply(opts *options.TimeInputOptions) {
 	opts.DefaultValue = (*time.Time)(&d)
 }
 
-func DefaultValue(value time.Time) Option {
+func WithDefaultValue(value time.Time) Option {
 	return defaultValueOption(value)
 }
 
@@ -36,7 +36,7 @@ func (r requiredOption) Apply(opts *options.TimeInputOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -46,7 +46,7 @@ func (d disabledOption) Apply(opts *options.TimeInputOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -56,6 +56,6 @@ func (l locationOption) Apply(opts *options.TimeInputOptions) {
 	opts.Location = (*time.Location)(&l)
 }
 
-func Location(location time.Location) Option {
+func WithLocation(location time.Location) Option {
 	return locationOption(location)
 }
