@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Deployment Guide
 
-This guide will help you deploy SourceTool in your environment using Docker. The deployment process is straightforward and requires minimal setup.
+This guide will help you deploy Sourcetool in your environment using Docker. The deployment process is straightforward and requires minimal setup.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide will help you deploy SourceTool in your environment using Docker. The
 
 ## Infrastructure Requirements
 
-SourceTool requires the following infrastructure:
+Sourcetool requires the following infrastructure:
 
 - PostgreSQL database (version 15)
 - Redis (version 7)
