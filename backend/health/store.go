@@ -2,12 +2,9 @@ package health
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/redis/go-redis/v9"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
 )

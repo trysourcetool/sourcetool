@@ -9,11 +9,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 )
 
-type RedisClient interface {
-	Ping(ctx context.Context) error
-	Close() error
-}
-
 type RedisClientCE struct {
 	client *redis.Client
 }
