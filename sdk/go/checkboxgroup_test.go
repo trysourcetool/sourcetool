@@ -126,10 +126,10 @@ func TestCheckboxGroup(t *testing.T) {
 	defaultValue := []string{"Option 1", "Option 3"}
 
 	value := builder.CheckboxGroup(label,
-		checkboxgroup.Options(options...),
-		checkboxgroup.DefaultValue(defaultValue...),
-		checkboxgroup.Required(true),
-		checkboxgroup.Disabled(true),
+		checkboxgroup.WithOptions(options...),
+		checkboxgroup.WithDefaultValue(defaultValue...),
+		checkboxgroup.WithRequired(true),
+		checkboxgroup.WithDisabled(true),
 	)
 
 	if value == nil {
@@ -204,8 +204,8 @@ func TestCheckboxGroup_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.CheckboxGroup(label,
-		checkboxgroup.Options(options...),
-		checkboxgroup.FormatFunc(formatFunc),
+		checkboxgroup.WithOptions(options...),
+		checkboxgroup.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeCheckboxGroup, []int{0})

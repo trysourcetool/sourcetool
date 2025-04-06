@@ -135,12 +135,12 @@ func TestNumberInput(t *testing.T) {
 	minValue := 0.0
 
 	value := builder.NumberInput(label,
-		numberinput.DefaultValue(defaultValue),
-		numberinput.Placeholder(placeholder),
-		numberinput.Required(true),
-		numberinput.Disabled(true),
-		numberinput.MaxValue(maxValue),
-		numberinput.MinValue(minValue),
+		numberinput.WithDefaultValue(defaultValue),
+		numberinput.WithPlaceholder(placeholder),
+		numberinput.WithRequired(true),
+		numberinput.WithDisabled(true),
+		numberinput.WithMaxValue(maxValue),
+		numberinput.WithMinValue(minValue),
 	)
 
 	if value == nil {

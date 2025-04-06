@@ -168,7 +168,7 @@ func TestColumns_WithWeight(t *testing.T) {
 	weights := []int{2, 1, 1}
 	totalWeight := 4
 
-	builders := builder.Columns(cols, columns.Weight(weights...))
+	builders := builder.Columns(cols, columns.WithWeight(weights...))
 
 	if builders == nil {
 		t.Fatal("Columns returned nil")
@@ -230,7 +230,7 @@ func TestColumns_InvalidInput(t *testing.T) {
 			if tt.weights == nil {
 				builders = builder.Columns(tt.cols)
 			} else {
-				builders = builder.Columns(tt.cols, columns.Weight(tt.weights...))
+				builders = builder.Columns(tt.cols, columns.WithWeight(tt.weights...))
 			}
 
 			if tt.cols <= 0 && builders != nil {

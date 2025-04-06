@@ -12,7 +12,7 @@ func (b buttonDisabledOption) Apply(opts *options.FormOptions) {
 	opts.ButtonDisabled = bool(b)
 }
 
-func ButtonDisabled(buttonDisabled bool) Option {
+func WithButtonDisabled(buttonDisabled bool) Option {
 	return buttonDisabledOption(buttonDisabled)
 }
 
@@ -22,6 +22,6 @@ func (c clearOnSubmitOption) Apply(opts *options.FormOptions) {
 	opts.ClearOnSubmit = bool(c)
 }
 
-func ClearOnSubmit(clearOnSubmit bool) Option {
+func WithClearOnSubmit(clearOnSubmit bool) Option {
 	return clearOnSubmitOption(clearOnSubmit)
 }

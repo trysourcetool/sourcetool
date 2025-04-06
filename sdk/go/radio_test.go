@@ -124,9 +124,9 @@ func TestRadio(t *testing.T) {
 	defaultValue := "Option 1"
 
 	value := builder.Radio(label,
-		radio.Options(options...),
-		radio.DefaultValue(defaultValue),
-		radio.Required(true),
+		radio.WithOptions(options...),
+		radio.WithDefaultValue(defaultValue),
+		radio.WithRequired(true),
 	)
 
 	if value == nil {
@@ -200,8 +200,8 @@ func TestRadio_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.Radio(label,
-		radio.Options(options...),
-		radio.FormatFunc(formatFunc),
+		radio.WithOptions(options...),
+		radio.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeRadio, []int{0})

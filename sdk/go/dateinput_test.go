@@ -161,14 +161,14 @@ func TestDateInput(t *testing.T) {
 	location := *time.UTC
 
 	value := builder.DateInput(label,
-		dateinput.DefaultValue(now),
-		dateinput.Placeholder(placeholder),
-		dateinput.Required(true),
-		dateinput.Disabled(true),
-		dateinput.Format(format),
-		dateinput.MaxValue(maxDate),
-		dateinput.MinLength(minDate),
-		dateinput.Location(location),
+		dateinput.WithDefaultValue(now),
+		dateinput.WithPlaceholder(placeholder),
+		dateinput.WithRequired(true),
+		dateinput.WithDisabled(true),
+		dateinput.WithFormat(format),
+		dateinput.WithMaxValue(maxDate),
+		dateinput.WithMinValue(minDate),
+		dateinput.WithLocation(location),
 	)
 
 	if value == nil {

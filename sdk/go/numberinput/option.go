@@ -12,7 +12,7 @@ func (p placeholderOption) Apply(opts *options.NumberInputOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -22,7 +22,7 @@ func (d defaultValueOption) Apply(opts *options.NumberInputOptions) {
 	opts.DefaultValue = (*float64)(&d)
 }
 
-func DefaultValue(value float64) Option {
+func WithDefaultValue(value float64) Option {
 	return defaultValueOption(value)
 }
 
@@ -32,7 +32,7 @@ func (r requiredOption) Apply(opts *options.NumberInputOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -42,7 +42,7 @@ func (d disabledOption) Apply(opts *options.NumberInputOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -52,7 +52,7 @@ func (m maxValueOption) Apply(opts *options.NumberInputOptions) {
 	opts.MaxValue = (*float64)(&m)
 }
 
-func MaxValue(value float64) Option {
+func WithMaxValue(value float64) Option {
 	return maxValueOption(value)
 }
 
@@ -62,6 +62,6 @@ func (m minValueOption) Apply(opts *options.NumberInputOptions) {
 	opts.MinValue = (*float64)(&m)
 }
 
-func MinValue(value float64) Option {
+func WithMinValue(value float64) Option {
 	return minValueOption(value)
 }

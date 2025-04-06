@@ -131,11 +131,11 @@ func TestMultiSelect(t *testing.T) {
 	placeholder := "Select options"
 
 	value := builder.MultiSelect(label,
-		multiselect.Options(options...),
-		multiselect.DefaultValue(defaultValue...),
-		multiselect.Placeholder(placeholder),
-		multiselect.Required(true),
-		multiselect.Disabled(true),
+		multiselect.WithOptions(options...),
+		multiselect.WithDefaultValue(defaultValue...),
+		multiselect.WithPlaceholder(placeholder),
+		multiselect.WithRequired(true),
+		multiselect.WithDisabled(true),
 	)
 
 	if value == nil {
@@ -211,8 +211,8 @@ func TestMultiSelect_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.MultiSelect(label,
-		multiselect.Options(options...),
-		multiselect.FormatFunc(formatFunc),
+		multiselect.WithOptions(options...),
+		multiselect.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeMultiSelect, []int{0})

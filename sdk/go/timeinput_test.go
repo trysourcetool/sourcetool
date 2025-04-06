@@ -142,11 +142,11 @@ func TestTimeInput(t *testing.T) {
 	location := *time.UTC
 
 	value := builder.TimeInput(label,
-		timeinput.DefaultValue(now),
-		timeinput.Placeholder(placeholder),
-		timeinput.Required(true),
-		timeinput.Disabled(true),
-		timeinput.Location(location),
+		timeinput.WithDefaultValue(now),
+		timeinput.WithPlaceholder(placeholder),
+		timeinput.WithRequired(true),
+		timeinput.WithDisabled(true),
+		timeinput.WithLocation(location),
 	)
 
 	if value == nil {

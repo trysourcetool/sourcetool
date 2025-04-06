@@ -12,7 +12,7 @@ func (d defaultValueOption) Apply(opts *options.CheckboxOptions) {
 	opts.DefaultValue = bool(d)
 }
 
-func DefaultValue(defaultValue bool) Option {
+func WithDefaultValue(defaultValue bool) Option {
 	return defaultValueOption(defaultValue)
 }
 
@@ -22,7 +22,7 @@ func (r requiredOption) Apply(opts *options.CheckboxOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -32,6 +32,6 @@ func (d disabledOption) Apply(opts *options.CheckboxOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }

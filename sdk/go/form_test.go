@@ -168,8 +168,8 @@ func TestForm_WithOptions(t *testing.T) {
 
 	buttonLabel := "Submit"
 	childBuilder, submitted := builder.Form(buttonLabel,
-		form.ButtonDisabled(true),
-		form.ClearOnSubmit(true),
+		form.WithButtonDisabled(true),
+		form.WithClearOnSubmit(true),
 	)
 
 	if childBuilder == nil {
