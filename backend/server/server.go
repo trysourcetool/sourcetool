@@ -57,12 +57,7 @@ func New(d *infra.Dependency) *Server {
 		ws.NewServiceCE(d),
 	)
 	
-	healthService := health.NewServiceCE(
-		d.Store.DB(),
-		config.Config.Redis.Host,
-		config.Config.Redis.Port,
-		config.Config.Redis.Password,
-	)
+	healthService := health.NewServiceCE(d)
 	healthHandler := httphandlers.NewHealthHandler(healthService)
 
 	return &Server{

@@ -7,6 +7,9 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/infra"
 )
 
 type Status string
@@ -20,26 +23,6 @@ type Service interface {
 	Check(ctx context.Context) (*HealthStatus, error)
 }
 
-type Store interface {
-	DB() *sqlx.DB
-	Config() StoreConfig
-}
-
-type StoreConfig interface {
-	GetRedisConfig() RedisConfig
-}
-
-type RedisConfig interface {
-	GetHost() string
-	GetPort() string
-	GetPassword() string
-}
-
-type ServiceCE struct {
-	store     Store
-	startTime time.Time
-}
-
 type HealthStatus struct {
 	Status    Status            `json:"status"`
 	Version   string            `json:"version"`
@@ -48,53 +31,16 @@ type HealthStatus struct {
 	Details   map[string]Status `json:"details"`
 }
 
-func NewServiceCE(db *sqlx.DB, redisHost, redisPort, redisPassword string) *ServiceCE {
+type ServiceCE struct {
+	*infra.Dependency
+	startTime time.Time
+}
+
+func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 	return &ServiceCE{
-		store: &storeAdapter{
-			db: db,
-			config: &configAdapter{
-				redisHost:     redisHost,
-				redisPort:     redisPort,
-				redisPassword: redisPassword,
-			},
-		},
-		startTime: time.Now(),
+		Dependency: dep,
+		startTime:  time.Now(),
 	}
-}
-
-type storeAdapter struct {
-	db     *sqlx.DB
-	config StoreConfig
-}
-
-func (s *storeAdapter) DB() *sqlx.DB {
-	return s.db
-}
-
-func (s *storeAdapter) Config() StoreConfig {
-	return s.config
-}
-
-type configAdapter struct {
-	redisHost     string
-	redisPort     string
-	redisPassword string
-}
-
-func (c *configAdapter) GetRedisConfig() RedisConfig {
-	return c
-}
-
-func (c *configAdapter) GetHost() string {
-	return c.redisHost
-}
-
-func (c *configAdapter) GetPort() string {
-	return c.redisPort
-}
-
-func (c *configAdapter) GetPassword() string {
-	return c.redisPassword
 }
 
 func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
@@ -122,20 +68,22 @@ func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
 }
 
 func (s *ServiceCE) checkPostgres(ctx context.Context) Status {
-	if err := s.store.DB().PingContext(ctx); err != nil {
-		return StatusDown
+	if db, ok := s.Store.(interface{ DB() *sqlx.DB }); ok {
+		if err := db.DB().PingContext(ctx); err != nil {
+			return StatusDown
+		}
+		return StatusUp
 	}
-	return StatusUp
+	return StatusDown
 }
 
 func (s *ServiceCE) checkRedis(ctx context.Context) Status {
-	redisConfig := s.store.Config().GetRedisConfig()
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", redisConfig.GetHost(), redisConfig.GetPort()),
-		Password: redisConfig.GetPassword(),
+		Addr:     fmt.Sprintf("%s:%s", config.Config.Redis.Host, config.Config.Redis.Port),
+		Password: config.Config.Redis.Password,
 	})
 	defer client.Close()
-
+	
 	if err := client.Ping(ctx).Err(); err != nil {
 		return StatusDown
 	}
