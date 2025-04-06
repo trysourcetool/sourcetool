@@ -17,10 +17,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/health"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/organization"
 	"github.com/trysourcetool/sourcetool/backend/page"
+	"github.com/trysourcetool/sourcetool/backend/postgres"
 	httpserver "github.com/trysourcetool/sourcetool/backend/server/http"
 	httphandlers "github.com/trysourcetool/sourcetool/backend/server/http/handlers"
 	wsserver "github.com/trysourcetool/sourcetool/backend/server/ws"
@@ -105,6 +107,12 @@ func (s *Server) router() chi.Router {
 
 	r.Mount("/ws", s.wsRouter.Build())
 	r.Mount("/api", s.httpRouter.Build())
+
+	db, err := postgres.New()
+	if err == nil {
+		healthService := health.NewServiceCE(db)
+		r.Get("/health", httphandlers.NewHealthHandler(healthService).Check)
+	}
 
 	staticDir := os.Getenv("STATIC_FILES_DIR")
 	ServeStaticFiles(r, staticDir)
