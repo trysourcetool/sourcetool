@@ -30,10 +30,10 @@ func NewServiceCE(dep *infra.Dependency) *ServiceCE {
 }
 
 func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
-	details := make(map[string]dto.HealthStatus)
-
-	details["postgres"] = s.checkPostgres(ctx)
-	details["redis"] = s.checkRedis(ctx)
+	details, err := s.Store.Health().Ping(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	overallStatus := dto.HealthStatusUp
 	for _, status := range details {
@@ -49,27 +49,4 @@ func (s *ServiceCE) Check(ctx context.Context) (*dto.Health, error) {
 		Timestamp: time.Now().UTC(),
 		Details:   details,
 	}, nil
-}
-
-func (s *ServiceCE) checkPostgres(ctx context.Context) dto.HealthStatus {
-	if db, ok := s.Store.(interface{ DB() *sqlx.DB }); ok {
-		if err := db.DB().PingContext(ctx); err != nil {
-			return dto.HealthStatusDown
-		}
-		return dto.HealthStatusUp
-	}
-	return dto.HealthStatusDown
-}
-
-func (s *ServiceCE) checkRedis(ctx context.Context) dto.HealthStatus {
-	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.Config.Redis.Host, config.Config.Redis.Port),
-		Password: config.Config.Redis.Password,
-	})
-	defer client.Close()
-	
-	if err := client.Ping(ctx).Err(); err != nil {
-		return dto.HealthStatusDown
-	}
-	return dto.HealthStatusUp
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/health"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -82,6 +83,10 @@ func (s *storeCE) User() model.UserStore {
 	return user.NewStoreCE(infra.NewQueryLogger(s.db))
 }
 
+func (s *storeCE) Health() model.HealthStore {
+	return health.NewStoreCE(infra.NewQueryLogger(s.db))
+}
+
 type transactionCE struct {
 	db *sqlx.Tx
 }
@@ -116,4 +121,8 @@ func (t *transactionCE) Session() model.SessionStore {
 
 func (t *transactionCE) User() model.UserStore {
 	return user.NewStoreCE(infra.NewQueryLogger(t.db))
+}
+
+func (t *transactionCE) Health() model.HealthStore {
+	return health.NewStoreCE(infra.NewQueryLogger(t.db))
 }

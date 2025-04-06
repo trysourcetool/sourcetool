@@ -15,6 +15,7 @@ type ModelStore interface {
 	APIKey() model.APIKeyStore
 	Environment() model.EnvironmentStore
 	Group() model.GroupStore
+	Health() model.HealthStore
 	HostInstance() model.HostInstanceStore
 	Organization() model.OrganizationStore
 	Page() model.PageStore
