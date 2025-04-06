@@ -17,6 +17,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/health"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/organization"
@@ -55,8 +56,15 @@ func New(d *infra.Dependency) *Server {
 		},
 		ws.NewServiceCE(d),
 	)
-	healthHandler := httphandlers.NewHealthHandler(d.Health)
 	
+	healthService := health.NewServiceCE(
+		d.Store.DB(),
+		config.Config.Redis.Host,
+		config.Config.Redis.Port,
+		config.Config.Redis.Password,
+	)
+	healthHandler := httphandlers.NewHealthHandler(healthService)
+
 	return &Server{
 		wsRouter: wsserver.NewRouter(wsMiddle, wsHandler),
 		httpRouter: httpserver.NewRouter(

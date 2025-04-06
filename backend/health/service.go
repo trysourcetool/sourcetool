@@ -7,14 +7,12 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
-
-	"github.com/trysourcetool/sourcetool/backend/infra"
 )
 
 type Status string
 
 const (
-	StatusUp Status = "up"
+	StatusUp   Status = "up"
 	StatusDown Status = "down"
 )
 
@@ -22,8 +20,23 @@ type Service interface {
 	Check(ctx context.Context) (*HealthStatus, error)
 }
 
+type Store interface {
+	DB() *sqlx.DB
+	Config() StoreConfig
+}
+
+type StoreConfig interface {
+	GetRedisConfig() RedisConfig
+}
+
+type RedisConfig interface {
+	GetHost() string
+	GetPort() string
+	GetPassword() string
+}
+
 type ServiceCE struct {
-	dep       *infra.Dependency
+	store     Store
 	startTime time.Time
 }
 
@@ -35,20 +48,62 @@ type HealthStatus struct {
 	Details   map[string]Status `json:"details"`
 }
 
-func NewServiceCE(dep *infra.Dependency) *ServiceCE {
+func NewServiceCE(db *sqlx.DB, redisHost, redisPort, redisPassword string) *ServiceCE {
 	return &ServiceCE{
-		dep:       dep,
+		store: &storeAdapter{
+			db: db,
+			config: &configAdapter{
+				redisHost:     redisHost,
+				redisPort:     redisPort,
+				redisPassword: redisPassword,
+			},
+		},
 		startTime: time.Now(),
 	}
 }
 
+type storeAdapter struct {
+	db     *sqlx.DB
+	config StoreConfig
+}
+
+func (s *storeAdapter) DB() *sqlx.DB {
+	return s.db
+}
+
+func (s *storeAdapter) Config() StoreConfig {
+	return s.config
+}
+
+type configAdapter struct {
+	redisHost     string
+	redisPort     string
+	redisPassword string
+}
+
+func (c *configAdapter) GetRedisConfig() RedisConfig {
+	return c
+}
+
+func (c *configAdapter) GetHost() string {
+	return c.redisHost
+}
+
+func (c *configAdapter) GetPort() string {
+	return c.redisPort
+}
+
+func (c *configAdapter) GetPassword() string {
+	return c.redisPassword
+}
+
 func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
 	details := make(map[string]Status)
-	
+
 	details["postgres"] = s.checkPostgres(ctx)
-	
+
 	details["redis"] = s.checkRedis(ctx)
-	
+
 	overallStatus := StatusUp
 	for _, status := range details {
 		if status == StatusDown {
@@ -56,7 +111,7 @@ func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
 			break
 		}
 	}
-	
+
 	return &HealthStatus{
 		Status:    overallStatus,
 		Version:   "1.0", // Using the version from Swagger docs
@@ -67,19 +122,20 @@ func (s *ServiceCE) Check(ctx context.Context) (*HealthStatus, error) {
 }
 
 func (s *ServiceCE) checkPostgres(ctx context.Context) Status {
-	if err := s.dep.Store.DB().PingContext(ctx); err != nil {
+	if err := s.store.DB().PingContext(ctx); err != nil {
 		return StatusDown
 	}
 	return StatusUp
 }
 
 func (s *ServiceCE) checkRedis(ctx context.Context) Status {
+	redisConfig := s.store.Config().GetRedisConfig()
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", s.dep.Store.Config().Redis.Host, s.dep.Store.Config().Redis.Port),
-		Password: s.dep.Store.Config().Redis.Password,
+		Addr:     fmt.Sprintf("%s:%s", redisConfig.GetHost(), redisConfig.GetPort()),
+		Password: redisConfig.GetPassword(),
 	})
 	defer client.Close()
-	
+
 	if err := client.Ping(ctx).Err(); err != nil {
 		return StatusDown
 	}
@@ -92,7 +148,7 @@ func formatUptime(d time.Duration) string {
 	hours := int(d.Hours()) % 24
 	minutes := int(d.Minutes()) % 60
 	seconds := int(d.Seconds()) % 60
-	
+
 	if days > 0 {
 		return fmt.Sprintf("%dd %dh %dm %ds", days, hours, minutes, seconds)
 	}
