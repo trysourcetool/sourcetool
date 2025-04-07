@@ -275,89 +275,6 @@ func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// SignInWithGoogle godoc
-// @ID signin-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SignInWithGoogleRequest true " "
-// @Success 200 {object} responses.SignInWithGoogleResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/oauth/google/signin [post].
-func (h *UserHandler) SignInWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var req requests.SignInWithGoogleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SignInWithGoogle(r.Context(), adapters.SignInWithGoogleRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if !out.IsOrganizationExists {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SignInWithGoogleOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SignUpWithGoogle godoc
-// @ID signup-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SignUpWithGoogleRequest true " "
-// @Success 200 {object} responses.StatusResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/oauth/google/signup [post].
-func (h *UserHandler) SignUpWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var req requests.SignUpWithGoogleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SignUpWithGoogle(r.Context(), adapters.SignUpWithGoogleRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-	} else {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.SecretExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
-			config.Config.BaseDomain)
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
-		Code:    http.StatusOK,
-		Message: "Successfully signed up with Google",
-	}); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
 // RefreshToken godoc
 // @ID refresh-token
 // @Accept json
@@ -588,17 +505,7 @@ func (h *UserHandler) RequestGoogleAuthLink(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// AuthenticateWithGoogle handles the callback from the frontend after Google OAuth.
-// It exchanges the code for tokens and authenticates the user, returning temporary credentials if user exists,
-// or registration details if the user is new.
-// @ID authenticate-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.AuthenticateWithGoogleRequest true "Google OAuth code and state"
-// @Success 200 {object} responses.AuthenticateWithGoogleResponse // Includes temp tokens/authURL or registration details
-// @Failure default {object} errdefs.Error
-// @Router /auth/google/authenticate [post]
+// @Router /auth/google/authenticate [post].
 func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -628,17 +535,7 @@ func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// RegisterWithGoogle handles the callback from the frontend after Google OAuth.
-// It exchanges the code for tokens and registers the user, returning temporary credentials if user exists,
-// or registration details if the user is new.
-// @ID register-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.RegisterWithGoogleRequest true "Google OAuth code and state"
-// @Success 200 {object} responses.RegisterWithGoogleResponse // Includes temp tokens/authURL or registration details
-// @Failure default {object} errdefs.Error
-// @Router /auth/google/register [post]
+// @Router /auth/google/register [post].
 func (h *UserHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	// Alias the library
+
+	// Alias the library.
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
@@ -64,9 +65,6 @@ type Service interface {
 	ResendInvitation(context.Context, dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error)
 
 	// Google OAuth methods
-	GetGoogleAuthCodeURL(context.Context) (*dto.GetGoogleAuthCodeURLOutput, error)
-	SignInWithGoogle(context.Context, dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error)
-	SignUpWithGoogle(context.Context, dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error)
 	GetGoogleAuthCodeURLInvitation(context.Context, dto.GetGoogleAuthCodeURLInvitationInput) (*dto.GetGoogleAuthCodeURLInvitationOutput, error)
 	SignInWithGoogleInvitation(context.Context, dto.SignInWithGoogleInvitationInput) (*dto.SignInWithGoogleInvitationOutput, error)
 	SignUpWithGoogleInvitation(context.Context, dto.SignUpWithGoogleInvitationInput) (*dto.SignUpWithGoogleInvitationOutput, error)
@@ -603,122 +601,6 @@ func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model
 
 	return s.getOrganizationBySubdomain(ctx, u, subdomain)
 }
-func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
-	// Parse and validate the Google auth request token
-	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
-	googleAuthReqID, err := uuid.FromString(googleAuthReqClaims.GoogleAuthRequestID)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	// Get and validate the Google auth request
-	googleAuthReq, err := s.Store.User().GetGoogleAuthRequest(ctx, googleAuthReqID)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.Store.User().DeleteGoogleAuthRequest(ctx, googleAuthReq); err != nil {
-		return nil, err
-	}
-
-	if time.Now().After(googleAuthReq.ExpiresAt) {
-		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
-	}
-
-	// Get the user by email
-	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(googleAuthReq.Email))
-	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
-	}
-
-	// Get current subdomain and resolve organization access
-	subdomain := ctxutil.Subdomain(ctx)
-	var org *model.Organization
-	var orgAccess *model.UserOrganizationAccess
-	var orgSubdomain string
-
-	// Handle organization lookup based on edition and subdomain
-	if config.Config.IsCloudEdition {
-		if subdomain != "auth" {
-			// For specific organization subdomain, verify user has access
-			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
-			if err != nil {
-				return nil, err
-			}
-			orgSubdomain = subdomain
-		} else {
-			// For auth subdomain, get user's first organization access
-			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
-				storeopts.UserOrganizationAccessByUserID(u.ID),
-				storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
-
-			if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
-				return nil, err
-			}
-
-			if orgAccess != nil {
-				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
-				if err != nil {
-					return nil, err
-				}
-				orgSubdomain = conv.SafeValue(org.Subdomain)
-			} else {
-				orgSubdomain = "auth"
-			}
-		}
-	} else {
-		// Self-hosted edition - get the user's organization
-		_, orgAccess, err = s.getOrganizationInfo(ctx, u)
-		if err != nil {
-			if !errdefs.IsUserOrganizationAccessNotFound(err) {
-				return nil, err
-			}
-			// If no organization access found, continue with nil orgAccess
-		}
-	}
-
-	// Generate token and secret
-	now := time.Now()
-	expiresAt := now.Add(model.TokenExpiration())
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
-	if err != nil {
-		return nil, err
-	}
-
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	// Update user's secret
-	u.Secret = hashedSecret
-
-	authURL, err := buildSaveAuthURL(orgSubdomain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Save changes
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().Update(ctx, u)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignInWithGoogleOutput{
-		AuthURL:              authURL,
-		Token:                token,
-		Secret:               plainSecret,
-		XSRFToken:            xsrfToken,
-		IsOrganizationExists: orgAccess != nil,
-		Domain:               config.Config.OrgDomain(orgSubdomain),
-	}, nil
-}
 
 // validateSelfHostedOrganization checks if creating a new organization is allowed in self-hosted mode.
 func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
@@ -792,84 +674,6 @@ func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, 
 	}
 
 	return nil
-}
-
-func (s *ServiceCE) SignUpWithGoogle(ctx context.Context, in dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error) {
-	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
-	googleAuthReqID, err := uuid.FromString(googleAuthReqClaims.GoogleAuthRequestID)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	googleAuthReq, err := s.Store.User().GetGoogleAuthRequest(ctx, googleAuthReqID)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.Store.User().DeleteGoogleAuthRequest(ctx, googleAuthReq); err != nil {
-		return nil, err
-	}
-
-	if time.Now().After(googleAuthReq.ExpiresAt) {
-		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
-	}
-
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(googleAuthReq.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	now := time.Now()
-	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                googleAuthReq.Email,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-		GoogleID:             googleAuthReq.GoogleID,
-	}
-
-	var token string
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().Create(ctx, u); err != nil {
-			return err
-		}
-
-		if !config.Config.IsCloudEdition {
-			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
-				return err
-			}
-			expiresAt := now.Add(model.TokenExpiration())
-			token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
-		} else {
-			expiresAt := now.Add(model.TmpTokenExpiration)
-			token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
-		}
-		if err != nil {
-			return err
-		}
-
-		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignUpWithGoogleOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-	}, nil
 }
 
 func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error) {
@@ -1099,44 +903,6 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 
 	return &dto.InviteUsersOutput{
 		UserInvitations: usersInvitationsOut,
-	}, nil
-}
-
-func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAuthCodeURLOutput, error) {
-	// Check self-hosted organization restriction
-	if err := s.validateSelfHostedOrganization(ctx); err != nil {
-		return nil, err
-	}
-
-	state := uuid.Must(uuid.NewV4())
-	googleOAuthClient := newGoogleOAuthClient()
-	url, err := googleOAuthClient.getGoogleAuthCodeURL(ctx, state.String())
-	if err != nil {
-		return nil, err
-	}
-
-	googleAuthReqs, err := s.Store.User().ListExpiredGoogleAuthRequests(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().BulkDeleteGoogleAuthRequests(ctx, googleAuthReqs); err != nil {
-			return err
-		}
-
-		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
-			ID:        state,
-			Domain:    config.Config.OrgHostname("auth"),
-			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
-			Invited:   false,
-		})
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.GetGoogleAuthCodeURLOutput{
-		URL: url,
 	}, nil
 }
 
