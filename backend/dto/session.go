@@ -9,7 +9,7 @@ type Session struct {
 	ID             string
 	OrganizationID string
 	UserID         string
-	PageID         string
+	APIKeyID       string
 	HostInstanceID string
 	CreatedAt      int64
 	UpdatedAt      int64
@@ -25,7 +25,7 @@ func SessionFromModel(session *model.Session) *Session {
 		ID:             session.ID.String(),
 		OrganizationID: session.OrganizationID.String(),
 		UserID:         session.UserID.String(),
-		PageID:         session.PageID.String(),
+		APIKeyID:       session.APIKeyID.String(),
 		HostInstanceID: session.HostInstanceID.String(),
 		CreatedAt:      session.CreatedAt.Unix(),
 		UpdatedAt:      session.UpdatedAt.Unix(),
