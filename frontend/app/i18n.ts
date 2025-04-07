@@ -4,7 +4,6 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { CONSTANTS } from './constants';
 import commonEn from './locales/en/common.json';
-import commonJa from './locales/ja/common.json';
 // don't want to use this?
 // have a look at the Quick start guide
 // for passing in lng and translations on init
@@ -25,9 +24,6 @@ i18n
     resources: {
       en: {
         common: commonEn,
-      },
-      ja: {
-        common: commonJa,
       },
     },
     interpolation: {
