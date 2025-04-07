@@ -241,36 +241,6 @@ type GetGoogleAuthCodeURLInvitationOutput struct {
 	URL string
 }
 
-// SignInWithGoogleInvitationInput is the input for Sign In With Google Invitation operation.
-type SignInWithGoogleInvitationInput struct {
-	SessionToken string
-}
-
-// SignInWithGoogleInvitationOutput is the output for Sign In With Google Invitation operation.
-type SignInWithGoogleInvitationOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
-}
-
-// SignUpWithGoogleInvitationInput is the input for Sign Up With Google Invitation operation.
-type SignUpWithGoogleInvitationInput struct {
-	SessionToken string
-	FirstName    string
-	LastName     string
-}
-
-// SignUpWithGoogleInvitationOutput is the output for Sign Up With Google Invitation operation.
-type SignUpWithGoogleInvitationOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
-}
-
 // SignOutOutput is the output for Sign Out operation.
 type SignOutOutput struct {
 	Domain string
