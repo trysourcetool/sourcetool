@@ -128,14 +128,14 @@ export const useAuth = () => {
     if (ENVIRONMENTS.IS_CLOUD_EDITION) {
       if (!subDomain) {
         window.location.replace(
-          `${window.location.protocol}//auth.${window.location.host}/signin`,
+          `${window.location.protocol}//auth.${window.location.host}/login`,
         );
       } else if (subDomain && subDomain !== 'auth') {
         window.location.replace(
           `${window.location.protocol}//${window.location.host.replace(
             subDomain,
             'auth',
-          )}/signin`,
+          )}/login`,
         );
       }
     }

@@ -40,13 +40,13 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
       pathname.startsWith('/signup') ||
       pathname.startsWith('/organizations/new')
     ) {
-      navigate($path('/signin'));
+      navigate($path('/login'));
       checkComplete();
       return;
     }
     if (account?.organization) {
       if (
-        pathname.startsWith('/signin') ||
+        pathname.startsWith('/login') ||
         pathname.startsWith('/users/invitation') ||
         pathname.startsWith('/resetPassword')
       ) {
@@ -82,7 +82,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
       pathname.startsWith('/environments') ||
       pathname.startsWith('/onboarding')
     ) {
-      navigate($path('/signin'));
+      navigate($path('/login'));
       checkComplete();
       return;
     }

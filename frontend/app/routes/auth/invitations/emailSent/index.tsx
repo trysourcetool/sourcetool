@@ -47,13 +47,13 @@ export default function InvitationEmailSent() {
       )
     ) {
       toast({
-        title: t('routes_signin_email_sent_resend_success'),
-        description: t('routes_signin_email_sent_resend_success_description'),
+        title: t('routes_login_email_sent_resend_success'),
+        description: t('routes_login_email_sent_resend_success_description'),
       });
     } else {
       toast({
-        title: t('routes_signin_toast_failed'),
-        description: t('routes_signin_toast_failed_description'),
+        title: t('routes_login_toast_failed'),
+        description: t('routes_login_toast_failed_description'),
         variant: 'destructive',
       });
     }
@@ -64,26 +64,26 @@ export default function InvitationEmailSent() {
       <Card className="flex w-full max-w-[384px] flex-col gap-4 p-6">
         <CardHeader className="space-y-6 p-0">
           <CardTitle className="text-2xl font-semibold text-foreground">
-            {t('routes_signin_email_sent_title')}
+            {t('routes_login_email_sent_title')}
           </CardTitle>
           <div className="flex items-center gap-3 rounded-md border border-border p-3">
             <Mail className="h-5 w-5" />
             <CardDescription className="flex-1 text-sm text-muted-foreground">
-              {t('routes_signin_email_sent_description')}{' '}
+              {t('routes_login_email_sent_description')}{' '}
               <span className="font-medium text-foreground">{email}</span>
             </CardDescription>
           </div>
         </CardHeader>
 
         <p className="text-center text-xs font-normal text-muted-foreground">
-          {t('routes_signin_email_sent_resend_text')}{' '}
+          {t('routes_login_email_sent_resend_text')}{' '}
           <button
             type="button"
             onClick={handleResendEmail}
             disabled={isRequestInvitationMagicLinkWaiting}
             className="cursor-pointer underline"
           >
-            {t('routes_signin_email_sent_resend_button')}
+            {t('routes_login_email_sent_resend_button')}
           </button>
         </p>
       </Card>
@@ -96,7 +96,7 @@ export default function InvitationEmailSent() {
         }
       >
         <ArrowLeft className="h-4 w-4" />
-        {t('routes_signin_email_sent_back')}
+        {t('routes_login_email_sent_back')}
       </Button>
     </div>
   );
