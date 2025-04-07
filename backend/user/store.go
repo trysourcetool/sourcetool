@@ -67,7 +67,6 @@ func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOption) 
 		`u."first_name"`,
 		`u."last_name"`,
 		`u."updated_at"`,
-		`u."password"`,
 		`u."secret"`,
 		`u."google_id"`,
 	).
@@ -93,7 +92,6 @@ func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
 			`"email"`,
 			`"first_name"`,
 			`"last_name"`,
-			`"password"`,
 			`"secret"`,
 			`"google_id"`,
 		).
@@ -102,7 +100,6 @@ func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
 			m.Email,
 			m.FirstName,
 			m.LastName,
-			m.Password,
 			m.Secret,
 			m.GoogleID,
 		).
@@ -123,7 +120,6 @@ func (s *StoreCE) Update(ctx context.Context, m *model.User) error {
 		Set(`"email"`, m.Email).
 		Set(`"first_name"`, m.FirstName).
 		Set(`"last_name"`, m.LastName).
-		Set(`"password"`, m.Password).
 		Set(`"secret"`, m.Secret).
 		Set(`"google_id"`, m.GoogleID).
 		Where(sq.Eq{`"id"`: m.ID}).

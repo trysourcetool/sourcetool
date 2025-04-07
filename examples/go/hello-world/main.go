@@ -28,14 +28,14 @@ func helloPage(ui sourcetool.UIBuilder) error {
 	ui.Markdown("# Hello, Sourcetool!")
 	ui.Markdown("This is a simple example demonstrating the basic usage of the Sourcetool Go SDK.")
 
-	name := ui.TextInput("Your Name", textinput.Placeholder("Enter your name"))
+	name := ui.TextInput("Your Name", textinput.WithPlaceholder("Enter your name"))
 
 	if name != "" {
 		ui.Markdown(fmt.Sprintf("## Hello, %s!", name))
 		ui.Markdown("Welcome to Sourcetool!")
 	}
 
-	clicked := ui.Button("Say Hello", button.Disabled(false))
+	clicked := ui.Button("Say Hello", button.WithDisabled(false))
 	if clicked {
 		ui.Markdown("👋 Hello from the button click!")
 	}

@@ -12,7 +12,7 @@ func (o optionsOption) Apply(opts *options.CheckboxGroupOptions) {
 	opts.Options = []string(o)
 }
 
-func Options(options ...string) Option {
+func WithOptions(options ...string) Option {
 	return optionsOption(options)
 }
 
@@ -22,7 +22,7 @@ func (d defaultValueOption) Apply(opts *options.CheckboxGroupOptions) {
 	opts.DefaultValue = []string(d)
 }
 
-func DefaultValue(defaultValue ...string) Option {
+func WithDefaultValue(defaultValue ...string) Option {
 	return defaultValueOption(defaultValue)
 }
 
@@ -32,7 +32,7 @@ func (r requiredOption) Apply(opts *options.CheckboxGroupOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -42,7 +42,7 @@ func (d disabledOption) Apply(opts *options.CheckboxGroupOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -54,6 +54,6 @@ func (f formatFuncOption) Apply(opts *options.CheckboxGroupOptions) {
 	}
 }
 
-func FormatFunc(formatFunc func(string, int) string) Option {
+func WithFormatFunc(formatFunc func(string, int) string) Option {
 	return formatFuncOption(formatFunc)
 }

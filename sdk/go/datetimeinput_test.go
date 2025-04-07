@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/datetimeinput"
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -161,14 +161,14 @@ func TestDateTimeInput(t *testing.T) {
 	location := *time.UTC
 
 	value := builder.DateTimeInput(label,
-		datetimeinput.DefaultValue(now),
-		datetimeinput.Placeholder(placeholder),
-		datetimeinput.Required(true),
-		datetimeinput.Disabled(true),
-		datetimeinput.Format(format),
-		datetimeinput.MaxValue(maxDate),
-		datetimeinput.MinLength(minDate),
-		datetimeinput.Location(location),
+		datetimeinput.WithDefaultValue(now),
+		datetimeinput.WithPlaceholder(placeholder),
+		datetimeinput.WithRequired(true),
+		datetimeinput.WithDisabled(true),
+		datetimeinput.WithFormat(format),
+		datetimeinput.WithMaxValue(maxDate),
+		datetimeinput.WithMinValue(minDate),
+		datetimeinput.WithLocation(location),
 	)
 
 	if value == nil {

@@ -10,7 +10,7 @@ import {
   MessageSchema,
   type CloseSessionJson,
   type InitializeClientJson,
-} from '@trysourcetool/proto/websocket/v1/message';
+} from '@/pb/ts/websocket/v1/message_pb';
 import {
   create,
   fromBinary,
@@ -21,9 +21,9 @@ import {
 import {
   WidgetSchema,
   type Widget,
-} from '@trysourcetool/proto/widget/v1/widget';
+} from '@/pb/ts/widget/v1/widget_pb';
 import { pagesStore } from '@/store/modules/pages';
-import type { WidgetType } from '@/store/modules/widgets/slice';
+import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
 import { $path } from 'safe-routes';
 
@@ -353,14 +353,17 @@ export const WebSocketController = () => {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      ((!isSourcetoolDomain && isSubDomainMatched) || isSourcetoolDomain) &&
+      ((isSourcetoolDomain && isSubDomainMatched) || !isSourcetoolDomain) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
     }
-  }, [location.pathname, isSubDomainMatched, isSourcetoolDomain]);
-
-  console.log({ isSocketReady });
+  }, [
+    location.pathname,
+    isSubDomainMatched,
+    isSourcetoolDomain,
+    isAuthChecked,
+  ]);
 
   return (
     <>

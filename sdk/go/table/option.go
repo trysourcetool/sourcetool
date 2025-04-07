@@ -12,7 +12,7 @@ func (h headerOption) Apply(opts *options.TableOptions) {
 	opts.Header = string(h)
 }
 
-func Header(header string) Option {
+func WithHeader(header string) Option {
 	return headerOption(header)
 }
 
@@ -22,7 +22,7 @@ func (d descriptionOption) Apply(opts *options.TableOptions) {
 	opts.Description = string(d)
 }
 
-func Description(description string) Option {
+func WithDescription(description string) Option {
 	return descriptionOption(description)
 }
 
@@ -32,7 +32,7 @@ func (h heightOption) Apply(opts *options.TableOptions) {
 	opts.Height = (*int32)(&h)
 }
 
-func Height(height int32) Option {
+func WithHeight(height int32) Option {
 	return heightOption(height)
 }
 
@@ -42,26 +42,26 @@ func (c columnOrderOption) Apply(opts *options.TableOptions) {
 	opts.ColumnOrder = []string(c)
 }
 
-func ColumnOrder(order ...string) Option {
+func WithColumnOrder(order ...string) Option {
 	return columnOrderOption(order)
 }
 
-type onSelectOption SelectionBehavior
+type onSelectOption OnSelect
 
 func (o onSelectOption) Apply(opts *options.TableOptions) {
-	opts.OnSelect = SelectionBehavior(o).String()
+	opts.OnSelect = OnSelect(o).String()
 }
 
-func OnSelect(behavior SelectionBehavior) Option {
+func WithOnSelect(behavior OnSelect) Option {
 	return onSelectOption(behavior)
 }
 
-type rowSelectionOption SelectionMode
+type rowSelectionOption RowSelection
 
 func (r rowSelectionOption) Apply(opts *options.TableOptions) {
-	opts.RowSelection = SelectionMode(r).String()
+	opts.RowSelection = RowSelection(r).String()
 }
 
-func RowSelection(mode SelectionMode) Option {
+func WithRowSelection(mode RowSelection) Option {
 	return rowSelectionOption(mode)
 }

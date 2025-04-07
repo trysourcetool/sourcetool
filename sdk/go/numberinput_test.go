@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -135,12 +135,12 @@ func TestNumberInput(t *testing.T) {
 	minValue := 0.0
 
 	value := builder.NumberInput(label,
-		numberinput.DefaultValue(defaultValue),
-		numberinput.Placeholder(placeholder),
-		numberinput.Required(true),
-		numberinput.Disabled(true),
-		numberinput.MaxValue(maxValue),
-		numberinput.MinValue(minValue),
+		numberinput.WithDefaultValue(defaultValue),
+		numberinput.WithPlaceholder(placeholder),
+		numberinput.WithRequired(true),
+		numberinput.WithDisabled(true),
+		numberinput.WithMaxValue(maxValue),
+		numberinput.WithMinValue(minValue),
 	)
 
 	if value == nil {

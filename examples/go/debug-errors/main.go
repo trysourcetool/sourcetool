@@ -78,7 +78,7 @@ func errorDemoPage(ui sourcetool.UIBuilder) error {
 
 	errorType := ui.Selectbox(
 		"Error Type",
-		selectbox.Options(
+		selectbox.WithOptions(
 			"None",
 			"Validation Error",
 			"Database Query Error",
@@ -91,7 +91,7 @@ func errorDemoPage(ui sourcetool.UIBuilder) error {
 		),
 	)
 
-	triggerError := ui.Button("Return Error", button.Disabled(false))
+	triggerError := ui.Button("Return Error", button.WithDisabled(false))
 
 	if triggerError {
 		switch errorType.Value {
@@ -129,9 +129,9 @@ func errorDemoPage(ui sourcetool.UIBuilder) error {
 
 	form, submitted := ui.Form("Submit Form")
 
-	username := form.TextInput("Username", textinput.Placeholder("Enter username"))
-	email := form.TextInput("Email", textinput.Placeholder("Enter email"))
-	age := form.NumberInput("Age", numberinput.MinValue(0), numberinput.MaxValue(120))
+	username := form.TextInput("Username", textinput.WithPlaceholder("Enter username"))
+	email := form.TextInput("Email", textinput.WithPlaceholder("Enter email"))
+	age := form.NumberInput("Age", numberinput.WithMinValue(0), numberinput.WithMaxValue(120))
 
 	if submitted {
 		// Validate form inputs
@@ -163,7 +163,7 @@ func errorDemoPage(ui sourcetool.UIBuilder) error {
 	// Demonstrate error handling with recovery
 	ui.Markdown("## Error Recovery Demo")
 
-	recoverDemo := ui.Button("Test Recovery", button.Disabled(false))
+	recoverDemo := ui.Button("Test Recovery", button.WithDisabled(false))
 
 	if recoverDemo {
 		func() {

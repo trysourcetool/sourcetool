@@ -56,8 +56,6 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 
 	currentUser := ctxutil.CurrentUser(ctx)
 
-	// TODO: Check if the currentUser is already a member of an organization
-
 	orgAccess := &model.UserOrganizationAccess{
 		ID:             uuid.Must(uuid.NewV4()),
 		UserID:         currentUser.ID,

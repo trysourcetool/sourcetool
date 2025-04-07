@@ -18,6 +18,7 @@ type Organization struct {
 
 type OrganizationStore interface {
 	Get(context.Context, ...storeopts.OrganizationOption) (*Organization, error)
+	List(context.Context, ...storeopts.OrganizationOption) ([]*Organization, error)
 	Create(context.Context, *Organization) error
 	IsSubdomainExists(context.Context, string) (bool, error)
 }

@@ -1,5 +1,4 @@
 import { ENVIRONMENTS } from '@/environments';
-import { checkSubDomain } from '@/lib/checkSubDomain';
 import dayjs from 'dayjs';
 import { usersRefreshToken } from './modules/users';
 import { checkDomain } from '@/lib/checkDomain';

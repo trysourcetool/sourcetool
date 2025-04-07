@@ -63,8 +63,11 @@ Sourcetool provides UI components you can use directly from Go code:
 
 ## 🚀 Get Started
 
-1. **Get your API key**
-   - Sign up at [Sourcetool Dashboard](https://auth.trysourcetool.com/)
+> **Note:** While our cloud version is coming soon, you can start using Sourcetool today by deploying it in your own environment.
+
+1. **Deploy Sourcetool**
+   - Follow our [Deployment Guide](docs/docs/getting-started/deployment.md) to set up Sourcetool in your environment
+   - Use Docker for quick and easy deployment
 
 2. **Install the Sourcetool SDK**
    ```bash
@@ -101,7 +104,7 @@ Sourcetool provides UI components you can use directly from Go code:
    func main() {
        s := sourcetool.New(&sourcetool.Config{
            APIKey:   "your_api_key",
-           Endpoint: "wss://hello.trysourcetool.com"
+           Endpoint: "wss://your-sourcetool-instance"  // Your self-hosted Sourcetool endpoint
        })
        
        // Register pages
@@ -112,6 +115,16 @@ Sourcetool provides UI components you can use directly from Go code:
        }
    }
    ```
+
+## 🚢 Deployment
+
+Sourcetool can be easily deployed using Docker in your environment. We provide comprehensive deployment documentation covering:
+- Infrastructure requirements (PostgreSQL, Redis)
+- Docker image configuration
+- Environment variables setup
+- Production best practices
+
+For detailed instructions, check out our [Deployment Guide](docs/docs/getting-started/deployment.md).
 
 ## ❓ FAQ
 

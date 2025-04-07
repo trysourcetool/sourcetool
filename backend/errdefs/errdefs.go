@@ -71,11 +71,6 @@ func Status(title string, status int) StatusFunc {
 			}
 		}
 
-		x, ok := err.(*Error)
-		if ok {
-			e.Frames = x.Frames
-		}
-
 		return e
 	}
 }
@@ -159,7 +154,7 @@ func callers() []uintptr {
 	var pcs [depth]uintptr
 	n := runtime.Callers(3, pcs[:])
 
-	return pcs[0 : n-2]
+	return pcs[0:n]
 }
 
 func errID() string {

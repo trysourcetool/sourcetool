@@ -12,6 +12,6 @@ func (w weightOption) Apply(opts *options.ColumnsOptions) {
 	opts.Weight = []int(w)
 }
 
-func Weight(weight ...int) Option {
+func WithWeight(weight ...int) Option {
 	return weightOption(weight)
 }

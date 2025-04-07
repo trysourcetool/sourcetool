@@ -16,7 +16,7 @@ func (p placeholderOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -26,7 +26,7 @@ func (d defaultValueOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.DefaultValue = (*time.Time)(&d)
 }
 
-func DefaultValue(value time.Time) Option {
+func WithDefaultValue(value time.Time) Option {
 	return defaultValueOption(value)
 }
 
@@ -36,7 +36,7 @@ func (r requiredOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -46,7 +46,7 @@ func (d disabledOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -56,7 +56,7 @@ func (f formatOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.Format = string(f)
 }
 
-func Format(format string) Option {
+func WithFormat(format string) Option {
 	return formatOption(format)
 }
 
@@ -66,7 +66,7 @@ func (m maxValueOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.MaxValue = (*time.Time)(&m)
 }
 
-func MaxValue(value time.Time) Option {
+func WithMaxValue(value time.Time) Option {
 	return maxValueOption(value)
 }
 
@@ -76,7 +76,7 @@ func (m minValueOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.MinValue = (*time.Time)(&m)
 }
 
-func MinLength(value time.Time) Option {
+func WithMinValue(value time.Time) Option {
 	return minValueOption(value)
 }
 
@@ -86,6 +86,6 @@ func (l locationOption) Apply(opts *options.DateTimeInputOptions) {
 	opts.Location = (*time.Location)(&l)
 }
 
-func Location(location time.Location) Option {
+func WithLocation(location time.Location) Option {
 	return locationOption(location)
 }

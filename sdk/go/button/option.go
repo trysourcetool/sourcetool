@@ -12,6 +12,6 @@ func (d disabledOption) Apply(opts *options.ButtonOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }

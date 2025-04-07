@@ -14,19 +14,17 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { SocialButtonGoogle } from '@/components/common/social-button-google';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 
 export default function Signin() {
   const dispatch = useDispatch();
@@ -34,9 +32,9 @@ export default function Signin() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
 
-  const { isSourcetoolDomain, subDomain } = useAuth();
-
-  const isSigninWaiting = useSelector((state) => state.users.isSigninWaiting);
+  const isRequestMagicLinkWaiting = useSelector(
+    (state) => state.users.isRequestMagicLinkWaiting,
+  );
   const isOauthGoogleAuthWaiting = useSelector(
     (state) => state.users.isOauthGoogleAuthWaiting,
   );
@@ -45,9 +43,6 @@ export default function Signin() {
     email: string({
       required_error: t('zod_errors_email_required'),
     }).email(t('zod_errors_email_format')),
-    password: string({
-      required_error: t('zod_errors_password_required'),
-    }),
   });
 
   type Schema = z.infer<typeof schema>;
@@ -61,25 +56,12 @@ export default function Signin() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.signin({ data }),
+      usersStore.asyncActions.requestMagicLink({ data }),
     );
-    if (usersStore.asyncActions.signin.fulfilled.match(resultAction)) {
-      const result = await dispatch(
-        usersStore.asyncActions.saveAuth({
-          authUrl: resultAction.payload.authUrl,
-          data: { token: resultAction.payload.token },
-        }),
-      );
-      if (usersStore.asyncActions.saveAuth.fulfilled.match(result)) {
-        window.location.replace(result.payload.redirectUrl);
-      } else {
-        const result = await dispatch(usersStore.asyncActions.getUsersMe());
-        if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
-          if (!result.payload.user.organization) {
-            navigate($path('/organizations/new'));
-          }
-        }
-      }
+    if (
+      usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
+    ) {
+      navigate($path('/signin/emailSent', { email: data.email }));
     } else {
       toast({
         title: t('routes_signin_toast_failed'),
@@ -115,74 +97,59 @@ export default function Signin() {
   return (
     <div className="m-auto flex w-full items-center justify-center">
       <Form {...form}>
-        <Card className="flex w-full max-w-sm flex-col gap-6 p-6">
-          <CardHeader className="p-0">
-            <CardTitle>{t('routes_signin_title')}</CardTitle>
-            <CardDescription>{t('routes_signin_description')}</CardDescription>
+        <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
+          <CardHeader className="space-y-1.5 p-0">
+            <CardTitle className="text-2xl font-semibold text-foreground">
+              {t('routes_signin_title')}
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              {t('routes_signin_description')}
+            </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('routes_signin_email_label')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('routes_signin_email_placeholder')}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>{t('routes_signin_password_label')}</FormLabel>
-                    <Link
-                      className="text-sm font-normal text-muted-foreground underline"
-                      to={$path('/resetPassword')}
-                      tabIndex={-1}
-                    >
-                      {t('routes_signin_forgot_password')}
-                    </Link>
-                  </div>
-                  <FormControl>
-                    <Input
-                      placeholder={t('routes_signin_password_placeholder')}
-                      type="password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full" disabled={isSigninWaiting}>
-              {isSigninWaiting && <Loader2 className="size-4 animate-spin" />}
-              {t('routes_signin_login_button')}
-            </Button>
-
             <SocialButtonGoogle
               onClick={handleGoogleAuth}
               label={t('routes_signin_google_button')}
             />
 
-            {((isSourcetoolDomain && subDomain === 'auth') ||
-              !isSourcetoolDomain) && (
-              <p className="text-center text-sm font-normal text-foreground">
-                {t('routes_signin_no_account')}{' '}
-                <Link className="underline" to={$path('/signup')}>
-                  {t('routes_signin_signup_link')}
-                </Link>
-              </p>
-            )}
+            <div className="relative flex items-center justify-center">
+              <span className="text-sm font-medium text-foreground">
+                {t('routes_signin_or')}
+              </span>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder={t('routes_signin_email_placeholder')}
+                      className="h-[42px] border-border text-sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              size="default"
+              className="cursor-pointer"
+              disabled={isRequestMagicLinkWaiting}
+            >
+              {isRequestMagicLinkWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
+              {t('routes_signin_login_button')}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              {t('routes_signin_terms_text')}
+            </p>
           </form>
         </Card>
       </Form>

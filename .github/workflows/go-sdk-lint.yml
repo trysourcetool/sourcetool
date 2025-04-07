@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'sdk/go/**'
+      - '.github/workflows/go-sdk-lint.yml'
       - '!sdk/go/README.md'
       - '!sdk/go/MIRROR_README.md'
       - '!sdk/go/LICENSE'

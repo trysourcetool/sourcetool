@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package exception.v1;
+
+message Exception {
+  string title = 1;
+  string message = 2;
+  repeated string stack_trace = 3;
+  string session_id = 4;
+}

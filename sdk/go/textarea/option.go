@@ -12,7 +12,7 @@ func (p placeholderOption) Apply(opts *options.TextAreaOptions) {
 	opts.Placeholder = string(p)
 }
 
-func Placeholder(placeholder string) Option {
+func WithPlaceholder(placeholder string) Option {
 	return placeholderOption(placeholder)
 }
 
@@ -22,7 +22,7 @@ func (d defaultValueOption) Apply(opts *options.TextAreaOptions) {
 	opts.DefaultValue = (*string)(&d)
 }
 
-func DefaultValue(value string) Option {
+func WithDefaultValue(value string) Option {
 	return defaultValueOption(value)
 }
 
@@ -32,7 +32,7 @@ func (r requiredOption) Apply(opts *options.TextAreaOptions) {
 	opts.Required = bool(r)
 }
 
-func Required(required bool) Option {
+func WithRequired(required bool) Option {
 	return requiredOption(required)
 }
 
@@ -42,7 +42,7 @@ func (d disabledOption) Apply(opts *options.TextAreaOptions) {
 	opts.Disabled = bool(d)
 }
 
-func Disabled(disabled bool) Option {
+func WithDisabled(disabled bool) Option {
 	return disabledOption(disabled)
 }
 
@@ -52,7 +52,7 @@ func (m maxLengthOption) Apply(opts *options.TextAreaOptions) {
 	opts.MaxLength = (*int32)(&m)
 }
 
-func MaxLength(length int32) Option {
+func WithMaxLength(length int32) Option {
 	return maxLengthOption(length)
 }
 
@@ -62,7 +62,7 @@ func (m minLengthOption) Apply(opts *options.TextAreaOptions) {
 	opts.MinLength = (*int32)(&m)
 }
 
-func MinLength(length int32) Option {
+func WithMinLength(length int32) Option {
 	return minLengthOption(length)
 }
 
@@ -72,7 +72,7 @@ func (m maxLinesOption) Apply(opts *options.TextAreaOptions) {
 	opts.MaxLines = (*int32)(&m)
 }
 
-func MaxLines(lines int32) Option {
+func WithMaxLines(lines int32) Option {
 	return maxLinesOption(lines)
 }
 
@@ -82,7 +82,7 @@ func (m minLinesOption) Apply(opts *options.TextAreaOptions) {
 	opts.MinLines = (*int32)(&m)
 }
 
-func MinLines(lines int32) Option {
+func WithMinLines(lines int32) Option {
 	return minLinesOption(lines)
 }
 
@@ -92,6 +92,6 @@ func (a autoResizeOption) Apply(opts *options.TextAreaOptions) {
 	opts.AutoResize = bool(a)
 }
 
-func AutoResize(autoResize bool) Option {
+func WithAutoResize(autoResize bool) Option {
 	return autoResizeOption(autoResize)
 }

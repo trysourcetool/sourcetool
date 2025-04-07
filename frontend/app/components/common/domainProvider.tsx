@@ -1,6 +1,5 @@
 import { useAuth } from '@/hooks/use-auth';
 import { checkDomain } from '@/lib/checkDomain';
-import { checkSubDomain } from '@/lib/checkSubDomain';
 import { useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import {

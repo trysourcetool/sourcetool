@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/form"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -168,8 +168,8 @@ func TestForm_WithOptions(t *testing.T) {
 
 	buttonLabel := "Submit"
 	childBuilder, submitted := builder.Form(buttonLabel,
-		form.ButtonDisabled(true),
-		form.ClearOnSubmit(true),
+		form.WithButtonDisabled(true),
+		form.WithClearOnSubmit(true),
 	)
 
 	if childBuilder == nil {

@@ -32,21 +32,21 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 	ui.Markdown("## Users")
 
 	searchCols := ui.Columns(2)
-	name := searchCols[0].TextInput("Name", textinput.Placeholder("Enter name to filter"))
-	email := searchCols[1].TextInput("Email", textinput.Placeholder("Enter email to filter"))
+	name := searchCols[0].TextInput("Name", textinput.WithPlaceholder("Enter name to filter"))
+	email := searchCols[1].TextInput("Email", textinput.WithPlaceholder("Enter email to filter"))
 
 	users, err := listUsers(name, email, 0, "", time.Time{})
 	if err != nil {
 		return err
 	}
 
-	baseCols := ui.Columns(2, columns.Weight(3, 1))
+	baseCols := ui.Columns(2, columns.WithWeight(3, 1))
 	table := baseCols[0].Table(
 		users,
-		table.Header("Users"),
-		table.Height(10),
-		table.ColumnOrder("ID", "Name", "Email", "Age", "Gender", "CreatedAt"),
-		table.OnSelect(table.SelectionBehaviorRerun),
+		table.WithHeader("Users"),
+		table.WithHeight(10),
+		table.WithColumnOrder("ID", "Name", "Email", "Age", "Gender", "CreatedAt"),
+		table.WithOnSelect(table.OnSelectRerun),
 	)
 
 	var defaultName, defaultEmail, defaultGender string
@@ -59,11 +59,11 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 		defaultGender = selectedData.Gender
 	}
 
-	form, submitted := baseCols[1].Form("Update", form.ClearOnSubmit(true))
-	formName := form.TextInput("Name", textinput.Placeholder("Enter your name"), textinput.DefaultValue(defaultName), textinput.Required(true))
-	formEmail := form.TextInput("Email", textinput.Placeholder("Enter your email"), textinput.DefaultValue(defaultEmail))
-	formAge := form.NumberInput("Age", numberinput.MinValue(0), numberinput.MaxValue(100), numberinput.DefaultValue(float64(defaultAge)))
-	formGender := form.Selectbox("Gender", selectbox.Options("male", "female"), selectbox.DefaultValue(defaultGender))
+	form, submitted := baseCols[1].Form("Update", form.WithClearOnSubmit(true))
+	formName := form.TextInput("Name", textinput.WithPlaceholder("Enter your name"), textinput.WithDefaultValue(defaultName), textinput.WithRequired(true))
+	formEmail := form.TextInput("Email", textinput.WithPlaceholder("Enter your email"), textinput.WithDefaultValue(defaultEmail))
+	formAge := form.NumberInput("Age", numberinput.WithMinValue(0), numberinput.WithMaxValue(100), numberinput.WithDefaultValue(float64(defaultAge)))
+	formGender := form.Selectbox("Gender", selectbox.WithOptions("male", "female"), selectbox.WithDefaultValue(defaultGender))
 
 	if submitted {
 		user := User{
@@ -83,11 +83,11 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 func createUserPage(ui sourcetool.UIBuilder) error {
 	ui.Markdown("## Create New User")
 
-	form, submitted := ui.Form("Create User", form.ClearOnSubmit(true))
-	formName := form.TextInput("Name", textinput.Placeholder("Enter user name"), textinput.Required(true))
-	formEmail := form.TextInput("Email", textinput.Placeholder("Enter user email"))
-	formAge := form.NumberInput("Age", numberinput.MinValue(0), numberinput.MaxValue(100))
-	formGender := form.Selectbox("Gender", selectbox.Options("male", "female"))
+	form, submitted := ui.Form("Create User", form.WithClearOnSubmit(true))
+	formName := form.TextInput("Name", textinput.WithPlaceholder("Enter user name"), textinput.WithRequired(true))
+	formEmail := form.TextInput("Email", textinput.WithPlaceholder("Enter user email"))
+	formAge := form.NumberInput("Age", numberinput.WithMinValue(0), numberinput.WithMaxValue(100))
+	formGender := form.Selectbox("Gender", selectbox.WithOptions("male", "female"))
 
 	if submitted {
 		user := User{

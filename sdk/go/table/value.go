@@ -9,24 +9,24 @@ type Selection struct {
 	Rows []int
 }
 
-type SelectionBehavior string
+type OnSelect string
 
 const (
-	SelectionBehaviorIgnore SelectionBehavior = "ignore"
-	SelectionBehaviorRerun  SelectionBehavior = "rerun"
+	OnSelectIgnore OnSelect = "ignore"
+	OnSelectRerun  OnSelect = "rerun"
 )
 
-func (b SelectionBehavior) String() string {
-	return string(b)
+func (o OnSelect) String() string {
+	return string(o)
 }
 
-type SelectionMode string
+type RowSelection string
 
 const (
-	SelectionModeSingle   SelectionMode = "single"
-	SelectionModeMultiple SelectionMode = "multiple"
+	RowSelectionSingle   RowSelection = "single"
+	RowSelectionMultiple RowSelection = "multiple"
 )
 
-func (m SelectionMode) String() string {
-	return string(m)
+func (r RowSelection) String() string {
+	return string(r)
 }

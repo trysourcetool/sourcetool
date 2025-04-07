@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/checkboxgroup"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -126,10 +126,10 @@ func TestCheckboxGroup(t *testing.T) {
 	defaultValue := []string{"Option 1", "Option 3"}
 
 	value := builder.CheckboxGroup(label,
-		checkboxgroup.Options(options...),
-		checkboxgroup.DefaultValue(defaultValue...),
-		checkboxgroup.Required(true),
-		checkboxgroup.Disabled(true),
+		checkboxgroup.WithOptions(options...),
+		checkboxgroup.WithDefaultValue(defaultValue...),
+		checkboxgroup.WithRequired(true),
+		checkboxgroup.WithDisabled(true),
 	)
 
 	if value == nil {
@@ -204,8 +204,8 @@ func TestCheckboxGroup_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.CheckboxGroup(label,
-		checkboxgroup.Options(options...),
-		checkboxgroup.FormatFunc(formatFunc),
+		checkboxgroup.WithOptions(options...),
+		checkboxgroup.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeCheckboxGroup, []int{0})

@@ -193,7 +193,7 @@ export const MultiSelect = React.forwardRef<
             {...props}
             onClick={handleTogglePopover}
             className={cn(
-              'flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto',
+              'flex h-auto min-h-10 w-full items-center justify-between rounded-md border bg-inherit p-1 hover:bg-inherit [&_svg]:pointer-events-auto',
               className,
             )}
           >
@@ -229,7 +229,7 @@ export const MultiSelect = React.forwardRef<
                   {selectedValues.length > maxCount && (
                     <Badge
                       className={cn(
-                        'bg-transparent text-foreground border-foreground/1 hover:bg-transparent',
+                        'border-foreground/1 bg-transparent text-foreground hover:bg-transparent',
                         isAnimating ? 'animate-bounce' : '',
                         multiSelectVariants({ variant }),
                       )}
@@ -362,7 +362,7 @@ export const MultiSelect = React.forwardRef<
         {animation > 0 && selectedValues.length > 0 && (
           <WandSparkles
             className={cn(
-              'cursor-pointer my-2 text-foreground bg-background w-3 h-3',
+              'my-2 h-3 w-3 cursor-pointer bg-background text-foreground',
               isAnimating ? '' : 'text-muted-foreground',
             )}
             onClick={() => setIsAnimating(!isAnimating)}

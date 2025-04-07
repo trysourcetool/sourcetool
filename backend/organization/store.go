@@ -42,6 +42,20 @@ func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.OrganizationOption)
 	return &m, nil
 }
 
+func (s *StoreCE) List(ctx context.Context, opts ...storeopts.OrganizationOption) ([]*model.Organization, error) {
+	query, args, err := s.buildQuery(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var orgs []*model.Organization
+	if err := s.db.SelectContext(ctx, &orgs, query, args...); err != nil {
+		return nil, errdefs.ErrDatabase(err)
+	}
+
+	return orgs, nil
+}
+
 func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.OrganizationOption) (string, []any, error) {
 	q := s.builder.Select(
 		`o."id"`,

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -142,11 +142,11 @@ func TestTimeInput(t *testing.T) {
 	location := *time.UTC
 
 	value := builder.TimeInput(label,
-		timeinput.DefaultValue(now),
-		timeinput.Placeholder(placeholder),
-		timeinput.Required(true),
-		timeinput.Disabled(true),
-		timeinput.Location(location),
+		timeinput.WithDefaultValue(now),
+		timeinput.WithPlaceholder(placeholder),
+		timeinput.WithRequired(true),
+		timeinput.WithDisabled(true),
+		timeinput.WithLocation(location),
 	)
 
 	if value == nil {

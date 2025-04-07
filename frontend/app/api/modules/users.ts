@@ -360,7 +360,11 @@ export const updateUser = async (params: {
 }) => {
   const res = await api.put<{
     user: User;
-  }>({ path: '/users', data: params.data, auth: true });
+  }>({
+    path: '/users',
+    data: params.data,
+    auth: true,
+  });
 
   return res;
 };
@@ -381,24 +385,6 @@ export const updateUserEmail = async (params: {
   return res;
 };
 
-export const updateUserPassword = async (params: {
-  data: {
-    currentPassword: string;
-    password: string;
-    passwordConfirmation: string;
-  };
-}) => {
-  const res = await api.put<{
-    user: User;
-  }>({
-    path: '/users/password',
-    data: params.data,
-    auth: true,
-  });
-
-  return res;
-};
-
 export const usersSendUpdateEmailInstructions = async (params: {
   data: {
     email: string;
@@ -409,6 +395,103 @@ export const usersSendUpdateEmailInstructions = async (params: {
     path: '/users/sendUpdateEmailInstructions',
     data: params.data,
     auth: true,
+  });
+
+  return res;
+};
+
+export const usersRequestMagicLink = async (params: {
+  data: {
+    email: string;
+  };
+}) => {
+  const res = await api.post({
+    path: '/users/auth/magic/request',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithMagicLink = async (params: {
+  data: {
+    token: string;
+  };
+}) => {
+  const res = await api.post<{
+    authUrl: string;
+    token: string;
+    isNewUser: boolean;
+  }>({
+    path: '/users/auth/magic/authenticate',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersRegisterWithMagicLink = async (params: {
+  data: {
+    token: string;
+    firstName: string;
+    lastName: string;
+  };
+}) => {
+  const res = await api.post({
+    path: '/users/auth/magic/register',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersRequestInvitationMagicLink = async (params: {
+  data: {
+    invitationToken: string;
+  };
+}) => {
+  const res = await api.post<{
+    email: string;
+  }>({
+    path: '/users/auth/invitations/magic/request',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithInvitationMagicLink = async (params: {
+  data: {
+    token: string;
+  };
+}) => {
+  const res = await api.post<{
+    authUrl: string;
+    token: string;
+    isOrganizationExists: boolean;
+    isNewUser: boolean;
+  }>({
+    path: '/users/auth/invitations/magic/authenticate',
+    data: params.data,
+  });
+
+  return res;
+};
+
+export const usersRegisterWithInvitationMagicLink = async (params: {
+  data: {
+    token: string;
+    firstName: string;
+    lastName: string;
+  };
+}) => {
+  const res = await api.post<{
+    token: string;
+    secret: string;
+    xsrfToken: string;
+  }>({
+    path: '/users/auth/invitations/magic/register',
+    data: params.data,
   });
 
   return res;

@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -152,15 +152,15 @@ func TestTextArea(t *testing.T) {
 	minLines := int32(3)
 
 	value := builder.TextArea(label,
-		textarea.DefaultValue(defaultValue),
-		textarea.Placeholder(placeholder),
-		textarea.Required(true),
-		textarea.Disabled(true),
-		textarea.MaxLength(maxLength),
-		textarea.MinLength(minLength),
-		textarea.MaxLines(maxLines),
-		textarea.MinLines(minLines),
-		textarea.AutoResize(false),
+		textarea.WithDefaultValue(defaultValue),
+		textarea.WithPlaceholder(placeholder),
+		textarea.WithRequired(true),
+		textarea.WithDisabled(true),
+		textarea.WithMaxLength(maxLength),
+		textarea.WithMinLength(minLength),
+		textarea.WithMaxLines(maxLines),
+		textarea.WithMinLines(minLines),
+		textarea.WithAutoResize(false),
 	)
 
 	if value != defaultValue {

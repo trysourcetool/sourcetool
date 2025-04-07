@@ -15,7 +15,6 @@ export function checkDomain() {
   const isSourcetoolDomain = ENVIRONMENTS.DOMAIN.match(
     /^((staging|local)\.)?trysourcetool\.com$/,
   );
-  console.log({ isSourcetoolDomain, hostname });
 
   returnValue.isSourcetoolDomain = !!isSourcetoolDomain;
 
@@ -29,17 +28,18 @@ export function checkDomain() {
     }
     if (isSourcetoolDomain[2] === 'staging') {
       returnValue.environments = 'staging';
-    } else if (
-      isSourcetoolDomain[2] === 'local' ||
-      ENVIRONMENTS.DOMAIN.includes('localhost')
-    ) {
+    } else if (isSourcetoolDomain[2] === 'local') {
+      returnValue.environments = 'local';
+    } else {
+      returnValue.environments = 'production';
+    }
+  } else {
+    if (ENVIRONMENTS.DOMAIN.includes('localhost')) {
       returnValue.environments = 'local';
     } else {
       returnValue.environments = 'production';
     }
   }
-
-  console.log({ returnValue });
 
   return returnValue;
 }

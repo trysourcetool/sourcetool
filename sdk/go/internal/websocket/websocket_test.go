@@ -10,10 +10,10 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	websocketv1 "github.com/trysourcetool/sourcetool/proto/go/websocket/v1"
 
 	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 )
 
 func TestMain(m *testing.M) {

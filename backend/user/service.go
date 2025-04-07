@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -15,7 +16,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
@@ -32,18 +32,22 @@ type Service interface {
 	// Email operations
 	SendUpdateEmailInstructions(context.Context, dto.SendUpdateUserEmailInstructionsInput) error
 	UpdateEmail(context.Context, dto.UpdateUserEmailInput) (*dto.UpdateUserEmailOutput, error)
-	UpdatePassword(context.Context, dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error)
+
+	// Passwordless Authentication methods
+	RequestMagicLink(context.Context, dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error)
+	AuthenticateWithMagicLink(context.Context, dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error)
+	RegisterWithMagicLink(context.Context, dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error)
+
+	// Invitation Magic Link methods
+	RequestInvitationMagicLink(context.Context, dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error)
+	AuthenticateWithInvitationMagicLink(context.Context, dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error)
+	RegisterWithInvitationMagicLink(context.Context, dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error)
 
 	// Authentication methods
-	SignIn(context.Context, dto.SignInInput) (*dto.SignInOutput, error)
 	SignOut(context.Context) (*dto.SignOutOutput, error)
 	RefreshToken(context.Context, dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error)
 	SaveAuth(context.Context, dto.SaveAuthInput) (*dto.SaveAuthOutput, error)
 	ObtainAuthToken(context.Context) (*dto.ObtainAuthTokenOutput, error)
-
-	// Registration methods
-	SendSignUpInstructions(context.Context, dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error)
-	SignUp(context.Context, dto.SignUpInput) (*dto.SignUpOutput, error)
 
 	// Invitation methods
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
@@ -265,66 +269,187 @@ func (s *ServiceCE) UpdateEmail(ctx context.Context, in dto.UpdateUserEmailInput
 	}, nil
 }
 
-// UpdatePassword changes the user's password after verifying their current password.
-func (s *ServiceCE) UpdatePassword(ctx context.Context, in dto.UpdateUserPasswordInput) (*dto.UpdateUserPasswordOutput, error) {
-	currentUser := ctxutil.CurrentUser(ctx)
-
-	// Verify current password
-	if err := verifyPassword(currentUser.Password, in.CurrentPassword); err != nil {
-		return nil, err
-	}
-
-	// Hash new password
-	hashedPassword, err := hashPassword(in.Password)
+// Works for both existing users (login) and new users (signup).
+func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error) {
+	// Check if email exists
+	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update user record
-	currentUser.Password = hashedPassword
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().Update(ctx, currentUser)
+	var firstName string
+	isNewUser := !exists
+
+	// Handle Cloud Edition with subdomain
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		if subdomain != "" && subdomain != "auth" {
+			// Get organization by subdomain
+			org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+			if err != nil {
+				return nil, err
+			}
+
+			if exists {
+				// For existing users, check if they have access to this organization
+				u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = s.Store.User().GetOrganizationAccess(ctx,
+					storeopts.UserOrganizationAccessByUserID(u.ID),
+					storeopts.UserOrganizationAccessByOrganizationID(org.ID))
+				if err != nil {
+					return nil, errdefs.ErrUnauthenticated(errors.New("user does not have access to this organization"))
+				}
+			} else {
+				// For new users, registration is only allowed through invitations
+				return nil, errdefs.ErrPermissionDenied(errors.New("registration is only allowed through invitations"))
+			}
+		}
+	}
+
+	if exists {
+		// Get user by email for existing users
+		u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
+		if err != nil {
+			return nil, err
+		}
+		firstName = u.FirstName
+
+		// Get user's organization access information
+		orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
+		if err != nil {
+			return nil, err
+		}
+
+		// Cloud edition specific handling for multiple organizations
+		if config.Config.IsCloudEdition && len(orgAccesses) > 1 {
+			// Handle multiple organizations
+			loginURLs := make([]string, 0, len(orgAccesses))
+			for _, access := range orgAccesses {
+				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+
+				// Create org-specific magic link
+				tok, err := createUserEmailToken(in.Email, time.Now().Add(15*time.Minute), jwt.UserSignatureSubjectMagicLink)
+				if err != nil {
+					return nil, err
+				}
+
+				url, err := buildMagicLinkURL(conv.SafeValue(org.Subdomain), tok)
+				if err != nil {
+					return nil, err
+				}
+				loginURLs = append(loginURLs, url)
+			}
+
+			// Send email with multiple organization links
+			if err := s.Mailer.User().SendMultipleOrganizationsMagicLinkEmail(ctx, &model.SendMultipleOrganizationsMagicLinkEmail{
+				To:        in.Email,
+				FirstName: firstName,
+				Email:     in.Email,
+				LoginURLs: loginURLs,
+			}); err != nil {
+				return nil, err
+			}
+
+			return &dto.RequestMagicLinkOutput{
+				Email: in.Email,
+				IsNew: false,
+			}, nil
+		}
+	} else {
+		// For new users, generate a temporary ID that will be verified/used later
+		firstName = "there" // Default greeting
+
+		// For self-hosted mode, check if creating an organization is allowed
+		if !config.Config.IsCloudEdition {
+			// Check if an organization already exists in self-hosted mode
+			if err := s.validateSelfHostedOrganization(ctx); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// Determine subdomain context based on edition
+	var subdomain string
+	if config.Config.IsCloudEdition {
+		subdomain = ctxutil.Subdomain(ctx)
+	}
+
+	// Create token for magic link authentication
+	tok, err := createUserEmailToken(in.Email, time.Now().Add(15*time.Minute), jwt.UserSignatureSubjectMagicLink)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build magic link URL
+	url, err := buildMagicLinkURL(subdomain, tok)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send magic link email
+	if err := s.Mailer.User().SendMagicLinkEmail(ctx, &model.SendMagicLinkEmail{
+		To:        in.Email,
+		FirstName: firstName,
+		URL:       url,
 	}); err != nil {
 		return nil, err
 	}
 
-	// Get organization information for response
-	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
+	return &dto.RequestMagicLinkOutput{
+		Email: in.Email,
+		IsNew: isNewUser,
+	}, nil
+}
+
+// Can handle both login and signup based on input parameters.
+func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error) {
+	// Parse and validate token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
 		return nil, err
 	}
 
-	var role model.UserOrganizationRole
-	if orgAccess != nil {
-		role = orgAccess.Role
+	if c.Subject != jwt.UserSignatureSubjectMagicLink {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	return &dto.UpdateUserPasswordOutput{
-		User: dto.UserFromModel(currentUser, org, role),
-	}, nil
-}
-
-// SignIn authenticates a user with email and password.
-func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignInOutput, error) {
-	// Get user by email
-	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(in.Email))
+	// Check if user exists
+	exists, err := s.Store.User().IsEmailExists(ctx, c.Email)
 	if err != nil {
-		return nil, errdefs.ErrUnauthenticated(err)
+		return nil, err
 	}
 
-	// Verify password
-	if err = verifyPassword(u.Password, in.Password); err != nil {
+	if !exists {
+		// Generate registration token for new user
+		registrationToken, err := createRegistrationToken(c.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate registration token: %w", err)
+		}
+
+		return &dto.AuthenticateWithMagicLinkOutput{
+			Token:                registrationToken,
+			IsNewUser:            true,
+			IsOrganizationExists: false,
+		}, nil
+	}
+
+	// Get existing user
+	user, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
+	if err != nil {
 		return nil, err
 	}
 
 	// Get user's organization access information
-	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(u.ID))
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(user.ID))
 	if err != nil {
 		return nil, err
-	}
-
-	if len(orgAccesses) == 0 {
-		return nil, errdefs.ErrUnauthenticated(errors.New("user has no organization access"))
 	}
 
 	// Handle organization subdomain logic
@@ -335,14 +460,16 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// For specific organization subdomain, resolve org and access
-			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, user, subdomain)
 			if err != nil {
 				return nil, err
 			}
 			orgSubdomain = subdomain
 		} else {
 			// For auth subdomain
-			if len(orgAccesses) == 1 {
+			if len(orgAccesses) == 0 {
+				// No organization - sign in as a user not associated with any organization
+			} else if len(orgAccesses) == 1 {
 				// Single organization - redirect to it
 				orgAccess = orgAccesses[0]
 				org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
@@ -351,8 +478,7 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 				}
 				orgSubdomain = conv.SafeValue(org.Subdomain)
 			} else {
-				// Multiple organizations - send email with options
-				return s.handleMultipleOrganizations(ctx, u, orgAccesses)
+				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
 			}
 		}
 	} else {
@@ -366,13 +492,13 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	// Create token, secret, etc.
 	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(
-		u.ID, model.TmpTokenExpiration)
+		user.ID, model.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update user with new secret
-	u.Secret = hashedSecret
+	user.Secret = hashedSecret
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
@@ -380,18 +506,82 @@ func (s *ServiceCE) SignIn(ctx context.Context, in dto.SignInInput) (*dto.SignIn
 
 	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().Update(ctx, u)
+		return tx.User().Update(ctx, user)
 	}); err != nil {
 		return nil, err
 	}
 
-	return &dto.SignInOutput{
+	return &dto.AuthenticateWithMagicLinkOutput{
 		AuthURL:              authURL,
 		Token:                token,
+		IsOrganizationExists: orgAccess != nil,
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
-		IsOrganizationExists: orgAccess != nil,
 		Domain:               config.Config.OrgDomain(orgSubdomain),
+		IsNewUser:            false,
+	}, nil
+}
+
+// RegisterWithMagicLink registers a new user with a magic link.
+func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error) {
+	// Parse and validate the registration token
+	claims, err := jwt.ParseToken[*jwt.UserMagicLinkRegistrationClaims](in.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Subject != jwt.UserSignatureSubjectMagicLinkRegistration {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Generate secret and XSRF token
+	plainSecret, hashedSecret, err := generateSecret()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new user
+	user := &model.User{
+		ID:        uuid.Must(uuid.NewV4()),
+		Email:     claims.Email,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+		Secret:    hashedSecret,
+	}
+
+	var token, xsrfToken string
+	// Create the user in a transaction
+	err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().Create(ctx, user); err != nil {
+			return err
+		}
+
+		expiration := model.TmpTokenExpiration
+		if !config.Config.IsCloudEdition {
+			// For self-hosted, create initial organization
+			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, user); err != nil {
+				return err
+			}
+			expiration = model.TokenExpiration()
+		}
+
+		// Create token
+		var err error
+		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(user.ID, expiration)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.RegisterWithMagicLinkOutput{
+		Token:     token,
+		Secret:    plainSecret,
+		XSRFToken: xsrfToken,
 	}, nil
 }
 
@@ -403,30 +593,6 @@ func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model
 	}
 
 	return s.getOrganizationBySubdomain(ctx, u, subdomain)
-}
-
-// handleMultipleOrganizations sends an email with login links when a user belongs to multiple organizations.
-func (s *ServiceCE) handleMultipleOrganizations(ctx context.Context, u *model.User, orgAccesses []*model.UserOrganizationAccess) (*dto.SignInOutput, error) {
-	loginURLs := make([]string, 0, len(orgAccesses))
-
-	for _, access := range orgAccesses {
-		org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
-		if err != nil {
-			return nil, err
-		}
-		loginURLs = append(loginURLs, config.Config.OrgBaseURL(conv.SafeValue(org.Subdomain))+"/signin")
-	}
-
-	if err := s.Mailer.User().SendMultipleOrganizationsEmail(ctx, &model.SendMultipleOrganizationsEmail{
-		To:        u.Email,
-		FirstName: u.FirstName,
-		Email:     u.Email,
-		LoginURLs: loginURLs,
-	}); err != nil {
-		return nil, err
-	}
-
-	return nil, errdefs.ErrUserMultipleOrganizations(errors.New("email belongs to multiple organizations"))
 }
 
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
@@ -555,154 +721,6 @@ func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-// SendSignUpInstructions sends an email with a sign-up activation link.
-func (s *ServiceCE) SendSignUpInstructions(ctx context.Context, in dto.SendSignUpInstructionsInput) (*dto.SendSignUpInstructionsOutput, error) {
-	// Check self-hosted organization restriction
-	if err := s.validateSelfHostedOrganization(ctx); err != nil {
-		return nil, err
-	}
-
-	// Check if email already exists
-	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return nil, errdefs.ErrUserEmailAlreadyExists(errors.New("email already exists"))
-	}
-
-	// In staging environment, only allow @trysourcetool.com email addresses
-	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(in.Email, "@trysourcetool.com") {
-		return &dto.SendSignUpInstructionsOutput{
-			Email: in.Email,
-		}, nil
-	}
-
-	// Check if registration request already exists
-	requestExists, err := s.Store.User().IsRegistrationRequestExists(ctx, in.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create or update registration request and send instructions
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		// Create registration request if needed
-		if !requestExists {
-			if err := tx.User().CreateRegistrationRequest(ctx, &model.UserRegistrationRequest{
-				ID:    uuid.Must(uuid.NewV4()),
-				Email: in.Email,
-			}); err != nil {
-				return err
-			}
-		}
-
-		// Create token for activation
-		tok, err := createUserToken("", in.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectActivate)
-		if err != nil {
-			return err
-		}
-
-		// Build activation URL
-		url, err := buildUserActivateURL(tok)
-		if err != nil {
-			return err
-		}
-
-		return s.Mailer.User().SendSignUpInstructions(ctx, &model.SendSignUpInstructions{
-			To:  in.Email,
-			URL: url,
-		})
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SendSignUpInstructionsOutput{
-		Email: in.Email,
-	}, nil
-}
-
-// SignUp registers a new user with the activated token.
-func (s *ServiceCE) SignUp(ctx context.Context, in dto.SignUpInput) (*dto.SignUpOutput, error) {
-	// Verify token
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.Subject != jwt.UserSignatureSubjectActivate {
-		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	// Get registration request
-	requestUser, err := s.Store.User().GetRegistrationRequest(ctx, storeopts.UserRegistrationRequestByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	// Create password hash
-	hashedPassword, err := hashPassword(in.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	// Generate user secret
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	// Prepare user object
-	now := time.Now()
-	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                c.Email,
-		Password:             hashedPassword,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-	}
-
-	// Prepare token expiration time based on edition
-	var token string
-	var xsrfToken string
-
-	// Create user and setup related data in transaction
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().Create(ctx, u); err != nil {
-			return err
-		}
-
-		// Handle different editions
-		expiration := model.TmpTokenExpiration
-		if !config.Config.IsCloudEdition {
-			// For self-hosted, create initial organization
-			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
-				return err
-			}
-			expiration = model.TokenExpiration()
-		}
-
-		// Create token
-		var err error
-		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(u.ID, expiration)
-		if err != nil {
-			return err
-		}
-
-		// Delete registration request
-		return tx.User().DeleteRegistrationRequest(ctx, requestUser)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignUpOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-	}, nil
 }
 
 func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, tx infra.Transaction, u *model.User) error {
@@ -1032,26 +1050,17 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 			continue
 		}
 
-		userExists, err := s.Store.User().IsEmailExists(ctx, email)
+		tok, err := createUserEmailToken(email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 		if err != nil {
 			return nil, err
 		}
 
-		tok, err := createUserToken("", email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
-		if err != nil {
-			return nil, err
-		}
-
-		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email, userExists)
+		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email)
 		if err != nil {
 			return nil, err
 		}
 
 		emailInput.URLs[email] = url
-
-		logger.Logger.Sugar().Debug("================= URL =================")
-		logger.Logger.Sugar().Debug(url)
-		logger.Logger.Sugar().Debug("================= URL =================")
 
 		invitations = append(invitations, &model.UserInvitation{
 			ID:             uuid.Must(uuid.NewV4()),
@@ -1204,12 +1213,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		}
 	}
 
-	// Hash password
-	hashedPassword, err := hashPassword(in.Password)
-	if err != nil {
-		return nil, err
-	}
-
 	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
@@ -1222,7 +1225,6 @@ func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitatio
 		FirstName:            in.FirstName,
 		LastName:             in.LastName,
 		Email:                c.Email,
-		Password:             hashedPassword,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 	}
@@ -1650,7 +1652,6 @@ func (s *ServiceCE) SignUpWithGoogleInvitation(ctx context.Context, in dto.SignU
 		Email:                googleAuthReq.Email,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
-		GoogleID:             googleAuthReq.GoogleID,
 	}
 
 	orgAccess := &model.UserOrganizationAccess{
@@ -1721,17 +1722,12 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 
 	u := ctxutil.CurrentUser(ctx)
 
-	userExists, err := s.Store.User().IsEmailExists(ctx, userInvitation.Email)
-	if err != nil {
-		return nil, err
-	}
-
 	tok, err := createUserEmailToken(userInvitation.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
 	if err != nil {
 		return nil, err
 	}
 
-	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email, userExists)
+	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -1740,10 +1736,6 @@ func (s *ServiceCE) ResendInvitation(ctx context.Context, in dto.ResendInvitatio
 		Invitees: u.FullName(),
 		URLs:     map[string]string{userInvitation.Email: url},
 	}
-
-	logger.Logger.Sugar().Debug("================= URL =================")
-	logger.Logger.Sugar().Debug(url)
-	logger.Logger.Sugar().Debug("================= URL =================")
 
 	if err := s.Mailer.User().SendInvitationEmail(ctx, emailInput); err != nil {
 		return nil, err
@@ -1880,4 +1872,288 @@ func (s *ServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.
 	}
 
 	return org, orgAccess, nil
+}
+
+// RequestInvitationMagicLink sends a magic link for invitation authentication.
+func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error) {
+	// Parse and validate invitation token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectInvitation {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+	}
+
+	// Check if user exists
+	exists, err := s.Store.User().IsEmailExists(ctx, c.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create magic link token
+	tok, err := createUserEmailToken(c.Email, time.Now().Add(15*time.Minute), jwt.UserSignatureSubjectInvitationMagicLink)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build magic link URL
+	url, err := buildInvitationMagicLinkURL(conv.SafeValue(invitedOrg.Subdomain), tok)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send magic link email
+	if err := s.Mailer.User().SendInvitationMagicLinkEmail(ctx, &model.SendInvitationMagicLinkEmail{
+		To:        c.Email,
+		URL:       url,
+		FirstName: "there", // Default greeting for new users
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.RequestInvitationMagicLinkOutput{
+		Email: c.Email,
+		IsNew: !exists,
+	}, nil
+}
+
+// AuthenticateWithInvitationMagicLink authenticates a user with an invitation magic link.
+func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error) {
+	// Parse and validate token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectInvitationMagicLink {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	var orgSubdomain string
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+
+		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+	}
+
+	// Check if user exists
+	exists, err := s.Store.User().IsEmailExists(ctx, c.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		// Generate registration token for new user
+		registrationToken, err := createRegistrationToken(c.Email)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate registration token: %w", err)
+		}
+
+		return &dto.AuthenticateWithInvitationMagicLinkOutput{
+			Token:     registrationToken,
+			IsNewUser: true,
+		}, nil
+	}
+
+	// Get existing user
+	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Create organization access
+	orgAccess := &model.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: invitedOrg.ID,
+		Role:           userInvitation.Role,
+	}
+
+	// Generate token and secret
+	now := time.Now()
+	expiresAt := now.Add(model.TmpTokenExpiration)
+	xsrfToken := uuid.Must(uuid.NewV4()).String()
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save changes
+	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
+			return err
+		}
+
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
+			return err
+		}
+
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.AuthenticateWithInvitationMagicLinkOutput{
+		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + model.SaveAuthPath,
+		Token:     token,
+		Domain:    config.Config.OrgDomain(orgSubdomain),
+		IsNewUser: false,
+	}, nil
+}
+
+// RegisterWithInvitationMagicLink registers a new user with an invitation magic link.
+func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error) {
+	// Parse and validate token
+	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Subject != jwt.UserSignatureSubjectMagicLinkRegistration {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	// Get invitation
+	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
+	if err != nil {
+		return nil, err
+	}
+
+	// Get organization
+	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify organization access in cloud edition
+	var orgSubdomain string
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+		if err != nil {
+			return nil, err
+		}
+
+		if invitedOrg.ID != hostOrg.ID {
+			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+		}
+
+		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+	}
+
+	// Generate secret
+	plainSecret, hashedSecret, err := generateSecret()
+	if err != nil {
+		return nil, errdefs.ErrInternal(err)
+	}
+
+	// Create new user
+	now := time.Now()
+	expiresAt := now.Add(model.TokenExpiration())
+	u := &model.User{
+		ID:                   uuid.Must(uuid.NewV4()),
+		FirstName:            in.FirstName,
+		LastName:             in.LastName,
+		Email:                c.Email,
+		Secret:               hashedSecret,
+		EmailAuthenticatedAt: &now,
+	}
+
+	// Create organization access
+	orgAccess := &model.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: invitedOrg.ID,
+		Role:           userInvitation.Role,
+	}
+
+	// Generate token
+	xsrfToken := uuid.Must(uuid.NewV4()).String()
+	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save changes
+	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
+			return err
+		}
+
+		if err := tx.User().Create(ctx, u); err != nil {
+			return err
+		}
+
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
+			return err
+		}
+
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.RegisterWithInvitationMagicLinkOutput{
+		Token:     token,
+		Secret:    plainSecret,
+		XSRFToken: xsrfToken,
+		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
+		Domain:    config.Config.OrgDomain(orgSubdomain),
+	}, nil
 }

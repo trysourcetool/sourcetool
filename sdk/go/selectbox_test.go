@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -132,10 +132,10 @@ func TestSelectbox(t *testing.T) {
 	placeholder := "Select an option"
 
 	value := builder.Selectbox(label,
-		selectbox.Options(options...),
-		selectbox.DefaultValue(defaultValue),
-		selectbox.Placeholder(placeholder),
-		selectbox.Required(true),
+		selectbox.WithOptions(options...),
+		selectbox.WithDefaultValue(defaultValue),
+		selectbox.WithPlaceholder(placeholder),
+		selectbox.WithRequired(true),
 	)
 
 	if value == nil {
@@ -210,8 +210,8 @@ func TestSelectbox_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.Selectbox(label,
-		selectbox.Options(options...),
-		selectbox.FormatFunc(formatFunc),
+		selectbox.WithOptions(options...),
+		selectbox.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeSelectbox, []int{0})

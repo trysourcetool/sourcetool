@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
 	"github.com/trysourcetool/sourcetool-go/checkbox"
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -112,9 +112,9 @@ func TestCheckbox(t *testing.T) {
 
 	// Create Checkbox component with all options
 	value := builder.Checkbox(label,
-		checkbox.DefaultValue(true),
-		checkbox.Required(true),
-		checkbox.Disabled(true),
+		checkbox.WithDefaultValue(true),
+		checkbox.WithRequired(true),
+		checkbox.WithDisabled(true),
 	)
 
 	// Verify return value

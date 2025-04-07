@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
-	widgetv1 "github.com/trysourcetool/sourcetool/proto/go/widget/v1"
 
+	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -131,11 +131,11 @@ func TestMultiSelect(t *testing.T) {
 	placeholder := "Select options"
 
 	value := builder.MultiSelect(label,
-		multiselect.Options(options...),
-		multiselect.DefaultValue(defaultValue...),
-		multiselect.Placeholder(placeholder),
-		multiselect.Required(true),
-		multiselect.Disabled(true),
+		multiselect.WithOptions(options...),
+		multiselect.WithDefaultValue(defaultValue...),
+		multiselect.WithPlaceholder(placeholder),
+		multiselect.WithRequired(true),
+		multiselect.WithDisabled(true),
 	)
 
 	if value == nil {
@@ -211,8 +211,8 @@ func TestMultiSelect_WithFormatFunc(t *testing.T) {
 	}
 
 	builder.MultiSelect(label,
-		multiselect.Options(options...),
-		multiselect.FormatFunc(formatFunc),
+		multiselect.WithOptions(options...),
+		multiselect.WithFormatFunc(formatFunc),
 	)
 
 	widgetID := builder.generatePageID(state.WidgetTypeMultiSelect, []int{0})
