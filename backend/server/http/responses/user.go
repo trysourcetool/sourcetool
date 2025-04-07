@@ -41,18 +41,6 @@ type InviteUsersResponse struct {
 	UserInvitations []*UserInvitationResponse `json:"userInvitations"`
 }
 
-type GetGoogleAuthCodeURLResponse struct {
-	URL string `json:"url"`
-}
-
-type GetGoogleAuthCodeURLInvitationResponse struct {
-	URL string `json:"url"`
-}
-
-type SignInWithGoogleInvitationResponse struct {
-	ExpiresAt string `json:"expiresAt"`
-}
-
 type SignUpWithGoogleInvitationResponse struct {
 	ExpiresAt string `json:"expiresAt"`
 }

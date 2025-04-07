@@ -150,35 +150,6 @@ type AuthenticateWithMagicLinkOutput struct {
 	IsNewUser            bool // Indicates if a new user was created
 }
 
-// SignInWithGoogleInput is the input for Sign In With Google operation.
-type SignInWithGoogleInput struct {
-	SessionToken string
-}
-
-// SignInWithGoogleOutput is the output for Sign In With Google operation.
-type SignInWithGoogleOutput struct {
-	AuthURL              string
-	Token                string
-	IsOrganizationExists bool
-	Secret               string
-	XSRFToken            string
-	Domain               string
-}
-
-// SignUpWithGoogleInput is the input for Sign Up With Google operation.
-type SignUpWithGoogleInput struct {
-	SessionToken string
-	FirstName    string
-	LastName     string
-}
-
-// SignUpWithGoogleOutput is the output for Sign Up With Google operation.
-type SignUpWithGoogleOutput struct {
-	Token     string
-	Secret    string // only for self-hosted edition
-	XSRFToken string
-}
-
 // RefreshTokenInput is the input for Refresh Token operation.
 type RefreshTokenInput struct {
 	Secret          string
@@ -258,27 +229,6 @@ type SignUpInvitationOutput struct {
 	XSRFToken string
 	ExpiresAt string
 	Domain    string
-}
-
-// GetGoogleAuthCodeURLOutput is the output for Get Google Auth Code URL operation.
-type GetGoogleAuthCodeURLOutput struct {
-	URL string
-}
-
-// GoogleOAuthCallbackInput is the input for Google OAuth Callback operation.
-type GoogleOAuthCallbackInput struct {
-	State string
-	Code  string
-}
-
-// GoogleOAuthCallbackOutput is the output for Google OAuth Callback operation.
-type GoogleOAuthCallbackOutput struct {
-	SessionToken string
-	IsUserExists bool
-	FirstName    string
-	LastName     string
-	Domain       string
-	Invited      bool
 }
 
 // GetGoogleAuthCodeURLInvitationInput is the input for Get Google Auth Code URL Invitation operation.

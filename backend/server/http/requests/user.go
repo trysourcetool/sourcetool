@@ -10,16 +10,6 @@ type AuthenticateWithMagicLinkRequest struct {
 	LastName  string `json:"lastName"`
 }
 
-type SignInWithGoogleRequest struct {
-	SessionToken string `json:"sessionToken" validate:"required"`
-}
-
-type SignUpWithGoogleRequest struct {
-	SessionToken string `json:"sessionToken" validate:"required"`
-	FirstName    string `json:"firstName" validate:"required"`
-	LastName     string `json:"lastName" validate:"required"`
-}
-
 type RefreshTokenRequest struct {
 	Secret          string `validate:"required"`
 	XSRFTokenHeader string `validate:"required"`
