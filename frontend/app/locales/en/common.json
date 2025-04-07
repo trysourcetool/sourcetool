@@ -346,5 +346,16 @@
 
   "routes_signup_invitation_title": "Welcome to the team.",
   "routes_signup_invitation_description": "Complete your registration below",
-  "routes_signup_invitation_register_button": "Complete registration"
+  "routes_signup_invitation_register_button": "Complete registration",
+
+  "routes_auth_google_toast_missing_params_title": "Authentication Error",
+  "routes_auth_google_toast_missing_params_desc": "Missing parameters from Google. Please try logging in again.",
+  "routes_auth_google_toast_auth_failed_desc": "Failed to authenticate with Google. Please try again.",
+  "routes_auth_google_toast_reg_failed_desc": "Failed to register your account. Please try again.",
+  "routes_auth_google_toast_reg_success_title": "Registration Successful",
+  "routes_auth_google_toast_reg_success_desc": "Your account has been created. Setting up your organization...",
+  "routes_auth_google_toast_getme_failed_desc": "Failed to retrieve user details after registration. Please try logging in.",
+  "routes_auth_google_toast_save_auth_failed_desc": "Failed to complete authentication setup. Please try logging in again.",
+  "routes_auth_google_toast_error_title": "Authentication Error",
+  "routes_auth_google_toast_try_again_desc": "An unexpected error occurred. Please try logging in again."
 }

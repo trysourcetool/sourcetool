@@ -53,6 +53,11 @@ export default function MagicLinkAuth() {
         if (result.isNewUser) {
           navigate($path('/signup/followup', { token: result.token }));
         } else {
+          if (!result.isOrganizationExists) {
+            navigate($path('/organizations/new'));
+            return;
+          }
+
           const saveAuthResult = await dispatch(
             usersStore.asyncActions.saveAuth({
               authUrl: result.authUrl,

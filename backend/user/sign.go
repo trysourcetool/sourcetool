@@ -43,9 +43,19 @@ func createUserEmailToken(email string, expirationTime time.Time, subject string
 	})
 }
 
-func createGoogleAuthRequestToken(googleAuthRequestID string, expirationTime time.Time, subject string) (string, error) {
-	return jwt.SignToken(&jwt.UserGoogleAuthRequestClaims{
-		GoogleAuthRequestID: googleAuthRequestID,
+func createRegistrationToken(email string) (string, error) {
+	return jwt.SignToken(&jwt.UserMagicLinkRegistrationClaims{
+		Email: email,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			Subject:   jwt.UserSignatureSubjectMagicLinkRegistration,
+			Issuer:    jwt.Issuer,
+		},
+	})
+}
+
+func createGoogleAuthLinkToken(expirationTime time.Time, subject string) (string, error) {
+	return jwt.SignToken(&jwt.UserGoogleAuthLinkClaims{
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			Issuer:    jwt.Issuer,
@@ -54,13 +64,16 @@ func createGoogleAuthRequestToken(googleAuthRequestID string, expirationTime tim
 	})
 }
 
-func createRegistrationToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserMagicLinkRegistrationClaims{
-		Email: email,
+func createGoogleRegistrationToken(googleID, email, firstName, lastName string, expirationTime time.Time, subject string) (string, error) {
+	return jwt.SignToken(&jwt.UserGoogleRegistrationClaims{
+		GoogleID:  googleID,
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-			Subject:   jwt.UserSignatureSubjectMagicLinkRegistration,
+			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			Issuer:    jwt.Issuer,
+			Subject:   subject,
 		},
 	})
 }

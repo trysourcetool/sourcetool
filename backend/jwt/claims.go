@@ -7,14 +7,17 @@ import (
 const (
 	Issuer = "trysourcetool.com"
 
-	UserSignatureSubjectEmail                 = "email"
-	UserSignatureSubjectUpdateEmail           = "update_email"
-	UserSignatureSubjectActivate              = "activate"
-	UserSignatureSubjectInvitation            = "invitation"
-	UserSignatureSubjectInvitationMagicLink   = "invitation_magic_link"
-	UserSignatureSubjectGoogleAuthRequest     = "google_auth_request"
-	UserSignatureSubjectMagicLink             = "magic_link"
-	UserSignatureSubjectMagicLinkRegistration = "magic_link_registration"
+	UserSignatureSubjectEmail                    = "email"
+	UserSignatureSubjectUpdateEmail              = "update_email"
+	UserSignatureSubjectActivate                 = "activate"
+	UserSignatureSubjectInvitation               = "invitation"
+	UserSignatureSubjectInvitationMagicLink      = "invitation_magic_link"
+	UserSignatureSubjectGoogleAuthRequest        = "google_auth_request"
+	UserSignatureSubjectGoogleRegistration       = "google_registration"
+	UserSignatureSubjectMagicLink                = "magic_link"
+	UserSignatureSubjectMagicLinkRegistration    = "magic_link_registration"
+	UserSignatureSubjectGoogleAuthLink           = "google_auth_link"
+	UserSignatureSubjectGoogleAuthLinkInvitation = "google_auth_link_registration"
 )
 
 type RegisteredClaims jwt.RegisteredClaims
@@ -48,5 +51,19 @@ type UserAuthClaims struct {
 // UserMagicLinkRegistrationClaims represents claims for magic link registration.
 type UserMagicLinkRegistrationClaims struct {
 	Email string
+	jwt.RegisteredClaims
+}
+
+// UserGoogleAuthLinkClaims represents claims for Google authentication link.
+type UserGoogleAuthLinkClaims struct {
+	jwt.RegisteredClaims
+}
+
+// UserGoogleRegistrationClaims represents claims for Google registration.
+type UserGoogleRegistrationClaims struct {
+	GoogleID  string
+	Email     string
+	FirstName string
+	LastName  string
 	jwt.RegisteredClaims
 }

@@ -50,14 +50,15 @@ type UserRegistrationRequest struct {
 }
 
 type UserGoogleAuthRequest struct {
-	ID        uuid.UUID `db:"id"`
-	GoogleID  string    `db:"google_id"`
-	Email     string    `db:"email"`
-	Domain    string    `db:"domain"`
-	Invited   bool      `db:"invited"`
-	ExpiresAt time.Time `db:"expires_at"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID              uuid.UUID `db:"id"`
+	GoogleID        string    `db:"google_id"`
+	Email           string    `db:"email"`
+	Domain          string    `db:"domain"`
+	ExpiresAt       time.Time `db:"expires_at"`
+	Invited         bool      `db:"invited"`
+	InvitationOrgID uuid.UUID `db:"invitation_org_id"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
 }
 
 type UserOrganizationRole int

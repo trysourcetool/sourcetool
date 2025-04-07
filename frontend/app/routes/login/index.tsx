@@ -36,7 +36,7 @@ export default function Login() {
     (state) => state.users.isRequestMagicLinkWaiting,
   );
   const isOauthGoogleAuthWaiting = useSelector(
-    (state) => state.users.isOauthGoogleAuthWaiting,
+    (state) => state.users.isRequestGoogleAuthLinkWaiting,
   );
 
   const schema = object({
@@ -76,14 +76,14 @@ export default function Login() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.oauthGoogleAuthCodeUrl(),
+      usersStore.asyncActions.requestGoogleAuthLink(),
     );
     if (
-      usersStore.asyncActions.oauthGoogleAuthCodeUrl.fulfilled.match(
+      usersStore.asyncActions.requestGoogleAuthLink.fulfilled.match(
         resultAction,
       )
     ) {
-      const url = resultAction.payload.url;
+      const url = resultAction.payload.authUrl;
       window.location.href = url;
     } else {
       toast({

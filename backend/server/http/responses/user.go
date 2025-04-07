@@ -41,14 +41,6 @@ type InviteUsersResponse struct {
 	UserInvitations []*UserInvitationResponse `json:"userInvitations"`
 }
 
-type SignInInvitationResponse struct {
-	ExpiresAt string `json:"expiresAt"`
-}
-
-type SignUpInvitationResponse struct {
-	ExpiresAt string `json:"expiresAt"`
-}
-
 type GetGoogleAuthCodeURLResponse struct {
 	URL string `json:"url"`
 }
@@ -128,5 +120,24 @@ type AuthenticateWithInvitationMagicLinkResponse struct {
 
 type RegisterWithInvitationMagicLinkResponse struct {
 	Token     string `json:"token"`
+	XSRFToken string `json:"xsrfToken"`
+}
+
+type RequestGoogleAuthLinkResponse struct {
+	AuthURL string `json:"authUrl"`
+}
+
+type AuthenticateWithGoogleResponse struct {
+	FirstName            string `json:"firstName,omitempty"`
+	LastName             string `json:"lastName,omitempty"`
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	IsNewUser            bool   `json:"isNewUser"`
+}
+
+type RegisterWithGoogleResponse struct {
+	Token     string `json:"token"`
+	Secret    string `json:"secret"`
 	XSRFToken string `json:"xsrfToken"`
 }

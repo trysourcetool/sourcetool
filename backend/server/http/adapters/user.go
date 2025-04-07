@@ -256,39 +256,6 @@ func InviteUsersOutputToResponse(out *dto.InviteUsersOutput) *responses.InviteUs
 	}
 }
 
-// SignInInvitationRequestToDTOInput converts from requests.SignInInvitationRequest to dto.SignInInvitationInput.
-func SignInInvitationRequestToDTOInput(in requests.SignInInvitationRequest) dto.SignInInvitationInput {
-	return dto.SignInInvitationInput{
-		InvitationToken: in.InvitationToken,
-		Password:        in.Password,
-	}
-}
-
-// SignInInvitationOutputToResponse converts from dto.SignInInvitationOutput to responses.SignInInvitationResponse.
-func SignInInvitationOutputToResponse(out *dto.SignInInvitationOutput) *responses.SignInInvitationResponse {
-	return &responses.SignInInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
-	}
-}
-
-// SignUpInvitationRequestToDTOInput converts from requests.SignUpInvitationRequest to dto.SignUpInvitationInput.
-func SignUpInvitationRequestToDTOInput(in requests.SignUpInvitationRequest) dto.SignUpInvitationInput {
-	return dto.SignUpInvitationInput{
-		InvitationToken:      in.InvitationToken,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
-	}
-}
-
-// SignUpInvitationOutputToResponse converts from dto.SignUpInvitationOutput to responses.SignUpInvitationResponse.
-func SignUpInvitationOutputToResponse(out *dto.SignUpInvitationOutput) *responses.SignUpInvitationResponse {
-	return &responses.SignUpInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
-	}
-}
-
 // GetGoogleAuthCodeURLOutputToResponse converts from dto.GetGoogleAuthCodeURLOutput to responses.GetGoogleAuthCodeURLResponse.
 func GetGoogleAuthCodeURLOutputToResponse(out *dto.GetGoogleAuthCodeURLOutput) *responses.GetGoogleAuthCodeURLResponse {
 	return &responses.GetGoogleAuthCodeURLResponse{
@@ -412,6 +379,51 @@ func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithIn
 func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
 	return &responses.RegisterWithInvitationMagicLinkResponse{
 		Token:     out.Token,
+		XSRFToken: out.XSRFToken,
+	}
+}
+
+// RequestGoogleAuthLinkOutputToResponse converts from dto.RequestGoogleAuthLinkOutput to responses.RequestGoogleAuthLinkResponse.
+func RequestGoogleAuthLinkOutputToResponse(out *dto.RequestGoogleAuthLinkOutput) *responses.RequestGoogleAuthLinkResponse {
+	return &responses.RequestGoogleAuthLinkResponse{
+		AuthURL: out.AuthURL,
+	}
+}
+
+// AuthenticateWithGoogleRequestToDTOInput converts requests.AuthenticateWithGoogleRequest to dto.AuthenticateWithGoogleInput.
+func AuthenticateWithGoogleRequestToDTOInput(req requests.AuthenticateWithGoogleRequest) dto.AuthenticateWithGoogleInput {
+	return dto.AuthenticateWithGoogleInput{
+		Code:  req.Code,
+		State: req.State,
+	}
+}
+
+// AuthenticateWithGoogleOutputToResponse converts dto.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
+func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
+	return &responses.AuthenticateWithGoogleResponse{
+		FirstName:            out.FirstName,
+		LastName:             out.LastName,
+		AuthURL:              out.AuthURL,
+		Token:                out.Token,
+		IsOrganizationExists: out.IsOrganizationExists,
+		IsNewUser:            out.IsNewUser,
+	}
+}
+
+// RegisterWithGoogleRequestToDTOInput converts from requests.RegisterWithGoogleRequest to dto.RegisterWithGoogleInput.
+func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) dto.RegisterWithGoogleInput {
+	return dto.RegisterWithGoogleInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
+// RegisterWithGoogleOutputToResponse converts from dto.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
+func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
+	return &responses.RegisterWithGoogleResponse{
+		Token:     out.Token,
+		Secret:    out.Secret,
 		XSRFToken: out.XSRFToken,
 	}
 }

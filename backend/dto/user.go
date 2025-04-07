@@ -389,3 +389,41 @@ type RegisterWithInvitationMagicLinkOutput struct {
 	ExpiresAt string
 	Domain    string
 }
+
+// RequestGoogleAuthLinkOutput represents the output for requesting a Google Auth link.
+type RequestGoogleAuthLinkOutput struct {
+	AuthURL string
+}
+
+// AuthenticateWithGoogleInput defines the input for authenticating with Google via frontend callback.
+type AuthenticateWithGoogleInput struct {
+	Code  string
+	State string
+}
+
+// AuthenticateWithGoogleOutput defines the output for authenticating with Google via frontend callback.
+type AuthenticateWithGoogleOutput struct {
+	FirstName            string
+	LastName             string
+	AuthURL              string
+	Token                string
+	IsOrganizationExists bool
+	Secret               string
+	XSRFToken            string
+	Domain               string
+	IsNewUser            bool // Indicates if a new user was created
+}
+
+// RegisterWithGoogleInput defines the input for registering a new user via Google OAuth flow.
+type RegisterWithGoogleInput struct {
+	Token     string
+	FirstName string
+	LastName  string
+}
+
+// RegisterWithGoogleOutput defines the output after successfully registering a new user via Google.
+type RegisterWithGoogleOutput struct {
+	Token     string
+	Secret    string
+	XSRFToken string
+}

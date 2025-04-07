@@ -120,14 +120,11 @@ const signout = createAsyncThunk(
   },
 );
 
-const oauthGoogleUserInfo = createAsyncThunk(
-  'users/oauthGoogleUserInfo',
-  async (
-    params: { data: { code: string; state: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+const requestGoogleAuthLink = createAsyncThunk(
+  'users/requestGoogleAuthLink',
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      const res = await api.users.usersOauthGoogleUserInfo(params);
+      const res = await api.users.usersRequestGoogleAuthLink();
 
       return res;
     } catch (error: any) {
@@ -137,33 +134,16 @@ const oauthGoogleUserInfo = createAsyncThunk(
   },
 );
 
-const oauthGoogleSignin = createAsyncThunk(
-  'users/oauthGoogleSignin',
-  async (
-    params: { data: { sessionToken: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersOauthGoogleSignin(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const oauthGoogleSignup = createAsyncThunk(
-  'users/oauthGoogleSignup',
+const authenticateWithGoogle = createAsyncThunk(
+  'users/authenticateWithGoogle',
   async (
     params: {
-      data: { firstName: string; lastName: string; sessionToken: string };
+      data: { code: string; state: string };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersOauthGoogleSignup(params);
+      const res = await api.users.usersAuthenticateWithGoogle(params);
 
       return res;
     } catch (error: any) {
@@ -173,11 +153,14 @@ const oauthGoogleSignup = createAsyncThunk(
   },
 );
 
-const oauthGoogleAuthCodeUrl = createAsyncThunk(
-  'users/oauthGoogleAuthCodeUrl',
-  async (_, { dispatch, rejectWithValue }) => {
+const registerWithGoogle = createAsyncThunk(
+  'users/registerWithGoogle',
+  async (
+    params: { data: { token: string; firstName: string; lastName: string } },
+    { dispatch, rejectWithValue },
+  ) => {
     try {
-      const res = await api.users.usersOauthGoogleAuthCodeUrl();
+      const res = await api.users.usersRegisterWithGoogle(params);
 
       return res;
     } catch (error: any) {
@@ -542,7 +525,9 @@ export type State = {
   isSaveAuthWaiting: boolean;
   isSignoutWaiting: boolean;
   isObtainAuthTokenWaiting: boolean;
-  isOauthGoogleAuthWaiting: boolean;
+  isRequestGoogleAuthLinkWaiting: boolean;
+  isAuthenticateWithGoogleWaiting: boolean;
+  isRegisterWithGoogleWaiting: boolean;
   isUpdateUserWaiting: boolean;
   isUpdateUserEmailWaiting: boolean;
   isUsersSendUpdateEmailInstructionsWaiting: boolean;
@@ -569,7 +554,9 @@ const initialState: State = {
   isObtainAuthTokenWaiting: false,
   isSaveAuthWaiting: false,
   isSignoutWaiting: false,
-  isOauthGoogleAuthWaiting: false,
+  isRequestGoogleAuthLinkWaiting: false,
+  isAuthenticateWithGoogleWaiting: false,
+  isRegisterWithGoogleWaiting: false,
   isUpdateUserWaiting: false,
   isUpdateUserEmailWaiting: false,
   isUsersSendUpdateEmailInstructionsWaiting: false,
@@ -718,15 +705,49 @@ export const slice = createSlice({
         state.isInviteWaiting = false;
       })
 
-      // oauthGoogleAuthCodeUrl
-      .addCase(oauthGoogleAuthCodeUrl.pending, (state) => {
-        state.isOauthGoogleAuthWaiting = true;
+      // requestGoogleAuthLink
+      .addCase(requestGoogleAuthLink.pending, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = true;
       })
-      .addCase(oauthGoogleAuthCodeUrl.fulfilled, (state) => {
-        state.isOauthGoogleAuthWaiting = false;
+      .addCase(requestGoogleAuthLink.fulfilled, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = false;
       })
-      .addCase(oauthGoogleAuthCodeUrl.rejected, (state) => {
-        state.isOauthGoogleAuthWaiting = false;
+      .addCase(requestGoogleAuthLink.rejected, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = false;
+      })
+
+      // authenticateWithGoogle
+      .addCase(authenticateWithGoogle.pending, (state) => {
+        state.isAuthenticateWithGoogleWaiting = true;
+      })
+      .addCase(authenticateWithGoogle.fulfilled, (state) => {
+        state.isAuthenticateWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(authenticateWithGoogle.rejected, (state) => {
+        state.isAuthenticateWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithGoogle
+      .addCase(registerWithGoogle.pending, (state) => {
+        state.isRegisterWithGoogleWaiting = true;
+      })
+      .addCase(registerWithGoogle.fulfilled, (state) => {
+        state.isRegisterWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(registerWithGoogle.rejected, (state) => {
+        state.isRegisterWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
       })
 
       // getUserGroups
@@ -932,10 +953,9 @@ export const usersStore = {
     getUsersMe,
     listUsers,
     signout,
-    oauthGoogleUserInfo,
-    oauthGoogleSignin,
-    oauthGoogleSignup,
-    oauthGoogleAuthCodeUrl,
+    requestGoogleAuthLink,
+    authenticateWithGoogle,
+    registerWithGoogle,
     invite,
     invitationsResend,
     invitationsSignup,

@@ -149,62 +149,47 @@ export const usersSaveAuth: (params: {
   throw new Error('Unknown error');
 };
 
-export const usersOauthGoogleUserInfo = async (params: {
+export const usersRequestGoogleAuthLink = async () => {
+  const res = await api.post<{
+    authUrl: string;
+  }>({
+    path: '/users/auth/google/request',
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithGoogle  = async (params: {
   data: {
     code: string;
     state: string;
   };
 }) => {
   const res = await api.post<{
-    firstName: string;
-    isUserExists: true;
-    lastName: string;
-    sessionToken: string;
-  }>({
-    path: '/users/oauth/google/userInfo',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersOauthGoogleSignin = async (params: {
-  data: {
-    sessionToken: string;
-  };
-}) => {
-  const res = await api.post<{
     authUrl: string;
     token: string;
     isOrganizationExists: boolean;
+    isNewUser: boolean;
+    firstName: string;
+    lastName: string;
   }>({
-    path: '/users/oauth/google/signin',
+    path: '/users/auth/google/authenticate',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersOauthGoogleSignup = async (params: {
+export const usersRegisterWithGoogle = async (params: {
   data: {
+    token: string;
     firstName: string;
     lastName: string;
-    sessionToken: string;
   };
 }) => {
   const res = await api.post({
-    path: '/users/oauth/google/signup',
+    path: '/users/auth/google/register',
     data: params.data,
-  });
-
-  return res;
-};
-
-export const usersOauthGoogleAuthCodeUrl = async () => {
-  const res = await api.post<{
-    url: string;
-  }>({
-    path: '/users/oauth/google/authCodeUrl',
   });
 
   return res;
@@ -408,6 +393,7 @@ export const usersAuthenticateWithMagicLink = async (params: {
     authUrl: string;
     token: string;
     isNewUser: boolean;
+    isOrganizationExists: boolean;
   }>({
     path: '/users/auth/magic/authenticate',
     data: params.data,

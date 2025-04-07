@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-
+	// Alias the library
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
@@ -43,6 +43,16 @@ type Service interface {
 	AuthenticateWithInvitationMagicLink(context.Context, dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error)
 	RegisterWithInvitationMagicLink(context.Context, dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error)
 
+	// Google Authentication methods
+	RequestGoogleAuthLink(context.Context) (*dto.RequestGoogleAuthLinkOutput, error)
+	AuthenticateWithGoogle(context.Context, dto.AuthenticateWithGoogleInput) (*dto.AuthenticateWithGoogleOutput, error)
+	RegisterWithGoogle(context.Context, dto.RegisterWithGoogleInput) (*dto.RegisterWithGoogleOutput, error)
+
+	// Google Invitation methods
+	// RequestGoogleAuthLinkInvitation(context.Context, dto.RequestGoogleAuthLinkInvitationInput) (*dto.RequestGoogleAuthLinkInvitationOutput, error)
+	// AuthenticateWithGoogleInvitation(context.Context, dto.AuthenticateWithGoogleInvitationInput) (*dto.AuthenticateWithGoogleInvitationOutput, error)
+	// RegisterWithGoogleInvitation(context.Context, dto.RegisterWithGoogleInvitationInput) (*dto.RegisterWithGoogleInvitationOutput, error)
+
 	// Authentication methods
 	SignOut(context.Context) (*dto.SignOutOutput, error)
 	RefreshToken(context.Context, dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error)
@@ -52,12 +62,9 @@ type Service interface {
 	// Invitation methods
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
 	ResendInvitation(context.Context, dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error)
-	SignInInvitation(context.Context, dto.SignInInvitationInput) (*dto.SignInInvitationOutput, error)
-	SignUpInvitation(context.Context, dto.SignUpInvitationInput) (*dto.SignUpInvitationOutput, error)
 
 	// Google OAuth methods
 	GetGoogleAuthCodeURL(context.Context) (*dto.GetGoogleAuthCodeURLOutput, error)
-	GoogleOAuthCallback(context.Context, dto.GoogleOAuthCallbackInput) (*dto.GoogleOAuthCallbackOutput, error)
 	SignInWithGoogle(context.Context, dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error)
 	SignUpWithGoogle(context.Context, dto.SignUpWithGoogleInput) (*dto.SignUpWithGoogleOutput, error)
 	GetGoogleAuthCodeURLInvitation(context.Context, dto.GetGoogleAuthCodeURLInvitationInput) (*dto.GetGoogleAuthCodeURLInvitationOutput, error)
@@ -541,12 +548,14 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	}
 
 	// Create a new user
+	now := time.Now()
 	user := &model.User{
-		ID:        uuid.Must(uuid.NewV4()),
-		Email:     claims.Email,
-		FirstName: in.FirstName,
-		LastName:  in.LastName,
-		Secret:    hashedSecret,
+		ID:                   uuid.Must(uuid.NewV4()),
+		Email:                claims.Email,
+		FirstName:            in.FirstName,
+		LastName:             in.LastName,
+		Secret:               hashedSecret,
+		EmailAuthenticatedAt: &now,
 	}
 
 	var token, xsrfToken string
@@ -594,7 +603,6 @@ func (s *ServiceCE) resolveOrganizationBySubdomain(ctx context.Context, u *model
 
 	return s.getOrganizationBySubdomain(ctx, u, subdomain)
 }
-
 func (s *ServiceCE) SignInWithGoogle(ctx context.Context, in dto.SignInWithGoogleInput) (*dto.SignInWithGoogleOutput, error) {
 	// Parse and validate the Google auth request token
 	googleAuthReqClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthRequestClaims](in.SessionToken)
@@ -1094,186 +1102,6 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 	}, nil
 }
 
-func (s *ServiceCE) SignInInvitation(ctx context.Context, in dto.SignInInvitationInput) (*dto.SignInInvitationOutput, error) {
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.Subject != jwt.UserSignatureSubjectInvitation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
-	if err != nil {
-		return nil, err
-	}
-
-	var subdomain string
-	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-		if err != nil {
-			return nil, err
-		}
-
-		if invitedOrg.ID != hostOrg.ID {
-			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
-		}
-	}
-
-	u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	orgAccess := &model.UserOrganizationAccess{
-		ID:             uuid.Must(uuid.NewV4()),
-		UserID:         u.ID,
-		OrganizationID: invitedOrg.ID,
-		Role:           userInvitation.Role,
-	}
-
-	expiresAt := time.Now().Add(model.TokenExpiration())
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
-	if err != nil {
-		return nil, err
-	}
-
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	u.Secret = hashedSecret
-
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
-			return err
-		}
-
-		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
-			return err
-		}
-
-		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
-			return err
-		}
-
-		return tx.User().Update(ctx, u)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignInInvitationOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(subdomain),
-	}, nil
-}
-
-func (s *ServiceCE) SignUpInvitation(ctx context.Context, in dto.SignUpInvitationInput) (*dto.SignUpInvitationOutput, error) {
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.Subject != jwt.UserSignatureSubjectInvitation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
-	if err != nil {
-		return nil, err
-	}
-
-	var subdomain string
-	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-		if err != nil {
-			return nil, err
-		}
-
-		if invitedOrg.ID != hostOrg.ID {
-			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
-		}
-	}
-
-	plainSecret, hashedSecret, err := generateSecret()
-	if err != nil {
-		return nil, errdefs.ErrInternal(err)
-	}
-
-	now := time.Now()
-	expiresAt := now.Add(model.TokenExpiration())
-	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                c.Email,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-	}
-
-	orgAccess := &model.UserOrganizationAccess{
-		ID:             uuid.Must(uuid.NewV4()),
-		UserID:         u.ID,
-		OrganizationID: invitedOrg.ID,
-		Role:           userInvitation.Role,
-	}
-
-	var token string
-	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
-			return err
-		}
-
-		if err := tx.User().Create(ctx, u); err != nil {
-			return err
-		}
-
-		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
-			return err
-		}
-
-		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
-			return err
-		}
-
-		token, err = createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.SignUpInvitationOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(subdomain),
-	}, nil
-}
-
 func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAuthCodeURLOutput, error) {
 	// Check self-hosted organization restriction
 	if err := s.validateSelfHostedOrganization(ctx); err != nil {
@@ -1309,116 +1137,6 @@ func (s *ServiceCE) GetGoogleAuthCodeURL(ctx context.Context) (*dto.GetGoogleAut
 
 	return &dto.GetGoogleAuthCodeURLOutput{
 		URL: url,
-	}, nil
-}
-
-func (s *ServiceCE) GoogleOAuthCallback(ctx context.Context, in dto.GoogleOAuthCallbackInput) (*dto.GoogleOAuthCallbackOutput, error) {
-	state, err := uuid.FromString(in.State)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	googleAuthReq, err := s.Store.User().GetGoogleAuthRequest(ctx, state)
-	if err != nil {
-		return nil, err
-	}
-
-	googleOAuthClient := newGoogleOAuthClient()
-	tok, err := googleOAuthClient.getGoogleToken(ctx, in.Code)
-	if err != nil {
-		return nil, err
-	}
-
-	userInfo, err := googleOAuthClient.getGoogleUserInfo(ctx, tok)
-	if err != nil {
-		return nil, err
-	}
-
-	// In staging environment, only allow @trysourcetool.com email addresses
-	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(userInfo.email, "@trysourcetool.com") {
-		return &dto.GoogleOAuthCallbackOutput{
-			SessionToken: "",
-			IsUserExists: false,
-			Domain:       googleAuthReq.Domain,
-		}, nil
-	}
-
-	isUserExists, err := s.Store.User().IsEmailExists(ctx, userInfo.email)
-	if err != nil {
-		return nil, err
-	}
-
-	if time.Now().After(googleAuthReq.ExpiresAt) {
-		if err := s.Store.User().DeleteGoogleAuthRequest(ctx, googleAuthReq); err != nil {
-			return nil, err
-		}
-
-		return nil, errdefs.ErrInvalidArgument(errors.New("google auth code expired"))
-	}
-
-	googleAuthReq.GoogleID = userInfo.id
-	googleAuthReq.Email = userInfo.email
-
-	sessionToken, err := createGoogleAuthRequestToken(googleAuthReq.ID.String(), googleAuthReq.ExpiresAt, jwt.UserSignatureSubjectGoogleAuthRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	if isUserExists {
-		u, err := s.Store.User().Get(ctx, storeopts.UserByEmail(userInfo.email))
-		if err != nil {
-			return nil, err
-		}
-
-		hasGoogleID := u.GoogleID != ""
-
-		if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-			if !hasGoogleID {
-				u.GoogleID = googleAuthReq.GoogleID
-				if err := tx.User().Update(ctx, u); err != nil {
-					return err
-				}
-			}
-
-			return tx.User().UpdateGoogleAuthRequest(ctx, googleAuthReq)
-		}); err != nil {
-			return nil, err
-		}
-
-		return &dto.GoogleOAuthCallbackOutput{
-			SessionToken: sessionToken,
-			IsUserExists: isUserExists,
-			Domain:       googleAuthReq.Domain,
-		}, nil
-	}
-
-	requestExists, err := s.Store.User().IsRegistrationRequestExists(ctx, userInfo.email)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if !requestExists {
-			if err := tx.User().CreateRegistrationRequest(ctx, &model.UserRegistrationRequest{
-				ID:    uuid.Must(uuid.NewV4()),
-				Email: userInfo.email,
-			}); err != nil {
-				return err
-			}
-		}
-
-		return tx.User().UpdateGoogleAuthRequest(ctx, googleAuthReq)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.GoogleOAuthCallbackOutput{
-		SessionToken: sessionToken,
-		IsUserExists: isUserExists,
-		FirstName:    userInfo.givenName,
-		LastName:     userInfo.familyName,
-		Domain:       googleAuthReq.Domain,
-		Invited:      googleAuthReq.Invited,
 	}, nil
 }
 
@@ -1472,10 +1190,11 @@ func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.G
 		}
 
 		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
-			ID:        state,
-			Domain:    config.Config.OrgDomain(subdomain),
-			ExpiresAt: time.Now().Add(time.Duration(24) * time.Hour),
-			Invited:   true,
+			ID:              state,
+			Domain:          config.Config.OrgDomain(subdomain),
+			ExpiresAt:       time.Now().Add(time.Duration(24) * time.Hour),
+			Invited:         true,
+			InvitationOrgID: invitedOrg.ID,
 		})
 	}); err != nil {
 		return nil, err
@@ -2155,5 +1874,213 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 		XSRFToken: xsrfToken,
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 		Domain:    config.Config.OrgDomain(orgSubdomain),
+	}, nil
+}
+
+// RequestGoogleAuthLink sends a Google Auth link for invitation authentication.
+func (s *ServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
+	// Check self-hosted organization restriction
+	if err := s.validateSelfHostedOrganization(ctx); err != nil {
+		return nil, err
+	}
+
+	state, err := createGoogleAuthLinkToken(time.Now().Add(5*time.Minute), jwt.UserSignatureSubjectGoogleAuthLink)
+	if err != nil {
+		return nil, err
+	}
+
+	googleOAuthClient := newGoogleOAuthClient()
+	url, err := googleOAuthClient.getGoogleAuthCodeURL(ctx, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.RequestGoogleAuthLinkOutput{
+		AuthURL: url,
+	}, nil
+}
+
+func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.AuthenticateWithGoogleInput) (*dto.AuthenticateWithGoogleOutput, error) {
+	state, err := jwt.ParseToken[*jwt.UserGoogleAuthLinkClaims](in.State)
+	if err != nil {
+		return nil, errdefs.ErrInvalidArgument(err)
+	}
+
+	if state.Subject != jwt.UserSignatureSubjectGoogleAuthLink {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
+	}
+
+	googleOAuthClient := newGoogleOAuthClient()
+	tok, err := googleOAuthClient.getGoogleToken(ctx, in.Code)
+	if err != nil {
+		return nil, err
+	}
+
+	userInfo, err := googleOAuthClient.getGoogleUserInfo(ctx, tok)
+	if err != nil {
+		return nil, err
+	}
+
+	// In staging environment, only allow @trysourcetool.com email addresses (adjust as needed)
+	if config.Config.Env == config.EnvStaging && !strings.HasSuffix(userInfo.email, "@trysourcetool.com") {
+		return nil, errdefs.ErrPermissionDenied(errors.New("access restricted in staging environment"))
+	}
+
+	exists, err := s.Store.User().IsEmailExists(ctx, userInfo.email)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		registrationToken, err := createGoogleRegistrationToken(userInfo.id, userInfo.email, userInfo.givenName, userInfo.familyName, time.Now().Add(15*time.Minute), jwt.UserSignatureSubjectGoogleRegistration)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create registration token: %w", err)
+		}
+
+		return &dto.AuthenticateWithGoogleOutput{
+			Token:                registrationToken,
+			IsNewUser:            true,
+			IsOrganizationExists: false,
+			FirstName:            userInfo.givenName,
+			LastName:             userInfo.familyName,
+		}, nil
+	}
+
+	user, err := s.Store.User().Get(ctx, storeopts.UserByEmail(userInfo.email))
+	if err != nil {
+		return nil, errdefs.ErrUnauthenticated(err)
+	}
+
+	needsGoogleIDUpdate := user.GoogleID == ""
+
+	// Determine organization context (using the logic already present)
+	var org *model.Organization                 // Declare variables before if/else
+	var orgAccess *model.UserOrganizationAccess // Declare variables before if/else
+	var orgSubdomain string                     // Declare variables before if/else
+
+	org, orgAccess, err = s.getOrganizationInfo(ctx, user)
+	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
+		return nil, fmt.Errorf("failed to get user organization info: %w", err)
+	}
+	if org != nil {
+		orgSubdomain = conv.SafeValue(org.Subdomain)
+	} else {
+		orgSubdomain = "auth"
+	}
+
+	// Generate TEMPORARY auth tokens/secret
+	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(user.ID, model.TmpTokenExpiration)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temporary auth tokens: %w", err)
+	}
+
+	user.Secret = hashedSecret
+	if needsGoogleIDUpdate {
+		user.GoogleID = userInfo.id
+	}
+
+	// AuthURL for the frontend to call next to save the auth
+	authURL, err := buildSaveAuthURL(orgSubdomain)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build save auth url: %w", err)
+	}
+
+	// Save user update (secret, potentially Google ID)
+	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		return tx.User().Update(ctx, user)
+		// Org access creation for invitations for existing users should be handled elsewhere if needed.
+	}); err != nil {
+		return nil, fmt.Errorf("failed to update user during google auth: %w", err)
+	}
+
+	// Return structure similar to AuthenticateWithMagicLinkOutput for existing users
+	return &dto.AuthenticateWithGoogleOutput{
+		AuthURL:              authURL,
+		Token:                token,
+		IsOrganizationExists: orgAccess != nil,
+		Secret:               plainSecret,
+		XSRFToken:            xsrfToken,
+		Domain:               config.Config.OrgDomain(orgSubdomain),
+		IsNewUser:            false,
+	}, nil
+}
+
+// RegisterWithGoogle registers a new user based on the token received after Google OAuth confirmation.
+func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithGoogleInput) (*dto.RegisterWithGoogleOutput, error) {
+	// 1. Parse and validate the registration token
+	claims, err := jwt.ParseToken[*jwt.UserGoogleRegistrationClaims](in.Token)
+	if err != nil {
+		return nil, fmt.Errorf("invalid registration token: %w", err)
+	}
+	if claims.Subject != jwt.UserSignatureSubjectGoogleRegistration {
+		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject for google registration"))
+	}
+
+	// Optional: Verify email from token matches input or handle potential mismatch?
+	// For now, assume token email is authoritative.
+
+	// Check if user already exists (should ideally not happen if IsNewUser was true, but good safeguard)
+	exists, err := s.Store.User().IsEmailExists(ctx, claims.Email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check user existence: %w", err)
+	}
+	if exists {
+		// Handle this case - maybe return an error indicating user already exists?
+		return nil, errdefs.ErrUserEmailAlreadyExists(fmt.Errorf("user with email %s already exists", claims.Email))
+	}
+
+	// 2. Generate secret and XSRF token
+	plainSecret, hashedSecret, err := generateSecret()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate secret: %w", err)
+	}
+
+	// 3. Create the new user record
+	now := time.Now()
+	user := &model.User{
+		ID:                   uuid.Must(uuid.NewV4()),
+		Email:                claims.Email,
+		FirstName:            claims.FirstName,
+		LastName:             claims.LastName,
+		Secret:               hashedSecret,
+		EmailAuthenticatedAt: &now,            // Email is verified via Google
+		GoogleID:             claims.GoogleID, // Store Google ID
+	}
+
+	// 4. Handle organization creation/access (similar to magic link registration)
+	var token, xsrfToken string
+	err = s.Store.RunTransaction(func(tx infra.Transaction) error {
+		if err := tx.User().Create(ctx, user); err != nil {
+			return fmt.Errorf("failed to create user: %w", err)
+		}
+
+		expiration := model.TmpTokenExpiration
+
+		if !config.Config.IsCloudEdition {
+			// For self-hosted, create initial organization
+			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, user); err != nil {
+				return err
+			}
+			expiration = model.TokenExpiration() // Grant long-lived token immediately
+		}
+
+		// Create final auth token (temporary for cloud, long-lived for self-hosted)
+		var errToken error
+		token, xsrfToken, _, _, _, errToken = s.createTokenWithSecret(user.ID, expiration)
+		if errToken != nil {
+			return fmt.Errorf("failed to create auth token during registration: %w", errToken)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err // Return transaction error
+	}
+
+	// 5. Return final auth details
+	return &dto.RegisterWithGoogleOutput{
+		Token:     token,
+		Secret:    plainSecret,
+		XSRFToken: xsrfToken,
 	}, nil
 }
