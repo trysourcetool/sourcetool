@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/server/http/handlers"
@@ -42,6 +44,12 @@ func NewRouter(
 func (router *Router) Build() chi.Router {
 	r := chi.NewRouter()
 	r.Use(router.middleware.SetSubdomain)
+
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	})
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/users", func(r chi.Router) {
