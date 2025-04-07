@@ -152,7 +152,7 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 }
 
 func (m *MailerCE) SendMagicLinkEmail(ctx context.Context, in *model.SendMagicLinkEmail) error {
-	subject := "Sign in to your Sourcetool account"
+	subject := "Log in to your Sourcetool account"
 	content := fmt.Sprintf(`Hi %s,
 
 Here's your magic link to sign in to your Sourcetool account. Click the link below to access your account securely without a password:
@@ -181,7 +181,7 @@ The Sourcetool Team`, in.FirstName, in.URL)
 }
 
 func (m *MailerCE) SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *model.SendMultipleOrganizationsMagicLinkEmail) error {
-	subject := "Sign in to your Sourcetool organizations"
+	subject := "Log in to your Sourcetool organizations"
 
 	urlList := ""
 	for _, url := range in.LoginURLs {
