@@ -84,8 +84,8 @@ export default function InvitationLogin() {
       );
     } else {
       toast({
-        title: t('routes_signin_toast_failed'),
-        description: t('routes_signin_toast_failed_description'),
+        title: t('routes_login_toast_failed'),
+        description: t('routes_login_toast_failed_description'),
         variant: 'destructive',
       });
     }
@@ -107,8 +107,8 @@ export default function InvitationLogin() {
       window.location.href = url;
     } else {
       toast({
-        title: t('routes_signin_toast_url_failed'),
-        description: t('routes_signin_toast_url_failed_description'),
+        title: t('routes_login_toast_url_failed'),
+        description: t('routes_login_toast_url_failed_description'),
         variant: 'destructive',
       });
     }
@@ -120,22 +120,22 @@ export default function InvitationLogin() {
         <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
           <CardHeader className="space-y-1.5 p-0">
             <CardTitle className="text-2xl font-semibold text-foreground">
-              {t('routes_signin_invitation_title')}
+              {t('routes_login_invitation_title')}
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              {t('routes_signin_invitation_description')}
+              {t('routes_login_invitation_description')}
             </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <SocialButtonGoogle
               onClick={handleGoogleAuth}
-              label={t('routes_signin_google_button')}
+              label={t('routes_login_google_button')}
             />
 
             <div className="relative flex items-center justify-center">
               <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
               <span className="relative bg-background px-2 text-sm font-medium text-foreground">
-                {t('routes_signin_or')}
+                {t('routes_login_or')}
               </span>
             </div>
 
@@ -146,7 +146,7 @@ export default function InvitationLogin() {
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder={t('routes_signin_email_placeholder')}
+                      placeholder={t('routes_login_email_placeholder')}
                       className="h-[42px] border-border text-sm"
                       {...field}
                       disabled={!!email}
@@ -166,11 +166,11 @@ export default function InvitationLogin() {
               {isRequestInvitationMagicLinkWaiting && (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
-              {t('routes_signin_invitation_login_button')}
+              {t('routes_login_invitation_login_button')}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-              {t('routes_signin_terms_text')}
+              {t('routes_login_terms_text')}
             </p>
           </form>
         </Card>

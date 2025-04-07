@@ -94,7 +94,7 @@ export default function Signup() {
     } else {
       if (result.error && result.payload) {
         if ((result.payload as ErrorResponse).status === 401) {
-          navigate($path('/signin'));
+          navigate($path('/login'));
           toast({
             title: t('routes_organizations_new_toast_auth_error'),
             description: t(

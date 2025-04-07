@@ -26,7 +26,7 @@ import { usersStore } from '@/store/modules/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-export default function Signin() {
+export default function Login() {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -61,11 +61,11 @@ export default function Signin() {
     if (
       usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
     ) {
-      navigate($path('/signin/emailSent', { email: data.email }));
+      navigate($path('/login/emailSent', { email: data.email }));
     } else {
       toast({
-        title: t('routes_signin_toast_failed'),
-        description: t('routes_signin_toast_failed_description'),
+        title: t('routes_login_toast_failed'),
+        description: t('routes_login_toast_failed_description'),
         variant: 'destructive',
       });
     }
@@ -87,8 +87,8 @@ export default function Signin() {
       window.location.href = url;
     } else {
       toast({
-        title: t('routes_signin_toast_url_failed'),
-        description: t('routes_signin_toast_url_failed_description'),
+        title: t('routes_login_toast_url_failed'),
+        description: t('routes_login_toast_url_failed_description'),
         variant: 'destructive',
       });
     }
@@ -100,21 +100,21 @@ export default function Signin() {
         <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
           <CardHeader className="space-y-1.5 p-0">
             <CardTitle className="text-2xl font-semibold text-foreground">
-              {t('routes_signin_title')}
+              {t('routes_login_title')}
             </CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
-              {t('routes_signin_description')}
+              {t('routes_login_description')}
             </CardDescription>
           </CardHeader>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
             <SocialButtonGoogle
               onClick={handleGoogleAuth}
-              label={t('routes_signin_google_button')}
+              label={t('routes_login_google_button')}
             />
 
             <div className="relative flex items-center justify-center">
               <span className="text-sm font-medium text-foreground">
-                {t('routes_signin_or')}
+                {t('routes_login_or')}
               </span>
             </div>
 
@@ -125,7 +125,7 @@ export default function Signin() {
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder={t('routes_signin_email_placeholder')}
+                      placeholder={t('routes_login_email_placeholder')}
                       className="h-[42px] border-border text-sm"
                       {...field}
                     />
@@ -144,11 +144,11 @@ export default function Signin() {
               {isRequestMagicLinkWaiting && (
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
-              {t('routes_signin_login_button')}
+              {t('routes_login_login_button')}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-              {t('routes_signin_terms_text')}
+              {t('routes_login_terms_text')}
             </p>
           </form>
         </Card>

@@ -107,7 +107,7 @@ const signout = createAsyncThunk(
     try {
       const res = await api.users.usersSignout();
 
-      location.href = '/signin';
+      location.href = '/login';
 
       return res;
     } catch (error: any) {

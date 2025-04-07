@@ -30,11 +30,11 @@ export default function InvitationMagicLinkAuthenticate() {
     const authenticate = async () => {
       if (!token) {
         toast({
-          title: t('routes_signin_toast_failed'),
-          description: t('routes_signin_toast_failed_description'),
+          title: t('routes_login_toast_failed'),
+          description: t('routes_login_toast_failed_description'),
           variant: 'destructive',
         });
-        navigate($path('/signin'));
+        navigate($path('/login'));
         return;
       }
 
@@ -80,11 +80,11 @@ export default function InvitationMagicLinkAuthenticate() {
         }
       } else {
         toast({
-          title: t('routes_signin_toast_failed'),
-          description: t('routes_signin_toast_failed_description'),
+          title: t('routes_login_toast_failed'),
+          description: t('routes_login_toast_failed_description'),
           variant: 'destructive',
         });
-        navigate($path('/signin'));
+        navigate($path('/login'));
       }
     };
 

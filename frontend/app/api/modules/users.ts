@@ -49,20 +49,6 @@ export const getUsersMe = async () => {
   return res;
 };
 
-export const usersSignin = async (params: {
-  data: {
-    email: string;
-    password: string;
-  };
-}) => {
-  const res = await api.post<UserAuthResponse>({
-    path: '/users/signin',
-    data: params.data,
-  });
-
-  return res;
-};
-
 export const usersSignout = async () => {
   const res = await api.post({
     path: '/users/signout',

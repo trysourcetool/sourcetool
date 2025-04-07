@@ -29,11 +29,11 @@ export default function MagicLinkAuth() {
     const authenticate = async () => {
       if (!token) {
         toast({
-          title: t('routes_signin_magic_link_toast_invalid_token'),
-          description: t('routes_signin_magic_link_toast_try_again'),
+          title: t('routes_login_magic_link_toast_invalid_token'),
+          description: t('routes_login_magic_link_toast_try_again'),
           variant: 'destructive',
         });
-        navigate($path('/signin'));
+        navigate($path('/login'));
         return;
       }
 
@@ -77,11 +77,11 @@ export default function MagicLinkAuth() {
         }
       } else {
         toast({
-          title: t('routes_signin_magic_link_toast_error'),
-          description: t('routes_signin_magic_link_toast_try_again'),
+          title: t('routes_login_magic_link_toast_error'),
+          description: t('routes_login_magic_link_toast_try_again'),
           variant: 'destructive',
         });
-        navigate($path('/signin'));
+        navigate($path('/login'));
       }
     };
 
