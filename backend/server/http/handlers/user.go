@@ -1,5 +1,3 @@
-//go:build !ee
-
 package handlers
 
 import (
@@ -505,6 +503,13 @@ func (h *UserHandler) RequestGoogleAuthLink(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// AuthenticateWithGoogle godoc
+// @ID authenticate-with-google
+// @Accept json
+// @Produce json
+// @Tags users
+// @Success 200 {object} responses.AuthenticateWithGoogleResponse
+// @Failure default {object} errdefs.Error
 // @Router /auth/google/authenticate [post].
 func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithGoogleRequest
@@ -528,14 +533,13 @@ func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
-	// Return the full output DTO (contains temp tokens/authURL or registration info)
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithGoogleOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
 
-// @Router /auth/google/register [post].
+// @Success 200 {object} responses.RegisterWithGoogleResponse.
 func (h *UserHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -570,7 +574,7 @@ func (h *UserHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// RequestInvitationMagicLink handles the request for an invitation magic link.
+// @Router /users/auth/invitations/magic/request [post].
 func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -595,7 +599,7 @@ func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.
 	}
 }
 
-// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link.
+// @Router /users/auth/invitations/magic/authenticate [post].
 func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -620,7 +624,7 @@ func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter,
 	}
 }
 
-// RegisterWithInvitationMagicLink handles registration with an invitation magic link.
+// @Router /users/auth/invitations/magic/register [post].
 func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -648,6 +652,90 @@ func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully signed up",
+	}); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// @Router /users/auth/invitations/google/request [post].
+func (h *UserHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RequestInvitationGoogleAuthLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RequestInvitationGoogleAuthLink(r.Context(), adapters.RequestInvitationGoogleAuthLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationGoogleAuthLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// @Router /users/auth/invitations/google/authenticate [post].
+func (h *UserHandler) AuthenticateWithInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.AuthenticateWithInvitationGoogleAuthLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.AuthenticateWithInvitationGoogleAuthLink(r.Context(), adapters.AuthenticateWithInvitationGoogleAuthLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithInvitationGoogleAuthLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// @Router /users/auth/invitations/google/register [post].
+func (h *UserHandler) RegisterWithInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RegisterWithInvitationGoogleAuthLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RegisterWithInvitationGoogleAuthLink(r.Context(), adapters.RegisterWithInvitationGoogleAuthLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
+
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Successfully signed up via Google invitation",
 	}); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

@@ -347,3 +347,51 @@ type RegisterWithGoogleOutput struct {
 	Secret    string
 	XSRFToken string
 }
+
+// RequestInvitationGoogleAuthLinkInput is the input for requesting a Google Auth link for an invitation.
+type RequestInvitationGoogleAuthLinkInput struct {
+	InvitationToken string // Token identifying the specific invitation
+}
+
+// RequestInvitationGoogleAuthLinkOutput is the output containing the Google Auth URL for an invitation.
+type RequestInvitationGoogleAuthLinkOutput struct {
+	AuthURL string // The URL the user should be redirected to for Google authentication
+}
+
+// AuthenticateWithInvitationGoogleAuthLinkInput defines the input for authenticating with Google via invitation flow callback.
+type AuthenticateWithInvitationGoogleAuthLinkInput struct {
+	Code  string // Authorization code from Google
+	State string // State parameter originally sent to Google (contains our JWT)
+}
+
+// AuthenticateWithInvitationGoogleAuthLinkOutput defines the output after authenticating with Google via invitation.
+type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
+	// For existing users, provide temporary auth details to proceed to SaveAuth
+	AuthURL              string `json:"authUrl,omitempty"`
+	Token                string `json:"token,omitempty"` // Temporary auth token or registration token
+	Secret               string `json:"secret,omitempty"`
+	XSRFToken            string `json:"xsrfToken,omitempty"`
+	Domain               string `json:"domain,omitempty"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"` // Should always be true in invitation flow for existing users
+
+	// For new users, provide registration details
+	IsNewUser bool   `json:"isNewUser"`
+	FirstName string `json:"firstName,omitempty"` // Pre-filled from Google
+	LastName  string `json:"lastName,omitempty"`  // Pre-filled from Google
+}
+
+// RegisterWithInvitationGoogleAuthLinkInput defines the input for registering a new user via Google invitation flow.
+type RegisterWithInvitationGoogleAuthLinkInput struct {
+	Token     string // The registration token received from Authenticate step
+	FirstName string // User-confirmed first name
+	LastName  string // User-confirmed last name
+}
+
+// RegisterWithInvitationGoogleAuthLinkOutput defines the output after successfully registering via Google invitation.
+type RegisterWithInvitationGoogleAuthLinkOutput struct {
+	Token     string // Final, long-lived auth token
+	Secret    string // User's refresh secret
+	XSRFToken string // XSRF token
+	ExpiresAt string // Expiration timestamp for display/cookie setting
+	Domain    string // Domain for setting cookies
+}

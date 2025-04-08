@@ -335,3 +335,53 @@ func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *resp
 		XSRFToken: out.XSRFToken,
 	}
 }
+
+// RequestInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
+func RequestInvitationGoogleAuthLinkRequestToDTOInput(in requests.RequestInvitationGoogleAuthLinkRequest) dto.RequestInvitationGoogleAuthLinkInput {
+	return dto.RequestInvitationGoogleAuthLinkInput{
+		InvitationToken: in.InvitationToken,
+	}
+}
+
+// RequestInvitationGoogleAuthLinkOutputToResponse converts DTO output to response.
+func RequestInvitationGoogleAuthLinkOutputToResponse(out *dto.RequestInvitationGoogleAuthLinkOutput) *responses.RequestInvitationGoogleAuthLinkResponse {
+	return &responses.RequestInvitationGoogleAuthLinkResponse{
+		AuthURL: out.AuthURL,
+	}
+}
+
+// AuthenticateWithInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
+func AuthenticateWithInvitationGoogleAuthLinkRequestToDTOInput(in requests.AuthenticateWithInvitationGoogleAuthLinkRequest) dto.AuthenticateWithInvitationGoogleAuthLinkInput {
+	return dto.AuthenticateWithInvitationGoogleAuthLinkInput{
+		Code:  in.Code,
+		State: in.State,
+	}
+}
+
+// AuthenticateWithInvitationGoogleAuthLinkOutputToResponse converts DTO output to response.
+func AuthenticateWithInvitationGoogleAuthLinkOutputToResponse(out *dto.AuthenticateWithInvitationGoogleAuthLinkOutput) *responses.AuthenticateWithInvitationGoogleAuthLinkResponse {
+	return &responses.AuthenticateWithInvitationGoogleAuthLinkResponse{
+		AuthURL:              out.AuthURL,
+		Token:                out.Token, // Can be temp auth token or registration token
+		IsOrganizationExists: out.IsOrganizationExists,
+		IsNewUser:            out.IsNewUser,
+		FirstName:            out.FirstName,
+		LastName:             out.LastName,
+	}
+}
+
+// RegisterWithInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
+func RegisterWithInvitationGoogleAuthLinkRequestToDTOInput(in requests.RegisterWithInvitationGoogleAuthLinkRequest) dto.RegisterWithInvitationGoogleAuthLinkInput {
+	return dto.RegisterWithInvitationGoogleAuthLinkInput{
+		Token:     in.Token,
+		FirstName: in.FirstName,
+		LastName:  in.LastName,
+	}
+}
+
+// RegisterWithInvitationGoogleAuthLinkOutputToResponse converts DTO output to response.
+func RegisterWithInvitationGoogleAuthLinkOutputToResponse(out *dto.RegisterWithInvitationGoogleAuthLinkOutput) *responses.RegisterWithInvitationGoogleAuthLinkResponse {
+	// No specific fields needed in the response body for now.
+	// Auth cookies are set in the handler.
+	return &responses.RegisterWithInvitationGoogleAuthLinkResponse{}
+}

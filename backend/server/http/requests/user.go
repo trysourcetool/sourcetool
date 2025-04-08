@@ -82,14 +82,27 @@ type RegisterWithInvitationMagicLinkRequest struct {
 	LastName  string `json:"lastName" validate:"required"`
 }
 
-// AuthenticateWithGoogleRequest defines the request body for authenticating with Google via frontend callback.
 type AuthenticateWithGoogleRequest struct {
 	Code  string `json:"code" validate:"required"`
 	State string `json:"state" validate:"required"`
 }
 
-// RegisterWithGoogleRequest defines the request body for registering a new user via Google OAuth flow.
 type RegisterWithGoogleRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+}
+
+type RequestInvitationGoogleAuthLinkRequest struct {
+	InvitationToken string `json:"invitationToken" validate:"required"`
+}
+
+type AuthenticateWithInvitationGoogleAuthLinkRequest struct {
+	Code  string `json:"code" validate:"required"`
+	State string `json:"state" validate:"required"`
+}
+
+type RegisterWithInvitationGoogleAuthLinkRequest struct {
 	Token     string `json:"token" validate:"required"`
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`

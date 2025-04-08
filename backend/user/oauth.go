@@ -17,6 +17,11 @@ var oauthScopes = []string{
 	"https://www.googleapis.com/auth/userinfo.profile",
 }
 
+const (
+	googleOAuthCallbackPath           = "/auth/google/authenticate"
+	googleOAuthInvitationCallbackPath = "/auth/invitations/google/authenticate"
+)
+
 type googleOAuthClient struct{}
 
 func newGoogleOAuthClient() *googleOAuthClient {
@@ -37,11 +42,18 @@ type googleToken struct {
 	expiry       time.Time
 }
 
-func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string) (string, error) {
+func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string, isInvitation bool) (string, error) {
+	var redirectURL string
+	if isInvitation {
+		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
+	} else {
+		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
+	}
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}
@@ -54,11 +66,18 @@ func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state stri
 	return conf.AuthCodeURL(state, opts...), nil
 }
 
-func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*googleToken, error) {
+func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string, isInvitation bool) (*googleToken, error) {
+	var redirectURL string
+	if isInvitation {
+		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
+	} else {
+		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
+	}
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}
@@ -76,11 +95,18 @@ func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*g
 	}, nil
 }
 
-func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error) {
+func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken, isInvitation bool) (*googleUserInfo, error) {
+	var redirectURL string
+	if isInvitation {
+		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
+	} else {
+		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
+	}
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}

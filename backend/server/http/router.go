@@ -68,9 +68,9 @@ func (router *Router) Build() chi.Router {
 				r.Post("/auth/google/request", router.user.RequestGoogleAuthLink)
 				r.Post("/auth/google/authenticate", router.user.AuthenticateWithGoogle)
 				r.Post("/auth/google/register", router.user.RegisterWithGoogle)
-				// r.Post("/auth/invitations/google/request", router.user.RequestGoogleAuthLinkInvitation)
-				// r.Post("/auth/invitations/google/authenticate", router.user.AuthenticateWithGoogleInvitation)
-				// r.Post("/auth/invitations/google/register", router.user.RegisterWithGoogleInvitation)
+				r.Post("/auth/invitations/google/request", router.user.RequestInvitationGoogleAuthLink)
+				r.Post("/auth/invitations/google/authenticate", router.user.AuthenticateWithInvitationGoogleAuthLink)
+				r.Post("/auth/invitations/google/register", router.user.RegisterWithInvitationGoogleAuthLink)
 
 				r.Post("/saveAuth", router.user.SaveAuth)
 				r.Post("/refreshToken", router.user.RefreshToken)

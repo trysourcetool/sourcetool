@@ -1,23 +1,25 @@
 package jwt
 
 import (
+	"github.com/gofrs/uuid/v5"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
 	Issuer = "trysourcetool.com"
 
-	UserSignatureSubjectEmail                    = "email"
-	UserSignatureSubjectUpdateEmail              = "update_email"
-	UserSignatureSubjectActivate                 = "activate"
-	UserSignatureSubjectInvitation               = "invitation"
-	UserSignatureSubjectInvitationMagicLink      = "invitation_magic_link"
-	UserSignatureSubjectGoogleAuthRequest        = "google_auth_request"
-	UserSignatureSubjectGoogleRegistration       = "google_registration"
-	UserSignatureSubjectMagicLink                = "magic_link"
-	UserSignatureSubjectMagicLinkRegistration    = "magic_link_registration"
-	UserSignatureSubjectGoogleAuthLink           = "google_auth_link"
-	UserSignatureSubjectGoogleAuthLinkInvitation = "google_auth_link_registration"
+	UserSignatureSubjectEmail                        = "email"
+	UserSignatureSubjectUpdateEmail                  = "update_email"
+	UserSignatureSubjectActivate                     = "activate"
+	UserSignatureSubjectInvitation                   = "invitation"
+	UserSignatureSubjectInvitationMagicLink          = "invitation_magic_link"
+	UserSignatureSubjectGoogleAuthRequest            = "google_auth_request"
+	UserSignatureSubjectGoogleRegistration           = "google_registration"
+	UserSignatureSubjectMagicLink                    = "magic_link"
+	UserSignatureSubjectMagicLinkRegistration        = "magic_link_registration"
+	UserSignatureSubjectGoogleAuthLink               = "google_auth_link"
+	UserSignatureSubjectGoogleAuthLinkInvitation     = "google_auth_link_invitation"
+	UserSignatureSubjectGoogleInvitationRegistration = "google_invitation_registration"
 )
 
 type RegisteredClaims jwt.RegisteredClaims
@@ -65,5 +67,15 @@ type UserGoogleRegistrationClaims struct {
 	Email     string
 	FirstName string
 	LastName  string
+	jwt.RegisteredClaims
+}
+
+// UserGoogleInvitationRegistrationClaims represents claims for Google invitation registration.
+type UserGoogleInvitationRegistrationClaims struct {
+	InvitationOrgID uuid.UUID
+	GoogleID        string
+	Email           string
+	FirstName       string
+	LastName        string
 	jwt.RegisteredClaims
 }

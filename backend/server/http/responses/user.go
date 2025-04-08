@@ -129,3 +129,21 @@ type RegisterWithGoogleResponse struct {
 	Secret    string `json:"secret"`
 	XSRFToken string `json:"xsrfToken"`
 }
+
+type RequestInvitationGoogleAuthLinkResponse struct {
+	AuthURL string `json:"authUrl"`
+}
+
+type AuthenticateWithInvitationGoogleAuthLinkResponse struct {
+	// For existing users
+	AuthURL              string `json:"authUrl,omitempty"`
+	Token                string `json:"token,omitempty"` // Temporary auth token or registration token
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
+
+	// For new users
+	IsNewUser bool   `json:"isNewUser"`
+	FirstName string `json:"firstName,omitempty"`
+	LastName  string `json:"lastName,omitempty"`
+}
+
+type RegisterWithInvitationGoogleAuthLinkResponse struct{}

@@ -228,95 +228,51 @@ export const usersInvitationsResend = async (params: {
   return res;
 };
 
-export const usersInvitationsSignup = async (params: {
+export const usersRequestInvitationGoogleAuthLink = async (params: {
   data: {
-    firstName: string;
     invitationToken: string;
-    lastName: string;
-    password: string;
-    passwordConfirmation: string;
   };
 }) => {
-  const res = await api.post({
-    path: '/users/invitations/signup',
+  const res = await api.post<{
+    authUrl: string;
+  }>({
+    path: '/users/auth/invitations/google/request',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersInvitationsSignin = async (params: {
-  data: {
-    invitationToken: string;
-    password: string;
-  };
-}) => {
-  const res = await api.post({
-    path: '/users/invitations/signin',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleUserInfo = async (params: {
+export const usersAuthenticateWithInvitationGoogleAuthLink = async (params: {
   data: {
     code: string;
     state: string;
   };
 }) => {
   const res = await api.post<{
-    firstName: string;
-    isUserExists: true;
-    lastName: string;
-    sessionToken: string;
+    authUrl?: string;
+    token: string;
+    isOrganizationExists: boolean;
+    isNewUser: boolean;
+    firstName?: string;
+    lastName?: string;
   }>({
-    path: '/users/invitations/oauth/google/userInfo',
+    path: '/users/auth/invitations/google/authenticate',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersInvitationsOauthGoogleSignup = async (params: {
+export const usersRegisterWithInvitationGoogleAuthLink = async (params: {
   data: {
+    token: string;
     firstName: string;
-    invitationToken: string;
     lastName: string;
-    sessionToken: string;
   };
 }) => {
   const res = await api.post({
-    path: '/users/invitations/oauth/google/signup',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleSignin = async (params: {
-  data: {
-    invitationToken: string;
-    sessionToken: string;
-  };
-}) => {
-  const res = await api.post({
-    path: '/users/invitations/oauth/google/signin',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleAuthCodeUrl = async (params: {
-  data: {
-    invitationToken: string;
-  };
-}) => {
-  const res = await api.post<{
-    url: string;
-  }>({
-    path: '/users/invitations/oauth/google/authCodeUrl',
+    path: '/users/auth/invitations/google/register',
     data: params.data,
   });
 

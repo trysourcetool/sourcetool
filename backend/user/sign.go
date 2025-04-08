@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/jwt"
@@ -76,4 +77,32 @@ func createGoogleRegistrationToken(googleID, email, firstName, lastName string, 
 			Subject:   subject,
 		},
 	})
+}
+
+func createGoogleInvitationStateToken(orgID uuid.UUID, expiresAt time.Time, subject string) (string, error) {
+	claims := &jwt.UserGoogleInvitationRegistrationClaims{
+		InvitationOrgID: orgID,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   subject,
+		},
+	}
+	return jwt.SignToken(claims)
+}
+
+func createGoogleInvitationRegistrationToken(orgID uuid.UUID, googleID, email, firstName, lastName string, expiresAt time.Time, subject string) (string, error) {
+	claims := &jwt.UserGoogleInvitationRegistrationClaims{
+		InvitationOrgID: orgID,
+		GoogleID:        googleID,
+		Email:           email,
+		FirstName:       firstName,
+		LastName:        lastName,
+		RegisteredClaims: gojwt.RegisteredClaims{
+			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			Issuer:    jwt.Issuer,
+			Subject:   subject,
+		},
+	}
+	return jwt.SignToken(claims)
 }
