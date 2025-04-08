@@ -5,7 +5,7 @@ import {
   convertTimeInputProtoToState,
   convertStateToTimeInputProto,
   timeInput,
-} from './timeinput'; // convertStateToTimeInputProto は後でエクスポートする必要あり
+} from './timeinput';
 import { createSessionManager, newSession } from './internal/session';
 import { MockClient } from './internal/websocket/mock/websocket';
 import { UIBuilder } from './uibuilder';
