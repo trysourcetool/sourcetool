@@ -123,7 +123,7 @@ export function radio(
     defaultValue: options.defaultValue || null,
     required: options.required || false,
     disabled: options.disabled || false,
-    formatFunc: options.formatFunc || ((v: string, i: number) => v),
+    formatFunc: options.formatFunc || ((v: string) => v),
   };
 
   // Find default value index
@@ -141,19 +141,19 @@ export function radio(
   const widgetID = builder.generatePageID(WidgetTypeRadio, path);
 
   let radioState = session.state.getRadio(widgetID);
+  const formatFunc = radioOpts.formatFunc || ((v: string) => v);
+
   if (!radioState) {
     radioState = new RadioState(
       widgetID,
       defaultVal,
       radioOpts.label,
-      [],
+      radioOpts.options.map(formatFunc),
       defaultVal,
       radioOpts.required,
       radioOpts.disabled,
     );
   } else {
-    // Apply format function to options
-    const formatFunc = radioOpts.formatFunc || ((v: string, i: number) => v);
     const displayVals = radioOpts.options.map((v, i) => formatFunc(v, i));
 
     radioState.label = radioOpts.label;
@@ -161,8 +161,9 @@ export function radio(
     radioState.defaultValue = defaultVal;
     radioState.required = radioOpts.required;
     radioState.disabled = radioOpts.disabled;
-    session.state.set(widgetID, radioState);
   }
+
+  session.state.set(widgetID, radioState);
 
   const radioProto = convertStateToRadioProto(radioState as RadioState);
 
@@ -200,7 +201,7 @@ export function radio(
  * @param state Radio state
  * @returns Radio proto
  */
-function convertStateToRadioProto(state: RadioState): RadioProto {
+export function convertStateToRadioProto(state: RadioState): RadioProto {
   return fromJson(RadioSchema, {
     label: state.label,
     value: state.value,

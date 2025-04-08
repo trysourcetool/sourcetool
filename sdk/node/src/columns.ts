@@ -100,16 +100,21 @@ export function columns(
 
   // Send columns widget
   const columnsProto = convertStateToColumnsProto(columnsState);
-  runtime.wsClient.enqueue(uuidv4(), {
-    sessionId: session.id,
-    pageId: page.id,
-    path: convertPathToInt32Array(path),
-    widget: {
-      id: widgetID,
-      type: 'Columns',
-      columns: columnsProto,
-    },
-  });
+  runtime.wsClient.enqueue(
+    uuidv4(),
+    create(RenderWidgetSchema, {
+      sessionId: session.id,
+      pageId: page.id,
+      path: convertPathToInt32Array(path),
+      widget: create(WidgetSchema, {
+        id: widgetID,
+        type: {
+          case: 'columns',
+          value: columnsProto,
+        },
+      }),
+    }),
+  );
 
   // Create builders for each column
   const builders: UIBuilder[] = [];
@@ -168,7 +173,7 @@ export function columns(
  * @param state Columns state
  * @returns Columns proto
  */
-function convertStateToColumnsProto(state: ColumnsState): ColumnsProto {
+export function convertStateToColumnsProto(state: ColumnsState): ColumnsProto {
   return fromJson(ColumnsSchema, {
     columns: state.columns,
   });
@@ -198,7 +203,9 @@ export function convertColumnsProtoToState(
  * @param state Column item state
  * @returns Column item proto
  */
-function convertStateToColumnItemProto(state: ColumnItemState): ColumnItem {
+export function convertStateToColumnItemProto(
+  state: ColumnItemState,
+): ColumnItem {
   return fromJson(ColumnItemSchema, {
     weight: state.weight,
   });

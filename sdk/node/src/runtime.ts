@@ -1,10 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { Page, PageManager, newPageManager } from './internal/page';
-import { createSessionManager, newSession } from './internal/session';
-import { Message, toJson } from '@bufbuild/protobuf';
+import {
+  createSessionManager,
+  newSession,
+  SessionManager,
+} from './internal/session';
 import { createWebSocketClient, WebSocketClient } from './internal/websocket';
-import { CloseSession, InitializeClient, MessageSchema, RerunPage } from '@trysourcetool/proto/websocket/v1/message';
+import {
+  CloseSession,
+  InitializeClient,
+  RerunPage,
+} from '@trysourcetool/proto/websocket/v1/message';
 import { convertTextInputProtoToState } from './textinput';
 import { convertButtonProtoToState } from './button';
 import { convertNumberInputProtoToState } from './numberinput';
@@ -13,7 +20,10 @@ import { convertDateTimeInputProtoToState } from './datetimeinput';
 import { convertTimeInputProtoToState } from './timeinput';
 import { convertFormProtoToState } from './form';
 import { convertMarkdownProtoToState } from './markdown';
-import { convertColumnItemProtoToState, convertColumnsProtoToState } from './columns';
+import {
+  convertColumnItemProtoToState,
+  convertColumnsProtoToState,
+} from './columns';
 import { convertCheckboxProtoToState } from './checkbox';
 import { convertCheckboxGroupProtoToState } from './checkboxgroup';
 import { convertRadioProtoToState } from './radio';
@@ -47,7 +57,11 @@ export class Runtime {
    * @param sessionManager Session manager
    * @param pageManager Page manager
    */
-  constructor(wsClient: WebSocketClient, sessionManager: any, pageManager: PageManager) {
+  constructor(
+    wsClient: WebSocketClient,
+    sessionManager: SessionManager,
+    pageManager: PageManager,
+  ) {
     this.wsClient = wsClient;
     this.sessionManager = sessionManager;
     this.pageManager = pageManager;
@@ -174,55 +188,97 @@ export class Runtime {
       // This is a simplified version, the actual implementation would handle all widget types
       switch (widget.type.case) {
         case 'textInput':
-          newWidgetStates[id] = convertTextInputProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertTextInputProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'numberInput':
-          newWidgetStates[id] = convertNumberInputProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertNumberInputProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'dateInput':
-          newWidgetStates[id] = convertDateInputProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertDateInputProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'dateTimeInput':
-          newWidgetStates[id] = convertDateTimeInputProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertDateTimeInputProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'timeInput':
-          newWidgetStates[id] = convertTimeInputProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertTimeInputProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'form':
           newWidgetStates[id] = convertFormProtoToState(id, widget.type.value);
           break;
         case 'button':
-          newWidgetStates[id] = convertButtonProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertButtonProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'markdown':
-          newWidgetStates[id] = convertMarkdownProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertMarkdownProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'columns':
-          newWidgetStates[id] = convertColumnsProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertColumnsProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'columnItem':
-          newWidgetStates[id] = convertColumnItemProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertColumnItemProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'checkbox':
-          newWidgetStates[id] = convertCheckboxProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertCheckboxProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'checkboxGroup':
-          newWidgetStates[id] = convertCheckboxGroupProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertCheckboxGroupProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'radio':
           newWidgetStates[id] = convertRadioProtoToState(id, widget.type.value);
           break;
         case 'selectbox':
-          newWidgetStates[id] = convertSelectboxProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertSelectboxProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'multiSelect':
-          newWidgetStates[id] = convertMultiSelectProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertMultiSelectProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
         case 'table':
           newWidgetStates[id] = convertTableProtoToState(id, widget.type.value);
           break;
         case 'textArea':
-          newWidgetStates[id] = convertTextAreaProtoToState(id, widget.type.value);
+          newWidgetStates[id] = convertTextAreaProtoToState(
+            id,
+            widget.type.value,
+          );
           break;
 
         default:

@@ -221,8 +221,9 @@ export function textArea(
     textAreaState.maxLines = textAreaOpts.maxLines;
     textAreaState.minLines = textAreaOpts.minLines;
     textAreaState.autoResize = textAreaOpts.autoResize;
-    session.state.set(widgetID, textAreaState);
   }
+
+  session.state.set(widgetID, textAreaState);
 
   const textAreaProto = convertStateToTextAreaProto(
     textAreaState as TextAreaState,
@@ -253,7 +254,9 @@ export function textArea(
  * @param state TextArea state
  * @returns TextArea proto
  */
-function convertStateToTextAreaProto(state: TextAreaState): TextAreaProto {
+export function convertStateToTextAreaProto(
+  state: TextAreaState,
+): TextAreaProto {
   return fromJson(TextAreaSchema, {
     value: state.value,
     label: state.label,

@@ -105,7 +105,7 @@ export function button(
  * @param state Button state
  * @returns Button proto
  */
-function convertStateToButtonProto(state: ButtonState): ButtonProto {
+export function convertStateToButtonProto(state: ButtonState): ButtonProto {
   return fromJson(ButtonSchema, {
     value: state.value,
     label: state.label,

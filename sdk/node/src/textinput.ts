@@ -164,8 +164,8 @@ export function textInput(
     textInputState.disabled = textInputOpts.disabled;
     textInputState.maxLength = textInputOpts.maxLength;
     textInputState.minLength = textInputOpts.minLength;
-    session.state.set(widgetID, textInputState);
   }
+  session.state.set(widgetID, textInputState);
 
   const textInputProto = convertStateToTextInputProto(
     textInputState as TextInputState,
@@ -196,7 +196,9 @@ export function textInput(
  * @param state Text input state
  * @returns Text input proto
  */
-function convertStateToTextInputProto(state: TextInputState): TextInputProto {
+export function convertStateToTextInputProto(
+  state: TextInputState,
+): TextInputProto {
   return fromJson(TextInputSchema, {
     value: state.value,
     label: state.label,

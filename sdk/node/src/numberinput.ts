@@ -164,8 +164,9 @@ export function numberInput(
     numberInputState.disabled = numberInputOpts.disabled;
     numberInputState.maxValue = numberInputOpts.maxValue;
     numberInputState.minValue = numberInputOpts.minValue;
-    session.state.set(widgetID, numberInputState);
   }
+
+  session.state.set(widgetID, numberInputState);
 
   const numberInputProto = convertStateToNumberInputProto(
     numberInputState as NumberInputState,
@@ -196,7 +197,7 @@ export function numberInput(
  * @param state Number input state
  * @returns Number input proto
  */
-function convertStateToNumberInputProto(
+export function convertStateToNumberInputProto(
   state: NumberInputState,
 ): NumberInputProto {
   return fromJson(NumberInputSchema, {

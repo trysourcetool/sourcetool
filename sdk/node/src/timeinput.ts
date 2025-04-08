@@ -180,7 +180,9 @@ export function timeInput(
  * @param state Time input state
  * @returns Time input proto
  */
-function convertStateToTimeInputProto(state: TimeInputState): TimeInputProto {
+export function convertStateToTimeInputProto(
+  state: TimeInputState,
+): TimeInputProto {
   const formatTime = (date: Date | null): string | null => {
     if (!date) {
       return null;

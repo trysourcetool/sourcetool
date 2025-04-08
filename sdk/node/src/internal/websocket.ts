@@ -1,6 +1,10 @@
 import WebSocket from 'ws';
 import * as logger from './logger';
-import { Message } from '@trysourcetool/proto/websocket/v1/message';
+import {
+  Message,
+  MessageSchema,
+} from '@trysourcetool/proto/websocket/v1/message';
+import { create } from '@bufbuild/protobuf';
 
 /**
  * WebSocket client configuration
@@ -37,31 +41,39 @@ export interface WebSocketClient {
  * @param payload Message payload
  * @returns Message
  */
-function newMessage(id: string, payload: any): any {
+function newMessage(
+  id: string,
+  payload: Message['type']['value'],
+): {
+  id: string;
+  type?: Message['type'];
+} {
   const msg: any = {
     id,
   };
 
   // Set the message type based on the payload type
-  if (payload.initializeHost) {
-    msg.type = { initializeHost: payload };
-  } else if (payload.initializeClient) {
-    msg.type = { initializeClient: payload };
-  } else if (payload.renderWidget) {
-    msg.type = { renderWidget: payload };
-  } else if (payload.rerunPage) {
-    msg.type = { rerunPage: payload };
-  } else if (payload.closeSession) {
-    msg.type = { closeSession: payload };
-  } else if (payload.scriptFinished) {
-    msg.type = { scriptFinished: payload };
-  } else if (payload.exception) {
-    msg.type = { exception: payload };
+  if (payload?.$typeName === 'sourcetool.websocket.v1.InitializeHost') {
+    msg.type = { case: 'initializeHost', value: payload };
+  } else if (
+    payload?.$typeName === 'sourcetool.websocket.v1.InitializeClient'
+  ) {
+    msg.type = { case: 'initializeClient', value: payload };
+  } else if (payload?.$typeName === 'sourcetool.websocket.v1.RenderWidget') {
+    msg.type = { case: 'renderWidget', value: payload };
+  } else if (payload?.$typeName === 'sourcetool.websocket.v1.RerunPage') {
+    msg.type = { case: 'rerunPage', value: payload };
+  } else if (payload?.$typeName === 'sourcetool.websocket.v1.CloseSession') {
+    msg.type = { case: 'closeSession', value: payload };
+  } else if (payload?.$typeName === 'sourcetool.websocket.v1.ScriptFinished') {
+    msg.type = { case: 'scriptFinished', value: payload };
+  } else if (payload?.$typeName === 'sourcetool.exception.v1.Exception') {
+    msg.type = { case: 'exception', value: payload };
   } else {
-    throw new Error(`Unsupported message type: ${typeof payload}`);
+    throw new Error(`Unsupported message type: ${payload?.$typeName}`);
   }
 
-  return msg;
+  return create(MessageSchema, msg);
 }
 
 /**
@@ -334,61 +346,4 @@ export function createWebSocketClient(
   const client = new Client(config);
 
   return client;
-}
-
-/**
- * Create a mock WebSocket client
- * @returns Mock WebSocket client
- */
-export function createMockWebSocketClient(): WebSocketClient {
-  const messages: any[] = [];
-  let handler: MessageHandlerFunc | null = null;
-  let doneResolve: () => void = () => {};
-  const done = new Promise<void>((resolve) => {
-    doneResolve = resolve;
-  });
-
-  return {
-    enqueue(id: string, payload: any): void {
-      logger.debug(`Enqueuing message ${id}`, payload);
-
-      try {
-        const msg = newMessage(id, payload);
-        messages.push(msg);
-
-        if (handler) {
-          handler(msg);
-        }
-      } catch (err) {
-        logger.error('Error creating message', err);
-      }
-    },
-
-    async enqueueWithResponse(id: string, payload: any): Promise<any> {
-      logger.debug(`Enqueuing message with response ${id}`, payload);
-
-      try {
-        const msg = newMessage(id, payload);
-        messages.push(msg);
-        return msg;
-      } catch (err) {
-        throw err;
-      }
-    },
-
-    registerHandler(h: MessageHandlerFunc): void {
-      logger.debug('Registering handler');
-      handler = h;
-    },
-
-    close(): void {
-      logger.debug('Closing WebSocket client');
-      doneResolve();
-    },
-
-    async wait(): Promise<void> {
-      logger.debug('Waiting for WebSocket client');
-      return done;
-    },
-  };
 }

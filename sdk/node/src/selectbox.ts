@@ -139,7 +139,7 @@ export function selectbox(
     placeholder: options.placeholder || '',
     required: options.required || false,
     disabled: options.disabled || false,
-    formatFunc: options.formatFunc || ((v: string, i: number) => v),
+    formatFunc: options.formatFunc || ((v: string) => v),
   };
 
   // Find default value index
@@ -157,21 +157,20 @@ export function selectbox(
   const widgetID = builder.generatePageID(WidgetTypeSelectbox, path);
 
   let selectboxState = session.state.getSelectbox(widgetID);
+  const formatFunc = selectboxOpts.formatFunc || ((v: string) => v);
+
   if (!selectboxState) {
     selectboxState = new SelectboxState(
       widgetID,
       defaultVal,
       selectboxOpts.label,
-      [],
+      selectboxOpts.options.map(formatFunc),
       selectboxOpts.placeholder,
       defaultVal,
       selectboxOpts.required,
       selectboxOpts.disabled,
     );
   } else {
-    // Apply format function to options
-    const formatFunc =
-      selectboxOpts.formatFunc || ((v: string, i: number) => v);
     const displayVals = selectboxOpts.options.map((v, i) => formatFunc(v, i));
 
     selectboxState.label = selectboxOpts.label;
@@ -222,7 +221,9 @@ export function selectbox(
  * @param state Selectbox state
  * @returns Selectbox proto
  */
-function convertStateToSelectboxProto(state: SelectboxState): SelectboxProto {
+export function convertStateToSelectboxProto(
+  state: SelectboxState,
+): SelectboxProto {
   return fromJson(SelectboxSchema, {
     label: state.label,
     value: state.value,

@@ -232,7 +232,7 @@ export function dateTimeInput(
  * @param state Date and time input state
  * @returns Date and time input proto
  */
-function convertStateToDateTimeInputProto(
+export function convertStateToDateTimeInputProto(
   state: DateTimeInputState,
 ): DateTimeInputProto {
   const formatDateTime = (date: Date | null): string | null => {

@@ -125,7 +125,7 @@ export function checkboxGroup(
     defaultValue: options.defaultValue || null,
     required: options.required || false,
     disabled: options.disabled || false,
-    formatFunc: options.formatFunc || ((v: string, i: number) => v),
+    formatFunc: options.formatFunc || ((v: string) => v),
   };
 
   // Find default value indexes
@@ -145,20 +145,18 @@ export function checkboxGroup(
   const widgetID = builder.generatePageID(WidgetTypeCheckboxGroup, path);
 
   let checkboxGroupState = session.state.getCheckboxGroup(widgetID);
+  const formatFunc = checkboxGroupOpts.formatFunc || ((v: string) => v);
   if (!checkboxGroupState) {
     checkboxGroupState = new CheckboxGroupState(
       widgetID,
       defaultVal,
       checkboxGroupOpts.label,
-      [],
+      checkboxGroupOpts.options.map(formatFunc),
       defaultVal,
       checkboxGroupOpts.required,
       checkboxGroupOpts.disabled,
     );
   } else {
-    // Apply format function to options
-    const formatFunc =
-      checkboxGroupOpts.formatFunc || ((v: string, i: number) => v);
     const displayVals = checkboxGroupOpts.options.map((v, i) =>
       formatFunc(v, i),
     );
@@ -215,7 +213,7 @@ export function checkboxGroup(
  * @param state CheckboxGroup state
  * @returns CheckboxGroup proto
  */
-function convertStateToCheckboxGroupProto(
+export function convertStateToCheckboxGroupProto(
   state: CheckboxGroupState,
 ): CheckboxGroupProto {
   return fromJson(CheckboxGroupSchema, {

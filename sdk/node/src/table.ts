@@ -11,7 +11,7 @@ import {
   TableSelection,
 } from './internal/session/state/table';
 import { TableOptions } from './internal/options';
-import { create, fromJson, toJson } from '@bufbuild/protobuf';
+import { create, toJson } from '@bufbuild/protobuf';
 import {
   Table as TableProto,
   TableSchema,
@@ -175,8 +175,9 @@ export function table(
     tableState.columnOrder = tableOpts.columnOrder;
     tableState.onSelect = tableOpts.onSelect;
     tableState.rowSelection = tableOpts.rowSelection;
-    session.state.set(widgetID, tableState);
   }
+
+  session.state.set(widgetID, tableState);
 
   const tableProto = convertStateToTableProto(tableState as TableState);
 
@@ -218,9 +219,9 @@ export function table(
  * @param state Table state
  * @returns Table proto
  */
-function convertStateToTableProto(state: TableState): TableProto {
-  const dataBytes = JSON.stringify(state.data);
+export function convertStateToTableProto(state: TableState): TableProto {
   const tableValue: any = {};
+  const dataBytes = new TextEncoder().encode(JSON.stringify(state.data));
 
   if (state.value.selection) {
     tableValue.selection = {
@@ -229,11 +230,11 @@ function convertStateToTableProto(state: TableState): TableProto {
     };
   }
 
-  return fromJson(TableSchema, {
+  return create(TableSchema, {
     data: dataBytes,
     header: state.header,
     description: state.description,
-    height: state.height,
+    height: state.height || undefined,
     columnOrder: state.columnOrder,
     onSelect: state.onSelect,
     rowSelection: state.rowSelection,
@@ -257,7 +258,10 @@ export function convertTableProtoToState(
 
   const d = toJson(TableSchema, data);
 
-  const tableData = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
+  console.log('convertTableProtoToState', { d }, typeof d.data);
+
+  const tableData =
+    typeof d.data === 'string' ? JSON.parse(atob(d.data)) : d.data;
   const tableValue: TableStateValue = {};
 
   if (data.value && data.value.selection) {

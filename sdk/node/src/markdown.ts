@@ -70,7 +70,9 @@ export function markdown(builder: UIBuilder, body: string): void {
  * @param state Markdown state
  * @returns Markdown proto
  */
-function convertStateToMarkdownProto(state: MarkdownState): MarkdownProto {
+export function convertStateToMarkdownProto(
+  state: MarkdownState,
+): MarkdownProto {
   return fromJson(MarkdownSchema, {
     body: state.body,
   });
