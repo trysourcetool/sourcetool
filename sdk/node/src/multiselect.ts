@@ -139,7 +139,7 @@ export function multiSelect(
     placeholder: options.placeholder || '',
     required: options.required || false,
     disabled: options.disabled || false,
-    formatFunc: options.formatFunc || ((v: string, i: number) => v),
+    formatFunc: options.formatFunc || ((v: string) => v),
   };
 
   // Find default value indexes
@@ -159,21 +159,19 @@ export function multiSelect(
   const widgetID = builder.generatePageID(WidgetTypeMultiSelect, path);
 
   let multiSelectState = session.state.getMultiSelect(widgetID);
+  const formatFunc = multiSelectOpts.formatFunc || ((v: string) => v);
   if (!multiSelectState) {
     multiSelectState = new MultiSelectState(
       widgetID,
       defaultVal,
       multiSelectOpts.label,
-      [],
+      multiSelectOpts.options.map(formatFunc),
       multiSelectOpts.placeholder,
       defaultVal,
       multiSelectOpts.required,
       multiSelectOpts.disabled,
     );
   } else {
-    // Apply format function to options
-    const formatFunc =
-      multiSelectOpts.formatFunc || ((v: string, i: number) => v);
     const displayVals = multiSelectOpts.options.map((v, i) => formatFunc(v, i));
 
     multiSelectState.label = multiSelectOpts.label;
@@ -225,7 +223,7 @@ export function multiSelect(
  * @param state MultiSelect state
  * @returns MultiSelect proto
  */
-function convertStateToMultiSelectProto(
+export function convertStateToMultiSelectProto(
   state: MultiSelectState,
 ): MultiSelectProto {
   return fromJson(MultiSelectSchema, {

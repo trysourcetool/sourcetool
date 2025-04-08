@@ -129,7 +129,7 @@ export function form(
  * @param state Form state
  * @returns Form proto
  */
-function convertStateToFormProto(state: FormState): FormProto {
+export function convertStateToFormProto(state: FormState): FormProto {
   return fromJson(FormSchema, {
     value: state.value,
     buttonLabel: state.buttonLabel,

@@ -18,6 +18,7 @@ import { columns } from './columns';
 import { Page } from './internal/page';
 import { Session } from './internal/session';
 import { Runtime } from './runtime';
+import { WidgetType } from './internal/session/state/widget';
 
 export type UIBuilderType = {
   markdown(content: string): void;
@@ -115,7 +116,7 @@ export class UIBuilder implements UIBuilderType {
     return columns(this, count, options);
   }
 
-  generatePageID(widgetType: string, path: number[]): string {
+  generatePageID(widgetType: WidgetType, path: number[]): string {
     if (!this.page) {
       return uuidNil;
     }

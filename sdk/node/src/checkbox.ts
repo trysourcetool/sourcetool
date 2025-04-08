@@ -145,7 +145,9 @@ export function checkbox(
  * @param state Checkbox state
  * @returns Checkbox proto
  */
-function convertStateToCheckboxProto(state: CheckboxState): CheckboxProto {
+export function convertStateToCheckboxProto(
+  state: CheckboxState,
+): CheckboxProto {
   return fromJson(CheckboxSchema, {
     value: state.value,
     label: state.label,
