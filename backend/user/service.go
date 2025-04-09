@@ -10,7 +10,6 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	// Alias the library.
 	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
