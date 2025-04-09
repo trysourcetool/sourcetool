@@ -48,27 +48,27 @@ func createRegistrationToken(email string) (string, error) {
 	return jwt.SignToken(&jwt.UserMagicLinkRegistrationClaims{
 		Email: email,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 			Subject:   jwt.UserSignatureSubjectMagicLinkRegistration,
 			Issuer:    jwt.Issuer,
 		},
 	})
 }
 
-func createGoogleAuthLinkToken(expirationTime time.Time, subject, flow string, invitationOrgID uuid.UUID) (string, error) {
+func createGoogleAuthLinkToken(flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID) (string, error) {
 	claims := &jwt.UserGoogleAuthLinkClaims{
 		Flow:            flow,
 		InvitationOrgID: invitationOrgID,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 			Issuer:    jwt.Issuer,
-			Subject:   subject,
+			Subject:   jwt.UserSignatureSubjectGoogleAuthLink,
 		},
 	}
 	return jwt.SignToken(claims)
 }
 
-func createGoogleRegistrationToken(googleID, email, firstName, lastName, flow string, invitationOrgID uuid.UUID, role string, expirationTime time.Time, subject string) (string, error) {
+func createGoogleRegistrationToken(googleID, email, firstName, lastName string, flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID, role string) (string, error) {
 	claims := &jwt.UserGoogleRegistrationClaims{
 		GoogleID:        googleID,
 		Email:           email,
@@ -78,9 +78,9 @@ func createGoogleRegistrationToken(googleID, email, firstName, lastName, flow st
 		InvitationOrgID: invitationOrgID,
 		Role:            role,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 			Issuer:    jwt.Issuer,
-			Subject:   subject,
+			Subject:   jwt.UserSignatureSubjectGoogleRegistration,
 		},
 	}
 	return jwt.SignToken(claims)

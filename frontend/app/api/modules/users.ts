@@ -183,8 +183,6 @@ export const usersAuthenticateWithGoogle = async (params: {
 export const usersRegisterWithGoogle = async (params: {
   data: {
     token: string;
-    firstName: string;
-    lastName: string;
   };
 }) => {
   const res = await api.post<{

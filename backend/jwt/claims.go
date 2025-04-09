@@ -47,9 +47,16 @@ type UserMagicLinkRegistrationClaims struct {
 	jwt.RegisteredClaims
 }
 
+type GoogleAuthFlow string
+
+const (
+	GoogleAuthFlowStandard   GoogleAuthFlow = "standard"
+	GoogleAuthFlowInvitation GoogleAuthFlow = "invitation"
+)
+
 // UserGoogleAuthLinkClaims represents claims for Google authentication link.
 type UserGoogleAuthLinkClaims struct {
-	Flow            string // "standard" or "invitation"
+	Flow            GoogleAuthFlow
 	InvitationOrgID uuid.UUID
 	jwt.RegisteredClaims
 }
@@ -60,7 +67,7 @@ type UserGoogleRegistrationClaims struct {
 	Email           string
 	FirstName       string
 	LastName        string
-	Flow            string // "standard" or "invitation"
+	Flow            GoogleAuthFlow
 	InvitationOrgID uuid.UUID
 	Role            string // Only for invitation flow
 	jwt.RegisteredClaims

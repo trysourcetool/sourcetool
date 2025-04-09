@@ -1363,9 +1363,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 // RequestGoogleAuthLink sends a Google Auth link for invitation authentication.
 func (s *ServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
 	stateToken, err := createGoogleAuthLinkToken(
-		time.Now().Add(5*time.Minute),
-		jwt.UserSignatureSubjectGoogleAuthLink,
-		"standard",
+		jwt.GoogleAuthFlowStandard,
 		uuid.Nil,
 	)
 	if err != nil {
@@ -1418,14 +1416,14 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	}
 
 	if !exists {
-		if !config.Config.IsCloudEdition && stateClaims.Flow == "standard" {
+		if !config.Config.IsCloudEdition && stateClaims.Flow == jwt.GoogleAuthFlowStandard {
 			if err := s.validateSelfHostedOrganization(ctx); err != nil {
 				return nil, err
 			}
 		}
 
 		var role string
-		if stateClaims.Flow == "invitation" {
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// Verify invitation exists
 			userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(userInfo.email), storeopts.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
 			if err != nil {
@@ -1443,8 +1441,6 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 			stateClaims.Flow,
 			stateClaims.InvitationOrgID,
 			role,
-			time.Now().Add(15*time.Minute),
-			jwt.UserSignatureSubjectGoogleRegistration,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create registration token: %w", err)
@@ -1453,8 +1449,8 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		return &dto.AuthenticateWithGoogleOutput{
 			Token:                registrationToken,
 			IsNewUser:            true,
-			IsOrganizationExists: stateClaims.Flow == "invitation",
-			Flow:                 stateClaims.Flow,
+			IsOrganizationExists: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
+			Flow:                 string(stateClaims.Flow),
 			FirstName:            userInfo.givenName,
 			LastName:             userInfo.familyName,
 		}, nil
@@ -1472,7 +1468,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	var orgAccess *model.UserOrganizationAccess
 	var orgSubdomain string
 
-	if stateClaims.Flow == "invitation" {
+	if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 		// Handle invitation flow for existing users
 		invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(stateClaims.InvitationOrgID))
 		if err != nil {
@@ -1524,7 +1520,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	}
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if stateClaims.Flow == "invitation" {
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// For invitation flow, create org access and delete invitation
 			userInvitation, err := s.Store.User().GetInvitation(ctx,
 				storeopts.UserInvitationByEmail(userInfo.email),
@@ -1555,7 +1551,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		XSRFToken:            xsrfToken,
 		Domain:               config.Config.OrgDomain(orgSubdomain),
 		IsNewUser:            false,
-		Flow:                 stateClaims.Flow,
+		Flow:                 string(stateClaims.Flow),
 	}, nil
 }
 
@@ -1590,8 +1586,8 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	user := &model.User{
 		ID:                   uuid.Must(uuid.NewV4()),
 		Email:                claims.Email,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
+		FirstName:            claims.FirstName,
+		LastName:             claims.LastName,
 		Secret:               hashedSecret,
 		EmailAuthenticatedAt: &now,
 		GoogleID:             claims.GoogleID,
@@ -1606,7 +1602,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 			return fmt.Errorf("failed to create user: %w", err)
 		}
 
-		if claims.Flow == "invitation" {
+		if claims.Flow == jwt.GoogleAuthFlowInvitation {
 			invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(claims.InvitationOrgID))
 			if err != nil {
 				return fmt.Errorf("failed to get invited organization: %w", err)
@@ -1713,9 +1709,7 @@ func (s *ServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in dto.
 	}
 
 	stateToken, err := createGoogleAuthLinkToken(
-		time.Now().Add(5*time.Minute),
-		jwt.UserSignatureSubjectGoogleAuthLink,
-		"invitation",
+		jwt.GoogleAuthFlowInvitation,
 		invitedOrg.ID,
 	)
 	if err != nil {

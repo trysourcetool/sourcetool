@@ -74,9 +74,7 @@ type AuthenticateWithGoogleRequest struct {
 }
 
 type RegisterWithGoogleRequest struct {
-	Token     string `json:"token" validate:"required"`
-	FirstName string `json:"firstName" validate:"required"`
-	LastName  string `json:"lastName" validate:"required"`
+	Token string `json:"token" validate:"required"`
 }
 
 type RequestInvitationGoogleAuthLinkRequest struct {

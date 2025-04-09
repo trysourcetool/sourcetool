@@ -327,9 +327,7 @@ func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutpu
 // RegisterWithGoogleRequestToDTOInput converts from requests.RegisterWithGoogleRequest to dto.RegisterWithGoogleInput.
 func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) dto.RegisterWithGoogleInput {
 	return dto.RegisterWithGoogleInput{
-		Token:     in.Token,
-		FirstName: in.FirstName,
-		LastName:  in.LastName,
+		Token: in.Token,
 	}
 }
 

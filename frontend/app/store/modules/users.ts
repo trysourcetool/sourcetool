@@ -156,7 +156,7 @@ const authenticateWithGoogle = createAsyncThunk(
 const registerWithGoogle = createAsyncThunk(
   'users/registerWithGoogle',
   async (
-    params: { data: { token: string; firstName: string; lastName: string } },
+    params: { data: { token: string } },
     { dispatch, rejectWithValue },
   ) => {
     try {

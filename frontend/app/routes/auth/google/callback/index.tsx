@@ -55,8 +55,6 @@ export default function GoogleAuthenticate() {
             usersStore.asyncActions.registerWithGoogle({
               data: {
                 token: authResult.token,
-                firstName: authResult.firstName || '-',
-                lastName: authResult.lastName || '-',
               },
             }),
           );
