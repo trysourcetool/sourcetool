@@ -330,9 +330,9 @@ func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) 
 // RegisterWithGoogleOutputToResponse converts from dto.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
 func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
 	return &responses.RegisterWithGoogleResponse{
-		Token:     out.Token,
-		Secret:    out.Secret,
-		XSRFToken: out.XSRFToken,
+		AuthURL:              out.AuthURL,
+		Token:                out.Token,
+		IsOrganizationExists: out.IsOrganizationExists,
 	}
 }
 

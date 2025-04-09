@@ -13,7 +13,7 @@ import (
 // JWTClaims is a generic constraint for all JWT claims types.
 type JWTClaims interface {
 	jwt.Claims
-	*UserClaims | *UserEmailClaims | *UserGoogleAuthRequestClaims | *UserAuthClaims | *UserMagicLinkRegistrationClaims | *UserGoogleRegistrationClaims | *UserGoogleAuthLinkClaims | *UserGoogleInvitationRegistrationClaims
+	*UserClaims | *UserEmailClaims | *UserAuthClaims | *UserMagicLinkRegistrationClaims | *UserGoogleRegistrationClaims | *UserGoogleAuthLinkClaims
 }
 
 // NewClaims creates a new instance of the claims type.
@@ -24,16 +24,12 @@ func NewClaims[T JWTClaims]() T {
 		return any(&UserClaims{}).(T)
 	case *UserEmailClaims:
 		return any(&UserEmailClaims{}).(T)
-	case *UserGoogleAuthRequestClaims:
-		return any(&UserGoogleAuthRequestClaims{}).(T)
 	case *UserAuthClaims:
 		return any(&UserAuthClaims{}).(T)
 	case *UserGoogleRegistrationClaims:
 		return any(&UserGoogleRegistrationClaims{}).(T)
 	case *UserGoogleAuthLinkClaims:
 		return any(&UserGoogleAuthLinkClaims{}).(T)
-	case *UserGoogleInvitationRegistrationClaims:
-		return any(&UserGoogleInvitationRegistrationClaims{}).(T)
 	case *UserMagicLinkRegistrationClaims:
 		return any(&UserMagicLinkRegistrationClaims{}).(T)
 	default:

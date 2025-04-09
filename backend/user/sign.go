@@ -55,35 +55,12 @@ func createRegistrationToken(email string) (string, error) {
 	})
 }
 
-func createGoogleAuthLinkToken(expirationTime time.Time, subject string) (string, error) {
-	return jwt.SignToken(&jwt.UserGoogleAuthLinkClaims{
+func createGoogleAuthLinkToken(expirationTime time.Time, subject, flow string, invitationOrgID uuid.UUID) (string, error) {
+	claims := &jwt.UserGoogleAuthLinkClaims{
+		Flow:            flow,
+		InvitationOrgID: invitationOrgID,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
-			Issuer:    jwt.Issuer,
-			Subject:   subject,
-		},
-	})
-}
-
-func createGoogleRegistrationToken(googleID, email, firstName, lastName string, expirationTime time.Time, subject string) (string, error) {
-	return jwt.SignToken(&jwt.UserGoogleRegistrationClaims{
-		GoogleID:  googleID,
-		Email:     email,
-		FirstName: firstName,
-		LastName:  lastName,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
-			Issuer:    jwt.Issuer,
-			Subject:   subject,
-		},
-	})
-}
-
-func createGoogleInvitationStateToken(orgID uuid.UUID, expiresAt time.Time, subject string) (string, error) {
-	claims := &jwt.UserGoogleInvitationRegistrationClaims{
-		InvitationOrgID: orgID,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
 			Issuer:    jwt.Issuer,
 			Subject:   subject,
 		},
@@ -91,15 +68,17 @@ func createGoogleInvitationStateToken(orgID uuid.UUID, expiresAt time.Time, subj
 	return jwt.SignToken(claims)
 }
 
-func createGoogleInvitationRegistrationToken(orgID uuid.UUID, googleID, email, firstName, lastName string, expiresAt time.Time, subject string) (string, error) {
-	claims := &jwt.UserGoogleInvitationRegistrationClaims{
-		InvitationOrgID: orgID,
+func createGoogleRegistrationToken(googleID, email, firstName, lastName, flow string, invitationOrgID uuid.UUID, role string, expirationTime time.Time, subject string) (string, error) {
+	claims := &jwt.UserGoogleRegistrationClaims{
 		GoogleID:        googleID,
 		Email:           email,
 		FirstName:       firstName,
 		LastName:        lastName,
+		Flow:            flow,
+		InvitationOrgID: invitationOrgID,
+		Role:            role,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expiresAt),
+			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			Issuer:    jwt.Issuer,
 			Subject:   subject,
 		},

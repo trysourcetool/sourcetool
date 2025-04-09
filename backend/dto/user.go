@@ -331,7 +331,8 @@ type AuthenticateWithGoogleOutput struct {
 	Secret               string
 	XSRFToken            string
 	Domain               string
-	IsNewUser            bool // Indicates if a new user was created
+	IsNewUser            bool
+	Flow                 string
 }
 
 // RegisterWithGoogleInput defines the input for registering a new user via Google OAuth flow.
@@ -343,9 +344,13 @@ type RegisterWithGoogleInput struct {
 
 // RegisterWithGoogleOutput defines the output after successfully registering a new user via Google.
 type RegisterWithGoogleOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
+	Token                string
+	Secret               string
+	XSRFToken            string
+	ExpiresAt            string
+	Domain               string
+	AuthURL              string
+	IsOrganizationExists bool
 }
 
 // RequestInvitationGoogleAuthLinkInput is the input for requesting a Google Auth link for an invitation.
@@ -366,32 +371,29 @@ type AuthenticateWithInvitationGoogleAuthLinkInput struct {
 
 // AuthenticateWithInvitationGoogleAuthLinkOutput defines the output after authenticating with Google via invitation.
 type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
-	// For existing users, provide temporary auth details to proceed to SaveAuth
-	AuthURL              string `json:"authUrl,omitempty"`
-	Token                string `json:"token,omitempty"` // Temporary auth token or registration token
-	Secret               string `json:"secret,omitempty"`
-	XSRFToken            string `json:"xsrfToken,omitempty"`
-	Domain               string `json:"domain,omitempty"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"` // Should always be true in invitation flow for existing users
-
-	// For new users, provide registration details
-	IsNewUser bool   `json:"isNewUser"`
-	FirstName string `json:"firstName,omitempty"` // Pre-filled from Google
-	LastName  string `json:"lastName,omitempty"`  // Pre-filled from Google
+	AuthURL              string
+	Token                string
+	Secret               string
+	XSRFToken            string
+	Domain               string
+	IsOrganizationExists bool
+	IsNewUser            bool
+	FirstName            string
+	LastName             string
 }
 
 // RegisterWithInvitationGoogleAuthLinkInput defines the input for registering a new user via Google invitation flow.
 type RegisterWithInvitationGoogleAuthLinkInput struct {
-	Token     string // The registration token received from Authenticate step
-	FirstName string // User-confirmed first name
-	LastName  string // User-confirmed last name
+	Token     string
+	FirstName string
+	LastName  string
 }
 
 // RegisterWithInvitationGoogleAuthLinkOutput defines the output after successfully registering via Google invitation.
 type RegisterWithInvitationGoogleAuthLinkOutput struct {
-	Token     string // Final, long-lived auth token
-	Secret    string // User's refresh secret
-	XSRFToken string // XSRF token
-	ExpiresAt string // Expiration timestamp for display/cookie setting
-	Domain    string // Domain for setting cookies
+	Token     string
+	Secret    string
+	XSRFToken string
+	ExpiresAt string
+	Domain    string
 }

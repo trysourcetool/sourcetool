@@ -187,7 +187,11 @@ export const usersRegisterWithGoogle = async (params: {
     lastName: string;
   };
 }) => {
-  const res = await api.post({
+  const res = await api.post<{
+    authUrl: string;
+    token: string;
+    isOrganizationExists: boolean;
+  }>({
     path: '/users/auth/google/register',
     data: params.data,
   });

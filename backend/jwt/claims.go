@@ -8,18 +8,15 @@ import (
 const (
 	Issuer = "trysourcetool.com"
 
-	UserSignatureSubjectEmail                        = "email"
-	UserSignatureSubjectUpdateEmail                  = "update_email"
-	UserSignatureSubjectActivate                     = "activate"
-	UserSignatureSubjectInvitation                   = "invitation"
-	UserSignatureSubjectInvitationMagicLink          = "invitation_magic_link"
-	UserSignatureSubjectGoogleAuthRequest            = "google_auth_request"
-	UserSignatureSubjectGoogleRegistration           = "google_registration"
-	UserSignatureSubjectMagicLink                    = "magic_link"
-	UserSignatureSubjectMagicLinkRegistration        = "magic_link_registration"
-	UserSignatureSubjectGoogleAuthLink               = "google_auth_link"
-	UserSignatureSubjectGoogleAuthLinkInvitation     = "google_auth_link_invitation"
-	UserSignatureSubjectGoogleInvitationRegistration = "google_invitation_registration"
+	UserSignatureSubjectEmail                 = "email"
+	UserSignatureSubjectUpdateEmail           = "update_email"
+	UserSignatureSubjectActivate              = "activate"
+	UserSignatureSubjectInvitation            = "invitation"
+	UserSignatureSubjectInvitationMagicLink   = "invitation_magic_link"
+	UserSignatureSubjectMagicLink             = "magic_link"
+	UserSignatureSubjectMagicLinkRegistration = "magic_link_registration"
+	UserSignatureSubjectGoogleAuthLink        = "google_auth_link"
+	UserSignatureSubjectGoogleRegistration    = "google_registration"
 )
 
 type RegisteredClaims jwt.RegisteredClaims
@@ -34,12 +31,6 @@ type UserClaims struct {
 // UserEmailClaims represents claims for email-related operations.
 type UserEmailClaims struct {
 	Email string
-	jwt.RegisteredClaims
-}
-
-// UserGoogleAuthRequestClaims represents claims for Google authentication.
-type UserGoogleAuthRequestClaims struct {
-	GoogleAuthRequestID string
 	jwt.RegisteredClaims
 }
 
@@ -58,24 +49,19 @@ type UserMagicLinkRegistrationClaims struct {
 
 // UserGoogleAuthLinkClaims represents claims for Google authentication link.
 type UserGoogleAuthLinkClaims struct {
+	Flow            string // "standard" or "invitation"
+	InvitationOrgID uuid.UUID
 	jwt.RegisteredClaims
 }
 
 // UserGoogleRegistrationClaims represents claims for Google registration.
 type UserGoogleRegistrationClaims struct {
-	GoogleID  string
-	Email     string
-	FirstName string
-	LastName  string
-	jwt.RegisteredClaims
-}
-
-// UserGoogleInvitationRegistrationClaims represents claims for Google invitation registration.
-type UserGoogleInvitationRegistrationClaims struct {
-	InvitationOrgID uuid.UUID
 	GoogleID        string
 	Email           string
 	FirstName       string
 	LastName        string
+	Flow            string // "standard" or "invitation"
+	InvitationOrgID uuid.UUID
+	Role            string // Only for invitation flow
 	jwt.RegisteredClaims
 }

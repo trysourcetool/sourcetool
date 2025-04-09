@@ -18,8 +18,7 @@ var oauthScopes = []string{
 }
 
 const (
-	googleOAuthCallbackPath           = "/auth/google/authenticate"
-	googleOAuthInvitationCallbackPath = "/auth/invitations/google/authenticate"
+	googleOAuthCallbackPath = "/auth/google/authenticate"
 )
 
 type googleOAuthClient struct{}
@@ -42,13 +41,8 @@ type googleToken struct {
 	expiry       time.Time
 }
 
-func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string, isInvitation bool) (string, error) {
-	var redirectURL string
-	if isInvitation {
-		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
-	} else {
-		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
-	}
+func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string) (string, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
 
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
@@ -66,13 +60,8 @@ func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state stri
 	return conf.AuthCodeURL(state, opts...), nil
 }
 
-func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string, isInvitation bool) (*googleToken, error) {
-	var redirectURL string
-	if isInvitation {
-		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
-	} else {
-		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
-	}
+func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*googleToken, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
 
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
@@ -95,13 +84,8 @@ func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string, isI
 	}, nil
 }
 
-func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken, isInvitation bool) (*googleUserInfo, error) {
-	var redirectURL string
-	if isInvitation {
-		redirectURL = config.Config.AuthHostname() + googleOAuthInvitationCallbackPath
-	} else {
-		redirectURL = config.Config.AuthHostname() + googleOAuthCallbackPath
-	}
+func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
 
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,

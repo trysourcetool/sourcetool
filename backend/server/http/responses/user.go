@@ -125,9 +125,9 @@ type AuthenticateWithGoogleResponse struct {
 }
 
 type RegisterWithGoogleResponse struct {
-	Token     string `json:"token"`
-	Secret    string `json:"secret"`
-	XSRFToken string `json:"xsrfToken"`
+	AuthURL              string `json:"authUrl"`
+	Token                string `json:"token"`
+	IsOrganizationExists bool   `json:"isOrganizationExists"`
 }
 
 type RequestInvitationGoogleAuthLinkResponse struct {
@@ -135,15 +135,12 @@ type RequestInvitationGoogleAuthLinkResponse struct {
 }
 
 type AuthenticateWithInvitationGoogleAuthLinkResponse struct {
-	// For existing users
 	AuthURL              string `json:"authUrl,omitempty"`
-	Token                string `json:"token,omitempty"` // Temporary auth token or registration token
+	Token                string `json:"token,omitempty"`
 	IsOrganizationExists bool   `json:"isOrganizationExists"`
-
-	// For new users
-	IsNewUser bool   `json:"isNewUser"`
-	FirstName string `json:"firstName,omitempty"`
-	LastName  string `json:"lastName,omitempty"`
+	IsNewUser            bool   `json:"isNewUser"`
+	FirstName            string `json:"firstName,omitempty"`
+	LastName             string `json:"lastName,omitempty"`
 }
 
 type RegisterWithInvitationGoogleAuthLinkResponse struct{}

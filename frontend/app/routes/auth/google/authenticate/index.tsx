@@ -42,12 +42,10 @@ export default function GoogleAuthenticate() {
           }),
         );
 
-        if (
-          !usersStore.asyncActions.authenticateWithGoogle.fulfilled.match(
-            authResultAction,
-          )
-        ) {
-          throw new Error(t('routes_auth_google_toast_auth_failed_desc' as any));
+        if (!usersStore.asyncActions.authenticateWithGoogle.fulfilled.match(authResultAction)) {
+          const errorPayload = (authResultAction.payload as any)?.error || {};
+          const errorMessage = errorPayload.message || t('routes_auth_google_toast_auth_failed_desc' as any);
+          throw new Error(errorMessage);
         }
 
         const authResult = authResultAction.payload;
@@ -56,34 +54,43 @@ export default function GoogleAuthenticate() {
           const registerResultAction = await dispatch(
             usersStore.asyncActions.registerWithGoogle({
               data: {
-                token: authResult.token, // Registration token from auth step
-                firstName: authResult.firstName,
-                lastName: authResult.lastName,
+                token: authResult.token,
+                firstName: authResult.firstName || '-',
+                lastName: authResult.lastName || '-',
               },
             }),
           );
 
-          if (
-            !usersStore.asyncActions.registerWithGoogle.fulfilled.match(
-              registerResultAction,
-            )
-          ) {
-            throw new Error(t('routes_auth_google_toast_reg_failed_desc' as any));
+          if (!usersStore.asyncActions.registerWithGoogle.fulfilled.match(registerResultAction)) {
+            const errorPayload = (registerResultAction.payload as any)?.error || {};
+            const errorMessage = errorPayload.message || t('routes_auth_google_toast_reg_failed_desc' as any);
+            throw new Error(errorMessage);
           }
 
-          const meResultAction = await dispatch(usersStore.asyncActions.getUsersMe());
-          if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResultAction)) {
-            if (!meResultAction.payload.user.organization) {
-              navigate($path('/organizations/new'));
-              toast({
-                 title: t('routes_auth_google_toast_reg_success_title' as any),
-                 description: t('routes_auth_google_toast_reg_success_desc' as any),
-              });
+          if (!registerResultAction.payload.isOrganizationExists) {
+            navigate($path('/organizations/new'));
+            return;
+          }
+
+          const saveAuthResultAction = await dispatch(
+            usersStore.asyncActions.saveAuth({
+              authUrl: registerResultAction.payload.authUrl,
+              data: { token: registerResultAction.payload.token },
+            }),
+          );
+
+          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
+            const meResult = await dispatch(usersStore.asyncActions.getUsersMe());
+            if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
+              if (!meResult.payload.user.organization) {
+                navigate($path('/organizations/new'));
+                return;
+              }
             }
-          } else {
-            throw new Error(t('routes_auth_google_toast_getme_failed_desc' as any));
+            throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
 
+          window.location.replace(saveAuthResultAction.payload.redirectUrl);
         } else {
           if (!authResult.isOrganizationExists) {
             navigate($path('/organizations/new'));
@@ -93,24 +100,21 @@ export default function GoogleAuthenticate() {
           const saveAuthResultAction = await dispatch(
             usersStore.asyncActions.saveAuth({
               authUrl: authResult.authUrl,
-              data: { token: authResult.token }, // Token from auth step
+              data: { token: authResult.token },
             }),
           );
 
-          if (
-            !usersStore.asyncActions.saveAuth.fulfilled.match(
-              saveAuthResultAction,
-            )
-          ) {
+          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
             const meResult = await dispatch(usersStore.asyncActions.getUsersMe());
             if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
               if (!meResult.payload.user.organization) {
-                 navigate($path('/organizations/new'));
-                 return;
-               }
-             }
+                navigate($path('/organizations/new'));
+                return;
+              }
+            }
             throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
+
           window.location.replace(saveAuthResultAction.payload.redirectUrl);
         }
       } catch (error: any) {
@@ -124,7 +128,7 @@ export default function GoogleAuthenticate() {
     };
 
     authenticateAndProceed();
-  }, [dispatch, navigate, toast, t, code, state]); // Add code and state to dependency array
+  }, [dispatch, navigate, toast, t, code, state]);
 
   return (
     // Fixed escaped quotes

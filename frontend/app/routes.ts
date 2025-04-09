@@ -33,10 +33,6 @@ export default [
       '/auth/google/authenticate',
       './routes/auth/google/authenticate/index.tsx',
     ),
-    route(
-      '/auth/invitations/google/authenticate',
-      './routes/auth/invitations/google/authenticate/index.tsx',
-    ),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
     route(
       '/users/email/update/confirm',
