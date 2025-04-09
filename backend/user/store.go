@@ -425,3 +425,20 @@ func (s *StoreCE) IsInvitationEmailExists(ctx context.Context, orgID uuid.UUID, 
 	}
 	return true, nil
 }
+
+func (s *StoreCE) DeleteOrganizationAccess(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) error {
+	q := s.builder.
+		Delete(`"user_organization_access"`)
+
+	for _, o := range opts {
+		q = o.Apply(q)
+	}
+
+	if _, err := q.
+		RunWith(s.db).
+		ExecContext(ctx); err != nil {
+		return errdefs.ErrDatabase(err)
+	}
+
+	return nil
+}

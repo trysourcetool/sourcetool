@@ -982,13 +982,11 @@ func (s *ServiceCE) DeleteUser(ctx context.Context, userID string) (*dto.DeleteU
 		return nil, errdefs.ErrPermissionDenied(errors.New("cannot remove the last admin user from the organization"))
 	}
 
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		return tx.User().DeleteOrganizationAccess(
-			ctx,
-			storeopts.UserOrganizationAccessByUserID(uid),
-			storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID),
-		)
-	}); err != nil {
+	if err := s.Store.User().DeleteOrganizationAccess(
+		ctx,
+		storeopts.UserOrganizationAccessByUserID(uid),
+		storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+	); err != nil {
 		return nil, err
 	}
 
