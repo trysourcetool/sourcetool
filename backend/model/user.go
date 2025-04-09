@@ -42,25 +42,6 @@ type User struct {
 	UpdatedAt            time.Time  `db:"updated_at"`
 }
 
-type UserRegistrationRequest struct {
-	ID        uuid.UUID `db:"id"`
-	Email     string    `db:"email"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
-type UserGoogleAuthRequest struct {
-	ID              uuid.UUID `db:"id"`
-	GoogleID        string    `db:"google_id"`
-	Email           string    `db:"email"`
-	Domain          string    `db:"domain"`
-	ExpiresAt       time.Time `db:"expires_at"`
-	Invited         bool      `db:"invited"`
-	InvitationOrgID uuid.UUID `db:"invitation_org_id"`
-	CreatedAt       time.Time `db:"created_at"`
-	UpdatedAt       time.Time `db:"updated_at"`
-}
-
 type UserOrganizationRole int
 
 const (
@@ -136,11 +117,6 @@ type UserStore interface {
 	Update(context.Context, *User) error
 	IsEmailExists(context.Context, string) (bool, error)
 
-	GetRegistrationRequest(context.Context, ...storeopts.UserRegistrationRequestOption) (*UserRegistrationRequest, error)
-	CreateRegistrationRequest(context.Context, *UserRegistrationRequest) error
-	DeleteRegistrationRequest(context.Context, *UserRegistrationRequest) error
-	IsRegistrationRequestExists(context.Context, string) (bool, error)
-
 	GetOrganizationAccess(context.Context, ...storeopts.UserOrganizationAccessOption) (*UserOrganizationAccess, error)
 	ListOrganizationAccesses(context.Context, ...storeopts.UserOrganizationAccessOption) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
@@ -156,13 +132,6 @@ type UserStore interface {
 	DeleteInvitation(context.Context, *UserInvitation) error
 	BulkInsertInvitations(context.Context, []*UserInvitation) error
 	IsInvitationEmailExists(context.Context, uuid.UUID, string) (bool, error)
-
-	GetGoogleAuthRequest(context.Context, uuid.UUID) (*UserGoogleAuthRequest, error)
-	ListExpiredGoogleAuthRequests(context.Context) ([]*UserGoogleAuthRequest, error)
-	CreateGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	UpdateGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	DeleteGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	BulkDeleteGoogleAuthRequests(context.Context, []*UserGoogleAuthRequest) error
 }
 
 type SendUpdateUserEmailInstructions struct {

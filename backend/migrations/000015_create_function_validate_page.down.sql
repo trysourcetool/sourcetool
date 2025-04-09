@@ -1,5 +1,0 @@
-BEGIN;
-
-DROP FUNCTION IF EXISTS validate_page();
-
-END;
