@@ -49,3 +49,14 @@ export const updateOrganizationUser = async (params: {
 
   return res;
 };
+
+export const deleteOrganizationUser = async (params: {
+  userId: string;
+}) => {
+  const res = await api.del<void>({
+    path: `/organizations/users/${params.userId}`,
+    auth: true,
+  });
+
+  return res;
+};

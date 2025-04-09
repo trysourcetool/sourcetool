@@ -233,6 +233,21 @@ func (s *StoreCE) UpdateOrganizationAccess(ctx context.Context, m *model.UserOrg
 	return nil
 }
 
+func (s *StoreCE) DeleteOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
+	if _, err := s.builder.
+		Delete(`"user_organization_access"`).
+		Where(sq.Eq{`"user_id"`: m.UserID, `"organization_id"`: m.OrganizationID}).
+		RunWith(s.db).
+		ExecContext(ctx); err != nil {
+		if err == sql.ErrNoRows {
+			return errdefs.ErrUserOrganizationAccessNotFound(err)
+		}
+		return errdefs.ErrDatabase(err)
+	}
+
+	return nil
+}
+
 func (s *StoreCE) GetGroup(ctx context.Context, opts ...storeopts.UserGroupOption) (*model.UserGroup, error) {
 	query, args, err := s.buildGroupQuery(ctx, opts...)
 	if err != nil {

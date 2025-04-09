@@ -57,6 +57,20 @@ const updateOrganizationUser = createAsyncThunk(
   },
 );
 
+const deleteOrganizationUser = createAsyncThunk(
+  'organizations/deleteOrganizationUser',
+  async (params: { userId: string }, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await api.organizations.deleteOrganizationUser(params);
+
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
 // =============================================
 // slice
 // =============================================
@@ -71,12 +85,14 @@ export type State = {
   isCreateOrganizationWaiting: boolean;
   isCheckSubdomainAvailabilityWaiting: boolean;
   isUpdateOrganizationUserWaiting: boolean;
+  isDeleteOrganizationUserWaiting: boolean;
 };
 
 const initialState: State = {
   isCreateOrganizationWaiting: false,
   isCheckSubdomainAvailabilityWaiting: false,
   isUpdateOrganizationUserWaiting: false,
+  isDeleteOrganizationUserWaiting: false,
 };
 
 // =============================================
@@ -114,6 +130,16 @@ export const slice = createSlice({
       })
       .addCase(updateOrganizationUser.rejected, (state) => {
         state.isUpdateOrganizationUserWaiting = false;
+      })
+      // deleteOrganizationUser
+      .addCase(deleteOrganizationUser.pending, (state) => {
+        state.isDeleteOrganizationUserWaiting = true;
+      })
+      .addCase(deleteOrganizationUser.fulfilled, (state) => {
+        state.isDeleteOrganizationUserWaiting = false;
+      })
+      .addCase(deleteOrganizationUser.rejected, (state) => {
+        state.isDeleteOrganizationUserWaiting = false;
       });
   },
   initialState,
@@ -131,6 +157,7 @@ export const organizationsStore = {
     createOrganization,
     checkSubdomainAvailability,
     updateOrganizationUser,
+    deleteOrganizationUser,
   },
   reducer: slice.reducer,
 };

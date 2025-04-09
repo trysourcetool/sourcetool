@@ -121,6 +121,7 @@ type UserStore interface {
 	ListOrganizationAccesses(context.Context, ...storeopts.UserOrganizationAccessOption) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 	UpdateOrganizationAccess(context.Context, *UserOrganizationAccess) error
+	DeleteOrganizationAccess(context.Context, *UserOrganizationAccess) error
 
 	GetGroup(context.Context, ...storeopts.UserGroupOption) (*UserGroup, error)
 	ListGroups(context.Context, ...storeopts.UserGroupOption) ([]*UserGroup, error)
