@@ -180,13 +180,6 @@ type SendInvitationEmail struct {
 	URLs     map[string]string // email -> url
 }
 
-type SendMultipleOrganizationsEmail struct {
-	To        string
-	FirstName string
-	Email     string
-	LoginURLs []string
-}
-
 // Email structure for sending magic link email.
 type SendMagicLinkEmail struct {
 	To        string
@@ -196,6 +189,14 @@ type SendMagicLinkEmail struct {
 
 // Email structure for sending multiple organizations magic link email.
 type SendMultipleOrganizationsMagicLinkEmail struct {
+	To        string
+	FirstName string
+	Email     string
+	LoginURLs []string
+}
+
+// Email structure for sending multiple organizations login email.
+type SendMultipleOrganizationsLoginEmail struct {
 	To        string
 	FirstName string
 	Email     string
@@ -212,8 +213,8 @@ type SendInvitationMagicLinkEmail struct {
 type UserMailer interface {
 	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
-	SendMultipleOrganizationsEmail(ctx context.Context, in *SendMultipleOrganizationsEmail) error
 	SendMagicLinkEmail(ctx context.Context, in *SendMagicLinkEmail) error
 	SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *SendMultipleOrganizationsMagicLinkEmail) error
+	SendMultipleOrganizationsLoginEmail(ctx context.Context, in *SendMultipleOrganizationsLoginEmail) error
 	SendInvitationMagicLinkEmail(ctx context.Context, in *SendInvitationMagicLinkEmail) error
 }

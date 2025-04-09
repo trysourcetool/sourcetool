@@ -103,12 +103,13 @@ type RequestGoogleAuthLinkResponse struct {
 }
 
 type AuthenticateWithGoogleResponse struct {
-	FirstName       string `json:"firstName,omitempty"`
-	LastName        string `json:"lastName,omitempty"`
-	AuthURL         string `json:"authUrl"`
-	Token           string `json:"token"`
-	HasOrganization bool   `json:"hasOrganization"`
-	IsNewUser       bool   `json:"isNewUser"`
+	FirstName                string `json:"firstName,omitempty"`
+	LastName                 string `json:"lastName,omitempty"`
+	AuthURL                  string `json:"authUrl"`
+	Token                    string `json:"token"`
+	HasOrganization          bool   `json:"hasOrganization"`
+	HasMultipleOrganizations bool   `json:"hasMultipleOrganizations"`
+	IsNewUser                bool   `json:"isNewUser"`
 }
 
 type RegisterWithGoogleResponse struct {

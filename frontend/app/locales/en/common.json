@@ -350,6 +350,8 @@
 
   "routes_auth_google_toast_missing_params_title": "Authentication Error",
   "routes_auth_google_toast_missing_params_desc": "Missing parameters from Google. Please try logging in again.",
+  "routes_auth_google_toast_multiple_organizations_title": "Multiple Organizations",
+  "routes_auth_google_toast_multiple_organizations_desc": "We've sent you an email with login instructions. Please check your email to proceed with logging in.",
   "routes_auth_google_toast_auth_failed_desc": "Failed to authenticate with Google. Please try again.",
   "routes_auth_google_toast_reg_failed_desc": "Failed to register your account. Please try again.",
   "routes_auth_google_toast_reg_success_title": "Registration Successful",

@@ -55,10 +55,11 @@ func createRegistrationToken(email string) (string, error) {
 	})
 }
 
-func createGoogleAuthLinkToken(flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID) (string, error) {
+func createGoogleAuthLinkToken(flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID, hostSubdomain string) (string, error) {
 	claims := &jwt.UserGoogleAuthLinkClaims{
 		Flow:            flow,
 		InvitationOrgID: invitationOrgID,
+		HostSubdomain:   hostSubdomain,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 			Issuer:    jwt.Issuer,

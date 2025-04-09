@@ -50,6 +50,15 @@ export default function GoogleAuthenticate() {
 
         const authResult = authResultAction.payload;
 
+        if (authResult.hasMultipleOrganizations) {
+          toast({
+            title: t('routes_auth_google_toast_multiple_organizations_title' as any),
+            description: t('routes_auth_google_toast_multiple_organizations_desc' as any),
+          });
+          navigate($path('/login'));
+          return;
+        }
+
         if (authResult.isNewUser) {
           const registerResultAction = await dispatch(
             usersStore.asyncActions.registerWithGoogle({
@@ -78,13 +87,6 @@ export default function GoogleAuthenticate() {
           );
 
           if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
-            const meResult = await dispatch(usersStore.asyncActions.getUsersMe());
-            if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
-              if (!meResult.payload.user.organization) {
-                navigate($path('/organizations/new'));
-                return;
-              }
-            }
             throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
 
@@ -103,13 +105,6 @@ export default function GoogleAuthenticate() {
           );
 
           if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
-            const meResult = await dispatch(usersStore.asyncActions.getUsersMe());
-            if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
-              if (!meResult.payload.user.organization) {
-                navigate($path('/organizations/new'));
-                return;
-              }
-            }
             throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
 

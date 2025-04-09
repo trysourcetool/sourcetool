@@ -315,12 +315,13 @@ func AuthenticateWithGoogleRequestToDTOInput(req requests.AuthenticateWithGoogle
 // AuthenticateWithGoogleOutputToResponse converts dto.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
 func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
 	return &responses.AuthenticateWithGoogleResponse{
-		FirstName:       out.FirstName,
-		LastName:        out.LastName,
-		AuthURL:         out.AuthURL,
-		Token:           out.Token,
-		HasOrganization: out.HasOrganization,
-		IsNewUser:       out.IsNewUser,
+		FirstName:                out.FirstName,
+		LastName:                 out.LastName,
+		AuthURL:                  out.AuthURL,
+		Token:                    out.Token,
+		HasOrganization:          out.HasOrganization,
+		HasMultipleOrganizations: out.HasMultipleOrganizations,
+		IsNewUser:                out.IsNewUser,
 	}
 }
 

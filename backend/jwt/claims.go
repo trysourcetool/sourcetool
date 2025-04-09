@@ -58,6 +58,7 @@ const (
 type UserGoogleAuthLinkClaims struct {
 	Flow            GoogleAuthFlow
 	InvitationOrgID uuid.UUID
+	HostSubdomain   string
 	jwt.RegisteredClaims
 }
 

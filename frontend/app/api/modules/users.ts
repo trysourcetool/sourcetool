@@ -169,6 +169,7 @@ export const usersAuthenticateWithGoogle = async (params: {
     authUrl: string;
     token: string;
     hasOrganization: boolean;
+    hasMultipleOrganizations: boolean;
     isNewUser: boolean;
     firstName: string;
     lastName: string;

@@ -63,20 +63,11 @@ export default function InvitationMagicLinkAuthenticate() {
             }),
           );
 
-          if (
-            usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)
-          ) {
-            window.location.replace(saveAuthResult.payload.redirectUrl);
-          } else {
-            const meResult = await dispatch(
-              usersStore.asyncActions.getUsersMe(),
-            );
-            if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
-              if (!meResult.payload.user.organization) {
-                navigate($path('/organizations/new'));
-              }
-            }
+          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
+            throw new Error(t('routes_auth_invitations_magic_link_toast_save_auth_failed_desc' as any));
           }
+
+          window.location.replace(saveAuthResult.payload.redirectUrl);
         }
       } else {
         toast({

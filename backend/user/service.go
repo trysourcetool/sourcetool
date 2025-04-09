@@ -1362,9 +1362,18 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 
 // RequestGoogleAuthLink sends a Google Auth link for invitation authentication.
 func (s *ServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
+	var hostSubdomain string
+	if config.Config.IsCloudEdition {
+		subdomain := ctxutil.Subdomain(ctx)
+		if subdomain != "auth" {
+			hostSubdomain = subdomain
+		}
+	}
+
 	stateToken, err := createGoogleAuthLinkToken(
 		jwt.GoogleAuthFlowStandard,
 		uuid.Nil,
+		hostSubdomain,
 	)
 	if err != nil {
 		return nil, err
@@ -1492,21 +1501,85 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		orgSubdomain = conv.SafeValue(invitedOrg.Subdomain)
 	} else {
 		// Standard flow - get user's organization info
-		org, orgAccess, err = s.getOrganizationInfo(ctx, user)
-		if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
-			return nil, fmt.Errorf("failed to get user organization info: %w", err)
+		// Get all organization accesses for the user
+		orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(user.ID))
+		if err != nil {
+			return nil, err
 		}
-		if org != nil {
-			orgSubdomain = conv.SafeValue(org.Subdomain)
+
+		if config.Config.IsCloudEdition {
+			if len(orgAccesses) > 1 {
+				hostSubdomain := stateClaims.HostSubdomain
+				if hostSubdomain == "" {
+					// Handle multiple organizations by sending email with login URLs
+					loginURLs := make([]string, 0, len(orgAccesses))
+					for _, access := range orgAccesses {
+						org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(access.OrganizationID))
+						if err != nil {
+							return nil, err
+						}
+
+						url, err := buildLoginURL(conv.SafeValue(org.Subdomain))
+						if err != nil {
+							return nil, err
+						}
+						loginURLs = append(loginURLs, url)
+					}
+
+					// Send email with multiple organization links
+					if err := s.Mailer.User().SendMultipleOrganizationsLoginEmail(ctx, &model.SendMultipleOrganizationsLoginEmail{
+						To:        user.Email,
+						FirstName: user.FirstName,
+						Email:     user.Email,
+						LoginURLs: loginURLs,
+					}); err != nil {
+						return nil, err
+					}
+
+					return &dto.AuthenticateWithGoogleOutput{
+						IsNewUser:                false,
+						HasOrganization:          true,
+						HasMultipleOrganizations: true,
+						Flow:                     string(stateClaims.Flow),
+					}, nil
+				} else {
+					org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(hostSubdomain))
+					if err != nil {
+						return nil, err
+					}
+					orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
+						storeopts.UserOrganizationAccessByUserID(user.ID),
+						storeopts.UserOrganizationAccessByOrganizationID(org.ID),
+					)
+					if err != nil {
+						return nil, err
+					}
+					orgSubdomain = conv.SafeValue(org.Subdomain)
+				}
+			} else {
+				// Single organization case
+				orgAccess = orgAccesses[0]
+
+				org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+				if err != nil {
+					return nil, err
+				}
+				orgSubdomain = conv.SafeValue(org.Subdomain)
+			}
 		} else {
-			orgSubdomain = "auth"
+			// Self-hosted mode
+			orgAccess := orgAccesses[0]
+			org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	// Generate temporary auth tokens
 	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(user.ID, model.TmpTokenExpiration)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create temporary auth tokens: %w", err)
+		return nil, err
 	}
 
 	user.Secret = hashedSecret
@@ -1516,7 +1589,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build save auth url: %w", err)
+		return nil, err
 	}
 
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1540,7 +1613,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		}
 		return tx.User().Update(ctx, user)
 	}); err != nil {
-		return nil, fmt.Errorf("failed to update user during google auth: %w", err)
+		return nil, err
 	}
 
 	return &dto.AuthenticateWithGoogleOutput{
@@ -1708,9 +1781,15 @@ func (s *ServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in dto.
 		}
 	}
 
+	var hostSubdomain string
+	if config.Config.IsCloudEdition {
+		hostSubdomain = ctxutil.Subdomain(ctx)
+	}
+
 	stateToken, err := createGoogleAuthLinkToken(
 		jwt.GoogleAuthFlowInvitation,
 		invitedOrg.ID,
+		hostSubdomain,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create state token: %w", err)
