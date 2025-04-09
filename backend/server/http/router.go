@@ -76,12 +76,12 @@ func (router *Router) Build() chi.Router {
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganizationIfSubdomainExists)
-				r.Get("/me", router.user.GetMe)
 				r.Post("/obtainAuthToken", router.user.ObtainAuthToken)
 			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganization)
+				r.Get("/me", router.user.GetMe)
 				r.Get("/", router.user.List)
 				r.Put("/", router.user.Update)
 				r.Post("/sendUpdateEmailInstructions", router.user.SendUpdateEmailInstructions)

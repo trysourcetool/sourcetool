@@ -76,36 +76,13 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 	currentOrg := ctxutil.CurrentOrganization(ctx)
-	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
+		storeopts.UserOrganizationAccessByUserID(currentUser.ID),
+		storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
-	var orgAccess *model.UserOrganizationAccess
-	if len(orgAccesses) > 0 {
-		if currentOrg == nil {
-			if len(orgAccesses) > 1 {
-				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
-			}
-			currentOrg, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccesses[0].OrganizationID))
-			if err != nil {
-				return nil, err
-			}
-			orgAccess = orgAccesses[0]
-		} else {
-			var err error
-			orgAccess, err = s.Store.User().GetOrganizationAccess(ctx,
-				storeopts.UserOrganizationAccessByUserID(currentUser.ID),
-				storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	var role model.UserOrganizationRole
-	if orgAccess != nil {
-		role = orgAccess.Role
-	}
+	role := orgAccess.Role
 
 	return &dto.GetMeOutput{
 		User: dto.UserFromModel(currentUser, currentOrg, role),
