@@ -338,19 +338,3 @@ type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
 	FirstName            string
 	LastName             string
 }
-
-// RegisterWithInvitationGoogleAuthLinkInput defines the input for registering a new user via Google invitation flow.
-type RegisterWithInvitationGoogleAuthLinkInput struct {
-	Token     string
-	FirstName string
-	LastName  string
-}
-
-// RegisterWithInvitationGoogleAuthLinkOutput defines the output after successfully registering via Google invitation.
-type RegisterWithInvitationGoogleAuthLinkOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
-}

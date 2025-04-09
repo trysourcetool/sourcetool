@@ -120,14 +120,3 @@ type RegisterWithGoogleResponse struct {
 type RequestInvitationGoogleAuthLinkResponse struct {
 	AuthURL string `json:"authUrl"`
 }
-
-type AuthenticateWithInvitationGoogleAuthLinkResponse struct {
-	AuthURL              string `json:"authUrl,omitempty"`
-	Token                string `json:"token,omitempty"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-	IsNewUser            bool   `json:"isNewUser"`
-	FirstName            string `json:"firstName,omitempty"`
-	LastName             string `json:"lastName,omitempty"`
-}
-
-type RegisterWithInvitationGoogleAuthLinkResponse struct{}
