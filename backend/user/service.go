@@ -1552,7 +1552,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 			}
 		} else {
 			// Self-hosted mode
-			orgAccess := orgAccesses[0]
+			orgAccess = orgAccesses[0]
 			org, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
 			if err != nil {
 				return nil, err
