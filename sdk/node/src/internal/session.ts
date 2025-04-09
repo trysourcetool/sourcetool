@@ -15,7 +15,6 @@ import { TableState } from './session/state/table';
 import { TextAreaState } from './session/state/textarea';
 import { TextInputState } from './session/state/textinput';
 import { TimeInputState } from './session/state/timeinput';
-import { WidgetType } from './session/state/widget';
 
 /**
  * Constants
@@ -136,7 +135,7 @@ export interface SessionManager {
  * Create a session state
  * @returns Session state
  */
-function createSessionState(): SessionState {
+export function createSessionState(): SessionState {
   const statesMap = new Map<string, WidgetState>();
 
   const sessionState: SessionState = {

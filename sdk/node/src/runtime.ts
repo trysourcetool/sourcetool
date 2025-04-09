@@ -7,7 +7,10 @@ import {
   SessionManager,
   WidgetState,
 } from './internal/session';
-import { createWebSocketClient, WebSocketClient } from './internal/websocket';
+import {
+  createWebSocketClient,
+  WebSocketClient,
+} from './internal/websocket/websocket';
 import {
   CloseSession,
   InitializeClient,

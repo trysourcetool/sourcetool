@@ -3,7 +3,7 @@ import {
   MessageSchema,
 } from '@trysourcetool/proto/websocket/v1/message';
 import * as logger from '../../logger';
-import { MessageHandlerFunc, WebSocketClient } from '../../websocket';
+import { MessageHandlerFunc, WebSocketClient } from '../websocket';
 import { create } from '@bufbuild/protobuf';
 
 /**
