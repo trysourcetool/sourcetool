@@ -165,11 +165,6 @@ type UserStore interface {
 	BulkDeleteGoogleAuthRequests(context.Context, []*UserGoogleAuthRequest) error
 }
 
-type SendSignUpInstructions struct {
-	To  string
-	URL string
-}
-
 type SendUpdateUserEmailInstructions struct {
 	To        string
 	FirstName string
@@ -215,7 +210,6 @@ type SendInvitationMagicLinkEmail struct {
 }
 
 type UserMailer interface {
-	SendSignUpInstructions(ctx context.Context, in *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
 	SendMultipleOrganizationsEmail(ctx context.Context, in *SendMultipleOrganizationsEmail) error
