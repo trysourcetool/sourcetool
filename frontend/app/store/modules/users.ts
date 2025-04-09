@@ -361,6 +361,7 @@ const registerWithMagicLink = createAsyncThunk(
   ) => {
     try {
       const res = await api.users.usersRegisterWithMagicLink(params);
+      api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
       if (ENVIRONMENTS.MODE === 'development') {
@@ -419,6 +420,7 @@ const registerWithInvitationMagicLink = createAsyncThunk(
   ) => {
     try {
       const res = await api.users.usersRegisterWithInvitationMagicLink(params);
+      api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));

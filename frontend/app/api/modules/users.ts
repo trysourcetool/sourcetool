@@ -159,7 +159,7 @@ export const usersRequestGoogleAuthLink = async () => {
   return res;
 };
 
-export const usersAuthenticateWithGoogle  = async (params: {
+export const usersAuthenticateWithGoogle = async (params: {
   data: {
     code: string;
     state: string;
@@ -369,7 +369,9 @@ export const usersRegisterWithMagicLink = async (params: {
     lastName: string;
   };
 }) => {
-  const res = await api.post({
+  const res = await api.post<{
+    expiresAt: string;
+  }>({
     path: '/users/auth/magic/register',
     data: params.data,
   });
@@ -418,9 +420,7 @@ export const usersRegisterWithInvitationMagicLink = async (params: {
   };
 }) => {
   const res = await api.post<{
-    token: string;
-    secret: string;
-    xsrfToken: string;
+    expiresAt: string;
   }>({
     path: '/users/auth/invitations/magic/register',
     data: params.data,

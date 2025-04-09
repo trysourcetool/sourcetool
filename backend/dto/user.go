@@ -198,49 +198,6 @@ type InviteUsersOutput struct {
 	UserInvitations []*UserInvitation
 }
 
-// SignInInvitationInput is the input for Sign In Invitation operation.
-type SignInInvitationInput struct {
-	InvitationToken string
-	Password        string
-}
-
-// SignInInvitationOutput is the output for Sign In Invitation operation.
-type SignInInvitationOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
-}
-
-// SignUpInvitationInput is the input for Sign Up Invitation operation.
-type SignUpInvitationInput struct {
-	InvitationToken      string
-	FirstName            string
-	LastName             string
-	Password             string
-	PasswordConfirmation string
-}
-
-// SignUpInvitationOutput is the output for Sign Up Invitation operation.
-type SignUpInvitationOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
-}
-
-// GetGoogleAuthCodeURLInvitationInput is the input for Get Google Auth Code URL Invitation operation.
-type GetGoogleAuthCodeURLInvitationInput struct {
-	InvitationToken string
-}
-
-// GetGoogleAuthCodeURLInvitationOutput is the output for Get Google Auth Code URL Invitation operation.
-type GetGoogleAuthCodeURLInvitationOutput struct {
-	URL string
-}
-
 // SignOutOutput is the output for Sign Out operation.
 type SignOutOutput struct {
 	Domain string
@@ -268,6 +225,7 @@ type RegisterWithMagicLinkOutput struct {
 	Token     string
 	Secret    string
 	XSRFToken string
+	ExpiresAt string
 }
 
 // RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation.

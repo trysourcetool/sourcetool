@@ -1,16 +1,5 @@
 package responses
 
-type SignInWithGoogleResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-}
-
-type SignUpWithGoogleResponse struct {
-	Token     string
-	XSRFToken string
-}
-
 type RequestMagicLinkResponse struct {
 	Email string `json:"email"`
 	IsNew bool   `json:"isNew"`
@@ -39,10 +28,6 @@ type ObtainAuthTokenResponse struct {
 
 type InviteUsersResponse struct {
 	UserInvitations []*UserInvitationResponse `json:"userInvitations"`
-}
-
-type SignUpWithGoogleInvitationResponse struct {
-	ExpiresAt string `json:"expiresAt"`
 }
 
 type SignOutResponse struct {
@@ -106,9 +91,12 @@ type AuthenticateWithInvitationMagicLinkResponse struct {
 	IsNewUser            bool   `json:"isNewUser"`
 }
 
+type RegisterWithMagicLinkResponse struct {
+	ExpiresAt string `json:"expiresAt"`
+}
+
 type RegisterWithInvitationMagicLinkResponse struct {
-	Token     string `json:"token"`
-	XSRFToken string `json:"xsrfToken"`
+	ExpiresAt string `json:"expiresAt"`
 }
 
 type RequestGoogleAuthLinkResponse struct {

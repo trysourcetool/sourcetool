@@ -30,20 +30,6 @@ type GoogleOAuthCallbackRequest struct {
 	Code  string `validate:"required"`
 }
 
-type GetGoogleAuthCodeURLInvitationRequest struct {
-	InvitationToken string `json:"invitationToken" validate:"required"`
-}
-
-type SignInWithGoogleInvitationRequest struct {
-	SessionToken string `json:"sessionToken" validate:"required"`
-}
-
-type SignUpWithGoogleInvitationRequest struct {
-	SessionToken string `json:"sessionToken" validate:"required"`
-	FirstName    string `json:"firstName" validate:"required"`
-	LastName     string `json:"lastName" validate:"required"`
-}
-
 type UpdateUserRequest struct {
 	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`

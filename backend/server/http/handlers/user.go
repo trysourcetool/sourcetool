@@ -7,7 +7,6 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
@@ -265,10 +264,7 @@ func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 			config.Config.BaseDomain)
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
-		Code:    http.StatusOK,
-		Message: "Successfully signed up",
-	}); err != nil {
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithMagicLinkOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -483,6 +479,94 @@ func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// RequestInvitationMagicLink godoc
+// @ID request-invitation-magic-link
+// @Accept json
+// @Produce json
+// @Tags users
+// @Success 200 {object} responses.RequestInvitationMagicLinkResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/auth/invitations/magic/request [post].
+func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RequestInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link.
+func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.AuthenticateWithInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), adapters.AuthenticateWithInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// RegisterWithInvitationMagicLink handles registration with an invitation magic link.
+func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
+	var req requests.RegisterWithInvitationMagicLinkRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), adapters.RegisterWithInvitationMagicLinkRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		int(model.TokenExpiration().Seconds()),
+		int(model.SecretExpiration.Seconds()),
+		int(model.XSRFTokenExpiration.Seconds()),
+		out.Domain)
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
 // RequestGoogleAuthLink godoc
 // @ID request-google-auth-link
 // @Accept json
@@ -531,8 +615,6 @@ func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 	}
 
 	if !out.IsOrganizationExists && out.Flow != "invitation" {
-		logger.Logger.Sugar().Info("Setting tmp auth cookie for cloud edition 3")
-
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
@@ -576,44 +658,12 @@ func (h *UserHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// RequestInvitationMagicLink godoc
-// @ID request-invitation-magic-link
+// RequestInvitationGoogleAuthLink godoc
+// @ID request-invitation-google-auth-link
 // @Accept json
 // @Produce json
 // @Tags users
-// @Success 200 {object} responses.RequestInvitationMagicLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/auth/invitations/magic/request [post].
-func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RequestInvitationMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// AuthenticateWithInvitationMagicLink godoc
-// @ID authenticate-with-invitation-magic-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.AuthenticateWithInvitationMagicLinkResponse
+// @Success 200 {object} responses.RequestInvitationGoogleAuthLinkResponse
 // @Failure default {object} errdefs.Error
 // @Router /users/auth/invitations/google/request [post].
 func (h *UserHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {

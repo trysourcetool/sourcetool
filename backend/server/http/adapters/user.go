@@ -164,6 +164,13 @@ func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkReq
 	}
 }
 
+// RegisterWithMagicLinkOutputToResponse converts from dto.RegisterWithMagicLinkOutput to responses.RegisterWithMagicLinkResponse.
+func RegisterWithMagicLinkOutputToResponse(out *dto.RegisterWithMagicLinkOutput) *responses.RegisterWithMagicLinkResponse {
+	return &responses.RegisterWithMagicLinkResponse{
+		ExpiresAt: out.ExpiresAt,
+	}
+}
+
 // RefreshTokenRequestToDTOInput converts from requests.RefreshTokenRequest to dto.RefreshTokenInput.
 func RefreshTokenRequestToDTOInput(in requests.RefreshTokenRequest) dto.RefreshTokenInput {
 	return dto.RefreshTokenInput{
@@ -286,8 +293,7 @@ func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithIn
 // RegisterWithInvitationMagicLinkOutputToResponse converts from dto.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
 func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
 	return &responses.RegisterWithInvitationMagicLinkResponse{
-		Token:     out.Token,
-		XSRFToken: out.XSRFToken,
+		ExpiresAt: out.ExpiresAt,
 	}
 }
 

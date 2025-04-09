@@ -550,13 +550,14 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	}
 
 	var token, xsrfToken string
+	var expiration time.Duration
 	// Create the user in a transaction
 	err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().Create(ctx, user); err != nil {
 			return err
 		}
 
-		expiration := model.TmpTokenExpiration
+		expiration = model.TmpTokenExpiration
 		if !config.Config.IsCloudEdition {
 			// For self-hosted, create initial organization
 			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, user); err != nil {
@@ -582,6 +583,7 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 		Token:     token,
 		Secret:    plainSecret,
 		XSRFToken: xsrfToken,
+		ExpiresAt: strconv.FormatInt(now.Add(expiration).Unix(), 10),
 	}, nil
 }
 
@@ -896,71 +898,6 @@ func (s *ServiceCE) Invite(ctx context.Context, in dto.InviteUsersInput) (*dto.I
 
 	return &dto.InviteUsersOutput{
 		UserInvitations: usersInvitationsOut,
-	}, nil
-}
-
-func (s *ServiceCE) GetGoogleAuthCodeURLInvitation(ctx context.Context, in dto.GetGoogleAuthCodeURLInvitationInput) (*dto.GetGoogleAuthCodeURLInvitationOutput, error) {
-	state := uuid.Must(uuid.NewV4())
-	googleOAuthClient := newGoogleOAuthClient()
-	url, err := googleOAuthClient.getGoogleAuthCodeURL(ctx, state.String())
-	if err != nil {
-		return nil, err
-	}
-
-	googleAuthReqs, err := s.Store.User().ListExpiredGoogleAuthRequests(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
-	if err != nil {
-		return nil, err
-	}
-	if c.Subject != jwt.UserSignatureSubjectInvitation {
-		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByEmail(c.Email))
-	if err != nil {
-		return nil, err
-	}
-
-	invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(userInvitation.OrganizationID))
-	if err != nil {
-		return nil, err
-	}
-
-	var subdomain string
-	if config.Config.IsCloudEdition {
-		subdomain = ctxutil.Subdomain(ctx)
-		hostOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
-		if err != nil {
-			return nil, err
-		}
-
-		if invitedOrg.ID != hostOrg.ID {
-			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
-		}
-	}
-
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().BulkDeleteGoogleAuthRequests(ctx, googleAuthReqs); err != nil {
-			return err
-		}
-
-		return tx.User().CreateGoogleAuthRequest(ctx, &model.UserGoogleAuthRequest{
-			ID:              state,
-			Domain:          config.Config.OrgDomain(subdomain),
-			ExpiresAt:       time.Now().Add(time.Duration(24) * time.Hour),
-			Invited:         true,
-			InvitationOrgID: invitedOrg.ID,
-		})
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.GetGoogleAuthCodeURLInvitationOutput{
-		URL: url,
 	}, nil
 }
 
