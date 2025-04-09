@@ -71,15 +71,10 @@ export default function InvitationSignUpFollowUp() {
         resultAction,
       )
     ) {
-      const result = await dispatch(usersStore.asyncActions.getUsersMe());
-      if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
-        if (result.payload.user.organization) {
-          navigate('/');
-          toast({
-            title: t('routes_invitation_signup_followup_toast_success'),
-          });
-        }
-      }
+      navigate('/');
+      toast({
+        title: t('routes_invitation_signup_followup_toast_success'),
+      });
     } else {
       toast({
         title: t('routes_invitation_signup_followup_toast_error'),

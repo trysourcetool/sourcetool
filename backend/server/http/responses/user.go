@@ -91,7 +91,8 @@ type AuthenticateWithInvitationMagicLinkResponse struct {
 }
 
 type RegisterWithMagicLinkResponse struct {
-	ExpiresAt string `json:"expiresAt"`
+	HasOrganization bool   `json:"hasOrganization"`
+	ExpiresAt       string `json:"expiresAt"`
 }
 
 type RegisterWithInvitationMagicLinkResponse struct {

@@ -549,6 +549,12 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 		EmailAuthenticatedAt: &now,
 	}
 
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(user.ID))
+	if err != nil {
+		return nil, err
+	}
+	hasOrganization := len(orgAccesses) > 0
+
 	var token, xsrfToken string
 	var expiration time.Duration
 	// Create the user in a transaction
@@ -564,6 +570,7 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 				return err
 			}
 			expiration = model.TokenExpiration()
+			hasOrganization = true
 		}
 
 		// Create token
@@ -580,10 +587,11 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	}
 
 	return &dto.RegisterWithMagicLinkOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-		ExpiresAt: strconv.FormatInt(now.Add(expiration).Unix(), 10),
+		Token:           token,
+		Secret:          plainSecret,
+		XSRFToken:       xsrfToken,
+		ExpiresAt:       strconv.FormatInt(now.Add(expiration).Unix(), 10),
+		HasOrganization: hasOrganization,
 	}, nil
 }
 

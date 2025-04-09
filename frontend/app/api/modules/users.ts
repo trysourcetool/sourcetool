@@ -370,6 +370,7 @@ export const usersRegisterWithMagicLink = async (params: {
 }) => {
   const res = await api.post<{
     expiresAt: string;
+    hasOrganization: boolean;
   }>({
     path: '/users/auth/magic/register',
     data: params.data,

@@ -167,7 +167,8 @@ func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkReq
 // RegisterWithMagicLinkOutputToResponse converts from dto.RegisterWithMagicLinkOutput to responses.RegisterWithMagicLinkResponse.
 func RegisterWithMagicLinkOutputToResponse(out *dto.RegisterWithMagicLinkOutput) *responses.RegisterWithMagicLinkResponse {
 	return &responses.RegisterWithMagicLinkResponse{
-		ExpiresAt: out.ExpiresAt,
+		ExpiresAt:       out.ExpiresAt,
+		HasOrganization: out.HasOrganization,
 	}
 }
 

@@ -222,10 +222,11 @@ type RegisterWithMagicLinkInput struct {
 
 // RegisterWithMagicLinkOutput is the output for registering with a magic link.
 type RegisterWithMagicLinkOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
+	Token           string
+	Secret          string
+	XSRFToken       string
+	ExpiresAt       string
+	HasOrganization bool
 }
 
 // RequestInvitationMagicLinkInput represents the input for requesting a magic link for invitation.
