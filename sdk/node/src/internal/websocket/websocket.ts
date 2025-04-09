@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import * as logger from './logger';
+import * as logger from '../logger';
 import {
   Message,
   MessageSchema,
