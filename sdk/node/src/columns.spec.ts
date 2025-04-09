@@ -123,8 +123,6 @@ test('columns', () => {
 
     const expectedWeight = 1 / cols;
 
-    console.log(columnState.weight, { expectedWeight });
-
     expect(columnState.weight).toBeCloseTo(expectedWeight);
   }
 });

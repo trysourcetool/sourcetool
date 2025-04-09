@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeTable: WidgetType = 'table';
+export const WidgetTypeTable = 'table' as const;
 
 export interface TableStateValueSelection {
   row: number;
@@ -27,11 +27,11 @@ export class TableState implements WidgetState {
     this.type = WidgetTypeTable;
   }
 
-  getType(): WidgetType {
+  getType(): 'table' {
     return WidgetTypeTable;
   }
 
-  public type: WidgetType = WidgetTypeTable;
+  public type: 'table' = WidgetTypeTable;
 }
 
 export interface TableSelection {

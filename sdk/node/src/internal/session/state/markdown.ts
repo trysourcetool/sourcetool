@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeMarkdown: WidgetType = 'markdown';
+export const WidgetTypeMarkdown = 'markdown' as const;
 
 export class MarkdownState implements WidgetState {
   constructor(
@@ -11,9 +11,9 @@ export class MarkdownState implements WidgetState {
     this.type = WidgetTypeMarkdown;
   }
 
-  getType(): WidgetType {
+  getType(): 'markdown' {
     return WidgetTypeMarkdown;
   }
 
-  public type: WidgetType = WidgetTypeMarkdown;
+  public type: 'markdown' = WidgetTypeMarkdown;
 }

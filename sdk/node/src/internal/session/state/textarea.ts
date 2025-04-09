@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeTextArea: WidgetType = 'textArea';
+export const WidgetTypeTextArea = 'textArea' as const;
 
 export class TextAreaState implements WidgetState {
   constructor(
@@ -21,9 +21,9 @@ export class TextAreaState implements WidgetState {
     this.type = WidgetTypeTextArea;
   }
 
-  getType(): WidgetType {
+  getType(): 'textArea' {
     return WidgetTypeTextArea;
   }
 
-  public type: WidgetType = WidgetTypeTextArea;
+  public type: 'textArea' = WidgetTypeTextArea;
 }

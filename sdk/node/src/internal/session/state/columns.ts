@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeColumns: WidgetType = 'columns';
+export const WidgetTypeColumns = 'columns' as const;
 
 export class ColumnsState implements WidgetState {
   constructor(
@@ -11,9 +11,9 @@ export class ColumnsState implements WidgetState {
     this.type = WidgetTypeColumns;
   }
 
-  getType(): WidgetType {
+  getType(): 'columns' {
     return WidgetTypeColumns;
   }
 
-  public type: WidgetType = WidgetTypeColumns;
+  public type: 'columns' = WidgetTypeColumns;
 }

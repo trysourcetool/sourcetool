@@ -71,8 +71,6 @@ test('button', () => {
 
   builder.button('Test Button');
 
-  console.log('runtime', runtime);
-
   const widgetId = builder.generatePageID('button', [0]);
 
   const state = session.state.getButton(widgetId);
