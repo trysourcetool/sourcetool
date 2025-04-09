@@ -85,10 +85,9 @@ type RequestInvitationMagicLinkResponse struct {
 }
 
 type AuthenticateWithInvitationMagicLinkResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-	IsNewUser            bool   `json:"isNewUser"`
+	AuthURL   string `json:"authUrl"`
+	Token     string `json:"token"`
+	IsNewUser bool   `json:"isNewUser"`
 }
 
 type RegisterWithMagicLinkResponse struct {
