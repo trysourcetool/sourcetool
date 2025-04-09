@@ -131,7 +131,7 @@ export class Sourcetool implements RouterInterface {
 
     // Create new pages object with only unique routes
     const newPages: Record<string, Page> = {};
-    for (const [route, id] of Object.entries(pagesByRoute)) {
+    for (const [, id] of Object.entries(pagesByRoute)) {
       newPages[id] = this.pages[id];
     }
 
