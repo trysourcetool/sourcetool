@@ -1425,11 +1425,6 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 
 // RequestGoogleAuthLink sends a Google Auth link for invitation authentication.
 func (s *ServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
-	// Check self-hosted organization restriction
-	if err := s.validateSelfHostedOrganization(ctx); err != nil {
-		return nil, err
-	}
-
 	stateToken, err := createGoogleAuthLinkToken(
 		time.Now().Add(5*time.Minute),
 		jwt.UserSignatureSubjectGoogleAuthLink,
@@ -1486,7 +1481,12 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	}
 
 	if !exists {
-		// For new users
+		if !config.Config.IsCloudEdition && stateClaims.Flow == "standard" {
+			if err := s.validateSelfHostedOrganization(ctx); err != nil {
+				return nil, err
+			}
+		}
+
 		var role string
 		if stateClaims.Flow == "invitation" {
 			// Verify invitation exists
@@ -1642,13 +1642,11 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 		return nil, errdefs.ErrUserEmailAlreadyExists(fmt.Errorf("user with email %s already exists", claims.Email))
 	}
 
-	// Generate secret
 	plainSecret, hashedSecret, err := generateSecret()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate secret: %w", err)
 	}
 
-	// Create new user
 	now := time.Now()
 	tokenExpiration := model.TokenExpiration()
 	expiresAt := now.Add(tokenExpiration)
@@ -1663,24 +1661,20 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	}
 
 	var token, xsrfToken string
-	var domain string
 	var orgSubdomain string
 	var authURL string
-	var invitedOrg *model.Organization
-	// Create user and handle organization access in a transaction
+	var organizationExists bool
 	err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().Create(ctx, user); err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
 		}
 
 		if claims.Flow == "invitation" {
-			// For invitation flow
-			invitedOrg, err = s.Store.Organization().Get(ctx, storeopts.OrganizationByID(claims.InvitationOrgID))
+			invitedOrg, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(claims.InvitationOrgID))
 			if err != nil {
 				return fmt.Errorf("failed to get invited organization: %w", err)
 			}
 
-			// Get and delete invitation
 			userInvitation, err := s.Store.User().GetInvitation(ctx,
 				storeopts.UserInvitationByEmail(claims.Email),
 				storeopts.UserInvitationByOrganizationID(claims.InvitationOrgID))
@@ -1688,7 +1682,6 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 				return fmt.Errorf("failed to get invitation: %w", err)
 			}
 
-			// Create organization access
 			orgAccess := &model.UserOrganizationAccess{
 				ID:             uuid.Must(uuid.NewV4()),
 				UserID:         user.ID,
@@ -1708,16 +1701,14 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 				return fmt.Errorf("failed to create personal API key: %w", err)
 			}
 
-			domain = config.Config.OrgDomain(conv.SafeValue(invitedOrg.Subdomain))
 			orgSubdomain = conv.SafeValue(invitedOrg.Subdomain)
+			organizationExists = true
 		} else {
 			if !config.Config.IsCloudEdition {
 				if err := s.createInitialOrganizationForSelfHosted(ctx, tx, user); err != nil {
 					return fmt.Errorf("failed to create initial organization: %w", err)
 				}
-				domain = config.Config.BaseDomain
-			} else {
-				domain = config.Config.AuthDomain()
+				organizationExists = true
 			}
 		}
 
@@ -1727,7 +1718,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 			return fmt.Errorf("failed to create auth token: %w", err)
 		}
 
-		if invitedOrg != nil {
+		if organizationExists {
 			authURL, err = buildSaveAuthURL(orgSubdomain)
 			if err != nil {
 				return err
@@ -1745,9 +1736,8 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 		Secret:               plainSecret,
 		XSRFToken:            xsrfToken,
 		ExpiresAt:            strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:               domain,
 		AuthURL:              authURL,
-		IsOrganizationExists: invitedOrg != nil,
+		IsOrganizationExists: organizationExists,
 	}, nil
 }
 

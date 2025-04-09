@@ -348,7 +348,6 @@ type RegisterWithGoogleOutput struct {
 	Secret               string
 	XSRFToken            string
 	ExpiresAt            string
-	Domain               string
 	AuthURL              string
 	IsOrganizationExists bool
 }
