@@ -141,13 +141,13 @@ type AuthenticateWithMagicLinkInput struct {
 
 // AuthenticateWithMagicLinkOutput is the output for authenticating with a magic link token.
 type AuthenticateWithMagicLinkOutput struct {
-	AuthURL              string
-	Token                string
-	IsOrganizationExists bool
-	Secret               string
-	XSRFToken            string
-	Domain               string
-	IsNewUser            bool // Indicates if a new user was created
+	AuthURL         string
+	Token           string
+	HasOrganization bool
+	Secret          string
+	XSRFToken       string
+	Domain          string
+	IsNewUser       bool // Indicates if a new user was created
 }
 
 // RefreshTokenInput is the input for Refresh Token operation.
@@ -281,16 +281,16 @@ type AuthenticateWithGoogleInput struct {
 
 // AuthenticateWithGoogleOutput defines the output for authenticating with Google via frontend callback.
 type AuthenticateWithGoogleOutput struct {
-	FirstName            string
-	LastName             string
-	AuthURL              string
-	Token                string
-	IsOrganizationExists bool
-	Secret               string
-	XSRFToken            string
-	Domain               string
-	IsNewUser            bool
-	Flow                 string
+	FirstName       string
+	LastName        string
+	AuthURL         string
+	Token           string
+	HasOrganization bool
+	Secret          string
+	XSRFToken       string
+	Domain          string
+	IsNewUser       bool
+	Flow            string
 }
 
 // RegisterWithGoogleInput defines the input for registering a new user via Google OAuth flow.
@@ -302,12 +302,12 @@ type RegisterWithGoogleInput struct {
 
 // RegisterWithGoogleOutput defines the output after successfully registering a new user via Google.
 type RegisterWithGoogleOutput struct {
-	Token                string
-	Secret               string
-	XSRFToken            string
-	ExpiresAt            string
-	AuthURL              string
-	IsOrganizationExists bool
+	Token           string
+	Secret          string
+	XSRFToken       string
+	ExpiresAt       string
+	AuthURL         string
+	HasOrganization bool
 }
 
 // RequestInvitationGoogleAuthLinkInput is the input for requesting a Google Auth link for an invitation.
@@ -328,13 +328,13 @@ type AuthenticateWithInvitationGoogleAuthLinkInput struct {
 
 // AuthenticateWithInvitationGoogleAuthLinkOutput defines the output after authenticating with Google via invitation.
 type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
-	AuthURL              string
-	Token                string
-	Secret               string
-	XSRFToken            string
-	Domain               string
-	IsOrganizationExists bool
-	IsNewUser            bool
-	FirstName            string
-	LastName             string
+	AuthURL         string
+	Token           string
+	Secret          string
+	XSRFToken       string
+	Domain          string
+	HasOrganization bool
+	IsNewUser       bool
+	FirstName       string
+	LastName        string
 }

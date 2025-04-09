@@ -53,7 +53,7 @@ export default function MagicLinkAuth() {
         if (result.isNewUser) {
           navigate($path('/signup/followup', { token: result.token }));
         } else {
-          if (!result.isOrganizationExists) {
+          if (!result.hasOrganization) {
             navigate($path('/organizations/new'));
             return;
           }

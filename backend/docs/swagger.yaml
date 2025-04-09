@@ -68,13 +68,6 @@ definitions:
       subdomain:
         type: string
     type: object
-  requests.GetGoogleAuthCodeURLInvitationRequest:
-    properties:
-      invitationToken:
-        type: string
-    required:
-    - invitationToken
-    type: object
   requests.InviteUsersRequest:
     properties:
       emails:
@@ -121,75 +114,6 @@ definitions:
     required:
     - email
     - emailConfirmation
-    type: object
-  requests.SignInInvitationRequest:
-    properties:
-      invitationToken:
-        type: string
-      password:
-        type: string
-    required:
-    - invitationToken
-    - password
-    type: object
-  requests.SignInWithGoogleInvitationRequest:
-    properties:
-      sessionToken:
-        type: string
-    required:
-    - sessionToken
-    type: object
-  requests.SignInWithGoogleRequest:
-    properties:
-      sessionToken:
-        type: string
-    required:
-    - sessionToken
-    type: object
-  requests.SignUpInvitationRequest:
-    properties:
-      firstName:
-        type: string
-      invitationToken:
-        type: string
-      lastName:
-        type: string
-      password:
-        type: string
-      passwordConfirmation:
-        type: string
-    required:
-    - firstName
-    - invitationToken
-    - lastName
-    - password
-    - passwordConfirmation
-    type: object
-  requests.SignUpWithGoogleInvitationRequest:
-    properties:
-      firstName:
-        type: string
-      lastName:
-        type: string
-      sessionToken:
-        type: string
-    required:
-    - firstName
-    - lastName
-    - sessionToken
-    type: object
-  requests.SignUpWithGoogleRequest:
-    properties:
-      firstName:
-        type: string
-      lastName:
-        type: string
-      sessionToken:
-        type: string
-    required:
-    - firstName
-    - lastName
-    - sessionToken
     type: object
   requests.UpdateAPIKeyRequest:
     properties:
@@ -260,13 +184,28 @@ definitions:
       updatedAt:
         type: string
     type: object
+  responses.AuthenticateWithGoogleResponse:
+    properties:
+      authUrl:
+        type: string
+      firstName:
+        type: string
+      hasOrganization:
+        type: boolean
+      isNewUser:
+        type: boolean
+      lastName:
+        type: string
+      token:
+        type: string
+    type: object
   responses.AuthenticateWithMagicLinkResponse:
     properties:
       authUrl:
         type: string
-      isNewUser:
+      hasOrganization:
         type: boolean
-      isOrganizationExists:
+      isNewUser:
         type: boolean
       token:
         type: string
@@ -330,16 +269,6 @@ definitions:
     properties:
       environment:
         $ref: '#/definitions/responses.EnvironmentResponse'
-    type: object
-  responses.GetGoogleAuthCodeURLInvitationResponse:
-    properties:
-      url:
-        type: string
-    type: object
-  responses.GetGoogleAuthCodeURLResponse:
-    properties:
-      url:
-        type: string
     type: object
   responses.GetGroupResponse:
     properties:
@@ -507,6 +436,30 @@ definitions:
       expiresAt:
         type: string
     type: object
+  responses.RegisterWithGoogleResponse:
+    properties:
+      authUrl:
+        type: string
+      hasOrganization:
+        type: boolean
+      token:
+        type: string
+    type: object
+  responses.RequestGoogleAuthLinkResponse:
+    properties:
+      authUrl:
+        type: string
+    type: object
+  responses.RequestInvitationGoogleAuthLinkResponse:
+    properties:
+      authUrl:
+        type: string
+    type: object
+  responses.RequestInvitationMagicLinkResponse:
+    properties:
+      email:
+        type: string
+    type: object
   responses.RequestMagicLinkResponse:
     properties:
       email:
@@ -524,15 +477,6 @@ definitions:
       expiresAt:
         type: string
       redirectUrl:
-        type: string
-    type: object
-  responses.SignInWithGoogleResponse:
-    properties:
-      authUrl:
-        type: string
-      isOrganizationExists:
-        type: boolean
-      token:
         type: string
     type: object
   responses.StatusResponse:
@@ -734,6 +678,42 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - apiKeys
+  /auth/google/authenticate:
+    post:
+      consumes:
+      - application/json
+      operationId: authenticate-with-google
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AuthenticateWithGoogleResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /auth/google/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-google-auth-link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestGoogleAuthLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
   /environments:
     get:
       consumes:
@@ -1139,6 +1119,60 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
+  /users/auth/google/register:
+    post:
+      consumes:
+      - application/json
+      operationId: register-with-google
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterWithGoogleResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/auth/invitations/google/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-invitation-google-auth-link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestInvitationGoogleAuthLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/auth/invitations/magic/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-invitation-magic-link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestInvitationMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
   /users/auth/magic/authenticate:
     post:
       consumes:
@@ -1192,81 +1226,6 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/invitations/oauth/google/authCodeUrl:
-    post:
-      consumes:
-      - application/json
-      operationId: get-google-auth-code-url-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.GetGoogleAuthCodeURLInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.GetGoogleAuthCodeURLInvitationResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invitations/oauth/google/signin:
-    post:
-      consumes:
-      - application/json
-      operationId: signin-with-google-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignInWithGoogleInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invitations/oauth/google/signup:
-    post:
-      consumes:
-      - application/json
-      operationId: signup-with-google-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignUpWithGoogleInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
   /users/invitations/resend:
     post:
       consumes:
@@ -1286,56 +1245,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ResendInvitationResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invitations/signin:
-    post:
-      consumes:
-      - application/json
-      operationId: signin-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignInInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invitations/signup:
-    post:
-      consumes:
-      - application/json
-      operationId: signup-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignUpInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:
@@ -1379,74 +1288,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.GetMeResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/oauth/google/authCodeUrl:
-    post:
-      consumes:
-      - application/json
-      operationId: get-google-auth-code-url
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.GetGoogleAuthCodeURLResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/oauth/google/signin:
-    post:
-      consumes:
-      - application/json
-      operationId: signin-with-google
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignInWithGoogleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.SignInWithGoogleResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/oauth/google/signup:
-    post:
-      consumes:
-      - application/json
-      operationId: signup-with-google
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.SignUpWithGoogleRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
         default:
           description: ""
           schema:

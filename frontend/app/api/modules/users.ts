@@ -3,7 +3,7 @@ import { ENVIRONMENTS } from '@/environments';
 
 export type UserAuthResponse = {
   authUrl: string;
-  isOrganizationExists: boolean;
+  hasOrganization: boolean;
   token: string;
 };
 
@@ -168,7 +168,7 @@ export const usersAuthenticateWithGoogle = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
-    isOrganizationExists: boolean;
+    hasOrganization: boolean;
     isNewUser: boolean;
     firstName: string;
     lastName: string;
@@ -188,7 +188,7 @@ export const usersRegisterWithGoogle = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
-    isOrganizationExists: boolean;
+    hasOrganization: boolean;
   }>({
     path: '/users/auth/google/register',
     data: params.data,
@@ -254,7 +254,7 @@ export const usersAuthenticateWithInvitationGoogleAuthLink = async (params: {
   const res = await api.post<{
     authUrl?: string;
     token: string;
-    isOrganizationExists: boolean;
+    hasOrganization: boolean;
     isNewUser: boolean;
     firstName?: string;
     lastName?: string;
@@ -350,8 +350,8 @@ export const usersAuthenticateWithMagicLink = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
+    hasOrganization: boolean;
     isNewUser: boolean;
-    isOrganizationExists: boolean;
   }>({
     path: '/users/auth/magic/authenticate',
     data: params.data,

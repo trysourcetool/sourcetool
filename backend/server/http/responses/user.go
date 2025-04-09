@@ -6,10 +6,10 @@ type RequestMagicLinkResponse struct {
 }
 
 type AuthenticateWithMagicLinkResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-	IsNewUser            bool   `json:"isNewUser"`
+	AuthURL         string `json:"authUrl"`
+	Token           string `json:"token"`
+	HasOrganization bool   `json:"hasOrganization"`
+	IsNewUser       bool   `json:"isNewUser"`
 }
 
 type RefreshTokenResponse struct {
@@ -103,18 +103,18 @@ type RequestGoogleAuthLinkResponse struct {
 }
 
 type AuthenticateWithGoogleResponse struct {
-	FirstName            string `json:"firstName,omitempty"`
-	LastName             string `json:"lastName,omitempty"`
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
-	IsNewUser            bool   `json:"isNewUser"`
+	FirstName       string `json:"firstName,omitempty"`
+	LastName        string `json:"lastName,omitempty"`
+	AuthURL         string `json:"authUrl"`
+	Token           string `json:"token"`
+	HasOrganization bool   `json:"hasOrganization"`
+	IsNewUser       bool   `json:"isNewUser"`
 }
 
 type RegisterWithGoogleResponse struct {
-	AuthURL              string `json:"authUrl"`
-	Token                string `json:"token"`
-	IsOrganizationExists bool   `json:"isOrganizationExists"`
+	AuthURL         string `json:"authUrl"`
+	Token           string `json:"token"`
+	HasOrganization bool   `json:"hasOrganization"`
 }
 
 type RequestInvitationGoogleAuthLinkResponse struct {

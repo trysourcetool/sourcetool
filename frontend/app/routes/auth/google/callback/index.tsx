@@ -65,7 +65,7 @@ export default function GoogleAuthenticate() {
             throw new Error(errorMessage);
           }
 
-          if (!registerResultAction.payload.isOrganizationExists) {
+          if (!registerResultAction.payload.hasOrganization) {
             navigate($path('/organizations/new'));
             return;
           }
@@ -90,7 +90,7 @@ export default function GoogleAuthenticate() {
 
           window.location.replace(saveAuthResultAction.payload.redirectUrl);
         } else {
-          if (!authResult.isOrganizationExists) {
+          if (!authResult.hasOrganization) {
             navigate($path('/organizations/new'));
             return;
           }

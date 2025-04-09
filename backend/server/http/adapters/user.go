@@ -140,10 +140,10 @@ func AuthenticateWithMagicLinkRequestToDTOInput(in requests.AuthenticateWithMagi
 // AuthenticateWithMagicLinkOutputToResponse converts from dto.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
 func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
 	return &responses.AuthenticateWithMagicLinkResponse{
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
-		IsNewUser:            out.IsNewUser,
+		AuthURL:         out.AuthURL,
+		Token:           out.Token,
+		HasOrganization: out.HasOrganization,
+		IsNewUser:       out.IsNewUser,
 	}
 }
 
@@ -315,12 +315,12 @@ func AuthenticateWithGoogleRequestToDTOInput(req requests.AuthenticateWithGoogle
 // AuthenticateWithGoogleOutputToResponse converts dto.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
 func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
 	return &responses.AuthenticateWithGoogleResponse{
-		FirstName:            out.FirstName,
-		LastName:             out.LastName,
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
-		IsNewUser:            out.IsNewUser,
+		FirstName:       out.FirstName,
+		LastName:        out.LastName,
+		AuthURL:         out.AuthURL,
+		Token:           out.Token,
+		HasOrganization: out.HasOrganization,
+		IsNewUser:       out.IsNewUser,
 	}
 }
 
@@ -334,9 +334,9 @@ func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) 
 // RegisterWithGoogleOutputToResponse converts from dto.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
 func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
 	return &responses.RegisterWithGoogleResponse{
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
+		AuthURL:         out.AuthURL,
+		Token:           out.Token,
+		HasOrganization: out.HasOrganization,
 	}
 }
 

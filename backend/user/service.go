@@ -432,9 +432,9 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 		}
 
 		return &dto.AuthenticateWithMagicLinkOutput{
-			Token:                registrationToken,
-			IsNewUser:            true,
-			IsOrganizationExists: false,
+			Token:           registrationToken,
+			IsNewUser:       true,
+			HasOrganization: false,
 		}, nil
 	}
 
@@ -510,13 +510,13 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 	}
 
 	return &dto.AuthenticateWithMagicLinkOutput{
-		AuthURL:              authURL,
-		Token:                token,
-		IsOrganizationExists: orgAccess != nil,
-		Secret:               plainSecret,
-		XSRFToken:            xsrfToken,
-		Domain:               config.Config.OrgDomain(orgSubdomain),
-		IsNewUser:            false,
+		AuthURL:         authURL,
+		Token:           token,
+		HasOrganization: orgAccess != nil,
+		Secret:          plainSecret,
+		XSRFToken:       xsrfToken,
+		Domain:          config.Config.OrgDomain(orgSubdomain),
+		IsNewUser:       false,
 	}, nil
 }
 
@@ -1447,12 +1447,12 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		}
 
 		return &dto.AuthenticateWithGoogleOutput{
-			Token:                registrationToken,
-			IsNewUser:            true,
-			IsOrganizationExists: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
-			Flow:                 string(stateClaims.Flow),
-			FirstName:            userInfo.givenName,
-			LastName:             userInfo.familyName,
+			Token:           registrationToken,
+			IsNewUser:       true,
+			HasOrganization: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
+			Flow:            string(stateClaims.Flow),
+			FirstName:       userInfo.givenName,
+			LastName:        userInfo.familyName,
 		}, nil
 	}
 
@@ -1544,14 +1544,14 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	}
 
 	return &dto.AuthenticateWithGoogleOutput{
-		AuthURL:              authURL,
-		Token:                token,
-		IsOrganizationExists: orgAccess != nil,
-		Secret:               plainSecret,
-		XSRFToken:            xsrfToken,
-		Domain:               config.Config.OrgDomain(orgSubdomain),
-		IsNewUser:            false,
-		Flow:                 string(stateClaims.Flow),
+		AuthURL:         authURL,
+		Token:           token,
+		HasOrganization: orgAccess != nil,
+		Secret:          plainSecret,
+		XSRFToken:       xsrfToken,
+		Domain:          config.Config.OrgDomain(orgSubdomain),
+		IsNewUser:       false,
+		Flow:            string(stateClaims.Flow),
 	}, nil
 }
 
@@ -1596,7 +1596,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	var token, xsrfToken string
 	var orgSubdomain string
 	var authURL string
-	var organizationExists bool
+	var hasOrganization bool
 	err = s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if err := tx.User().Create(ctx, user); err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
@@ -1635,13 +1635,13 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 			}
 
 			orgSubdomain = conv.SafeValue(invitedOrg.Subdomain)
-			organizationExists = true
+			hasOrganization = true
 		} else {
 			if !config.Config.IsCloudEdition {
 				if err := s.createInitialOrganizationForSelfHosted(ctx, tx, user); err != nil {
 					return fmt.Errorf("failed to create initial organization: %w", err)
 				}
-				organizationExists = true
+				hasOrganization = true
 			}
 		}
 
@@ -1651,7 +1651,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 			return fmt.Errorf("failed to create auth token: %w", err)
 		}
 
-		if organizationExists {
+		if hasOrganization {
 			authURL, err = buildSaveAuthURL(orgSubdomain)
 			if err != nil {
 				return err
@@ -1665,12 +1665,12 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	}
 
 	return &dto.RegisterWithGoogleOutput{
-		Token:                token,
-		Secret:               plainSecret,
-		XSRFToken:            xsrfToken,
-		ExpiresAt:            strconv.FormatInt(expiresAt.Unix(), 10),
-		AuthURL:              authURL,
-		IsOrganizationExists: organizationExists,
+		Token:           token,
+		Secret:          plainSecret,
+		XSRFToken:       xsrfToken,
+		ExpiresAt:       strconv.FormatInt(expiresAt.Unix(), 10),
+		AuthURL:         authURL,
+		HasOrganization: hasOrganization,
 	}, nil
 }
 

@@ -230,7 +230,7 @@ func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if !out.IsOrganizationExists {
+	if !out.HasOrganization {
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
@@ -614,7 +614,7 @@ func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if !out.IsOrganizationExists && out.Flow != "invitation" {
+	if !out.HasOrganization && out.Flow != "invitation" {
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
