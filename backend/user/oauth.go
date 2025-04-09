@@ -18,7 +18,7 @@ var oauthScopes = []string{
 }
 
 const (
-	googleOAuthCallbackPath = "/auth/google/authenticate"
+	googleOAuthCallbackPath = "/auth/google/callback"
 )
 
 type googleOAuthClient struct{}

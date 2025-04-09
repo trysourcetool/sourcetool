@@ -30,8 +30,8 @@ export default [
       './routes/auth/magic/authenticate/index.tsx',
     ),
     route(
-      '/auth/google/authenticate',
-      './routes/auth/google/authenticate/index.tsx',
+      '/auth/google/callback',
+      './routes/auth/google/callback/index.tsx',
     ),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
     route(
