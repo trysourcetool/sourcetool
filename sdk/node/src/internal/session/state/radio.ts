@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeRadio: WidgetType = 'radio';
+export const WidgetTypeRadio = 'radio' as const;
 
 export class RadioState implements WidgetState {
   constructor(
@@ -16,11 +16,11 @@ export class RadioState implements WidgetState {
     this.type = WidgetTypeRadio;
   }
 
-  getType(): WidgetType {
+  getType(): 'radio' {
     return WidgetTypeRadio;
   }
 
-  public type: WidgetType = WidgetTypeRadio;
+  public type: 'radio' = WidgetTypeRadio;
 }
 
 export interface RadioValue {

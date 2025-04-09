@@ -1,3 +1,20 @@
+import { ButtonState } from './session/state/button';
+import { CheckboxState } from './session/state/checkbox';
+import { CheckboxGroupState } from './session/state/checkboxgroup';
+import { ColumnItemState } from './session/state/columnitem';
+import { ColumnsState } from './session/state/columns';
+import { DateInputState } from './session/state/dateinput';
+import { DateTimeInputState } from './session/state/datetimeinput';
+import { FormState } from './session/state/form';
+import { MarkdownState } from './session/state/markdown';
+import { MultiSelectState } from './session/state/multiselect';
+import { NumberInputState } from './session/state/numberinput';
+import { RadioState } from './session/state/radio';
+import { SelectboxState } from './session/state/selectbox';
+import { TableState } from './session/state/table';
+import { TextAreaState } from './session/state/textarea';
+import { TextInputState } from './session/state/textinput';
+import { TimeInputState } from './session/state/timeinput';
 import { WidgetType } from './session/state/widget';
 
 /**
@@ -9,12 +26,24 @@ const MAX_DISCONNECTED_SESSIONS = 128;
 /**
  * Widget state interface
  */
-export interface WidgetState {
-  id: string;
-  type: WidgetType;
-  value?: any;
-  [key: string]: any;
-}
+export type WidgetState =
+  | ButtonState
+  | CheckboxState
+  | CheckboxGroupState
+  | ColumnsState
+  | ColumnItemState
+  | DateInputState
+  | DateTimeInputState
+  | FormState
+  | MarkdownState
+  | MultiSelectState
+  | NumberInputState
+  | RadioState
+  | SelectboxState
+  | TableState
+  | TextAreaState
+  | TextInputState
+  | TimeInputState;
 
 /**
  * Session state interface
@@ -23,22 +52,22 @@ export interface SessionState {
   states: Map<string, WidgetState>;
   get(id: string): WidgetState | undefined;
   set(id: string, state: WidgetState): void;
-  getButton(id: string): WidgetState | undefined;
-  getCheckbox(id: string): WidgetState | undefined;
-  getCheckboxGroup(id: string): WidgetState | undefined;
-  getColumns(id: string): WidgetState | undefined;
-  getDateInput(id: string): WidgetState | undefined;
-  getDateTimeInput(id: string): WidgetState | undefined;
-  getForm(id: string): WidgetState | undefined;
-  getMarkdown(id: string): WidgetState | undefined;
-  getMultiSelect(id: string): WidgetState | undefined;
-  getNumberInput(id: string): WidgetState | undefined;
-  getRadio(id: string): WidgetState | undefined;
-  getSelectbox(id: string): WidgetState | undefined;
-  getTable(id: string): WidgetState | undefined;
-  getTextArea(id: string): WidgetState | undefined;
-  getTextInput(id: string): WidgetState | undefined;
-  getTimeInput(id: string): WidgetState | undefined;
+  getButton(id: string): ButtonState | undefined;
+  getCheckbox(id: string): CheckboxState | undefined;
+  getCheckboxGroup(id: string): CheckboxGroupState | undefined;
+  getColumns(id: string): ColumnsState | undefined;
+  getDateInput(id: string): DateInputState | undefined;
+  getDateTimeInput(id: string): DateTimeInputState | undefined;
+  getForm(id: string): FormState | undefined;
+  getMarkdown(id: string): MarkdownState | undefined;
+  getMultiSelect(id: string): MultiSelectState | undefined;
+  getNumberInput(id: string): NumberInputState | undefined;
+  getRadio(id: string): RadioState | undefined;
+  getSelectbox(id: string): SelectboxState | undefined;
+  getTable(id: string): TableState | undefined;
+  getTextArea(id: string): TextAreaState | undefined;
+  getTextInput(id: string): TextInputState | undefined;
+  getTimeInput(id: string): TimeInputState | undefined;
   resetStates(): void;
   setStates(newStates: Map<string, WidgetState>): void;
   resetButtons(): void;
@@ -121,82 +150,82 @@ function createSessionState(): SessionState {
       statesMap.set(id, state);
     },
 
-    getButton(id: string): WidgetState | undefined {
+    getButton(id: string): ButtonState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'button' ? state : undefined;
     },
 
-    getCheckbox(id: string): WidgetState | undefined {
+    getCheckbox(id: string): CheckboxState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'checkbox' ? state : undefined;
     },
 
-    getCheckboxGroup(id: string): WidgetState | undefined {
+    getCheckboxGroup(id: string): CheckboxGroupState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'checkboxGroup' ? state : undefined;
     },
 
-    getColumns(id: string): WidgetState | undefined {
+    getColumns(id: string): ColumnsState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'columns' ? state : undefined;
     },
 
-    getDateInput(id: string): WidgetState | undefined {
+    getDateInput(id: string): DateInputState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'dateInput' ? state : undefined;
     },
 
-    getDateTimeInput(id: string): WidgetState | undefined {
+    getDateTimeInput(id: string): DateTimeInputState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'datetimeInput' ? state : undefined;
     },
 
-    getForm(id: string): WidgetState | undefined {
+    getForm(id: string): FormState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'form' ? state : undefined;
     },
 
-    getMarkdown(id: string): WidgetState | undefined {
+    getMarkdown(id: string): MarkdownState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'markdown' ? state : undefined;
     },
 
-    getMultiSelect(id: string): WidgetState | undefined {
+    getMultiSelect(id: string): MultiSelectState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'multiselect' ? state : undefined;
     },
 
-    getNumberInput(id: string): WidgetState | undefined {
+    getNumberInput(id: string): NumberInputState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'numberInput' ? state : undefined;
     },
 
-    getRadio(id: string): WidgetState | undefined {
+    getRadio(id: string): RadioState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'radio' ? state : undefined;
     },
 
-    getSelectbox(id: string): WidgetState | undefined {
+    getSelectbox(id: string): SelectboxState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'selectbox' ? state : undefined;
     },
 
-    getTable(id: string): WidgetState | undefined {
+    getTable(id: string): TableState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'table' ? state : undefined;
     },
 
-    getTextArea(id: string): WidgetState | undefined {
+    getTextArea(id: string): TextAreaState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'textArea' ? state : undefined;
     },
 
-    getTextInput(id: string): WidgetState | undefined {
+    getTextInput(id: string): TextInputState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'textInput' ? state : undefined;
     },
 
-    getTimeInput(id: string): WidgetState | undefined {
+    getTimeInput(id: string): TimeInputState | undefined {
       const state = statesMap.get(id);
       return state?.type === 'timeInput' ? state : undefined;
     },

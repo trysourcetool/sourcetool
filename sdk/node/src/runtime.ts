@@ -5,6 +5,7 @@ import {
   createSessionManager,
   newSession,
   SessionManager,
+  WidgetState,
 } from './internal/session';
 import { createWebSocketClient, WebSocketClient } from './internal/websocket';
 import {
@@ -39,12 +40,12 @@ export class Runtime {
   /**
    * WebSocket client
    */
-  wsClient: any;
+  wsClient: WebSocketClient;
 
   /**
    * Session manager
    */
-  sessionManager: any;
+  sessionManager: SessionManager;
 
   /**
    * Page manager
@@ -73,7 +74,7 @@ export class Runtime {
    * @param pages Pages
    */
   sendInitializeHost(apiKey: string, pages: Record<string, Page>): void {
-    const pagesPayload = Object.entries(pages).map(([_, page]) => ({
+    const pagesPayload = Object.entries(pages).map(([, page]) => ({
       id: page.id,
       name: page.name,
       route: page.route,
@@ -175,12 +176,12 @@ export class Runtime {
     }
 
     // Reset states if page changed
-    if (session.pageID !== pageID) {
+    if (session.pageId !== pageID) {
       session.state.resetStates();
     }
 
     // Update widget states
-    const newWidgetStates: Record<string, any> = {};
+    const newWidgetStates = new Map<string, WidgetState>();
     for (const widget of msg.states) {
       const id = widget.id;
 
@@ -188,103 +189,154 @@ export class Runtime {
       // This is a simplified version, the actual implementation would handle all widget types
       switch (widget.type.case) {
         case 'textInput':
-          newWidgetStates[id] = convertTextInputProtoToState(
+          const textInputState = convertTextInputProtoToState(
             id,
             widget.type.value,
           );
+          if (textInputState) {
+            newWidgetStates.set(id, textInputState);
+          }
           break;
         case 'numberInput':
-          newWidgetStates[id] = convertNumberInputProtoToState(
+          const numberInputState = convertNumberInputProtoToState(
             id,
             widget.type.value,
           );
+          if (numberInputState) {
+            newWidgetStates.set(id, numberInputState);
+          }
           break;
         case 'dateInput':
-          newWidgetStates[id] = convertDateInputProtoToState(
+          const dateInputState = convertDateInputProtoToState(
             id,
             widget.type.value,
           );
+          if (dateInputState) {
+            newWidgetStates.set(id, dateInputState);
+          }
           break;
         case 'dateTimeInput':
-          newWidgetStates[id] = convertDateTimeInputProtoToState(
+          const dateTimeInputState = convertDateTimeInputProtoToState(
             id,
             widget.type.value,
           );
+          if (dateTimeInputState) {
+            newWidgetStates.set(id, dateTimeInputState);
+          }
           break;
         case 'timeInput':
-          newWidgetStates[id] = convertTimeInputProtoToState(
+          const timeInputState = convertTimeInputProtoToState(
             id,
             widget.type.value,
           );
+          if (timeInputState) {
+            newWidgetStates.set(id, timeInputState);
+          }
           break;
         case 'form':
-          newWidgetStates[id] = convertFormProtoToState(id, widget.type.value);
+          const formState = convertFormProtoToState(id, widget.type.value);
+          if (formState) {
+            newWidgetStates.set(id, formState);
+          }
           break;
         case 'button':
-          newWidgetStates[id] = convertButtonProtoToState(
-            id,
-            widget.type.value,
-          );
+          const buttonState = convertButtonProtoToState(id, widget.type.value);
+          if (buttonState) {
+            newWidgetStates.set(id, buttonState);
+          }
           break;
         case 'markdown':
-          newWidgetStates[id] = convertMarkdownProtoToState(
+          const markdownState = convertMarkdownProtoToState(
             id,
             widget.type.value,
           );
+          if (markdownState) {
+            newWidgetStates.set(id, markdownState);
+          }
           break;
         case 'columns':
-          newWidgetStates[id] = convertColumnsProtoToState(
+          const columnsState = convertColumnsProtoToState(
             id,
             widget.type.value,
           );
+          if (columnsState) {
+            newWidgetStates.set(id, columnsState);
+          }
+          break;
           break;
         case 'columnItem':
-          newWidgetStates[id] = convertColumnItemProtoToState(
+          const columnItemState = convertColumnItemProtoToState(
             id,
             widget.type.value,
           );
+          if (columnItemState) {
+            newWidgetStates.set(id, columnItemState);
+          }
           break;
         case 'checkbox':
-          newWidgetStates[id] = convertCheckboxProtoToState(
+          const checkboxState = convertCheckboxProtoToState(
             id,
             widget.type.value,
           );
+          if (checkboxState) {
+            newWidgetStates.set(id, checkboxState);
+          }
           break;
         case 'checkboxGroup':
-          newWidgetStates[id] = convertCheckboxGroupProtoToState(
+          const checkboxGroupState = convertCheckboxGroupProtoToState(
             id,
             widget.type.value,
           );
+          if (checkboxGroupState) {
+            newWidgetStates.set(id, checkboxGroupState);
+          }
           break;
         case 'radio':
-          newWidgetStates[id] = convertRadioProtoToState(id, widget.type.value);
+          const radioState = convertRadioProtoToState(id, widget.type.value);
+          if (radioState) {
+            newWidgetStates.set(id, radioState);
+          }
           break;
         case 'selectbox':
-          newWidgetStates[id] = convertSelectboxProtoToState(
+          const selectboxState = convertSelectboxProtoToState(
             id,
             widget.type.value,
           );
+          if (selectboxState) {
+            newWidgetStates.set(id, selectboxState);
+          }
           break;
         case 'multiSelect':
-          newWidgetStates[id] = convertMultiSelectProtoToState(
+          const multiSelectState = convertMultiSelectProtoToState(
             id,
             widget.type.value,
           );
+          if (multiSelectState) {
+            newWidgetStates.set(id, multiSelectState);
+          }
           break;
         case 'table':
-          newWidgetStates[id] = convertTableProtoToState(id, widget.type.value);
+          const tableState = convertTableProtoToState(id, widget.type.value);
+          if (tableState) {
+            newWidgetStates.set(id, tableState);
+          }
           break;
         case 'textArea':
-          newWidgetStates[id] = convertTextAreaProtoToState(
+          const textAreaState = convertTextAreaProtoToState(
             id,
             widget.type.value,
           );
+          if (textAreaState) {
+            newWidgetStates.set(id, textAreaState);
+          }
           break;
 
         default:
           throw new Error(`Unknown widget type: ${widget.type}`);
       }
     }
+
+    console.log('newWidgetStates', newWidgetStates);
 
     // Set new widget states
     session.state.setStates(newWidgetStates);

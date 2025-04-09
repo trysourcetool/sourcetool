@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeForm: WidgetType = 'form';
+export const WidgetTypeForm = 'form' as const;
 
 export class FormState implements WidgetState {
   constructor(
@@ -14,9 +14,9 @@ export class FormState implements WidgetState {
     this.type = WidgetTypeForm;
   }
 
-  getType(): WidgetType {
+  getType(): 'form' {
     return WidgetTypeForm;
   }
 
-  public type: WidgetType = WidgetTypeForm;
+  public type: 'form' = WidgetTypeForm;
 }

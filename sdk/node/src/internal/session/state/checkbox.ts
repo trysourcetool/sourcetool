@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeCheckbox: WidgetType = 'checkbox';
+export const WidgetTypeCheckbox = 'checkbox' as const;
 
 export class CheckboxState implements WidgetState {
   constructor(
@@ -15,9 +15,9 @@ export class CheckboxState implements WidgetState {
     this.type = WidgetTypeCheckbox;
   }
 
-  getType(): WidgetType {
+  getType(): 'checkbox' {
     return WidgetTypeCheckbox;
   }
 
-  public type: WidgetType = WidgetTypeCheckbox;
+  public type: 'checkbox' = WidgetTypeCheckbox;
 }

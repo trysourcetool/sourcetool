@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeCheckboxGroup: WidgetType = 'checkboxGroup';
+export const WidgetTypeCheckboxGroup = 'checkboxGroup' as const;
 
 export class CheckboxGroupState implements WidgetState {
   constructor(
@@ -16,11 +16,11 @@ export class CheckboxGroupState implements WidgetState {
     this.type = WidgetTypeCheckboxGroup;
   }
 
-  getType(): WidgetType {
+  getType(): 'checkboxGroup' {
     return WidgetTypeCheckboxGroup;
   }
 
-  public type: WidgetType = WidgetTypeCheckboxGroup;
+  public type: 'checkboxGroup' = WidgetTypeCheckboxGroup;
 }
 
 export interface CheckboxGroupValue {

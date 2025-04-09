@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeMultiSelect: WidgetType = 'multiselect';
+export const WidgetTypeMultiSelect = 'multiselect' as const;
 
 export class MultiSelectState implements WidgetState {
   constructor(
@@ -17,11 +17,11 @@ export class MultiSelectState implements WidgetState {
     this.type = WidgetTypeMultiSelect;
   }
 
-  getType(): WidgetType {
+  getType(): 'multiselect' {
     return WidgetTypeMultiSelect;
   }
 
-  public type: WidgetType = WidgetTypeMultiSelect;
+  public type: 'multiselect' = WidgetTypeMultiSelect;
 }
 
 export interface MultiSelectValue {

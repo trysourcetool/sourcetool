@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeTextInput: WidgetType = 'textInput';
+export const WidgetTypeTextInput = 'textInput' as const;
 
 export class TextInputState implements WidgetState {
   constructor(
@@ -18,9 +18,9 @@ export class TextInputState implements WidgetState {
     this.type = WidgetTypeTextInput;
   }
 
-  getType(): WidgetType {
+  getType(): 'textInput' {
     return WidgetTypeTextInput;
   }
 
-  public type: WidgetType = WidgetTypeTextInput;
+  public type: 'textInput' = WidgetTypeTextInput;
 }

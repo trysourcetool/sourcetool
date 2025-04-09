@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { WidgetState, WidgetType } from './widget';
+import { WidgetState } from './widget';
 
-export const WidgetTypeSelectbox: WidgetType = 'selectbox';
+export const WidgetTypeSelectbox = 'selectbox' as const;
 
 export class SelectboxState implements WidgetState {
   constructor(
@@ -17,11 +17,11 @@ export class SelectboxState implements WidgetState {
     this.type = WidgetTypeSelectbox;
   }
 
-  getType(): WidgetType {
+  getType(): 'selectbox' {
     return WidgetTypeSelectbox;
   }
 
-  public type: WidgetType = WidgetTypeSelectbox;
+  public type: 'selectbox' = WidgetTypeSelectbox;
 }
 
 export interface SelectboxValue {

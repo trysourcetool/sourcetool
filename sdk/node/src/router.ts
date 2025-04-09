@@ -3,6 +3,10 @@ import { UIBuilder } from './uibuilder';
 import { Page } from './internal/page';
 import { Sourcetool } from './sourcetool';
 
+export function removeDuplicates(groups: string[]): string[] {
+  return [...new Set(groups)];
+}
+
 /**
  * Router interface
  */
@@ -39,7 +43,7 @@ export interface RouterInterface {
  */
 export class Router implements RouterInterface {
   private parent: Router | null;
-  private sourcetool: Sourcetool;
+  private sourcetool: Sourcetool | null;
   private basePath: string;
   private namespaceDNS: string;
   private groups: string[];
@@ -53,7 +57,7 @@ export class Router implements RouterInterface {
    * @param groups Access groups
    */
   constructor(
-    sourcetool: Sourcetool,
+    sourcetool: Sourcetool | null = null,
     namespaceDNS: string,
     parent: Router | null = null,
     basePath: string = '',
@@ -86,6 +90,12 @@ export class Router implements RouterInterface {
       relativePath = '/' + relativePath;
     }
     if (this.basePath === '') {
+      if (relativePath === '/') {
+        return relativePath;
+      }
+      if (relativePath.endsWith('/')) {
+        return relativePath.slice(0, -1);
+      }
       return relativePath;
     }
     const basePath = this.basePath.endsWith('/')
@@ -94,7 +104,15 @@ export class Router implements RouterInterface {
     const cleanPath = relativePath.startsWith('/')
       ? relativePath.slice(1)
       : relativePath;
-    return basePath + '/' + cleanPath;
+    const result = basePath + '/' + cleanPath;
+
+    if (result === '/') {
+      return result;
+    }
+    if (result.endsWith('/')) {
+      return result.slice(0, -1);
+    }
+    return result;
   }
 
   /**
@@ -103,7 +121,7 @@ export class Router implements RouterInterface {
    * @returns Array with duplicates removed
    */
   private removeDuplicates(groups: string[]): string[] {
-    return [...new Set(groups)];
+    return removeDuplicates(groups);
   }
 
   /**
@@ -146,6 +164,10 @@ export class Router implements RouterInterface {
     }
 
     const pageID = this.generatePageID(fullPath);
+
+    if (this.sourcetool === null) {
+      throw new Error('Sourcetool is not set');
+    }
 
     const page = new Page(
       pageID,
