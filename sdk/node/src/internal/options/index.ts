@@ -35,7 +35,7 @@ export type DateInputOptions = {
   format: string;
   maxValue: Date | null;
   minValue: Date | null;
-  location: any; // Timezone location
+  location: string; // Timezone location
 };
 
 export type DateTimeInputOptions = {
@@ -47,7 +47,7 @@ export type DateTimeInputOptions = {
   format: string;
   maxValue: Date | null;
   minValue: Date | null;
-  location: any; // Timezone location
+  location: string; // Timezone location
 };
 
 export type FormOptions = {
@@ -137,5 +137,5 @@ export type TimeInputOptions = {
   defaultValue: Date | null;
   required: boolean;
   disabled: boolean;
-  location: any; // Timezone location
+  location: string; // Timezone location
 };

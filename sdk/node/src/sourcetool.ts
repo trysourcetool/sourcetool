@@ -1,7 +1,7 @@
 import { UIBuilder } from './uibuilder';
 import { Page, PageManager, newPageManager } from './internal/page';
 import { RouterInterface, newRouter } from './router';
-import { startRuntime } from './runtime';
+import { Runtime, startRuntime } from './runtime';
 
 /**
  * Sourcetool configuration
@@ -50,7 +50,7 @@ export class Sourcetool implements RouterInterface {
   /**
    * Runtime
    */
-  runtime: any;
+  runtime: Runtime | null = null;
 
   /**
    * Constructor

@@ -14,6 +14,8 @@ import {
 import {
   CloseSession,
   InitializeClient,
+  InitializeHostSchema,
+  Message,
   RerunPage,
 } from '@trysourcetool/proto/websocket/v1/message';
 import { convertTextInputProtoToState } from './textinput';
@@ -35,6 +37,7 @@ import { convertSelectboxProtoToState } from './selectbox';
 import { convertTextAreaProtoToState } from './textarea';
 import { convertTableProtoToState } from './table';
 import { convertMultiSelectProtoToState } from './multiselect';
+import { create } from '@bufbuild/protobuf';
 
 /**
  * Runtime class
@@ -85,20 +88,20 @@ export class Runtime {
       groups: page.accessGroups,
     }));
 
-    const msg = {
+    const msg = create(InitializeHostSchema, {
       apiKey,
-      sdkName: 'sourcetool-node',
-      sdkVersion: '0.1.0',
+      sdkName: 'sourcetool-js',
+      sdkVersion: '0.0.1',
       pages: pagesPayload,
-    };
+    });
 
     this.wsClient
       .enqueueWithResponse(uuidv4(), msg)
-      .then((resp: any) => {
-        if (resp.exception) {
+      .then((resp: Message) => {
+        if (resp.type.case === 'exception') {
           console.error(
             'Initialize host message failed:',
-            resp.exception.message,
+            resp.type.value.message,
           );
           throw new Error('Initialize host message failed');
         }
