@@ -37,7 +37,7 @@ export class MockClient implements WebSocketClient {
    * @param id Message ID
    * @param payload Message payload
    */
-  public enqueue(id: string, payload: any): void {
+  public enqueue(id: string, payload: Message['type']['value']): void {
     try {
       const msg = this.newMessage(id, payload);
       this.messages.push(msg);
@@ -55,7 +55,10 @@ export class MockClient implements WebSocketClient {
    * @param payload Message payload
    * @returns Response
    */
-  public enqueueWithResponse(id: string, payload: any): Promise<Message> {
+  public enqueueWithResponse(
+    id: string,
+    payload: Message['type']['value'],
+  ): Promise<Message> {
     try {
       const msg = this.newMessage(id, payload);
       this.messages.push(msg);

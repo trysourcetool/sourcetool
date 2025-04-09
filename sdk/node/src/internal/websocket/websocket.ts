@@ -28,8 +28,11 @@ export type MessageHandlerFunc = (message: Message) => Promise<void> | void;
  * WebSocket client interface
  */
 export interface WebSocketClient {
-  enqueue(id: string, message: any): void;
-  enqueueWithResponse(id: string, message: any): Promise<any>;
+  enqueue(id: string, message: Message['type']['value']): void;
+  enqueueWithResponse(
+    id: string,
+    message: Message['type']['value'],
+  ): Promise<Message>;
   registerHandler(handler: MessageHandlerFunc): void;
   close(): void;
   wait(): Promise<void>;
@@ -48,7 +51,10 @@ function newMessage(
   id: string;
   type?: Message['type'];
 } {
-  const msg: any = {
+  const msg: {
+    id: string;
+    type?: Message['type'];
+  } = {
     id,
   };
 
@@ -232,19 +238,19 @@ class Client implements WebSocketClient {
    * Send a message
    * @param msg Message
    */
-  private send(msg: any): void {
+  private send(msg: Message): void {
     if (!this.conn) {
       throw new Error('WebSocket connection not established');
     }
 
-    this.conn.send(JSON.stringify(msg));
+    this.conn.send(Buffer.from(JSON.stringify(msg)));
   }
 
   /**
    * Handle a message
    * @param msg Message
    */
-  private handleMessage(msg: any): void {
+  private handleMessage(msg: Message): void {
     // Handle responses
     const response = this.responses.get(msg.id);
     if (response) {
@@ -278,7 +284,7 @@ class Client implements WebSocketClient {
    * @param id Message ID
    * @param payload Message payload
    */
-  public enqueue(id: string, payload: any): void {
+  public enqueue(id: string, payload: Message['type']['value']): void {
     try {
       const msg = newMessage(id, payload);
       this.messageQueue.push(msg);
@@ -293,7 +299,10 @@ class Client implements WebSocketClient {
    * @param payload Message payload
    * @returns Response
    */
-  public enqueueWithResponse(id: string, payload: any): Promise<any> {
+  public enqueueWithResponse(
+    id: string,
+    payload: Message['type']['value'],
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const msg = newMessage(id, payload);
