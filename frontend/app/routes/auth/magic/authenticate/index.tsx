@@ -53,6 +53,11 @@ export default function MagicLinkAuth() {
         if (result.isNewUser) {
           navigate($path('/signup/followup', { token: result.token }));
         } else {
+          if (!result.hasOrganization) {
+            navigate($path('/organizations/new'));
+            return;
+          }
+
           const saveAuthResult = await dispatch(
             usersStore.asyncActions.saveAuth({
               authUrl: result.authUrl,
@@ -60,20 +65,11 @@ export default function MagicLinkAuth() {
             }),
           );
 
-          if (
-            usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)
-          ) {
-            window.location.replace(saveAuthResult.payload.redirectUrl);
-          } else {
-            const meResult = await dispatch(
-              usersStore.asyncActions.getUsersMe(),
-            );
-            if (usersStore.asyncActions.getUsersMe.fulfilled.match(meResult)) {
-              if (!meResult.payload.user.organization) {
-                navigate($path('/organizations/new'));
-              }
-            }
+          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
+            throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
           }
+
+          window.location.replace(saveAuthResult.payload.redirectUrl);
         }
       } else {
         toast({

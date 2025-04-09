@@ -120,14 +120,11 @@ const signout = createAsyncThunk(
   },
 );
 
-const oauthGoogleUserInfo = createAsyncThunk(
-  'users/oauthGoogleUserInfo',
-  async (
-    params: { data: { code: string; state: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+const requestGoogleAuthLink = createAsyncThunk(
+  'users/requestGoogleAuthLink',
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      const res = await api.users.usersOauthGoogleUserInfo(params);
+      const res = await api.users.usersRequestGoogleAuthLink();
 
       return res;
     } catch (error: any) {
@@ -137,33 +134,16 @@ const oauthGoogleUserInfo = createAsyncThunk(
   },
 );
 
-const oauthGoogleSignin = createAsyncThunk(
-  'users/oauthGoogleSignin',
-  async (
-    params: { data: { sessionToken: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersOauthGoogleSignin(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const oauthGoogleSignup = createAsyncThunk(
-  'users/oauthGoogleSignup',
+const authenticateWithGoogle = createAsyncThunk(
+  'users/authenticateWithGoogle',
   async (
     params: {
-      data: { firstName: string; lastName: string; sessionToken: string };
+      data: { code: string; state: string };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersOauthGoogleSignup(params);
+      const res = await api.users.usersAuthenticateWithGoogle(params);
 
       return res;
     } catch (error: any) {
@@ -173,11 +153,14 @@ const oauthGoogleSignup = createAsyncThunk(
   },
 );
 
-const oauthGoogleAuthCodeUrl = createAsyncThunk(
-  'users/oauthGoogleAuthCodeUrl',
-  async (_, { dispatch, rejectWithValue }) => {
+const registerWithGoogle = createAsyncThunk(
+  'users/registerWithGoogle',
+  async (
+    params: { data: { token: string } },
+    { dispatch, rejectWithValue },
+  ) => {
     try {
-      const res = await api.users.usersOauthGoogleAuthCodeUrl();
+      const res = await api.users.usersRegisterWithGoogle(params);
 
       return res;
     } catch (error: any) {
@@ -221,22 +204,18 @@ const invitationsResend = createAsyncThunk(
   },
 );
 
-const invitationsSignup = createAsyncThunk(
-  'users/invitationsSignup',
+const requestInvitationGoogleAuthLink = createAsyncThunk(
+  'users/requestInvitationGoogleAuthLink',
   async (
     params: {
       data: {
-        firstName: string;
         invitationToken: string;
-        lastName: string;
-        password: string;
-        passwordConfirmation: string;
       };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersInvitationsSignup(params);
+      const res = await api.users.usersRequestInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
@@ -246,31 +225,14 @@ const invitationsSignup = createAsyncThunk(
   },
 );
 
-const invitationsSignin = createAsyncThunk(
-  'users/invitationsSignin',
-  async (
-    params: { data: { invitationToken: string; password: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersInvitationsSignin(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const invitationsOauthGoogleUserInfo = createAsyncThunk(
-  'users/invitationsOauthGoogleUserInfo',
+const authenticateWithInvitationGoogleAuthLink = createAsyncThunk(
+  'users/authenticateWithInvitationGoogleAuthLink',
   async (
     params: { data: { code: string; state: string } },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersInvitationsOauthGoogleUserInfo(params);
+      const res = await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
@@ -280,56 +242,14 @@ const invitationsOauthGoogleUserInfo = createAsyncThunk(
   },
 );
 
-const invitationsOauthGoogleSignup = createAsyncThunk(
-  'users/invitationsOauthGoogleSignup',
+const registerWithInvitationGoogleAuthLink = createAsyncThunk(
+  'users/registerWithInvitationGoogleAuthLink',
   async (
-    params: {
-      data: {
-        firstName: string;
-        invitationToken: string;
-        lastName: string;
-        sessionToken: string;
-      };
-    },
+    params: { data: { token: string; firstName: string; lastName: string } },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersInvitationsOauthGoogleSignup(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const invitationsOauthGoogleSignin = createAsyncThunk(
-  'users/invitationsOauthGoogleSignin',
-  async (
-    params: { data: { invitationToken: string; sessionToken: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersInvitationsOauthGoogleSignin(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const invitationsOauthGoogleAuthCodeUrl = createAsyncThunk(
-  'users/invitationsOauthGoogleAuthCodeUrl',
-  async (
-    params: { data: { invitationToken: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res =
-        await api.users.usersInvitationsOauthGoogleAuthCodeUrl(params);
+      const res = await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
@@ -441,6 +361,7 @@ const registerWithMagicLink = createAsyncThunk(
   ) => {
     try {
       const res = await api.users.usersRegisterWithMagicLink(params);
+      api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
       if (ENVIRONMENTS.MODE === 'development') {
@@ -499,6 +420,7 @@ const registerWithInvitationMagicLink = createAsyncThunk(
   ) => {
     try {
       const res = await api.users.usersRegisterWithInvitationMagicLink(params);
+      api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -542,7 +464,9 @@ export type State = {
   isSaveAuthWaiting: boolean;
   isSignoutWaiting: boolean;
   isObtainAuthTokenWaiting: boolean;
-  isOauthGoogleAuthWaiting: boolean;
+  isRequestGoogleAuthLinkWaiting: boolean;
+  isAuthenticateWithGoogleWaiting: boolean;
+  isRegisterWithGoogleWaiting: boolean;
   isUpdateUserWaiting: boolean;
   isUpdateUserEmailWaiting: boolean;
   isUsersSendUpdateEmailInstructionsWaiting: boolean;
@@ -550,6 +474,9 @@ export type State = {
   isRequestInvitationMagicLinkWaiting: boolean;
   isAuthenticateWithInvitationMagicLinkWaiting: boolean;
   isRegisterWithInvitationMagicLinkWaiting: boolean;
+  isRequestInvitationGoogleAuthLinkWaiting: boolean;
+  isAuthenticateWithInvitationGoogleAuthLinkWaiting: boolean;
+  isRegisterWithInvitationGoogleAuthLinkWaiting: boolean;
 };
 
 const initialState: State = {
@@ -569,7 +496,9 @@ const initialState: State = {
   isObtainAuthTokenWaiting: false,
   isSaveAuthWaiting: false,
   isSignoutWaiting: false,
-  isOauthGoogleAuthWaiting: false,
+  isRequestGoogleAuthLinkWaiting: false,
+  isAuthenticateWithGoogleWaiting: false,
+  isRegisterWithGoogleWaiting: false,
   isUpdateUserWaiting: false,
   isUpdateUserEmailWaiting: false,
   isUsersSendUpdateEmailInstructionsWaiting: false,
@@ -577,6 +506,9 @@ const initialState: State = {
   isRequestInvitationMagicLinkWaiting: false,
   isAuthenticateWithInvitationMagicLinkWaiting: false,
   isRegisterWithInvitationMagicLinkWaiting: false,
+  isRequestInvitationGoogleAuthLinkWaiting: false,
+  isAuthenticateWithInvitationGoogleAuthLinkWaiting: false,
+  isRegisterWithInvitationGoogleAuthLinkWaiting: false,
 };
 // =============================================
 // slice
@@ -718,15 +650,49 @@ export const slice = createSlice({
         state.isInviteWaiting = false;
       })
 
-      // oauthGoogleAuthCodeUrl
-      .addCase(oauthGoogleAuthCodeUrl.pending, (state) => {
-        state.isOauthGoogleAuthWaiting = true;
+      // requestGoogleAuthLink
+      .addCase(requestGoogleAuthLink.pending, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = true;
       })
-      .addCase(oauthGoogleAuthCodeUrl.fulfilled, (state) => {
-        state.isOauthGoogleAuthWaiting = false;
+      .addCase(requestGoogleAuthLink.fulfilled, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = false;
       })
-      .addCase(oauthGoogleAuthCodeUrl.rejected, (state) => {
-        state.isOauthGoogleAuthWaiting = false;
+      .addCase(requestGoogleAuthLink.rejected, (state) => {
+        state.isRequestGoogleAuthLinkWaiting = false;
+      })
+
+      // authenticateWithGoogle
+      .addCase(authenticateWithGoogle.pending, (state) => {
+        state.isAuthenticateWithGoogleWaiting = true;
+      })
+      .addCase(authenticateWithGoogle.fulfilled, (state) => {
+        state.isAuthenticateWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(authenticateWithGoogle.rejected, (state) => {
+        state.isAuthenticateWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithGoogle
+      .addCase(registerWithGoogle.pending, (state) => {
+        state.isRegisterWithGoogleWaiting = true;
+      })
+      .addCase(registerWithGoogle.fulfilled, (state) => {
+        state.isRegisterWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(registerWithGoogle.rejected, (state) => {
+        state.isRegisterWithGoogleWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
       })
 
       // getUserGroups
@@ -856,6 +822,51 @@ export const slice = createSlice({
         state.isAuthChecked = true;
         state.isAuthSucceeded = false;
         state.isAuthFailed = true;
+      })
+
+      // requestInvitationGoogleAuthLink
+      .addCase(requestInvitationGoogleAuthLink.pending, (state) => {
+        state.isRequestInvitationGoogleAuthLinkWaiting = true;
+      })
+      .addCase(requestInvitationGoogleAuthLink.fulfilled, (state) => {
+        state.isRequestInvitationGoogleAuthLinkWaiting = false;
+      })
+      .addCase(requestInvitationGoogleAuthLink.rejected, (state) => {
+        state.isRequestInvitationGoogleAuthLinkWaiting = false;
+      })
+
+      // authenticateWithInvitationGoogleAuthLink
+      .addCase(authenticateWithInvitationGoogleAuthLink.pending, (state) => {
+        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = true;
+      })
+      .addCase(authenticateWithInvitationGoogleAuthLink.fulfilled, (state) => {
+        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(authenticateWithInvitationGoogleAuthLink.rejected, (state) => {
+        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
+      })
+
+      // registerWithInvitationGoogleAuthLink
+      .addCase(registerWithInvitationGoogleAuthLink.pending, (state) => {
+        state.isRegisterWithInvitationGoogleAuthLinkWaiting = true;
+      })
+      .addCase(registerWithInvitationGoogleAuthLink.fulfilled, (state) => {
+        state.isRegisterWithInvitationGoogleAuthLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = true;
+        state.isAuthFailed = false;
+      })
+      .addCase(registerWithInvitationGoogleAuthLink.rejected, (state) => {
+        state.isRegisterWithInvitationGoogleAuthLinkWaiting = false;
+        state.isAuthChecked = true;
+        state.isAuthSucceeded = false;
+        state.isAuthFailed = true;
       });
   },
   initialState,
@@ -932,18 +943,11 @@ export const usersStore = {
     getUsersMe,
     listUsers,
     signout,
-    oauthGoogleUserInfo,
-    oauthGoogleSignin,
-    oauthGoogleSignup,
-    oauthGoogleAuthCodeUrl,
+    requestGoogleAuthLink,
+    authenticateWithGoogle,
+    registerWithGoogle,
     invite,
     invitationsResend,
-    invitationsSignup,
-    invitationsSignin,
-    invitationsOauthGoogleUserInfo,
-    invitationsOauthGoogleSignup,
-    invitationsOauthGoogleSignin,
-    invitationsOauthGoogleAuthCodeUrl,
     updateUserEmail,
     updateUser,
     usersSendUpdateEmailInstructions,
@@ -953,6 +957,9 @@ export const usersStore = {
     requestInvitationMagicLink,
     authenticateWithInvitationMagicLink,
     registerWithInvitationMagicLink,
+    requestInvitationGoogleAuthLink,
+    authenticateWithInvitationGoogleAuthLink,
+    registerWithInvitationGoogleAuthLink,
   },
   reducer: slice.reducer,
   selector: {

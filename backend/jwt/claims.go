@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"github.com/gofrs/uuid/v5"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -12,9 +13,10 @@ const (
 	UserSignatureSubjectActivate              = "activate"
 	UserSignatureSubjectInvitation            = "invitation"
 	UserSignatureSubjectInvitationMagicLink   = "invitation_magic_link"
-	UserSignatureSubjectGoogleAuthRequest     = "google_auth_request"
 	UserSignatureSubjectMagicLink             = "magic_link"
 	UserSignatureSubjectMagicLinkRegistration = "magic_link_registration"
+	UserSignatureSubjectGoogleAuthLink        = "google_auth_link"
+	UserSignatureSubjectGoogleRegistration    = "google_registration"
 )
 
 type RegisteredClaims jwt.RegisteredClaims
@@ -32,12 +34,6 @@ type UserEmailClaims struct {
 	jwt.RegisteredClaims
 }
 
-// UserGoogleAuthRequestClaims represents claims for Google authentication.
-type UserGoogleAuthRequestClaims struct {
-	GoogleAuthRequestID string
-	jwt.RegisteredClaims
-}
-
 // UserAuthClaims represents claims for user authentication with XSRF token.
 type UserAuthClaims struct {
 	UserID    string
@@ -48,5 +44,32 @@ type UserAuthClaims struct {
 // UserMagicLinkRegistrationClaims represents claims for magic link registration.
 type UserMagicLinkRegistrationClaims struct {
 	Email string
+	jwt.RegisteredClaims
+}
+
+type GoogleAuthFlow string
+
+const (
+	GoogleAuthFlowStandard   GoogleAuthFlow = "standard"
+	GoogleAuthFlowInvitation GoogleAuthFlow = "invitation"
+)
+
+// UserGoogleAuthLinkClaims represents claims for Google authentication link.
+type UserGoogleAuthLinkClaims struct {
+	Flow            GoogleAuthFlow
+	InvitationOrgID uuid.UUID
+	HostSubdomain   string
+	jwt.RegisteredClaims
+}
+
+// UserGoogleRegistrationClaims represents claims for Google registration.
+type UserGoogleRegistrationClaims struct {
+	GoogleID        string
+	Email           string
+	FirstName       string
+	LastName        string
+	Flow            GoogleAuthFlow
+	InvitationOrgID uuid.UUID
+	Role            string // Only for invitation flow
 	jwt.RegisteredClaims
 }

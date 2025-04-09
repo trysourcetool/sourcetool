@@ -45,7 +45,7 @@ export default function InvitationLogin() {
     (state) => state.users.isRequestInvitationMagicLinkWaiting,
   );
   const isOauthGoogleAuthWaiting = useSelector(
-    (state) => state.users.isOauthGoogleAuthWaiting,
+    (state) => state.users.isRegisterWithInvitationGoogleAuthLinkWaiting,
   );
 
   const schema = object({
@@ -96,14 +96,16 @@ export default function InvitationLogin() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.oauthGoogleAuthCodeUrl(),
+      usersStore.asyncActions.requestInvitationGoogleAuthLink({
+        data: { invitationToken: token || '' },
+      }),
     );
     if (
-      usersStore.asyncActions.oauthGoogleAuthCodeUrl.fulfilled.match(
+      usersStore.asyncActions.requestInvitationGoogleAuthLink.fulfilled.match(
         resultAction,
       )
     ) {
-      const url = resultAction.payload.url;
+      const url = resultAction.payload.authUrl;
       window.location.href = url;
     } else {
       toast({

@@ -42,24 +42,6 @@ type User struct {
 	UpdatedAt            time.Time  `db:"updated_at"`
 }
 
-type UserRegistrationRequest struct {
-	ID        uuid.UUID `db:"id"`
-	Email     string    `db:"email"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
-type UserGoogleAuthRequest struct {
-	ID        uuid.UUID `db:"id"`
-	GoogleID  string    `db:"google_id"`
-	Email     string    `db:"email"`
-	Domain    string    `db:"domain"`
-	Invited   bool      `db:"invited"`
-	ExpiresAt time.Time `db:"expires_at"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
 type UserOrganizationRole int
 
 const (
@@ -135,11 +117,6 @@ type UserStore interface {
 	Update(context.Context, *User) error
 	IsEmailExists(context.Context, string) (bool, error)
 
-	GetRegistrationRequest(context.Context, ...storeopts.UserRegistrationRequestOption) (*UserRegistrationRequest, error)
-	CreateRegistrationRequest(context.Context, *UserRegistrationRequest) error
-	DeleteRegistrationRequest(context.Context, *UserRegistrationRequest) error
-	IsRegistrationRequestExists(context.Context, string) (bool, error)
-
 	GetOrganizationAccess(context.Context, ...storeopts.UserOrganizationAccessOption) (*UserOrganizationAccess, error)
 	ListOrganizationAccesses(context.Context, ...storeopts.UserOrganizationAccessOption) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
@@ -155,18 +132,6 @@ type UserStore interface {
 	DeleteInvitation(context.Context, *UserInvitation) error
 	BulkInsertInvitations(context.Context, []*UserInvitation) error
 	IsInvitationEmailExists(context.Context, uuid.UUID, string) (bool, error)
-
-	GetGoogleAuthRequest(context.Context, uuid.UUID) (*UserGoogleAuthRequest, error)
-	ListExpiredGoogleAuthRequests(context.Context) ([]*UserGoogleAuthRequest, error)
-	CreateGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	UpdateGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	DeleteGoogleAuthRequest(context.Context, *UserGoogleAuthRequest) error
-	BulkDeleteGoogleAuthRequests(context.Context, []*UserGoogleAuthRequest) error
-}
-
-type SendSignUpInstructions struct {
-	To  string
-	URL string
 }
 
 type SendUpdateUserEmailInstructions struct {
@@ -184,13 +149,6 @@ type SendInvitationEmail struct {
 	URLs     map[string]string // email -> url
 }
 
-type SendMultipleOrganizationsEmail struct {
-	To        string
-	FirstName string
-	Email     string
-	LoginURLs []string
-}
-
 // Email structure for sending magic link email.
 type SendMagicLinkEmail struct {
 	To        string
@@ -206,6 +164,14 @@ type SendMultipleOrganizationsMagicLinkEmail struct {
 	LoginURLs []string
 }
 
+// Email structure for sending multiple organizations login email.
+type SendMultipleOrganizationsLoginEmail struct {
+	To        string
+	FirstName string
+	Email     string
+	LoginURLs []string
+}
+
 // SendInvitationMagicLinkEmail represents the data needed to send an invitation magic link email.
 type SendInvitationMagicLinkEmail struct {
 	To        string
@@ -214,11 +180,10 @@ type SendInvitationMagicLinkEmail struct {
 }
 
 type UserMailer interface {
-	SendSignUpInstructions(ctx context.Context, in *SendSignUpInstructions) error
 	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
-	SendMultipleOrganizationsEmail(ctx context.Context, in *SendMultipleOrganizationsEmail) error
 	SendMagicLinkEmail(ctx context.Context, in *SendMagicLinkEmail) error
 	SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *SendMultipleOrganizationsMagicLinkEmail) error
+	SendMultipleOrganizationsLoginEmail(ctx context.Context, in *SendMultipleOrganizationsLoginEmail) error
 	SendInvitationMagicLinkEmail(ctx context.Context, in *SendInvitationMagicLinkEmail) error
 }

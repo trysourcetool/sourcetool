@@ -29,16 +29,16 @@ export default [
       '/auth/magic/authenticate',
       './routes/auth/magic/authenticate/index.tsx',
     ),
+    route(
+      '/auth/google/callback',
+      './routes/auth/google/callback/index.tsx',
+    ),
     route('/signup/followup', './routes/signup/followup/index.tsx'),
     route(
       '/users/email/update/confirm',
       './routes/users/email/update/confirm/index.tsx',
     ),
     route('/organizations/new', './routes/organizations/new/index.tsx'),
-    route(
-      '/users/oauth/google/callback',
-      './routes/users/oauth/google/callback/index.tsx',
-    ),
     route('/onboarding', './routes/onboarding/index.tsx'),
     route('/onboarding/complete', './routes/onboarding/complete/index.tsx'),
     route(

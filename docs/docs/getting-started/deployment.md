@@ -111,9 +111,10 @@ REDIS_PASSWORD=<your-secure-redis-password> # if not using a password, leave thi
 REDIS_PORT=6379
 
 # Google OAuth configuration
+# For Google OAuth, make sure to configure {BASE_URL}/auth/google/callback as the callback URL in your Google OAuth settings screen
 GOOGLE_OAUTH_CLIENT_ID=<your-google-oauth-client-id>
 GOOGLE_OAUTH_CLIENT_SECRET=<your-google-oauth-client-secret>
-GOOGLE_OAUTH_CALLBACK_URL=<your-google-oauth-callback-url>
+
 
 # SMTP configuration
 SMTP_HOST=<your-smtp-host>

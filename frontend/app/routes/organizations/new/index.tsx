@@ -66,9 +66,10 @@ export default function Signup() {
             data: { token: result.payload.token },
           }),
         );
-        if (usersStore.asyncActions.saveAuth.fulfilled.match(res)) {
-          window.location.replace(res.payload.redirectUrl);
+        if (!usersStore.asyncActions.saveAuth.fulfilled.match(res)) {
+          throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
         }
+        window.location.replace(res.payload.redirectUrl);
       }
     }
   });

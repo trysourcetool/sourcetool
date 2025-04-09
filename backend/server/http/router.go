@@ -53,36 +53,35 @@ func (router *Router) Build() chi.Router {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/users", func(r chi.Router) {
-			r.Get("/oauth/google/callback", router.user.GoogleOAuthCallback)
-
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthOrganizationIfSubdomainExists)
+
+				// Passwordless Authentication
 				r.Post("/auth/magic/request", router.user.RequestMagicLink)
 				r.Post("/auth/magic/authenticate", router.user.AuthenticateWithMagicLink)
 				r.Post("/auth/magic/register", router.user.RegisterWithMagicLink)
 				r.Post("/auth/invitations/magic/request", router.user.RequestInvitationMagicLink)
 				r.Post("/auth/invitations/magic/authenticate", router.user.AuthenticateWithInvitationMagicLink)
 				r.Post("/auth/invitations/magic/register", router.user.RegisterWithInvitationMagicLink)
-				r.Post("/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURL)
-				r.Post("/oauth/google/signin", router.user.SignInWithGoogle)
-				r.Post("/oauth/google/signup", router.user.SignUpWithGoogle)
+
+				// Google Authentication
+				r.Post("/auth/google/request", router.user.RequestGoogleAuthLink)
+				r.Post("/auth/google/authenticate", router.user.AuthenticateWithGoogle)
+				r.Post("/auth/google/register", router.user.RegisterWithGoogle)
+				r.Post("/auth/invitations/google/request", router.user.RequestInvitationGoogleAuthLink)
+
 				r.Post("/saveAuth", router.user.SaveAuth)
 				r.Post("/refreshToken", router.user.RefreshToken)
-				r.Post("/invitations/signin", router.user.SignInInvitation)
-				r.Post("/invitations/signup", router.user.SignUpInvitation)
-				r.Post("/invitations/oauth/google/authCodeUrl", router.user.GetGoogleAuthCodeURLInvitation)
-				r.Post("/invitations/oauth/google/signin", router.user.SignInWithGoogleInvitation)
-				r.Post("/invitations/oauth/google/signup", router.user.SignUpWithGoogleInvitation)
 			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganizationIfSubdomainExists)
-				r.Get("/me", router.user.GetMe)
 				r.Post("/obtainAuthToken", router.user.ObtainAuthToken)
 			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganization)
+				r.Get("/me", router.user.GetMe)
 				r.Get("/", router.user.List)
 				r.Put("/", router.user.Update)
 				r.Post("/sendUpdateEmailInstructions", router.user.SendUpdateEmailInstructions)

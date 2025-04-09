@@ -14,6 +14,10 @@ func buildUserActivateURL(token string) (string, error) {
 	})
 }
 
+func buildLoginURL(subdomain string) (string, error) {
+	return urlutil.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("login"), nil)
+}
+
 func buildMagicLinkURL(subdomain, token string) (string, error) {
 	base := config.Config.AuthBaseURL()
 	if subdomain != "" && subdomain != "auth" {

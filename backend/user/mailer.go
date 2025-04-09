@@ -20,32 +20,6 @@ func NewMailerCE() *MailerCE {
 	}
 }
 
-func (m *MailerCE) SendSignUpInstructions(ctx context.Context, in *model.SendSignUpInstructions) error {
-	subject := "Activate your Sourcetool account"
-	content := fmt.Sprintf(`Welcome to Sourcetool!
-
-To complete your registration for our service, please create your account by clicking the URL below within 24 hours.
-
-%s 
-
-- This URL will expire in 24 hours.
-- This is a send-only email address. 
-- Your account will not be created unless you complete the next steps.`, in.URL)
-
-	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
-		"To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"\r\n"+
-		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
-
-	return emailutil.SendWithLogging(ctx, msg, func() error {
-		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
-			return fmt.Errorf("failed to send email: %w", err)
-		}
-		return nil
-	})
-}
-
 func (m *MailerCE) SendUpdateEmailInstructions(ctx context.Context, in *model.SendUpdateUserEmailInstructions) error {
 	subject := "[Sourcetool] Confirm your new email address"
 	content := fmt.Sprintf(`Hi %s,
@@ -118,39 +92,6 @@ To accept the invitation, please create your account by clicking the URL below w
 	return nil
 }
 
-func (m *MailerCE) SendMultipleOrganizationsEmail(ctx context.Context, in *model.SendMultipleOrganizationsEmail) error {
-	subject := "Choose your Sourcetool organization to log in"
-
-	urlList := ""
-	for _, url := range in.LoginURLs {
-		urlList += url + "\n"
-	}
-
-	content := fmt.Sprintf(`Hi %s,
-
-Your email, %s, is associated with multiple Sourcetool organizations. You may log in to each one by visiting its login page below:
-
-%s
-If you have any questions, encounter any issues, or need further assistance, please don't hesitate to reach out to support@sourcetool.com.
-
-Thank you!
-
-The Sourcetool Team`, in.FirstName, in.Email, urlList)
-
-	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
-		"To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"\r\n"+
-		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
-
-	return emailutil.SendWithLogging(ctx, msg, func() error {
-		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
-			return fmt.Errorf("failed to send email: %w", err)
-		}
-		return nil
-	})
-}
-
 func (m *MailerCE) SendMagicLinkEmail(ctx context.Context, in *model.SendMagicLinkEmail) error {
 	subject := "Log in to your Sourcetool account"
 	content := fmt.Sprintf(`Hi %s,
@@ -181,7 +122,7 @@ The Sourcetool Team`, in.FirstName, in.URL)
 }
 
 func (m *MailerCE) SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *model.SendMultipleOrganizationsMagicLinkEmail) error {
-	subject := "Log in to your Sourcetool organizations"
+	subject := "Choose your Sourcetool organization to log in"
 
 	urlList := ""
 	for _, url := range in.LoginURLs {
@@ -215,18 +156,52 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 	})
 }
 
-func (m *MailerCE) SendInvitationMagicLinkEmail(ctx context.Context, in *model.SendInvitationMagicLinkEmail) error {
-	subject := "Your invitation to join SourceTool"
+func (m *MailerCE) SendMultipleOrganizationsLoginEmail(ctx context.Context, in *model.SendMultipleOrganizationsLoginEmail) error {
+	subject := "Choose your Sourcetool organization to log in"
+
+	urlList := ""
+	for _, url := range in.LoginURLs {
+		urlList += url + "\n"
+	}
+
 	content := fmt.Sprintf(`Hi %s,
 
-You've been invited to join SourceTool. Click the link below to accept the invitation:
+Your email, %s, is associated with multiple Sourcetool organizations. You may log in to each one by visiting its login page below:
+
+%s
+
+If you have any questions, encounter any issues, or need further assistance, please don't hesitate to reach out to support@sourcetool.com.
+
+Thank you!
+
+The Sourcetool Team`, in.FirstName, in.Email, urlList)
+
+	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", m.emailClient.GetFromAddress(), in.To, subject, content)
+
+	return emailutil.SendWithLogging(ctx, msg, func() error {
+		if err := m.emailClient.SendMail([]string{in.To}, []byte(msg)); err != nil {
+			return fmt.Errorf("failed to send email: %w", err)
+		}
+		return nil
+	})
+}
+
+func (m *MailerCE) SendInvitationMagicLinkEmail(ctx context.Context, in *model.SendInvitationMagicLinkEmail) error {
+	subject := "Your invitation to join Sourcetool"
+	content := fmt.Sprintf(`Hi %s,
+
+You've been invited to join Sourcetool. Click the link below to accept the invitation:
 
 %s
 
 This link will expire in 15 minutes.
 
 Best regards,
-The SourceTool Team`, in.FirstName, in.URL)
+The Sourcetool Team`, in.FirstName, in.URL)
 
 	msg := fmt.Sprintf("From: Sourcetool Team <%s>\r\n"+
 		"To: %s\r\n"+

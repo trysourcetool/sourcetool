@@ -68,15 +68,12 @@ export default function Followup() {
         resultAction,
       )
     ) {
-      const result = await dispatch(usersStore.asyncActions.getUsersMe());
-      if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
-        if (!result.payload.user.organization) {
-          navigate('/organizations/new');
-          toast({
-            title: t('routes_signup_followup_toast_success'),
-            description: t('routes_signup_followup_toast_success_description'),
-          });
-        }
+      if (!resultAction.payload.hasOrganization) {
+        navigate('/organizations/new');
+        toast({
+          title: t('routes_signup_followup_toast_success'),
+          description: t('routes_signup_followup_toast_success_description'),
+        });
       }
     } else {
       toast({

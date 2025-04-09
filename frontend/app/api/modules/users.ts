@@ -3,7 +3,7 @@ import { ENVIRONMENTS } from '@/environments';
 
 export type UserAuthResponse = {
   authUrl: string;
-  isOrganizationExists: boolean;
+  hasOrganization: boolean;
   token: string;
 };
 
@@ -149,62 +149,50 @@ export const usersSaveAuth: (params: {
   throw new Error('Unknown error');
 };
 
-export const usersOauthGoogleUserInfo = async (params: {
+export const usersRequestGoogleAuthLink = async () => {
+  const res = await api.post<{
+    authUrl: string;
+  }>({
+    path: '/users/auth/google/request',
+  });
+
+  return res;
+};
+
+export const usersAuthenticateWithGoogle = async (params: {
   data: {
     code: string;
     state: string;
   };
 }) => {
   const res = await api.post<{
+    authUrl: string;
+    token: string;
+    hasOrganization: boolean;
+    hasMultipleOrganizations: boolean;
+    isNewUser: boolean;
     firstName: string;
-    isUserExists: true;
     lastName: string;
-    sessionToken: string;
   }>({
-    path: '/users/oauth/google/userInfo',
+    path: '/users/auth/google/authenticate',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersOauthGoogleSignin = async (params: {
+export const usersRegisterWithGoogle = async (params: {
   data: {
-    sessionToken: string;
+    token: string;
   };
 }) => {
   const res = await api.post<{
     authUrl: string;
     token: string;
-    isOrganizationExists: boolean;
+    hasOrganization: boolean;
   }>({
-    path: '/users/oauth/google/signin',
+    path: '/users/auth/google/register',
     data: params.data,
-  });
-
-  return res;
-};
-
-export const usersOauthGoogleSignup = async (params: {
-  data: {
-    firstName: string;
-    lastName: string;
-    sessionToken: string;
-  };
-}) => {
-  const res = await api.post({
-    path: '/users/oauth/google/signup',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersOauthGoogleAuthCodeUrl = async () => {
-  const res = await api.post<{
-    url: string;
-  }>({
-    path: '/users/oauth/google/authCodeUrl',
   });
 
   return res;
@@ -243,95 +231,51 @@ export const usersInvitationsResend = async (params: {
   return res;
 };
 
-export const usersInvitationsSignup = async (params: {
+export const usersRequestInvitationGoogleAuthLink = async (params: {
   data: {
-    firstName: string;
     invitationToken: string;
-    lastName: string;
-    password: string;
-    passwordConfirmation: string;
   };
 }) => {
-  const res = await api.post({
-    path: '/users/invitations/signup',
+  const res = await api.post<{
+    authUrl: string;
+  }>({
+    path: '/users/auth/invitations/google/request',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersInvitationsSignin = async (params: {
-  data: {
-    invitationToken: string;
-    password: string;
-  };
-}) => {
-  const res = await api.post({
-    path: '/users/invitations/signin',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleUserInfo = async (params: {
+export const usersAuthenticateWithInvitationGoogleAuthLink = async (params: {
   data: {
     code: string;
     state: string;
   };
 }) => {
   const res = await api.post<{
-    firstName: string;
-    isUserExists: true;
-    lastName: string;
-    sessionToken: string;
+    authUrl?: string;
+    token: string;
+    hasOrganization: boolean;
+    isNewUser: boolean;
+    firstName?: string;
+    lastName?: string;
   }>({
-    path: '/users/invitations/oauth/google/userInfo',
+    path: '/users/auth/invitations/google/authenticate',
     data: params.data,
   });
 
   return res;
 };
 
-export const usersInvitationsOauthGoogleSignup = async (params: {
+export const usersRegisterWithInvitationGoogleAuthLink = async (params: {
   data: {
+    token: string;
     firstName: string;
-    invitationToken: string;
     lastName: string;
-    sessionToken: string;
   };
 }) => {
   const res = await api.post({
-    path: '/users/invitations/oauth/google/signup',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleSignin = async (params: {
-  data: {
-    invitationToken: string;
-    sessionToken: string;
-  };
-}) => {
-  const res = await api.post({
-    path: '/users/invitations/oauth/google/signin',
-    data: params.data,
-  });
-
-  return res;
-};
-
-export const usersInvitationsOauthGoogleAuthCodeUrl = async (params: {
-  data: {
-    invitationToken: string;
-  };
-}) => {
-  const res = await api.post<{
-    url: string;
-  }>({
-    path: '/users/invitations/oauth/google/authCodeUrl',
+    path: '/users/auth/invitations/google/register',
     data: params.data,
   });
 
@@ -407,6 +351,7 @@ export const usersAuthenticateWithMagicLink = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
+    hasOrganization: boolean;
     isNewUser: boolean;
   }>({
     path: '/users/auth/magic/authenticate',
@@ -423,7 +368,10 @@ export const usersRegisterWithMagicLink = async (params: {
     lastName: string;
   };
 }) => {
-  const res = await api.post({
+  const res = await api.post<{
+    expiresAt: string;
+    hasOrganization: boolean;
+  }>({
     path: '/users/auth/magic/register',
     data: params.data,
   });
@@ -454,7 +402,6 @@ export const usersAuthenticateWithInvitationMagicLink = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
-    isOrganizationExists: boolean;
     isNewUser: boolean;
   }>({
     path: '/users/auth/invitations/magic/authenticate',
@@ -472,9 +419,7 @@ export const usersRegisterWithInvitationMagicLink = async (params: {
   };
 }) => {
   const res = await api.post<{
-    token: string;
-    secret: string;
-    xsrfToken: string;
+    expiresAt: string;
   }>({
     path: '/users/auth/invitations/magic/register',
     data: params.data,
