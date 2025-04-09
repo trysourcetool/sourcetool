@@ -340,3 +340,7 @@ type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
 	FirstName       string
 	LastName        string
 }
+
+type DeleteUserOutput struct {
+	Success bool
+}

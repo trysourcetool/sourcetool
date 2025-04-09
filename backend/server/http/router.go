@@ -89,6 +89,7 @@ func (router *Router) Build() chi.Router {
 				r.Post("/invite", router.user.Invite)
 				r.Post("/invitations/resend", router.user.ResendInvitation)
 				r.Post("/signout", router.user.SignOut)
+				r.Delete("/{userID}", router.user.DeleteUser)
 			})
 		})
 

@@ -122,3 +122,7 @@ type RegisterWithGoogleResponse struct {
 type RequestInvitationGoogleAuthLinkResponse struct {
 	AuthURL string `json:"authUrl"`
 }
+
+type DeleteUserResponse struct {
+	Success bool `json:"success"`
+}

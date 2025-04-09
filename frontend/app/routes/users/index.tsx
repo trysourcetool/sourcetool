@@ -216,6 +216,8 @@ export default function Users() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [page, setPage] = useQueryState('page', {
     parse: (query: string) => parseInt(query, 10),
     serialize: (value) => value.toString(),
@@ -227,6 +229,9 @@ export default function Users() {
   const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
   const isInvitationsResendWaiting = useSelector(
     (state) => state.users.isInvitationsResendWaiting,
+  );
+  const isDeleteUserWaiting = useSelector(
+    (state) => state.users.isDeleteUserWaiting,
   );
 
   const filteredUsers = useMemo(() => {
@@ -301,6 +306,35 @@ export default function Users() {
         ),
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    const resultAction = await dispatch(
+      usersStore.asyncActions.deleteUser({
+        userId,
+      }),
+    );
+
+    if (usersStore.asyncActions.deleteUser.fulfilled.match(resultAction)) {
+      toast({
+        title: "User removed",
+        description: "The user has been removed from the organization.",
+      });
+      
+      dispatch(usersStore.asyncActions.listUsers());
+      
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } else {
+      toast({
+        title: "Failed to remove user",
+        description: "There was an error removing the user from the organization.",
+        variant: 'destructive',
+      });
+      
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -424,7 +458,10 @@ export default function Users() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setUserToDelete(user);
+                                setIsDeleteDialogOpen(true);
+                              }}>
                                 {t('routes_users_remove')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -561,6 +598,40 @@ export default function Users() {
             </DialogDescription>
           </DialogHeader>
           <InviteForm />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete user confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDeleteDialogOpen(false);
+            setUserToDelete(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Remove User
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this user from the organization? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => userToDelete && handleDeleteUser(userToDelete.id)}
+              disabled={isDeleteUserWaiting}
+            >
+              Remove
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

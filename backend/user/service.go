@@ -60,6 +60,8 @@ type Service interface {
 	// Invitation methods
 	Invite(context.Context, dto.InviteUsersInput) (*dto.InviteUsersOutput, error)
 	ResendInvitation(context.Context, dto.ResendInvitationInput) (*dto.ResendInvitationOutput, error)
+	
+	DeleteUser(context.Context, string) (*dto.DeleteUserOutput, error)
 }
 
 // ServiceCE implements the Service interface for the Community Edition.
@@ -952,6 +954,79 @@ func (s *ServiceCE) SignOut(ctx context.Context) (*dto.SignOutOutput, error) {
 	return &dto.SignOutOutput{
 		Domain: config.Config.OrgDomain(subdomain),
 	}, nil
+}
+
+func (s *ServiceCE) DeleteUser(ctx context.Context, userID string) (*dto.DeleteUserOutput, error) {
+	currentUser := ctxutil.CurrentUser(ctx)
+	currentOrg := ctxutil.CurrentOrganization(ctx)
+
+	uid, err := uuid.FromString(userID)
+	if err != nil {
+		return nil, errdefs.ErrInvalidArgument(err)
+	}
+
+	user, err := s.Store.User().Get(ctx, storeopts.UserByID(uid))
+	if err != nil {
+		return nil, err
+	}
+
+	if user.ID == currentUser.ID {
+		return nil, errdefs.ErrPermissionDenied(errors.New("cannot remove yourself from the organization"))
+	}
+
+	isLastAdmin, err := s.isLastAdminUser(ctx, uid, currentOrg.ID)
+	if err != nil {
+		return nil, err
+	}
+	if isLastAdmin {
+		return nil, errdefs.ErrPermissionDenied(errors.New("cannot remove the last admin user from the organization"))
+	}
+
+	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
+		return tx.User().DeleteOrganizationAccess(
+			ctx,
+			storeopts.UserOrganizationAccessByUserID(uid),
+			storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+		)
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.DeleteUserOutput{
+		Success: true,
+	}, nil
+}
+
+func (s *ServiceCE) isLastAdminUser(ctx context.Context, userID uuid.UUID, orgID uuid.UUID) (bool, error) {
+	orgAccess, err := s.Store.User().GetOrganizationAccess(
+		ctx,
+		storeopts.UserOrganizationAccessByUserID(userID),
+		storeopts.UserOrganizationAccessByOrganizationID(orgID),
+	)
+	if err != nil {
+		return false, err
+	}
+
+	if orgAccess.Role != model.UserOrganizationRoleAdmin {
+		return false, nil
+	}
+
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(
+		ctx,
+		storeopts.UserOrganizationAccessByOrganizationID(orgID),
+	)
+	if err != nil {
+		return false, err
+	}
+
+	adminCount := 0
+	for _, access := range orgAccesses {
+		if access.Role == model.UserOrganizationRoleAdmin {
+			adminCount++
+		}
+	}
+
+	return adminCount <= 1, nil
 }
 
 func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transaction, u *model.User, org *model.Organization) error {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/model"
@@ -441,6 +442,29 @@ func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
 		Code:    http.StatusOK,
 		Message: "Successfully signed out",
 	}); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// @Accept json
+// @Produce json
+// @Tags users
+// @Failure default {object} errdefs.Error
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "userID")
+	if userID == "" {
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(errors.New("user ID is required")))
+		return
+	}
+
+	out, err := h.service.DeleteUser(r.Context(), userID)
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.DeleteUserOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

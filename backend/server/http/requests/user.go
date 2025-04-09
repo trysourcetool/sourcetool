@@ -91,3 +91,7 @@ type RegisterWithInvitationGoogleAuthLinkRequest struct {
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
 }
+
+type DeleteUserRequest struct {
+	UserID string `validate:"required,uuid"`
+}

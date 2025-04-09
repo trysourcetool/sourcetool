@@ -427,3 +427,16 @@ export const usersRegisterWithInvitationMagicLink = async (params: {
 
   return res;
 };
+
+export const deleteUser = async (params: {
+  userId: string;
+}) => {
+  const res = await api.del<{
+    success: boolean;
+  }>({
+    path: `/users/${params.userId}`,
+    auth: true,
+  });
+
+  return res;
+};

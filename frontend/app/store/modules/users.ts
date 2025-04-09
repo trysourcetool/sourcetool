@@ -429,6 +429,22 @@ const registerWithInvitationMagicLink = createAsyncThunk(
   },
 );
 
+const deleteUser = createAsyncThunk(
+  'users/deleteUser',
+  async (
+    params: { userId: string },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.deleteUser(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
 // =============================================
 // slice
 // =============================================
@@ -477,6 +493,7 @@ export type State = {
   isRequestInvitationGoogleAuthLinkWaiting: boolean;
   isAuthenticateWithInvitationGoogleAuthLinkWaiting: boolean;
   isRegisterWithInvitationGoogleAuthLinkWaiting: boolean;
+  isDeleteUserWaiting: boolean;
 };
 
 const initialState: State = {
@@ -509,6 +526,7 @@ const initialState: State = {
   isRequestInvitationGoogleAuthLinkWaiting: false,
   isAuthenticateWithInvitationGoogleAuthLinkWaiting: false,
   isRegisterWithInvitationGoogleAuthLinkWaiting: false,
+  isDeleteUserWaiting: false,
 };
 // =============================================
 // slice
@@ -867,6 +885,16 @@ export const slice = createSlice({
         state.isAuthChecked = true;
         state.isAuthSucceeded = false;
         state.isAuthFailed = true;
+      })
+
+      .addCase(deleteUser.pending, (state) => {
+        state.isDeleteUserWaiting = true;
+      })
+      .addCase(deleteUser.fulfilled, (state) => {
+        state.isDeleteUserWaiting = false;
+      })
+      .addCase(deleteUser.rejected, (state) => {
+        state.isDeleteUserWaiting = false;
       });
   },
   initialState,
@@ -960,6 +988,7 @@ export const usersStore = {
     requestInvitationGoogleAuthLink,
     authenticateWithInvitationGoogleAuthLink,
     registerWithInvitationGoogleAuthLink,
+    deleteUser,
   },
   reducer: slice.reducer,
   selector: {
