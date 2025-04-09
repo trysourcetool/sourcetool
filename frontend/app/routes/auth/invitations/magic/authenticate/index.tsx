@@ -56,11 +56,6 @@ export default function InvitationMagicLinkAuthenticate() {
             $path('/auth/invitations/signup/followup', { token: result.token }),
           );
         } else {
-          if (!result.isOrganizationExists) {
-            navigate($path('/organizations/new'));
-            return;
-          }
-
           const saveAuthResult = await dispatch(
             usersStore.asyncActions.saveAuth({
               authUrl: result.authUrl,

@@ -402,7 +402,6 @@ export const usersAuthenticateWithInvitationMagicLink = async (params: {
   const res = await api.post<{
     authUrl: string;
     token: string;
-    isOrganizationExists: boolean;
     isNewUser: boolean;
   }>({
     path: '/users/auth/invitations/magic/authenticate',
