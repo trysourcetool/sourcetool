@@ -17,9 +17,9 @@ export default function HostInstancePingError() {
             {t('routes_error_host_instance_ping_description')}
           </CardDescription>
         </CardHeader>
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-3">
           <Button variant="outline" onClick={() => navigate('/')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="size-4" />
             {t('routes_error_host_instance_ping_back_button')}
           </Button>
           <Button asChild>
