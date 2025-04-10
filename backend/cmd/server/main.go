@@ -84,15 +84,15 @@ func main() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
 
-		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
-
 		// Attempt to gracefully shut down the server first.
 		var shutdownErr error
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			logger.Logger.Error("Server shutdown error", zap.Error(err))
 			shutdownErr = fmt.Errorf("server shutdown: %v", err)
 		}
+
+		logger.Logger.Info("Closing WebSocket connections...")
+		ws.GetConnManager().Close()
 
 		// Close the database connection regardless of server shutdown result.
 		logger.Logger.Info("Closing database connection...")
@@ -103,7 +103,7 @@ func main() {
 			}
 		}
 
-		logger.Logger.Info("Server shutdown process finished")
+		logger.Logger.Info("Server shutdown complete")
 		// Return the server shutdown error if it happened.
 		return shutdownErr
 	})
