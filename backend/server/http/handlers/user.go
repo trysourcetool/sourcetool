@@ -175,14 +175,16 @@ func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body requests.RequestMagicLinkRequest true " "
+// @Param Body body requests.RequestMagicLinkRequest true "Email address for magic link"
 // @Success 200 {object} responses.RequestMagicLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/signin/magic/request [post].
+// @Failure 400 {object} errdefs.Error "Invalid email format"
+// @Failure 404 {object} errdefs.Error "User not found"
+// @Failure 500 {object} errdefs.Error "Internal server error"
+// @Router /users/auth/magic/request [post].
 func (h *UserHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
@@ -240,6 +242,16 @@ func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 	}
 }
 
+// RegisterWithMagicLink godoc
+// @ID register-with-magic-link
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.RegisterWithMagicLinkRequest true "Registration data with magic link token"
+// @Success 200 {object} responses.RegisterWithMagicLinkResponse
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 401 {object} errdefs.Error "Invalid or expired magic link token"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /users/auth/magic/register [post].
 func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithMagicLinkRequest

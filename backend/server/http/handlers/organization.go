@@ -54,14 +54,16 @@ func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CheckSubdomainAvairability godoc
+// CheckSubdomainAvailability godoc
 // @ID check-organization-subdomain-availability
 // @Accept json
 // @Produce json
 // @Tags organizations
-// @Param subdomain query string true " "
+// @Param subdomain query string true "Subdomain to check for availability"
 // @Success 200 {object} responses.StatusResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid subdomain format"
+// @Failure 409 {object} errdefs.Error "Subdomain already exists"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /organizations/checkSubdomainAvailability [get].
 func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request) {
 	req := requests.CheckSubdomainAvailablityRequest{
