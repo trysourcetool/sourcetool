@@ -118,7 +118,7 @@ func main() {
 
 	// Replace with your own API key for development
 	config := &sourcetool.Config{
-		APIKey:   "your_development_api_key",
+		APIKey:   "development_1Tly8TW7bYn716Gzi7XPPjtL2jmdMA6G1Tly8TW7bYn716Gzi7X",
 		Endpoint: "ws://localhost:3000",
 	}
 	s := sourcetool.New(config)
