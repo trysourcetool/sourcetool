@@ -357,4 +357,9 @@ func (c *connManager) Close() {
 		}
 		return true
 	})
+
+	// Close the Redis client connection
+	if err := c.redisClient.Close(); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to close Redis client: %v", err)
+	}
 }
