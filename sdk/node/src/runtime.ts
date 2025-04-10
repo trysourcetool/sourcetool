@@ -17,7 +17,9 @@ import {
   InitializeHostSchema,
   Message,
   RerunPage,
-} from '@trysourcetool/proto/websocket/v1/message';
+  ScriptFinished_Status,
+  ScriptFinishedSchema,
+} from './internal/pb/websocket/v1/message_pb';
 import { convertTextInputProtoToState } from './textinput';
 import { convertButtonProtoToState } from './button';
 import { convertNumberInputProtoToState } from './numberinput';
@@ -38,6 +40,7 @@ import { convertTextAreaProtoToState } from './textarea';
 import { convertTableProtoToState } from './table';
 import { convertMultiSelectProtoToState } from './multiselect';
 import { create } from '@bufbuild/protobuf';
+import { ExceptionSchema } from './internal/pb/exception/v1/exception_pb';
 
 /**
  * Runtime class
@@ -145,16 +148,22 @@ export class Runtime {
       await page.run(ui);
 
       // Send script finished message
-      this.wsClient.enqueue(uuidv4(), {
-        sessionId: sessionID,
-        status: 'SUCCESS',
-      });
+      this.wsClient.enqueue(
+        uuidv4(),
+        create(ScriptFinishedSchema, {
+          sessionId: sessionID,
+          status: ScriptFinished_Status.SUCCESS,
+        }),
+      );
     } catch (err) {
       // Send script finished message with failure status
-      this.wsClient.enqueue(uuidv4(), {
-        sessionId: sessionID,
-        status: 'FAILURE',
-      });
+      this.wsClient.enqueue(
+        uuidv4(),
+        create(ScriptFinishedSchema, {
+          sessionId: sessionID,
+          status: ScriptFinished_Status.FAILURE,
+        }),
+      );
 
       throw err;
     }
@@ -355,19 +364,25 @@ export class Runtime {
       await page.run(ui);
 
       // Send script finished message
-      this.wsClient.enqueue(uuidv4(), {
-        sessionId: sessionID,
-        status: 'SUCCESS',
-      });
+      this.wsClient.enqueue(
+        uuidv4(),
+        create(ScriptFinishedSchema, {
+          sessionId: sessionID,
+          status: ScriptFinished_Status.SUCCESS,
+        }),
+      );
 
       // Reset buttons
       session.state.resetButtons();
     } catch (err) {
       // Send script finished message with failure status
-      this.wsClient.enqueue(uuidv4(), {
-        sessionId: sessionID,
-        status: 'FAILURE',
-      });
+      this.wsClient.enqueue(
+        uuidv4(),
+        create(ScriptFinishedSchema, {
+          sessionId: sessionID,
+          status: ScriptFinished_Status.FAILURE,
+        }),
+      );
 
       throw err;
     }
@@ -389,12 +404,12 @@ export class Runtime {
    * @param err Error
    */
   sendException(id: string, sessionID: string, err: Error): void {
-    const exception = {
+    const exception = create(ExceptionSchema, {
       title: 'Error',
       message: err.message,
-      stackTrace: err.stack,
+      stackTrace: err.stack ? [err.stack] : undefined,
       sessionId: sessionID,
-    };
+    });
 
     this.wsClient.enqueue(id, exception);
   }

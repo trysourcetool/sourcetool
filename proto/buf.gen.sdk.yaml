@@ -6,6 +6,12 @@ managed:
     except:
       - buf.build/googleapis/googleapis
 plugins:
+  - plugin: buf.build/bufbuild/es:v2.0.0
+    out: ../sdk/node/src/internal/pb
+    opt:
+      - target=ts
+      - import_extension=js
+      - json_types=true
   - plugin: buf.build/protocolbuffers/go
     out: ../sdk/go/internal/pb
     opt:
@@ -14,4 +20,4 @@ plugins:
     out: ../sdk/go/internal/pb
     opt:
       - paths=source_relative
-      - require_unimplemented_servers=false 
+      - require_unimplemented_servers=false

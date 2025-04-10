@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@bufbuild/protobuf@^2.2.3", "@bufbuild/protobuf@^2.2.5":
+"@bufbuild/protobuf@^2.2.5":
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-2.2.5.tgz#8e82c0af292113b4a89f8b658c71c4636c8d2e36"
   integrity sha512-/g5EzJifw5GF8aren8wZ/G5oMuPoGeS6MQD3ca8ddcvdXR5UELUfdTZITCGNhNXynY/AYl3Z4plmxdj/tRl/hQ==
@@ -416,13 +416,6 @@
   version "4.37.0"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.37.0.tgz#a54d7304c3bd45573d8bcd1270de89771f8195fe"
   integrity sha512-LWbXUBwn/bcLx2sSsqy7pK5o+Nr+VCoRoAohfJ5C/aBio9nfJmGQqHAhU6pwxV/RmyTk5AqdySma7uwWGlmeuA==
-
-"@trysourcetool/proto@^0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@trysourcetool/proto/-/proto-0.1.13.tgz#f24a919fe8469feca81b3d35a4d6f4f00446b72e"
-  integrity sha512-eTkfCoMkKfJ8MO5cC81HSAkfCYAlwimF7ZFQ3hBQ9nHvUBYSSBIRFn2+jenMW/4K37//YVXEQfmT4OtaqH5FsQ==
-  dependencies:
-    "@bufbuild/protobuf" "^2.2.3"
 
 "@types/estree@1.0.6":
   version "1.0.6"

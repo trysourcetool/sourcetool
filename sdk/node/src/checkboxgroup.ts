@@ -11,8 +11,8 @@ import {
   CheckboxGroup as CheckboxGroupProto,
   CheckboxGroupSchema,
   WidgetSchema,
-} from '@trysourcetool/proto/widget/v1/widget';
-import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
+} from './internal/pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
 
 /**
  * CheckboxGroup component options
