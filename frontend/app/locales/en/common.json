@@ -345,6 +345,7 @@
   "routes_error_host_instance_ping_title": "Something went wrong",
   "routes_error_host_instance_ping_description": "The application encountered an error and is unable to respond.\nPlease review your code for any potential issues.",
   "routes_error_host_instance_ping_support_button": "Contact Support",
+  "routes_error_host_instance_ping_back_button": "Back to Home",
 
   "routes_users_invitation_sent": "(Invitation Sent)",
   "routes_users_resend_invitation": "Resend Invitation",
