@@ -87,12 +87,25 @@ func main() {
 		logger.Logger.Info("Closing WebSocket connections...")
 		ws.GetConnManager().Close()
 
+		// Attempt to gracefully shut down the server first.
+		var shutdownErr error
 		if err := srv.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("server shutdown: %v", err)
+			logger.Logger.Error("Server shutdown error", zap.Error(err))
+			shutdownErr = fmt.Errorf("server shutdown: %v", err)
 		}
 
-		logger.Logger.Info("Server shutdown complete")
-		return nil
+		// Close the database connection regardless of server shutdown result.
+		logger.Logger.Info("Closing database connection...")
+		if db != nil {
+			if err := db.Close(); err != nil {
+				// Log DB closing error, but prioritize returning the server shutdown error if it occurred.
+				logger.Logger.Error("Failed to close database connection", zap.Error(err))
+			}
+		}
+
+		logger.Logger.Info("Server shutdown process finished")
+		// Return the server shutdown error if it happened.
+		return shutdownErr
 	})
 
 	if err := eg.Wait(); err != nil && err != http.ErrServerClosed {
