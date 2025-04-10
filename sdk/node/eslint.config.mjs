@@ -32,6 +32,6 @@ export default [
       'no-throw-literal': 'warn',
       semi: 'warn',
     },
-    ignores: ['node_modules/**', 'dist/**'],
+    ignores: ['node_modules/**', 'dist/**', 'src/internal/pb/**'],
   },
 ];

@@ -1,8 +1,5 @@
-import {
-  Message,
-  MessageSchema,
-} from '@trysourcetool/proto/websocket/v1/message';
 import * as logger from '../../logger';
+import { Message, MessageSchema } from '../../pb/websocket/v1/message_pb';
 import { MessageHandlerFunc, WebSocketClient } from '../websocket';
 import { create } from '@bufbuild/protobuf';
 
@@ -105,23 +102,19 @@ export class MockClient implements WebSocketClient {
     };
 
     // Set the message type based on the payload type
-    if (payload?.$typeName === 'sourcetool.websocket.v1.InitializeHost') {
+    if (payload?.$typeName === 'websocket.v1.InitializeHost') {
       msg.type = { case: 'initializeHost', value: payload };
-    } else if (
-      payload?.$typeName === 'sourcetool.websocket.v1.InitializeClient'
-    ) {
+    } else if (payload?.$typeName === 'websocket.v1.InitializeClient') {
       msg.type = { case: 'initializeClient', value: payload };
-    } else if (payload?.$typeName === 'sourcetool.websocket.v1.RenderWidget') {
+    } else if (payload?.$typeName === 'websocket.v1.RenderWidget') {
       msg.type = { case: 'renderWidget', value: payload };
-    } else if (payload?.$typeName === 'sourcetool.websocket.v1.RerunPage') {
+    } else if (payload?.$typeName === 'websocket.v1.RerunPage') {
       msg.type = { case: 'rerunPage', value: payload };
-    } else if (payload?.$typeName === 'sourcetool.websocket.v1.CloseSession') {
+    } else if (payload?.$typeName === 'websocket.v1.CloseSession') {
       msg.type = { case: 'closeSession', value: payload };
-    } else if (
-      payload?.$typeName === 'sourcetool.websocket.v1.ScriptFinished'
-    ) {
+    } else if (payload?.$typeName === 'websocket.v1.ScriptFinished') {
       msg.type = { case: 'scriptFinished', value: payload };
-    } else if (payload?.$typeName === 'sourcetool.exception.v1.Exception') {
+    } else if (payload?.$typeName === 'exception.v1.Exception') {
       msg.type = { case: 'exception', value: payload };
     } else {
       throw new Error(`Unsupported message type: ${payload?.$typeName}`);

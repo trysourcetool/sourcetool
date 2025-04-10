@@ -9,7 +9,7 @@ import {
   CloseSessionSchema,
   InitializeClientSchema,
   RerunPageSchema,
-} from '@trysourcetool/proto/websocket/v1/message';
+} from './internal/pb/websocket/v1/message_pb';
 test('initialize client', () => {
   const pages: { [pageId: string]: Page } = {};
   const pageId = uuidv4();

@@ -9,9 +9,9 @@ import {
   Checkbox as CheckboxProto,
   CheckboxSchema,
   WidgetSchema,
-} from '@trysourcetool/proto/widget/v1/widget';
+} from './internal/pb/widget/v1/widget_pb';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
-import { RenderWidgetSchema } from '@trysourcetool/proto/websocket/v1/message';
+import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
 /**
  * Checkbox component options
  */
