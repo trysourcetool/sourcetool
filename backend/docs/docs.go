@@ -56,7 +56,7 @@ const docTemplate = `{
                 "operationId": "create-apikey",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "API key creation data including name and expiration",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -72,8 +72,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.CreateAPIKeyResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -130,7 +142,7 @@ const docTemplate = `{
                 "operationId": "update-apikey",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "API key update data including name and status",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -140,7 +152,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "API Key ID",
+                        "description": "API Key ID to update",
                         "name": "apiKeyID",
                         "in": "path",
                         "required": true
@@ -153,8 +165,26 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.UpdateAPIKeyResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "API key not found",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -293,7 +323,7 @@ const docTemplate = `{
                 "operationId": "create-environment",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "Environment creation data including name and configuration",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -309,8 +339,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.CreateEnvironmentResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -367,7 +409,7 @@ const docTemplate = `{
                 "operationId": "update-environment",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "Environment update data including name and configuration",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -377,7 +419,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Environment ID",
+                        "description": "Environment ID to update",
                         "name": "environmentID",
                         "in": "path",
                         "required": true
@@ -390,8 +432,26 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.UpdateEnvironmentResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Environment not found",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -474,7 +534,7 @@ const docTemplate = `{
                 "operationId": "create-group",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "Group creation data including name and members",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -490,8 +550,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.CreateGroupResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -548,7 +620,7 @@ const docTemplate = `{
                 "operationId": "update-group",
                 "parameters": [
                     {
-                        "description": " ",
+                        "description": "Group update data including name and members",
                         "name": "Body",
                         "in": "body",
                         "required": true,
@@ -558,7 +630,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Group ID",
+                        "description": "Group ID to update",
                         "name": "groupID",
                         "in": "path",
                         "required": true
@@ -571,8 +643,26 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.UpdateGroupResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Group not found",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -706,7 +796,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": " ",
+                        "description": "Subdomain to check for availability",
                         "name": "subdomain",
                         "in": "query",
                         "required": true
@@ -719,8 +809,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
-                    "default": {
-                        "description": "",
+                    "400": {
+                        "description": "Invalid subdomain format",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Subdomain already exists",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/errdefs.Error"
                         }
@@ -763,6 +865,41 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.UpdateUserResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "operationId": "delete-organization-user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": " ",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1001,7 +1138,104 @@ const docTemplate = `{
         },
         "/users/auth/magic/register": {
             "post": {
-                "responses": {}
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "register-with-magic-link",
+                "parameters": [
+                    {
+                        "description": "Registration data with magic link token",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RegisterWithMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RegisterWithMagicLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired magic link token",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/auth/magic/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "request-magic-link",
+                "parameters": [
+                    {
+                        "description": "Email address for magic link",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RequestMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestMagicLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email format",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
             }
         },
         "/users/email": {
@@ -1283,45 +1517,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/signin/magic/request": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "request-magic-link",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.RequestMagicLinkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RequestMagicLinkResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/users/signout": {
             "post": {
                 "consumes": [
@@ -1448,6 +1643,9 @@ const docTemplate = `{
         },
         "requests.CreateOrganizationRequest": {
             "type": "object",
+            "required": [
+                "subdomain"
+            ],
             "properties": {
                 "subdomain": {
                     "type": "string"
@@ -1474,6 +1672,20 @@ const docTemplate = `{
                         "developer",
                         "member"
                     ]
+                }
+            }
+        },
+        "requests.RegisterWithMagicLinkRequest": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -1638,6 +1850,9 @@ const docTemplate = `{
                 },
                 "firstName": {
                     "type": "string"
+                },
+                "hasMultipleOrganizations": {
+                    "type": "boolean"
                 },
                 "hasOrganization": {
                     "type": "boolean"
@@ -2033,6 +2248,17 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.RegisterWithMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "hasOrganization": {
+                    "type": "boolean"
                 }
             }
         },

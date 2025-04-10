@@ -67,6 +67,8 @@ definitions:
     properties:
       subdomain:
         type: string
+    required:
+    - subdomain
     type: object
   requests.InviteUsersRequest:
     properties:
@@ -83,6 +85,15 @@ definitions:
     required:
     - emails
     - role
+    type: object
+  requests.RegisterWithMagicLinkRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      token:
+        type: string
     type: object
   requests.RequestMagicLinkRequest:
     properties:
@@ -190,6 +201,8 @@ definitions:
         type: string
       firstName:
         type: string
+      hasMultipleOrganizations:
+        type: boolean
       hasOrganization:
         type: boolean
       isNewUser:
@@ -445,6 +458,13 @@ definitions:
       token:
         type: string
     type: object
+  responses.RegisterWithMagicLinkResponse:
+    properties:
+      expiresAt:
+        type: string
+      hasOrganization:
+        type: boolean
+    type: object
   responses.RequestGoogleAuthLinkResponse:
     properties:
       authUrl:
@@ -583,7 +603,7 @@ paths:
       - application/json
       operationId: create-apikey
       parameters:
-      - description: ' '
+      - description: API key creation data including name and expiration
         in: body
         name: Body
         required: true
@@ -596,8 +616,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.CreateAPIKeyResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -654,13 +682,13 @@ paths:
       - application/json
       operationId: update-apikey
       parameters:
-      - description: ' '
+      - description: API key update data including name and status
         in: body
         name: Body
         required: true
         schema:
           $ref: '#/definitions/requests.UpdateAPIKeyRequest'
-      - description: API Key ID
+      - description: API Key ID to update
         in: path
         name: apiKeyID
         required: true
@@ -672,8 +700,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.UpdateAPIKeyResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "404":
+          description: API key not found
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -737,7 +777,7 @@ paths:
       - application/json
       operationId: create-environment
       parameters:
-      - description: ' '
+      - description: Environment creation data including name and configuration
         in: body
         name: Body
         required: true
@@ -750,8 +790,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.CreateEnvironmentResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -808,13 +856,13 @@ paths:
       - application/json
       operationId: update-environment
       parameters:
-      - description: ' '
+      - description: Environment update data including name and configuration
         in: body
         name: Body
         required: true
         schema:
           $ref: '#/definitions/requests.UpdateEnvironmentRequest'
-      - description: Environment ID
+      - description: Environment ID to update
         in: path
         name: environmentID
         required: true
@@ -826,8 +874,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.UpdateEnvironmentResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "404":
+          description: Environment not found
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -855,7 +915,7 @@ paths:
       - application/json
       operationId: create-group
       parameters:
-      - description: ' '
+      - description: Group creation data including name and members
         in: body
         name: Body
         required: true
@@ -868,8 +928,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.CreateGroupResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -926,13 +994,13 @@ paths:
       - application/json
       operationId: update-group
       parameters:
-      - description: ' '
+      - description: Group update data including name and members
         in: body
         name: Body
         required: true
         schema:
           $ref: '#/definitions/requests.UpdateGroupRequest'
-      - description: Group ID
+      - description: Group ID to update
         in: path
         name: groupID
         required: true
@@ -944,8 +1012,20 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.UpdateGroupResponse'
-        default:
-          description: ""
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "404":
+          description: Group not found
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
@@ -1005,9 +1085,41 @@ paths:
       - application/json
       operationId: check-organization-subdomain-availability
       parameters:
-      - description: ' '
+      - description: Subdomain to check for availability
         in: query
         name: subdomain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.StatusResponse'
+        "400":
+          description: Invalid subdomain format
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "409":
+          description: Subdomain already exists
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - organizations
+  /organizations/users/{userID}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-organization-user
+      parameters:
+      - description: ' '
+        in: path
+        name: userID
         required: true
         type: string
       produces:
@@ -1023,7 +1135,6 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - organizations
-  /organizations/users/{userID}:
     put:
       consumes:
       - application/json
@@ -1200,7 +1311,70 @@ paths:
       - users
   /users/auth/magic/register:
     post:
-      responses: {}
+      consumes:
+      - application/json
+      operationId: register-with-magic-link
+      parameters:
+      - description: Registration data with magic link token
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterWithMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterWithMagicLinkResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "401":
+          description: Invalid or expired magic link token
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
+  /users/auth/magic/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-magic-link
+      parameters:
+      - description: Email address for magic link
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RequestMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestMagicLinkResponse'
+        "400":
+          description: Invalid email format
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
   /users/email:
     put:
       consumes:
@@ -1374,31 +1548,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/signin/magic/request:
-    post:
-      consumes:
-      - application/json
-      operationId: request-magic-link
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.RequestMagicLinkRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RequestMagicLinkResponse'
         default:
           description: ""
           schema:

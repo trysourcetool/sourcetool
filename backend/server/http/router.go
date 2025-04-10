@@ -104,6 +104,7 @@ func (router *Router) Build() chi.Router {
 
 				r.Route("/users", func(r chi.Router) {
 					r.Put("/{userID}", router.organization.UpdateUser)
+					r.Delete("/{userID}", router.organization.DeleteUser)
 				})
 			})
 		})

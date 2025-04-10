@@ -54,14 +54,16 @@ func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CheckSubdomainAvairability godoc
+// CheckSubdomainAvailability godoc
 // @ID check-organization-subdomain-availability
 // @Accept json
 // @Produce json
 // @Tags organizations
-// @Param subdomain query string true " "
+// @Param subdomain query string true "Subdomain to check for availability"
 // @Success 200 {object} responses.StatusResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid subdomain format"
+// @Failure 409 {object} errdefs.Error "Subdomain already exists"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /organizations/checkSubdomainAvailability [get].
 func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, r *http.Request) {
 	req := requests.CheckSubdomainAvailablityRequest{
@@ -120,6 +122,40 @@ func (h *OrganizationHandler) UpdateUser(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateOrganizationUserOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// DeleteUser godoc
+// @ID delete-organization-user
+// @Accept json
+// @Produce json
+// @Tags organizations
+// @Param userID path string true " "
+// @Success 200 {object} responses.StatusResponse
+// @Failure default {object} errdefs.Error
+// @Router /organizations/users/{userID} [delete].
+func (h *OrganizationHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	req := requests.DeleteOrganizationUserRequest{
+		UserID: chi.URLParam(r, "userID"),
+	}
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := h.service.DeleteUser(r.Context(), adapters.DeleteOrganizationUserRequestToDTOInput(req)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	response := &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Successfully deleted user",
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, response); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

@@ -208,6 +208,21 @@ func (o userOrganizationAccessOrderByOption) Apply(b sq.SelectBuilder) sq.Select
 	return b.OrderBy(o.orderBy)
 }
 
+// TODO: Role should be a model.UserOrganizationRole but we need to resolve the circular dependency first
+func UserOrganizationAccessByRole(role int) UserOrganizationAccessOption {
+	return userOrganizationAccessByRoleOption{role: role}
+}
+
+type userOrganizationAccessByRoleOption struct {
+	role int
+}
+
+func (o userOrganizationAccessByRoleOption) isUserOrganizationAccessOption() {}
+
+func (o userOrganizationAccessByRoleOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."role"`: o.role})
+}
+
 type UserGroupOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
 	isUserGroupOption()

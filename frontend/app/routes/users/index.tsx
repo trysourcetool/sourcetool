@@ -2,6 +2,16 @@ import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,6 +37,7 @@ import { Separator } from '@/components/ui/separator';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
+import { organizationsStore } from '@/store/modules/organizations';
 import { Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
@@ -220,6 +231,7 @@ export default function Users() {
     parse: (query: string) => parseInt(query, 10),
     serialize: (value) => value.toString(),
   });
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
@@ -227,6 +239,9 @@ export default function Users() {
   const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
   const isInvitationsResendWaiting = useSelector(
     (state) => state.users.isInvitationsResendWaiting,
+  );
+  const isDeleteUserWaiting = useSelector(
+    (state) => state.organizations.isDeleteOrganizationUserWaiting,
   );
 
   const filteredUsers = useMemo(() => {
@@ -302,6 +317,38 @@ export default function Users() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete || isDeleteUserWaiting) {
+      return;
+    }
+    const resultAction = await dispatch(
+      organizationsStore.asyncActions.deleteOrganizationUser({
+        userId: userToDelete.id,
+      }),
+    );
+
+    if (
+      organizationsStore.asyncActions.deleteOrganizationUser.fulfilled.match(
+        resultAction,
+      )
+    ) {
+      toast({
+        title: t('routes_users_toast_user_deleted'),
+        description: t('routes_users_toast_user_deleted_description', {
+          name: `${userToDelete.firstName} ${userToDelete.lastName}`.trim(),
+        }),
+      });
+      dispatch(usersStore.asyncActions.listUsers()); // Refresh the list
+    } else {
+      toast({
+        title: t('routes_users_toast_user_delete_failed'),
+        description: t('routes_users_toast_user_delete_failed_description'),
+        variant: 'destructive',
+      });
+    }
+    setUserToDelete(null); // Close dialog
   };
 
   useEffect(() => {
@@ -424,8 +471,13 @@ export default function Users() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                {t('routes_users_remove')}
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  setUserToDelete(user);
+                                }}
+                              >
+                                {t('routes_users_delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -563,6 +615,44 @@ export default function Users() {
           <InviteForm />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!userToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUserToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('routes_users_delete_confirm_title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('routes_users_delete_confirm_description', {
+                name: `${userToDelete?.firstName} ${userToDelete?.lastName}`.trim(),
+                email: userToDelete?.email,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleteUserWaiting}>
+              {t('common_cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={isDeleteUserWaiting}
+              className="bg-foreground text-background hover:bg-foreground/90"
+            >
+              {isDeleteUserWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
+              {t('routes_users_delete_confirm_button')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

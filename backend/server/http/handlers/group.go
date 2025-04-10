@@ -77,9 +77,11 @@ func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags groups
-// @Param Body body requests.CreateGroupRequest true " "
+// @Param Body body requests.CreateGroupRequest true "Group creation data including name and members"
 // @Success 200 {object} responses.CreateGroupResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /groups [post].
 func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateGroupRequest
@@ -110,10 +112,13 @@ func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags groups
-// @Param Body body requests.UpdateGroupRequest true " "
-// @Param groupID path string true "Group ID"
+// @Param Body body requests.UpdateGroupRequest true "Group update data including name and members"
+// @Param groupID path string true "Group ID to update"
 // @Success 200 {object} responses.UpdateGroupResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 404 {object} errdefs.Error "Group not found"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /groups/{groupID} [put].
 func (h *GroupHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req := requests.UpdateGroupRequest{

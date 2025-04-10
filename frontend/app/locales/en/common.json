@@ -189,7 +189,7 @@
   "routes_users_table_name": "Name",
   "routes_users_table_email": "Email",
   "routes_users_table_permission": "Permission",
-  "routes_users_remove": "Remove",
+  "routes_users_delete": "Delete",
   "routes_users_invite_dialog_title": "Invite Users",
   "routes_users_invite_dialog_description": "Invite multiple users and assign their roles.",
   "routes_users_invite_email_label": "Email Address",
@@ -205,6 +205,15 @@
   "routes_users_toast_invited_description": "Users have been invited to your organization",
   "routes_users_toast_invite_failed": "Failed to invite users",
   "routes_users_toast_invite_failed_description": "Please try again",
+
+  "routes_users_toast_user_deleted": "User deleted",
+  "routes_users_toast_user_deleted_description": "{{name}} has been deleted from the organization.",
+  "routes_users_toast_user_delete_failed": "Failed to delete user",
+  "routes_users_toast_user_delete_failed_description": "An error occurred while trying to delete the user. Please try again.",
+
+  "routes_users_delete_confirm_title": "Are you sure?",
+  "routes_users_delete_confirm_description": "Are you sure you want to delete {{name}} ({{email}}) from this organization? This action cannot be undone.",
+  "routes_users_delete_confirm_button": "Delete",
 
   "routes_users_edit_role_label": "Role",
   "routes_users_edit_role_placeholder": "Select Role",
@@ -359,5 +368,7 @@
   "routes_auth_google_toast_getme_failed_desc": "Failed to retrieve user details after registration. Please try logging in.",
   "routes_auth_google_toast_save_auth_failed_desc": "Failed to complete authentication setup. Please try logging in again.",
   "routes_auth_google_toast_error_title": "Authentication Error",
-  "routes_auth_google_toast_try_again_desc": "An unexpected error occurred. Please try logging in again."
+  "routes_auth_google_toast_try_again_desc": "An unexpected error occurred. Please try logging in again.",
+
+  "common_cancel": "Cancel"
 }

@@ -60,3 +60,10 @@ func UpdateOrganizationUserOutputToResponse(out *dto.UpdateOrganizationUserOutpu
 		User: UserDTOToResponse(out.User),
 	}
 }
+
+// DeleteOrganizationUserRequestToDTOInput converts from requests.DeleteOrganizationUserRequest to dto.DeleteOrganizationUserInput.
+func DeleteOrganizationUserRequestToDTOInput(in requests.DeleteOrganizationUserRequest) dto.DeleteOrganizationUserInput {
+	return dto.DeleteOrganizationUserInput{
+		UserID: in.UserID,
+	}
+}
