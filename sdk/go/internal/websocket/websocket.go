@@ -325,9 +325,11 @@ func (c *client) sendEnqueuedMessagesLoop() {
 			c.connMu.RUnlock()
 			if conn != nil && len(messageBuffer) > 0 {
 				logger.Log.Info("sending remaining messages before shutdown", zap.Int("count", len(messageBuffer)))
+				rateLimiter := time.NewTicker(time.Millisecond)
+				defer rateLimiter.Stop()
 				for _, msg := range messageBuffer {
 					_ = c.send(msg)
-					time.Sleep(time.Millisecond)
+					<-rateLimiter.C
 				}
 			}
 			return
@@ -339,9 +341,11 @@ func (c *client) sendEnqueuedMessagesLoop() {
 				c.connMu.RUnlock()
 				if conn != nil && len(messageBuffer) > 0 {
 					logger.Log.Info("sending remaining messages on queue close", zap.Int("count", len(messageBuffer)))
+					rateLimiter := time.NewTicker(time.Millisecond)
+					defer rateLimiter.Stop()
 					for _, m := range messageBuffer {
 						_ = c.send(m)
-						time.Sleep(time.Millisecond)
+						<-rateLimiter.C
 					}
 				}
 				return
