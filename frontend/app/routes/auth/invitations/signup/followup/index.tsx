@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useTranslation } from 'react-i18next';
 import {
   Form,
@@ -17,7 +16,7 @@ import { usersStore } from '@/store/modules/users';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router';
-import { object, string, boolean } from 'zod';
+import { object, string } from 'zod';
 import type { z } from 'zod';
 
 export type SearchParams = {
@@ -39,9 +38,6 @@ export default function InvitationSignUpFollowUp() {
     }),
     lastName: string({
       required_error: t('zod_errors_lastName_required'),
-    }),
-    agreeToTerms: boolean({
-      required_error: t('zod_errors_agreeToTerms_required'),
     }),
   });
 
@@ -75,15 +71,10 @@ export default function InvitationSignUpFollowUp() {
         resultAction,
       )
     ) {
-      const result = await dispatch(usersStore.asyncActions.getUsersMe());
-      if (usersStore.asyncActions.getUsersMe.fulfilled.match(result)) {
-        if (result.payload.user.organization) {
-          navigate('/');
-          toast({
-            title: t('routes_invitation_signup_followup_toast_success'),
-          });
-        }
-      }
+      navigate('/');
+      toast({
+        title: t('routes_invitation_signup_followup_toast_success'),
+      });
     } else {
       toast({
         title: t('routes_invitation_signup_followup_toast_error'),
@@ -145,37 +136,6 @@ export default function InvitationSignUpFollowUp() {
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="agreeToTerms"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex items-start gap-2">
-                      <Checkbox
-                        name="agreeToTerms"
-                        checked={field.value}
-                        onCheckedChange={() => field.onChange(!field.value)}
-                      />
-                      <label
-                        htmlFor="terms1"
-                        className="text-sm leading-4 font-normal text-foreground"
-                        dangerouslySetInnerHTML={{
-                          __html: t(
-                            'routes_invitation_signup_followup_terms_text',
-                          ).replace(
-                            /<a>/g,
-                            '<a href="#" target="_blank" class="underline">',
-                          ),
-                        }}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <Button type="submit" className="w-full">
               {t('routes_invitation_signup_followup_continue_button')}

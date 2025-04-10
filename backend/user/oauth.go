@@ -17,6 +17,10 @@ var oauthScopes = []string{
 	"https://www.googleapis.com/auth/userinfo.profile",
 }
 
+const (
+	googleOAuthCallbackPath = "/auth/google/callback"
+)
+
 type googleOAuthClient struct{}
 
 func newGoogleOAuthClient() *googleOAuthClient {
@@ -38,10 +42,12 @@ type googleToken struct {
 }
 
 func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state string) (string, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}
@@ -55,10 +61,12 @@ func (c *googleOAuthClient) getGoogleAuthCodeURL(ctx context.Context, state stri
 }
 
 func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*googleToken, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}
@@ -77,10 +85,12 @@ func (c *googleOAuthClient) getGoogleToken(ctx context.Context, code string) (*g
 }
 
 func (c *googleOAuthClient) getGoogleUserInfo(ctx context.Context, tok *googleToken) (*googleUserInfo, error) {
+	redirectURL := config.Config.AuthBaseURL() + googleOAuthCallbackPath
+
 	conf := &oauth2.Config{
 		ClientID:     config.Config.Google.OAuth.ClientID,
 		ClientSecret: config.Config.Google.OAuth.ClientSecret,
-		RedirectURL:  config.Config.Google.OAuth.CallbackURL,
+		RedirectURL:  redirectURL,
 		Scopes:       oauthScopes,
 		Endpoint:     google.Endpoint,
 	}

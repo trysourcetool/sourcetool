@@ -10,6 +10,7 @@ import {
   MessageSchema,
   type CloseSessionJson,
   type InitializeClientJson,
+  type RerunPageJson,
 } from '@/pb/ts/websocket/v1/message_pb';
 import {
   create,
@@ -30,7 +31,6 @@ import { $path } from 'safe-routes';
 const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const dispatch = useDispatch();
   const { '*': path } = useParams();
-  const { subDomain, isSourcetoolDomain, environments } = useAuth();
   const currentPageId = useRef('');
   const currentSessionId = useRef('');
   const prevVisibilityStatus = useRef(!document.hidden);
@@ -39,14 +39,13 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
     !document.hidden,
   );
   const isInitialLoading = useRef(false);
+  const inactiveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
   const socketUrl = useMemo(
     () =>
-      `${
-        environments === 'local' ? 'ws' : 'wss'
-      }://${isSourcetoolDomain && subDomain ? `${subDomain}.` : ''}${
-        ENVIRONMENTS.API_BASE_URL
-      }/ws`,
-    [subDomain, environments, isSourcetoolDomain],
+      `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`,
+    [],
   );
 
   const pageId = useSelector(
@@ -113,6 +112,10 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   });
 
   const handleCloseSession = useCallback(() => {
+    if (inactiveTimeoutRef.current) {
+      clearTimeout(inactiveTimeoutRef.current);
+      inactiveTimeoutRef.current = null;
+    }
     console.log('handleCloseSession');
     sendMessage(
       toBinary(
@@ -128,6 +131,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         }),
       ),
     );
+    currentSessionId.current = '';
   }, [sendMessage]);
 
   useEffect(() => {
@@ -140,12 +144,18 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
     return () => {
       window.removeEventListener('beforeunload', handleCloseSession);
       window.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (inactiveTimeoutRef.current) {
+        clearTimeout(inactiveTimeoutRef.current);
+      }
     };
-  }, [handleCloseSession]);
+  }, [isVisibilityStatus, handleCloseSession]);
 
   useEffect(() => {
     (async () => {
-      if ((!pageId && !currentPageId.current) || isInitialLoading.current) {
+      if (!pageId && !currentPageId.current) {
+        return;
+      }
+      if (isInitialLoading.current && currentPageId.current === pageId) {
         return;
       }
       isInitialLoading.current = true;
@@ -196,42 +206,29 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
               create(MessageSchema, {
                 id: uuidv4(),
                 type: {
-                  case: 'initializeClient',
+                  case: 'rerunPage',
                   value: {
+                    sessionId: currentSessionId.current,
                     pageId: pageId,
-                  } satisfies InitializeClientJson,
+                    states: [],
+                  } satisfies RerunPageJson,
                 },
               }),
             ),
           );
-
           currentPageId.current = pageId;
         }
-      }
-
-      if (!pageId && currentPageId.current) {
-        console.log('CLEAR WIDGETS');
+      } else if (currentPageId.current) {
+        console.log('CLEAR WIDGETS AND DISABLE CONTROLLER');
         dispatch(widgetsStore.actions.clearWidgets());
         dispatch(pagesStore.actions.clearException());
-        sendMessage(
-          toBinary(
-            MessageSchema,
-            create(MessageSchema, {
-              id: uuidv4(),
-              type: {
-                case: 'closeSession',
-                value: {
-                  sessionId: currentSessionId.current,
-                } satisfies CloseSessionJson,
-              },
-            }),
-          ),
-        );
-        currentSessionId.current = '';
+        handleCloseSession();
+        currentPageId.current = '';
         setTimeout(() => {
           onDisable();
         }, 1000);
       }
+      isInitialLoading.current = false;
     })();
   }, [pageId]);
 
@@ -293,54 +290,61 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         return;
       }
       if (isVisibilityStatus && !exception) {
-        const resultAction = await dispatch(
-          hostInstancesStore.asyncActions.getHostInstancePing({
-            pageId,
-          }),
-        );
-        if (
-          hostInstancesStore.asyncActions.getHostInstancePing.rejected.match(
-            resultAction,
-          )
-        ) {
-          currentSessionId.current = '';
-          navigate($path('/error/hostInstancePingError'));
-          return;
+        console.log('Tab became active');
+        if (inactiveTimeoutRef.current) {
+          console.log('Clearing inactivity timer');
+          clearTimeout(inactiveTimeoutRef.current);
+          inactiveTimeoutRef.current = null;
         }
 
-        console.log('currentSessionId.current', currentSessionId.current, {
-          id: uuidv4(),
-          type: {
-            case: 'initializeClient',
-            value: {
-              pageId: pageId,
-              sessionId: currentSessionId.current,
-            } satisfies InitializeClientJson,
-          },
-        });
-
-        sendMessage(
-          toBinary(
-            MessageSchema,
-            create(MessageSchema, {
-              id: uuidv4(),
-              type: {
-                case: 'initializeClient',
-                value: {
-                  pageId: pageId,
-                  sessionId: currentSessionId.current,
-                } satisfies InitializeClientJson,
-              },
+        if (!currentSessionId.current) {
+          console.log('Re-initializing client after becoming active');
+          const resultAction = await dispatch(
+            hostInstancesStore.asyncActions.getHostInstancePing({
+              pageId,
             }),
-          ),
-        );
+          );
+          if (
+            hostInstancesStore.asyncActions.getHostInstancePing.rejected.match(
+              resultAction,
+            )
+          ) {
+            currentSessionId.current = '';
+            navigate($path('/error/hostInstancePingError'));
+            return;
+          }
 
-        currentPageId.current = pageId;
+          sendMessage(
+            toBinary(
+              MessageSchema,
+              create(MessageSchema, {
+                id: uuidv4(),
+                type: {
+                  case: 'initializeClient',
+                  value: {
+                    pageId: pageId,
+                    sessionId: currentSessionId.current,
+                  } satisfies InitializeClientJson,
+                },
+              }),
+            ),
+          );
+        } else {
+          console.log('Session still active, no need to re-initialize');
+        }
       } else {
-        handleCloseSession();
+        console.log('Tab became inactive');
+        if (!inactiveTimeoutRef.current && currentSessionId.current) {
+          console.log(`Starting inactivity timer (${INACTIVITY_TIMEOUT_MS}ms)`);
+          inactiveTimeoutRef.current = setTimeout(() => {
+            console.log('Inactivity timer expired, closing session');
+            handleCloseSession();
+            inactiveTimeoutRef.current = null;
+          }, INACTIVITY_TIMEOUT_MS);
+        }
       }
     })();
-  }, [isVisibilityStatus]);
+  }, [isVisibilityStatus, pageId, exception]);
 
   return <></>;
 };
@@ -348,12 +352,12 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
 export const WebSocketController = () => {
   const location = useLocation();
   const [isSocketReady, setIsSocketReady] = useState(false);
-  const { isAuthChecked, isSubDomainMatched, isSourcetoolDomain } = useAuth();
+  const { isAuthChecked, isSubDomainMatched } = useAuth();
 
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      ((isSourcetoolDomain && isSubDomainMatched) || !isSourcetoolDomain) &&
+      ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) || !ENVIRONMENTS.IS_CLOUD_EDITION) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
@@ -361,7 +365,6 @@ export const WebSocketController = () => {
   }, [
     location.pathname,
     isSubDomainMatched,
-    isSourcetoolDomain,
     isAuthChecked,
   ]);
 

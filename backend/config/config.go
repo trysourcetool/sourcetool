@@ -45,7 +45,6 @@ type Cfg struct {
 		OAuth struct {
 			ClientID     string `env:"GOOGLE_OAUTH_CLIENT_ID"`
 			ClientSecret string `env:"GOOGLE_OAUTH_CLIENT_SECRET"`
-			CallbackURL  string `env:"GOOGLE_OAUTH_CALLBACK_URL"`
 		}
 	}
 	SMTP struct {

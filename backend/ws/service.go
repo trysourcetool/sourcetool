@@ -112,7 +112,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		sess = &model.Session{
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: page.OrganizationID,
-			PageID:         page.ID,
+			APIKeyID:       page.APIKeyID,
 			HostInstanceID: onlineHostInstance.ID,
 			UserID:         currentUser.ID,
 		}
@@ -378,7 +378,7 @@ func (s *ServiceCE) CloseSession(ctx context.Context, msg *websocketv1.Message) 
 		return err
 	}
 
-	_, err = s.Store.Page().Get(ctx, storeopts.PageByID(sess.PageID), storeopts.PageBySessionID(sess.ID))
+	_, err = s.Store.Page().Get(ctx, storeopts.PageByAPIKeyID(sess.APIKeyID), storeopts.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}

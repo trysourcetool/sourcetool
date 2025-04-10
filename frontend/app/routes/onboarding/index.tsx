@@ -91,7 +91,7 @@ export default function Onboarding() {
 		Endpoint: "${user?.organization?.webSocketEndpoint}"
 	})
 
-	s.Page("Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
+	s.Page("/welcome", "Welcome to Sourcetool!", func(ui sourcetool.UIBuilder) error {
 		ui.Markdown("## Hello ${user?.firstName}!")
 
 		// Example:

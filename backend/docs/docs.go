@@ -197,6 +197,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/google/authenticate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "authenticate-with-google",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AuthenticateWithGoogleResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "request-google-auth-link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestGoogleAuthLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/environments": {
             "get": {
                 "consumes": [
@@ -820,6 +876,90 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/auth/google/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "register-with-google",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RegisterWithGoogleResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/auth/invitations/google/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "request-invitation-google-auth-link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestInvitationGoogleAuthLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/auth/invitations/magic/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "request-invitation-magic-link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestInvitationMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/users/auth/magic/authenticate": {
             "post": {
                 "consumes": [
@@ -903,123 +1043,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/invitations/oauth/google/authCodeUrl": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "get-google-auth-code-url-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.GetGoogleAuthCodeURLInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.GetGoogleAuthCodeURLInvitationResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invitations/oauth/google/signin": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signin-with-google-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignInWithGoogleInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invitations/oauth/google/signup": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signup-with-google-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignUpWithGoogleInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/users/invitations/resend": {
             "post": {
                 "consumes": [
@@ -1048,84 +1071,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.ResendInvitationResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invitations/signin": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signin-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignInInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invitations/signup": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signup-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignUpInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1193,112 +1138,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.GetMeResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/oauth/google/authCodeUrl": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "get-google-auth-code-url",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.GetGoogleAuthCodeURLResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/oauth/google/signin": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signin-with-google",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignInWithGoogleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.SignInWithGoogleResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/oauth/google/signup": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "signup-with-google",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.SignUpWithGoogleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
                         }
                     },
                     "default": {
@@ -1615,17 +1454,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.GetGoogleAuthCodeURLInvitationRequest": {
-            "type": "object",
-            "required": [
-                "invitationToken"
-            ],
-            "properties": {
-                "invitationToken": {
-                    "type": "string"
-                }
-            }
-        },
         "requests.InviteUsersRequest": {
             "type": "object",
             "required": [
@@ -1693,108 +1521,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "emailConfirmation": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignInInvitationRequest": {
-            "type": "object",
-            "required": [
-                "invitationToken",
-                "password"
-            ],
-            "properties": {
-                "invitationToken": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignInWithGoogleInvitationRequest": {
-            "type": "object",
-            "required": [
-                "sessionToken"
-            ],
-            "properties": {
-                "sessionToken": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignInWithGoogleRequest": {
-            "type": "object",
-            "required": [
-                "sessionToken"
-            ],
-            "properties": {
-                "sessionToken": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignUpInvitationRequest": {
-            "type": "object",
-            "required": [
-                "firstName",
-                "invitationToken",
-                "lastName",
-                "password",
-                "passwordConfirmation"
-            ],
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "invitationToken": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "passwordConfirmation": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignUpWithGoogleInvitationRequest": {
-            "type": "object",
-            "required": [
-                "firstName",
-                "lastName",
-                "sessionToken"
-            ],
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "sessionToken": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.SignUpWithGoogleRequest": {
-            "type": "object",
-            "required": [
-                "firstName",
-                "lastName",
-                "sessionToken"
-            ],
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "sessionToken": {
                     "type": "string"
                 }
             }
@@ -1904,16 +1630,39 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.AuthenticateWithGoogleResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "hasOrganization": {
+                    "type": "boolean"
+                },
+                "isNewUser": {
+                    "type": "boolean"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.AuthenticateWithMagicLinkResponse": {
             "type": "object",
             "properties": {
                 "authUrl": {
                     "type": "string"
                 },
-                "isNewUser": {
+                "hasOrganization": {
                     "type": "boolean"
                 },
-                "isOrganizationExists": {
+                "isNewUser": {
                     "type": "boolean"
                 },
                 "token": {
@@ -2013,22 +1762,6 @@ const docTemplate = `{
             "properties": {
                 "environment": {
                     "$ref": "#/definitions/responses.EnvironmentResponse"
-                }
-            }
-        },
-        "responses.GetGoogleAuthCodeURLInvitationResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.GetGoogleAuthCodeURLResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
                 }
             }
         },
@@ -2289,6 +2022,44 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.RegisterWithGoogleResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "hasOrganization": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RequestGoogleAuthLinkResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RequestInvitationGoogleAuthLinkResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RequestInvitationMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.RequestMagicLinkResponse": {
             "type": "object",
             "properties": {
@@ -2315,20 +2086,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "redirectUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "responses.SignInWithGoogleResponse": {
-            "type": "object",
-            "properties": {
-                "authUrl": {
-                    "type": "string"
-                },
-                "isOrganizationExists": {
-                    "type": "boolean"
-                },
-                "token": {
                     "type": "string"
                 }
             }

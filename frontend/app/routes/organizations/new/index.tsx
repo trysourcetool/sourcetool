@@ -66,9 +66,10 @@ export default function Signup() {
             data: { token: result.payload.token },
           }),
         );
-        if (usersStore.asyncActions.saveAuth.fulfilled.match(res)) {
-          window.location.replace(res.payload.redirectUrl);
+        if (!usersStore.asyncActions.saveAuth.fulfilled.match(res)) {
+          throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
         }
+        window.location.replace(res.payload.redirectUrl);
       }
     }
   });
@@ -94,7 +95,7 @@ export default function Signup() {
     } else {
       if (result.error && result.payload) {
         if ((result.payload as ErrorResponse).status === 401) {
-          navigate($path('/signin'));
+          navigate($path('/login'));
           toast({
             title: t('routes_organizations_new_toast_auth_error'),
             description: t(

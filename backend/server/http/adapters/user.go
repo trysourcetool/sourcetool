@@ -140,10 +140,10 @@ func AuthenticateWithMagicLinkRequestToDTOInput(in requests.AuthenticateWithMagi
 // AuthenticateWithMagicLinkOutputToResponse converts from dto.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
 func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
 	return &responses.AuthenticateWithMagicLinkResponse{
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
-		IsNewUser:            out.IsNewUser,
+		AuthURL:         out.AuthURL,
+		Token:           out.Token,
+		HasOrganization: out.HasOrganization,
+		IsNewUser:       out.IsNewUser,
 	}
 }
 
@@ -164,36 +164,11 @@ func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkReq
 	}
 }
 
-// SignInWithGoogleRequestToDTOInput converts from requests.SignInWithGoogleRequest to dto.SignInWithGoogleInput.
-func SignInWithGoogleRequestToDTOInput(in requests.SignInWithGoogleRequest) dto.SignInWithGoogleInput {
-	return dto.SignInWithGoogleInput{
-		SessionToken: in.SessionToken,
-	}
-}
-
-// SignInWithGoogleOutputToResponse converts from dto.SignInWithGoogleOutput to responses.SignInWithGoogleResponse.
-func SignInWithGoogleOutputToResponse(out *dto.SignInWithGoogleOutput) *responses.SignInWithGoogleResponse {
-	return &responses.SignInWithGoogleResponse{
-		AuthURL:              out.AuthURL,
-		Token:                out.Token,
-		IsOrganizationExists: out.IsOrganizationExists,
-	}
-}
-
-// SignUpWithGoogleRequestToDTOInput converts from requests.SignUpWithGoogleRequest to dto.SignUpWithGoogleInput.
-func SignUpWithGoogleRequestToDTOInput(in requests.SignUpWithGoogleRequest) dto.SignUpWithGoogleInput {
-	return dto.SignUpWithGoogleInput{
-		SessionToken: in.SessionToken,
-		FirstName:    in.FirstName,
-		LastName:     in.LastName,
-	}
-}
-
-// SignUpWithGoogleOutputToResponse converts from dto.SignUpWithGoogleOutput to responses.SignUpWithGoogleResponse.
-func SignUpWithGoogleOutputToResponse(out *dto.SignUpWithGoogleOutput) *responses.SignUpWithGoogleResponse {
-	return &responses.SignUpWithGoogleResponse{
-		Token:     out.Token,
-		XSRFToken: out.XSRFToken,
+// RegisterWithMagicLinkOutputToResponse converts from dto.RegisterWithMagicLinkOutput to responses.RegisterWithMagicLinkResponse.
+func RegisterWithMagicLinkOutputToResponse(out *dto.RegisterWithMagicLinkOutput) *responses.RegisterWithMagicLinkResponse {
+	return &responses.RegisterWithMagicLinkResponse{
+		ExpiresAt:       out.ExpiresAt,
+		HasOrganization: out.HasOrganization,
 	}
 }
 
@@ -253,98 +228,6 @@ func InviteUsersOutputToResponse(out *dto.InviteUsersOutput) *responses.InviteUs
 
 	return &responses.InviteUsersResponse{
 		UserInvitations: invitations,
-	}
-}
-
-// SignInInvitationRequestToDTOInput converts from requests.SignInInvitationRequest to dto.SignInInvitationInput.
-func SignInInvitationRequestToDTOInput(in requests.SignInInvitationRequest) dto.SignInInvitationInput {
-	return dto.SignInInvitationInput{
-		InvitationToken: in.InvitationToken,
-		Password:        in.Password,
-	}
-}
-
-// SignInInvitationOutputToResponse converts from dto.SignInInvitationOutput to responses.SignInInvitationResponse.
-func SignInInvitationOutputToResponse(out *dto.SignInInvitationOutput) *responses.SignInInvitationResponse {
-	return &responses.SignInInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
-	}
-}
-
-// SignUpInvitationRequestToDTOInput converts from requests.SignUpInvitationRequest to dto.SignUpInvitationInput.
-func SignUpInvitationRequestToDTOInput(in requests.SignUpInvitationRequest) dto.SignUpInvitationInput {
-	return dto.SignUpInvitationInput{
-		InvitationToken:      in.InvitationToken,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Password:             in.Password,
-		PasswordConfirmation: in.PasswordConfirmation,
-	}
-}
-
-// SignUpInvitationOutputToResponse converts from dto.SignUpInvitationOutput to responses.SignUpInvitationResponse.
-func SignUpInvitationOutputToResponse(out *dto.SignUpInvitationOutput) *responses.SignUpInvitationResponse {
-	return &responses.SignUpInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
-	}
-}
-
-// GetGoogleAuthCodeURLOutputToResponse converts from dto.GetGoogleAuthCodeURLOutput to responses.GetGoogleAuthCodeURLResponse.
-func GetGoogleAuthCodeURLOutputToResponse(out *dto.GetGoogleAuthCodeURLOutput) *responses.GetGoogleAuthCodeURLResponse {
-	return &responses.GetGoogleAuthCodeURLResponse{
-		URL: out.URL,
-	}
-}
-
-// GoogleOAuthCallbackRequestToDTOInput converts from requests.GoogleOAuthCallbackRequest to dto.GoogleOAuthCallbackInput.
-func GoogleOAuthCallbackRequestToDTOInput(in requests.GoogleOAuthCallbackRequest) dto.GoogleOAuthCallbackInput {
-	return dto.GoogleOAuthCallbackInput{
-		State: in.State,
-		Code:  in.Code,
-	}
-}
-
-// GetGoogleAuthCodeURLInvitationRequestToDTOInput converts from requests.GetGoogleAuthCodeURLInvitationRequest to dto.GetGoogleAuthCodeURLInvitationInput.
-func GetGoogleAuthCodeURLInvitationRequestToDTOInput(in requests.GetGoogleAuthCodeURLInvitationRequest) dto.GetGoogleAuthCodeURLInvitationInput {
-	return dto.GetGoogleAuthCodeURLInvitationInput{
-		InvitationToken: in.InvitationToken,
-	}
-}
-
-// GetGoogleAuthCodeURLInvitationOutputToResponse converts from dto.GetGoogleAuthCodeURLInvitationOutput to responses.GetGoogleAuthCodeURLInvitationResponse.
-func GetGoogleAuthCodeURLInvitationOutputToResponse(out *dto.GetGoogleAuthCodeURLInvitationOutput) *responses.GetGoogleAuthCodeURLInvitationResponse {
-	return &responses.GetGoogleAuthCodeURLInvitationResponse{
-		URL: out.URL,
-	}
-}
-
-// SignInWithGoogleInvitationRequestToDTOInput converts from requests.SignInWithGoogleInvitationRequest to dto.SignInWithGoogleInvitationInput.
-func SignInWithGoogleInvitationRequestToDTOInput(in requests.SignInWithGoogleInvitationRequest) dto.SignInWithGoogleInvitationInput {
-	return dto.SignInWithGoogleInvitationInput{
-		SessionToken: in.SessionToken,
-	}
-}
-
-// SignInWithGoogleInvitationOutputToResponse converts from dto.SignInWithGoogleInvitationOutput to responses.SignInWithGoogleInvitationResponse.
-func SignInWithGoogleInvitationOutputToResponse(out *dto.SignInWithGoogleInvitationOutput) *responses.SignInWithGoogleInvitationResponse {
-	return &responses.SignInWithGoogleInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
-	}
-}
-
-// SignUpWithGoogleInvitationRequestToDTOInput converts from requests.SignUpWithGoogleInvitationRequest to dto.SignUpWithGoogleInvitationInput.
-func SignUpWithGoogleInvitationRequestToDTOInput(in requests.SignUpWithGoogleInvitationRequest) dto.SignUpWithGoogleInvitationInput {
-	return dto.SignUpWithGoogleInvitationInput{
-		SessionToken: in.SessionToken,
-		FirstName:    in.FirstName,
-		LastName:     in.LastName,
-	}
-}
-
-// SignUpWithGoogleInvitationOutputToResponse converts from dto.SignUpWithGoogleInvitationOutput to responses.SignUpWithGoogleInvitationResponse.
-func SignUpWithGoogleInvitationOutputToResponse(out *dto.SignUpWithGoogleInvitationOutput) *responses.SignUpWithGoogleInvitationResponse {
-	return &responses.SignUpWithGoogleInvitationResponse{
-		ExpiresAt: out.ExpiresAt,
 	}
 }
 
@@ -411,7 +294,72 @@ func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithIn
 // RegisterWithInvitationMagicLinkOutputToResponse converts from dto.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
 func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
 	return &responses.RegisterWithInvitationMagicLinkResponse{
-		Token:     out.Token,
-		XSRFToken: out.XSRFToken,
+		ExpiresAt: out.ExpiresAt,
+	}
+}
+
+// RequestGoogleAuthLinkOutputToResponse converts from dto.RequestGoogleAuthLinkOutput to responses.RequestGoogleAuthLinkResponse.
+func RequestGoogleAuthLinkOutputToResponse(out *dto.RequestGoogleAuthLinkOutput) *responses.RequestGoogleAuthLinkResponse {
+	return &responses.RequestGoogleAuthLinkResponse{
+		AuthURL: out.AuthURL,
+	}
+}
+
+// AuthenticateWithGoogleRequestToDTOInput converts requests.AuthenticateWithGoogleRequest to dto.AuthenticateWithGoogleInput.
+func AuthenticateWithGoogleRequestToDTOInput(req requests.AuthenticateWithGoogleRequest) dto.AuthenticateWithGoogleInput {
+	return dto.AuthenticateWithGoogleInput{
+		Code:  req.Code,
+		State: req.State,
+	}
+}
+
+// AuthenticateWithGoogleOutputToResponse converts dto.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
+func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
+	return &responses.AuthenticateWithGoogleResponse{
+		FirstName:                out.FirstName,
+		LastName:                 out.LastName,
+		AuthURL:                  out.AuthURL,
+		Token:                    out.Token,
+		HasOrganization:          out.HasOrganization,
+		HasMultipleOrganizations: out.HasMultipleOrganizations,
+		IsNewUser:                out.IsNewUser,
+	}
+}
+
+// RegisterWithGoogleRequestToDTOInput converts from requests.RegisterWithGoogleRequest to dto.RegisterWithGoogleInput.
+func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) dto.RegisterWithGoogleInput {
+	return dto.RegisterWithGoogleInput{
+		Token: in.Token,
+	}
+}
+
+// RegisterWithGoogleOutputToResponse converts from dto.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
+func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
+	return &responses.RegisterWithGoogleResponse{
+		AuthURL:         out.AuthURL,
+		Token:           out.Token,
+		HasOrganization: out.HasOrganization,
+	}
+}
+
+// RequestInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
+func RequestInvitationGoogleAuthLinkRequestToDTOInput(in requests.RequestInvitationGoogleAuthLinkRequest) dto.RequestInvitationGoogleAuthLinkInput {
+	return dto.RequestInvitationGoogleAuthLinkInput{
+		InvitationToken: in.InvitationToken,
+	}
+}
+
+// RequestInvitationGoogleAuthLinkOutputToResponse converts DTO output to response.
+func RequestInvitationGoogleAuthLinkOutputToResponse(out *dto.RequestInvitationGoogleAuthLinkOutput) *responses.RequestInvitationGoogleAuthLinkResponse {
+	return &responses.RequestInvitationGoogleAuthLinkResponse{
+		AuthURL: out.AuthURL,
+	}
+}
+
+// AuthenticateWithInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
+func AuthenticateWithInvitationGoogleAuthLinkRequestToDTOInput(in requests.AuthenticateWithInvitationGoogleAuthLinkRequest) dto.AuthenticateWithInvitationGoogleAuthLinkInput {
+	return dto.AuthenticateWithInvitationGoogleAuthLinkInput{
+		Code:  in.Code,
+		State: in.State,
 	}
 }
