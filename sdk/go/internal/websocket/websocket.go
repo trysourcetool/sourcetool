@@ -15,6 +15,57 @@ import (
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 )
 
+const (
+	// Time constraints
+	minPingInterval   = 100 * time.Millisecond
+	maxPingInterval   = 30 * time.Second
+	minReconnectDelay = 100 * time.Millisecond
+
+	// Queue constraints
+	minQueueSize = 50
+	maxQueueSize = 1000
+
+	// Default values
+	defaultPingInterval   = time.Second
+	defaultReconnectDelay = time.Second
+	defaultQueueSize      = 250
+)
+
+func validateConfig(config Config) error {
+	// Minimum values
+	if config.PingInterval < minPingInterval {
+		return fmt.Errorf("ping interval must be at least %v", minPingInterval)
+	}
+	if config.ReconnectDelay < minReconnectDelay {
+		return fmt.Errorf("reconnect delay must be at least %v", minReconnectDelay)
+	}
+	if config.QueueSize < minQueueSize {
+		return fmt.Errorf("queue size must be at least %d", minQueueSize)
+	}
+
+	// Maximum values
+	if config.PingInterval > maxPingInterval {
+		return fmt.Errorf("ping interval must not exceed %v", maxPingInterval)
+	}
+	if config.QueueSize > maxQueueSize {
+		return fmt.Errorf("queue size must not exceed %d", maxQueueSize)
+	}
+
+	return nil
+}
+
+func setConfigDefaults(config *Config) {
+	if config.PingInterval == 0 {
+		config.PingInterval = defaultPingInterval
+	}
+	if config.ReconnectDelay == 0 {
+		config.ReconnectDelay = defaultReconnectDelay
+	}
+	if config.QueueSize == 0 {
+		config.QueueSize = defaultQueueSize
+	}
+}
+
 type Client interface {
 	RegisterHandler(MessageHandlerFunc)
 	Enqueue(string, proto.Message)
@@ -29,6 +80,7 @@ type Config struct {
 	InstanceID     uuid.UUID
 	PingInterval   time.Duration
 	ReconnectDelay time.Duration
+	QueueSize      int
 	OnReconnecting func()
 	OnReconnected  func()
 }
@@ -48,28 +100,35 @@ type client struct {
 
 	handler   MessageHandlerFunc
 	handlerMu sync.RWMutex
+
+	// Goroutine management
+	stop chan struct{}
+	wg   sync.WaitGroup
 }
 
 func NewClient(config Config) (Client, error) {
-	if config.PingInterval == 0 {
-		config.PingInterval = 1 * time.Second
-	}
-	if config.ReconnectDelay == 0 {
-		config.ReconnectDelay = 1 * time.Second
+	// Set defaults for zero values
+	setConfigDefaults(&config)
+
+	// Validate configuration
+	if err := validateConfig(config); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
 
 	c := &client{
 		config:       config,
-		messageQueue: make(chan *websocketv1.Message, 100),
+		messageQueue: make(chan *websocketv1.Message, config.QueueSize),
 		done:         make(chan error, 1),
 		dialer:       websocket.DefaultDialer,
 		responses:    make(map[string]chan *websocketv1.Message),
+		stop:         make(chan struct{}),
 	}
 
 	if err := c.connect(); err != nil {
 		return nil, err
 	}
 
+	c.wg.Add(3)
 	go c.pingPongLoop()
 	go c.readMessages()
 	go c.sendEnqueuedMessagesLoop()
@@ -149,93 +208,145 @@ func (c *client) reconnect() error {
 }
 
 func (c *client) pingPongLoop() {
+	defer c.wg.Done() // Signal completion on exit
 	ticker := time.NewTicker(c.config.PingInterval)
 	defer ticker.Stop()
 
 	for {
-		<-ticker.C
-		c.connMu.RLock()
-		conn := c.conn
-		c.connMu.RUnlock()
+		select {
+		case <-ticker.C:
+			c.connMu.RLock()
+			conn := c.conn
+			c.connMu.RUnlock()
 
-		if conn == nil {
-			return
-		}
+			if conn == nil {
+				return
+			}
 
-		if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(10*time.Second)); err != nil {
-			logger.Log.Error("ping failed", zap.Error(err))
-			c.connMu.Lock()
-			conn.Close()
-			c.conn = nil
-			c.connMu.Unlock()
-
-			go func() {
-				if err := c.reconnect(); err != nil {
-					logger.Log.Error("reconnection failed", zap.Error(err))
+			if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(10*time.Second)); err != nil {
+				logger.Log.Error("ping failed", zap.Error(err))
+				c.connMu.Lock()
+				if c.conn == conn {
+					conn.Close()
+					c.conn = nil
 				}
-			}()
+				c.connMu.Unlock()
+
+				go func() {
+					if err := c.reconnect(); err != nil {
+						logger.Log.Error("reconnection failed", zap.Error(err))
+					}
+				}()
+				return
+			}
+		case <-c.stop:
+			logger.Log.Debug("pingPongLoop stopping")
 			return
 		}
 	}
 }
 
 func (c *client) readMessages() {
+	defer c.wg.Done() // Signal completion on exit
 	for {
-		var data []byte
-		c.connMu.RLock()
-		conn := c.conn
-		c.connMu.RUnlock()
+		select {
+		case <-c.stop:
+			logger.Log.Debug("readMessages stopping")
+			return
+		default:
+			var data []byte
+			c.connMu.RLock()
+			conn := c.conn
+			c.connMu.RUnlock()
 
-		if conn == nil {
-			time.Sleep(time.Second)
-			continue
-		}
-
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-				c.done <- nil
-				return
+			if conn == nil {
+				select {
+				case <-c.stop:
+					logger.Log.Debug("readMessages stopping (conn nil)")
+					return
+				case <-time.After(100 * time.Millisecond):
+					continue
+				}
 			}
 
-			logger.Log.Error("read error", zap.Error(err))
-			c.connMu.Lock()
-			conn.Close()
-			c.conn = nil
-			c.connMu.Unlock()
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				select {
+				case <-c.stop:
+					logger.Log.Debug("readMessages stopping (read error during shutdown)")
+					return
+				default:
+					if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+						return
+					}
 
-			go func() {
-				if err := c.reconnect(); err != nil {
-					logger.Log.Error("reconnection failed", zap.Error(err))
+					logger.Log.Error("read error", zap.Error(err))
+					c.connMu.Lock()
+					if c.conn == conn {
+						conn.Close()
+						c.conn = nil
+					}
+					c.connMu.Unlock()
+
+					go func() {
+						if err := c.reconnect(); err != nil {
+							logger.Log.Error("reconnection failed", zap.Error(err))
+						}
+					}()
+					continue
 				}
-			}()
-			continue
-		}
+			}
 
-		msg, err := unmarshalMessage(data)
-		if err != nil {
-			logger.Log.Error("error unmarshaling message", zap.Error(err))
-			continue
-		}
+			msg, err := unmarshalMessage(data)
+			if err != nil {
+				logger.Log.Error("error unmarshaling message", zap.Error(err))
+				continue
+			}
 
-		if err := c.handleMessage(msg); err != nil {
-			logger.Log.Error("error handling message", zap.Error(err))
+			if err := c.handleMessage(msg); err != nil {
+				logger.Log.Error("error handling message", zap.Error(err))
+			}
 		}
 	}
 }
 
 func (c *client) sendEnqueuedMessagesLoop() {
-	defer close(c.messageQueue)
+	defer c.wg.Done() // Signal completion on exit
 
 	const batchInterval = 10 * time.Millisecond
 	var messageBuffer []*websocketv1.Message
 
 	for {
 		select {
+		case <-c.stop:
+			logger.Log.Debug("sendEnqueuedMessagesLoop stopping")
+			c.connMu.RLock()
+			conn := c.conn
+			c.connMu.RUnlock()
+			if conn != nil && len(messageBuffer) > 0 {
+				logger.Log.Info("sending remaining messages before shutdown", zap.Int("count", len(messageBuffer)))
+				rateLimiter := time.NewTicker(time.Millisecond)
+				defer rateLimiter.Stop()
+				for _, msg := range messageBuffer {
+					_ = c.send(msg)
+					<-rateLimiter.C
+				}
+			}
+			return
 		case msg, ok := <-c.messageQueue:
 			if !ok {
-				for _, m := range messageBuffer {
-					c.send(m)
+				logger.Log.Debug("sendEnqueuedMessagesLoop stopping (queue closed)")
+				c.connMu.RLock()
+				conn := c.conn
+				c.connMu.RUnlock()
+				if conn != nil && len(messageBuffer) > 0 {
+					logger.Log.Info("sending remaining messages on queue close", zap.Int("count", len(messageBuffer)))
+					rateLimiter := time.NewTicker(time.Millisecond)
+					defer rateLimiter.Stop()
+					for _, m := range messageBuffer {
+						_ = c.send(m)
+						<-rateLimiter.C
+					}
 				}
 				return
 			}
@@ -316,16 +427,49 @@ func (c *client) Wait() error {
 
 func (c *client) Close() error {
 	c.connMu.Lock()
-	defer c.connMu.Unlock()
-
-	if c.conn != nil {
-		if err := c.conn.Close(); err != nil {
-			logger.Log.Error("error closing connection", zap.Error(err))
-			return err
-		}
-		c.conn = nil
+	if c.conn == nil {
+		c.connMu.Unlock()
+		return nil // Already closed or never connected
 	}
 
-	c.done <- nil
-	return nil
+	logger.Log.Debug("closing websocket client")
+
+	// Signal goroutines to stop
+	close(c.stop)
+
+	// Close the message queue to unblock sender if waiting
+	// Do this *after* signaling stop to allow sender to potentially process buffer on stop signal
+	close(c.messageQueue)
+
+	// Send close message (best effort)
+	err := c.conn.WriteMessage(
+		websocket.CloseMessage,
+		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+	)
+	if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+		// Log error only if it's not a standard close error
+		logger.Log.Warn("error sending close message", zap.Error(err))
+	}
+
+	// Close the underlying connection
+	connErr := c.conn.Close()
+	if connErr != nil {
+		logger.Log.Error("error closing websocket connection", zap.Error(connErr))
+	}
+	c.conn = nil
+	c.connMu.Unlock() // Unlock before waiting
+
+	// Wait for goroutines to finish
+	logger.Log.Debug("waiting for goroutines to stop")
+	c.wg.Wait()
+	logger.Log.Debug("goroutines stopped")
+
+	// Signal that the client is fully closed
+	// Use non-blocking send in case Wait() already returned due to previous error
+	select {
+	case c.done <- nil:
+	default:
+	}
+
+	return connErr // Return error from closing the connection, if any
 }
