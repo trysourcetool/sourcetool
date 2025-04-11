@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { TimeInputState } from './internal/session/state/timeinput';
+import { TimeInputState } from '../internal/session/state/timeinput';
 import {
   convertTimeInputProtoToState,
   convertStateToTimeInputProto,
   timeInput,
-} from './timeinput';
-import { createSessionManager, newSession } from './internal/session';
-import { MockClient } from './internal/websocket/mock/websocket';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
+} from '../timeinput';
+import { createSessionManager, newSession } from '../internal/session';
+import { MockClient } from '../internal/websocket/mock/websocket';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
 
 // Helper function to format Date object to HH:MM:SS string
 const formatTime = (date: Date | null | undefined): string | null => {

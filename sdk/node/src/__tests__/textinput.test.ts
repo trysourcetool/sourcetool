@@ -1,31 +1,28 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { TextAreaState } from './internal/session/state/textarea';
+import { TextInputState } from '../internal/session/state/textinput';
 import {
-  convertTextAreaProtoToState,
-  convertStateToTextAreaProto,
-  textArea,
-} from './textarea';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
-test('convertStateToTextAreaProto', () => {
+  convertTextInputProtoToState,
+  convertStateToTextInputProto,
+} from '../textinput';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
+
+test('convertStateToTextInputProto', () => {
   const id = uuidv4();
-  const label = 'Test TextArea';
+  const label = 'Test TextInput';
   const value = 'test value';
   const placeholder = 'Enter text';
   const defaultValue = 'default';
   const required = true;
   const disabled = false;
-  const maxLength = 1000;
+  const maxLength = 100;
   const minLength = 10;
-  const maxLines = 10;
-  const minLines = 3;
-  const autoResize = true;
 
-  const state = new TextAreaState(
+  const state = new TextInputState(
     id,
     value,
     label,
@@ -35,11 +32,8 @@ test('convertStateToTextAreaProto', () => {
     disabled,
     maxLength,
     minLength,
-    maxLines,
-    minLines,
-    autoResize,
   );
-  const proto = convertStateToTextAreaProto(state);
+  const proto = convertStateToTextInputProto(state);
 
   expect(proto.value).toBe(value);
   expect(proto.label).toBe(label);
@@ -49,62 +43,50 @@ test('convertStateToTextAreaProto', () => {
   expect(proto.disabled).toBe(disabled);
   expect(proto.maxLength).toBe(maxLength);
   expect(proto.minLength).toBe(minLength);
-  expect(proto.maxLines).toBe(maxLines);
-  expect(proto.minLines).toBe(minLines);
-  expect(proto.autoResize).toBe(autoResize);
 });
 
-test('convertTextAreaProtoToState', () => {
+test('convertTextInputProtoToState', () => {
   const id = uuidv4();
-  const label = 'Test Text Area';
+  const label = 'Test TextInput';
   const value = 'test value';
   const placeholder = 'Enter text';
   const defaultValue = 'default';
   const required = true;
   const disabled = false;
-  const maxLength = 1000;
+  const maxLength = 100;
   const minLength = 10;
-  const maxLines = 10;
-  const minLines = 3;
-  const autoResize = true;
 
-  const tempState = new TextAreaState(
-    id,
-    value,
-    label,
-    placeholder,
-    defaultValue,
-    required,
-    disabled,
-    maxLength,
-    minLength,
-    maxLines,
-    minLines,
-    autoResize,
+  const proto = convertStateToTextInputProto(
+    new TextInputState(
+      id,
+      value,
+      label,
+      placeholder,
+      defaultValue,
+      required,
+      disabled,
+      maxLength,
+      minLength,
+    ),
   );
-  const proto = convertStateToTextAreaProto(tempState);
-
-  const state = convertTextAreaProtoToState(id, proto);
+  const state = convertTextInputProtoToState(id, proto);
 
   if (!state) {
-    throw new Error('TextAreaState not found');
+    throw new Error('TextInputState not found');
   }
 
   expect(state.id).toBe(id);
-  expect(state.label).toBe(label);
   expect(state.value).toBe(value);
+  expect(state.label).toBe(label);
   expect(state.placeholder).toBe(placeholder);
   expect(state.defaultValue).toBe(defaultValue);
   expect(state.required).toBe(required);
   expect(state.disabled).toBe(disabled);
   expect(state.maxLength).toBe(maxLength);
   expect(state.minLength).toBe(minLength);
-  expect(state.maxLines).toBe(maxLines);
-  expect(state.minLines).toBe(minLines);
-  expect(state.autoResize).toBe(autoResize);
 });
 
-test('textArea', () => {
+test('textInput', () => {
   const sessionId = uuidv4();
   const pageId = uuidv4();
   const session = newSession(sessionId, pageId);
@@ -132,26 +114,23 @@ test('textArea', () => {
 
   const builder = new UIBuilder(runtime, session, page);
 
-  const label = 'Test TextArea';
+  const label = 'Test TextInput';
   const options = {
     placeholder: 'Enter text',
     defaultValue: 'default value',
     required: true,
     disabled: true,
-    maxLength: 1000,
+    maxLength: 100,
     minLength: 10,
-    maxLines: 10,
-    minLines: 3,
-    autoResize: false,
   };
 
-  textArea(builder, label, options);
+  builder.textInput(label, options);
 
-  const widgetId = builder.generatePageID('textArea', [0]);
-  const state = session.state.getTextArea(widgetId);
+  const widgetId = builder.generatePageID('textInput', [0]);
+  const state = session.state.getTextInput(widgetId);
 
   if (!state) {
-    throw new Error('TextAreaState not found');
+    throw new Error('TextInput not found');
   }
 
   expect(state.id).toBe(widgetId);
@@ -163,7 +142,4 @@ test('textArea', () => {
   expect(state.disabled).toBe(options.disabled);
   expect(state.maxLength).toBe(options.maxLength);
   expect(state.minLength).toBe(options.minLength);
-  expect(state.maxLines).toBe(options.maxLines);
-  expect(state.minLines).toBe(options.minLines);
-  expect(state.autoResize).toBe(options.autoResize);
 });

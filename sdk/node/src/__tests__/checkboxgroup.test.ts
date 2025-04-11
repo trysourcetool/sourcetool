@@ -1,15 +1,15 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { CheckboxGroupState } from './internal/session/state/checkboxgroup';
+import { CheckboxGroupState } from '../internal/session/state/checkboxgroup';
 import {
   convertCheckboxGroupProtoToState,
   convertStateToCheckboxGroupProto,
-} from './checkboxgroup';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+} from '../checkboxgroup';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToCheckboxGroupProto', () => {
   const id = uuidv4();

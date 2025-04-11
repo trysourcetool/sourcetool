@@ -1,18 +1,18 @@
 import { expect, test, describe } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { ColumnsState } from './internal/session/state/columns';
-import { ColumnItemState } from './internal/session/state/columnitem';
+import { ColumnsState } from '../internal/session/state/columns';
+import { ColumnItemState } from '../internal/session/state/columnitem';
 import {
   convertColumnsProtoToState,
   convertStateToColumnsProto,
   convertColumnItemProtoToState,
   convertStateToColumnItemProto,
-} from './columns';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+} from '../columns';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToColumnsProto', () => {
   const id = uuidv4();

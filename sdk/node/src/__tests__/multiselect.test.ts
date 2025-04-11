@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { MultiSelectState } from './internal/session/state/multiselect';
+import { MultiSelectState } from '../internal/session/state/multiselect';
 import {
   convertMultiSelectProtoToState,
   convertStateToMultiSelectProto,
   multiSelect,
-} from './multiselect';
-import { createSessionManager, newSession } from './internal/session';
-import { MockClient } from './internal/websocket/mock/websocket';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
+} from '../multiselect';
+import { createSessionManager, newSession } from '../internal/session';
+import { MockClient } from '../internal/websocket/mock/websocket';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
 
 test('convertStateToMultiSelectProto', () => {
   const id = uuidv4();

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { Cursor } from './uibuilder';
+import { Cursor } from '../uibuilder';
 
 test('coursor path management', () => {
   const cursor = new Cursor();

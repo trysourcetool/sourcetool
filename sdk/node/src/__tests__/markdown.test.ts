@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { MarkdownState } from './internal/session/state/markdown';
+import { MarkdownState } from '../internal/session/state/markdown';
 import {
   convertMarkdownProtoToState,
   convertStateToMarkdownProto,
   markdown,
-} from './markdown'; // convertStateToMarkdownProto は後でエクスポートする必要あり
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+} from '../markdown';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToMarkdownProto', () => {
   const id = uuidv4();

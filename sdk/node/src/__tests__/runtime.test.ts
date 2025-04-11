@@ -1,15 +1,15 @@
 import { expect, test } from 'vitest';
-import { newPageManager, Page } from './internal/page';
+import { newPageManager, Page } from '../internal/page';
 import { v4 as uuidv4 } from 'uuid';
-import { MockClient } from './internal/websocket/mock/websocket';
-import { createSessionManager, newSession } from './internal/session';
-import { Runtime } from './runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
+import { createSessionManager, newSession } from '../internal/session';
+import { Runtime } from '../runtime';
 import { create } from '@bufbuild/protobuf';
 import {
   CloseSessionSchema,
   InitializeClientSchema,
   RerunPageSchema,
-} from './internal/pb/websocket/v1/message_pb';
+} from '../internal/pb/websocket/v1/message_pb';
 test('initialize client', () => {
   const pages: { [pageId: string]: Page } = {};
   const pageId = uuidv4();
