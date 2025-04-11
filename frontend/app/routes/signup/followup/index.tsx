@@ -18,6 +18,7 @@ import { useDispatch } from '@/store';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useToast } from '@/hooks/use-toast';
 import { usersStore } from '@/store/modules/users';
+import { ENVIRONMENTS } from '@/environments';
 
 export type SearchParams = {
   token: string;
@@ -68,12 +69,18 @@ export default function Followup() {
         resultAction,
       )
     ) {
-      if (!resultAction.payload.hasOrganization) {
+      if (
+        ENVIRONMENTS.IS_CLOUD_EDITION &&
+        !resultAction.payload.hasOrganization
+      ) {
         navigate('/organizations/new');
         toast({
           title: t('routes_signup_followup_toast_success'),
           description: t('routes_signup_followup_toast_success_description'),
         });
+      } else {
+        await dispatch(usersStore.asyncActions.getUsersMe());
+        navigate('/');
       }
     } else {
       toast({
@@ -135,7 +142,7 @@ export default function Followup() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               {t('routes_signup_followup_continue_button')}
             </Button>
           </form>
