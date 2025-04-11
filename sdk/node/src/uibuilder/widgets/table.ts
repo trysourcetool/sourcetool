@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   TableState,
   TableValue,
@@ -9,15 +9,15 @@ import {
   TableStateValue,
   TableStateValueSelection,
   TableSelection,
-} from './internal/session/state/table';
-import { TableOptions } from './internal/options';
+} from '../../session/state/table';
+import { TableOptions } from '../../types/options';
 import { create, toJson } from '@bufbuild/protobuf';
 import {
   Table as TableProto,
   TableSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 
 /**
  * Table component options

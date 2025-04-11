@@ -1,17 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   RadioState,
   RadioValue,
   WidgetTypeRadio,
-} from './internal/session/state/radio';
-import { RadioOptions } from './internal/options';
+} from '../../session/state/radio';
+import { RadioOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
-import {
-  Radio as RadioProto,
-  RadioSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+import { Radio as RadioProto, RadioSchema } from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * Radio component options
  */

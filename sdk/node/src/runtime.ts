@@ -1,16 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager, newPageManager } from './internal/page';
+import { Page, PageManager, newPageManager } from './page';
 import {
   createSessionManager,
   newSession,
   SessionManager,
   WidgetState,
-} from './internal/session';
-import {
-  createWebSocketClient,
-  WebSocketClient,
-} from './internal/websocket/websocket';
+} from './session';
+import { createWebSocketClient, WebSocketClient } from './websocket';
 import {
   CloseSession,
   InitializeClient,
@@ -19,28 +16,28 @@ import {
   RerunPage,
   ScriptFinished_Status,
   ScriptFinishedSchema,
-} from './internal/pb/websocket/v1/message_pb';
-import { convertTextInputProtoToState } from './textinput';
-import { convertButtonProtoToState } from './button';
-import { convertNumberInputProtoToState } from './numberinput';
-import { convertDateInputProtoToState } from './dateinput';
-import { convertDateTimeInputProtoToState } from './datetimeinput';
-import { convertTimeInputProtoToState } from './timeinput';
-import { convertFormProtoToState } from './form';
-import { convertMarkdownProtoToState } from './markdown';
+} from './pb/websocket/v1/message_pb';
+import { convertTextInputProtoToState } from './uibuilder/widgets/textinput';
+import { convertButtonProtoToState } from './uibuilder/widgets/button';
+import { convertNumberInputProtoToState } from './uibuilder/widgets/numberinput';
+import { convertDateInputProtoToState } from './uibuilder/widgets/dateinput';
+import { convertDateTimeInputProtoToState } from './uibuilder/widgets/datetimeinput';
+import { convertTimeInputProtoToState } from './uibuilder/widgets/timeinput';
+import { convertFormProtoToState } from './uibuilder/widgets/form';
+import { convertMarkdownProtoToState } from './uibuilder/widgets/markdown';
 import {
   convertColumnItemProtoToState,
   convertColumnsProtoToState,
-} from './columns';
-import { convertCheckboxProtoToState } from './checkbox';
-import { convertCheckboxGroupProtoToState } from './checkboxgroup';
-import { convertRadioProtoToState } from './radio';
-import { convertSelectboxProtoToState } from './selectbox';
-import { convertTextAreaProtoToState } from './textarea';
-import { convertTableProtoToState } from './table';
-import { convertMultiSelectProtoToState } from './multiselect';
+} from './uibuilder/widgets/columns';
+import { convertCheckboxProtoToState } from './uibuilder/widgets/checkbox';
+import { convertCheckboxGroupProtoToState } from './uibuilder/widgets/checkboxgroup';
+import { convertRadioProtoToState } from './uibuilder/widgets/radio';
+import { convertSelectboxProtoToState } from './uibuilder/widgets/selectbox';
+import { convertTextAreaProtoToState } from './uibuilder/widgets/textarea';
+import { convertTableProtoToState } from './uibuilder/widgets/table';
+import { convertMultiSelectProtoToState } from './uibuilder/widgets/multiselect';
 import { create } from '@bufbuild/protobuf';
-import { ExceptionSchema } from './internal/pb/exception/v1/exception_pb';
+import { ExceptionSchema } from './pb/exception/v1/exception_pb';
 
 /**
  * Runtime class

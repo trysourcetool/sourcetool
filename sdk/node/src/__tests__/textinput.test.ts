@@ -1,15 +1,15 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { TextInputState } from '../internal/session/state/textinput';
+import { TextInputState } from '../session/state/textinput';
 import {
   convertTextInputProtoToState,
   convertStateToTextInputProto,
-} from '../textinput';
-import { createSessionManager, newSession } from '../internal/session';
+} from '../uibuilder/widgets/textinput';
+import { createSessionManager, newSession } from '../session';
 import { UIBuilder } from '../uibuilder';
-import { Page, PageManager } from '../internal/page';
+import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
-import { MockClient } from '../internal/websocket/mock/websocket';
+import { MockClient } from '../websocket/mock/websocket';
 
 test('convertStateToTextInputProto', () => {
   const id = uuidv4();

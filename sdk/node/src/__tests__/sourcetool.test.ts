@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
 import { createSourcetool, SourcetoolConfig } from '../sourcetool';
-import { newPageManager, Page } from '../internal/page';
+import { newPageManager, Page } from '../page';
 import { v4 as uuidv4 } from 'uuid';
 const findPageByPath = (pages: Record<string, Page>, path: string): Page => {
   const page = Object.values(pages).find((p) => p.route === path);

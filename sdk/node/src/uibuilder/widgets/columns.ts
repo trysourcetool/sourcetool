@@ -1,14 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor } from './uibuilder';
-import {
-  ColumnsState,
-  WidgetTypeColumns,
-} from './internal/session/state/columns';
+import { UIBuilder, Cursor } from '../';
+import { ColumnsState, WidgetTypeColumns } from '../../session/state/columns';
 import {
   ColumnItemState,
   WidgetTypeColumnItem,
-} from './internal/session/state/columnitem';
-import { ColumnsOptions } from './internal/options';
+} from '../../session/state/columnitem';
+import { ColumnsOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   ColumnItem,
@@ -16,8 +13,8 @@ import {
   Columns as ColumnsProto,
   ColumnsSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 
 /**
  * Columns component options

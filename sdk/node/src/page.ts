@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from '../uibuilder';
+import { UIBuilder } from './uibuilder';
 
 /**
  * Page class

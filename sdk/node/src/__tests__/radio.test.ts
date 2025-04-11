@@ -1,11 +1,14 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { RadioState } from '../internal/session/state/radio';
-import { convertRadioProtoToState, convertStateToRadioProto } from '../radio';
-import { createSessionManager, newSession } from '../internal/session';
-import { MockClient } from '../internal/websocket/mock/websocket';
+import { RadioState } from '../session/state/radio';
+import {
+  convertRadioProtoToState,
+  convertStateToRadioProto,
+} from '../uibuilder/widgets/radio';
+import { createSessionManager, newSession } from '../session';
+import { MockClient } from '../websocket/mock/websocket';
 import { UIBuilder } from '../uibuilder';
-import { Page, PageManager } from '../internal/page';
+import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
 test('convertStateToRadioProto', () => {

@@ -1,18 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   CheckboxGroupState,
   CheckboxGroupValue,
   WidgetTypeCheckboxGroup,
-} from './internal/session/state/checkboxgroup';
-import { CheckboxGroupOptions } from './internal/options';
+} from '../../session/state/checkboxgroup';
+import { CheckboxGroupOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   CheckboxGroup as CheckboxGroupProto,
   CheckboxGroupSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 
 /**
  * CheckboxGroup component options

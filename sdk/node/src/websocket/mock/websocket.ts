@@ -1,6 +1,5 @@
-import * as logger from '../../logger';
 import { Message, MessageSchema } from '../../pb/websocket/v1/message_pb';
-import { MessageHandlerFunc, WebSocketClient } from '../websocket';
+import { MessageHandlerFunc, WebSocketClient } from '../';
 import { create } from '@bufbuild/protobuf';
 
 /**
@@ -42,7 +41,7 @@ export class MockClient implements WebSocketClient {
         this.handler(msg);
       }
     } catch (err) {
-      logger.error('Error creating message', err);
+      console.error('[ERROR] Error creating message', err);
     }
   }
 

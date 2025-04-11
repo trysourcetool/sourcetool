@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor } from './uibuilder';
-import { FormState, WidgetTypeForm } from './internal/session/state/form';
-import { FormOptions } from './internal/options';
+import { UIBuilder, Cursor } from '../';
+import { FormState, WidgetTypeForm } from '../../session/state/form';
+import { FormOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
 import {
   Form as FormProto,
   FormSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * Form component options
  */

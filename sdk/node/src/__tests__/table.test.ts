@@ -5,18 +5,18 @@ import {
   SelectionBehavior,
   SelectionMode,
   TableStateValue,
-} from '../internal/session/state/table';
+} from '../session/state/table';
 import {
   convertTableProtoToState,
   convertStateToTableProto,
   table,
-} from '../table';
-import { createSessionManager, newSession } from '../internal/session';
+} from '../uibuilder/widgets/table';
+import { createSessionManager, newSession } from '../session';
 import { UIBuilder } from '../uibuilder';
-import { Page, PageManager } from '../internal/page';
+import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
-import { Table as TableProto } from '../internal/pb/widget/v1/widget_pb';
-import { MockClient } from '../internal/websocket/mock/websocket';
+import { Table as TableProto } from '../pb/widget/v1/widget_pb';
+import { MockClient } from '../websocket/mock/websocket';
 
 test('convertStateToTableProto', () => {
   const id = uuidv4();
