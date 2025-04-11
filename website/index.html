@@ -73,9 +73,9 @@
             },
           },
           borderRadius: {
-            lg: "var(--radius)",
-            md: "calc(var(--radius) - 2px)",
-            sm: "calc(var(--radius) - 4px)",
+            lg: "0.5rem",
+            md: "0.375rem",
+            sm: "0.25rem",
           },
         },
       },
@@ -105,7 +105,7 @@
         --border: 240 6% 90%;
         --input: 240 6% 90%;
         --ring: 258 90% 66%;
-        --radius: 1rem;
+        --radius: 0.5rem;
       }
 
       :root[class~="dark"] {
@@ -162,7 +162,7 @@
       }
 
       .nav-container {
-        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-4 flex justify-between items-center;
+        @apply max-w-[1200px] mx-auto px-6 sm:px-8 py-4 flex justify-between items-center;
       }
 
       .nav-links {
@@ -179,7 +179,7 @@
       }
 
       .hero-content {
-        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-24 md:py-32 flex flex-col items-center text-center;
+        @apply max-w-[1200px] mx-auto px-6 sm:px-8 py-24 md:py-32 flex flex-col items-center text-center;
       }
 
       .hero-title {
@@ -195,11 +195,11 @@
       }
 
       .hero-button-primary {
-        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8;
+        @apply inline-flex items-center justify-center rounded text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-6;
       }
 
       .hero-button-secondary {
-        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-11 px-8;
+        @apply inline-flex items-center justify-center rounded text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-9 px-6;
       }
 
       /* Section */
@@ -208,7 +208,7 @@
       }
 
       .section-container {
-        @apply max-w-[1200px] mx-auto px-4 sm:px-6;
+        @apply max-w-[1200px] mx-auto px-6 sm:px-8;
       }
 
       .section-title {
@@ -221,7 +221,7 @@
 
       /* Card (General, used implicitly by Feature Cards) */
       .card {
-        @apply rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm transition-all duration-300;
+        @apply rounded-md border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm transition-all duration-300;
       }
 
       /* Features Grid */
@@ -248,34 +248,34 @@
 
       /* Code Block */
       pre {
-        @apply relative rounded-lg bg-muted p-4 overflow-x-auto border my-4;
+        @apply relative overflow-x-auto;
       }
 
       pre code {
-        @apply font-mono text-sm leading-relaxed;
+        @apply font-mono block px-4 py-5;
+      }
+
+      .code-keyword {
+        @apply text-violet-600 dark:text-violet-400 font-medium;
+      }
+      .code-string {
+        @apply text-teal-600 dark:text-teal-400;
+      }
+      .code-function {
+        @apply text-blue-600 dark:text-blue-400 font-medium;
       }
 
       /* Button (Consolidated) */
       .btn {
-        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+        @apply inline-flex items-center justify-center rounded text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
       }
 
       .btn-primary {
-        @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-8; /* Adjusted height/padding for consistency, kept specific shadow/hover */
-        /* Original primary had h-12 px-8 */
-        /* Original secondary hero button had h-11 px-8 */
-        /* Adjusting to h-10 px-8 as a common base, might need visual check */
+        @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-6 rounded;
       }
 
       .btn-outline {
-        @apply border border-input bg-background shadow-sm hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-colors h-10 px-8;
-      }
-
-      .code-keyword {
-        @apply text-[#CF222E] dark:text-[#FF7B72];
-      }
-      .code-string {
-        @apply text-[#0A3069] dark:text-[#A5D6FF];
+        @apply border border-input bg-background shadow-sm hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-colors h-9 px-6 rounded;
       }
     }
   </style>
@@ -296,17 +296,27 @@
           <a href="#how-it-works" class="nav-link">How it works</a>
           <a href="#sdk" class="nav-link">SDKs</a>
           <a href="#faq" class="nav-link">FAQ</a>
+          <a href="https://docs.trysourcetool.com" class="nav-link" target="_blank">Docs</a>
         </nav>
       </div>
 
       <!-- Right Group: Button + Controls -->
       <div class="flex items-center space-x-4">
-        <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary hidden md:inline-flex" target="_blank">Get started</a>
         <!-- Theme Toggle -->
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
           <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-muted-foreground"></i>
           <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-muted-foreground"></i>
         </button>
+        <a href="https://github.com/trysourcetool/sourcetool" class="hidden md:inline-flex h-9 aspect-square items-center justify-center rounded hover:bg-secondary/80" target="_blank" aria-label="GitHub Repository">
+          <img src="./assets/images/github-logo-dark.png" alt="GitHub" class="w-[18px] block dark:hidden" />
+          <img src="./assets/images/github-logo-light.png" alt="GitHub" class="w-[18px] hidden dark:block" />
+        </a>
+        <a href="https://discord.gg/36UMfMZy" class="btn btn-outline hidden md:inline-flex items-center gap-2" target="_blank">
+          <img src="./assets/images/discord-logo-dark.png" alt="Discord" class="w-[18px] block dark:hidden" style="aspect-ratio: 71/55;" />
+          <img src="./assets/images/discord-logo-light.png" alt="Discord" class="w-[18px] hidden dark:block" style="aspect-ratio: 71/55;" />
+          Join Discord
+        </a>
+        <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary hidden md:inline-flex" target="_blank">Get started</a>
         <!-- Mobile Menu Button -->
         <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground" aria-label="Toggle menu">
           <i data-lucide="menu" class="w-5 h-5 text-muted-foreground"></i>
@@ -321,7 +331,19 @@
         <a href="#how-it-works" class="nav-link block py-2">How it works</a>
         <a href="#sdk" class="nav-link block py-2">SDKs</a>
         <a href="#faq" class="nav-link block py-2">FAQ</a>
-        <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary w-full" target="_blank">Get started</a>
+        <a href="https://docs.trysourcetool.com" class="nav-link block py-2" target="_blank">Docs</a>
+        <div class="flex gap-4">
+          <a href="https://github.com/trysourcetool/sourcetool" class="inline-flex h-10 aspect-square items-center justify-center rounded hover:bg-secondary/80" target="_blank" aria-label="GitHub Repository">
+            <img src="./assets/images/github-logo-dark.png" alt="GitHub" class="w-[18px] block dark:hidden" />
+            <img src="./assets/images/github-logo-light.png" alt="GitHub" class="w-[18px] hidden dark:block" />
+          </a>
+          <a href="https://discord.gg/36UMfMZy" class="btn btn-outline inline-flex items-center gap-2" target="_blank">
+            <img src="./assets/images/discord-logo-dark.png" alt="Discord" class="w-[18px] block dark:hidden" style="aspect-ratio: 71/55;" />
+            <img src="./assets/images/discord-logo-light.png" alt="Discord" class="w-[18px] hidden dark:block" style="aspect-ratio: 71/55;" />
+            Join Discord
+          </a>
+          <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary flex-1" target="_blank">Get started</a>
+        </div>
       </nav>
     </div>
   </header>
@@ -329,10 +351,10 @@
   <!-- Main Content -->
   <main class="pt-[72px]">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-20 md:py-32">
+    <section class="relative overflow-hidden py-10 md:py-32">
       <div class="section-container">
         <!-- Hero Section Cloud Edition Banner -->
-        <div class="inline-flex items-center rounded-full bg-primary/10 px-6 py-2.5 text-sm font-medium text-primary mb-12">
+        <div class="inline-flex items-center rounded bg-primary/10 px-6 h-10 text-sm font-medium text-primary mb-12">
           <i data-lucide="zap" class="h-5 w-5 mr-2"></i>
           Cloud Edition Coming in 2025
         </div>
@@ -349,8 +371,10 @@
             Get started
             <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
           </a>
-          <a class="btn btn-outline" href="https://docs.trysourcetool.com/" target="_blank">
-            View documentation
+          <a href="https://discord.gg/36UMfMZy" class="btn btn-outline flex items-center gap-2" target="_blank">
+            <img src="./assets/images/discord-logo-dark.png" alt="Discord" class="w-[18px] block dark:hidden" style="aspect-ratio: 71/55;" />
+            <img src="./assets/images/discord-logo-light.png" alt="Discord" class="w-[18px] hidden dark:block" style="aspect-ratio: 71/55;" />
+            Join Discord
           </a>
         </div>
       </div>
@@ -390,34 +414,36 @@
           <h2 class="section-title">Code beats drag-and-drop.</h2>
           <p class="section-subtitle">GUI builders are yesterday's tools. Build better internal tools with code in the AI era.</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="zap" class="h-6 w-6"></i>
+        <div class="rounded-md border-dashed border border-border/60 bg-card/50 backdrop-blur-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="p-8">
+              <div class="feature-icon">
+                <i data-lucide="zap" class="h-6 w-6"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Zero frontend code</h3>
+              <p class="text-muted-foreground">Focus purely on your backend logic. Our declarative API automatically handles UI components, layouts, and interactions. No CSS, no JavaScript, no hassle.</p>
             </div>
-            <h3 class="feature-title">Zero frontend code</h3>
-            <p class="feature-description">Focus purely on your backend logic. Our declarative API automatically handles UI components, layouts, and interactions. No CSS, no JavaScript, no hassle.</p>
-          </div>
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="check" class="h-6 w-6"></i>
+            <div class="p-8 border-l border-dashed border-border/60">
+              <div class="feature-icon">
+                <i data-lucide="check" class="h-6 w-6"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Type safety</h3>
+              <p class="text-muted-foreground">Catch errors before they happen with end-to-end type safety. Your UI definitions are validated at compile time, ensuring robust and maintainable applications.</p>
             </div>
-            <h3 class="feature-title">Type safety</h3>
-            <p class="feature-description">Catch errors before they happen with end-to-end type safety. Your UI definitions are validated at compile time, ensuring robust and maintainable applications.</p>
-          </div>
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="cpu" class="h-6 w-6"></i>
+            <div class="p-8 border-t border-dashed border-border/60">
+              <div class="feature-icon">
+                <i data-lucide="cpu" class="h-6 w-6"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Built for AI workflows</h3>
+              <p class="text-muted-foreground">Perfect for the AI era. Code-first approach means AI can understand, modify, and generate your internal tools. Seamlessly integrate with AI assistants for rapid development.</p>
             </div>
-            <h3 class="feature-title">Built for AI workflows</h3>
-            <p class="feature-description">Perfect for the AI era. Code-first approach means AI can understand, modify, and generate your internal tools. Seamlessly integrate with AI assistants for rapid development.</p>
-          </div>
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="folder" class="h-6 w-6"></i>
+            <div class="p-8 border-t border-l border-dashed border-border/60">
+              <div class="feature-icon">
+                <i data-lucide="folder" class="h-6 w-6"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-3">Pure code, pure Git</h3>
+              <p class="text-muted-foreground">Everything is just code in your repo. Track changes, review diffs, and collaborate with your team using familiar Git workflows. No more clicking through GUI builders.</p>
             </div>
-            <h3 class="feature-title">Pure code, pure Git</h3>
-            <p class="feature-description">Everything is just code in your repo. Track changes, review diffs, and collaborate with your team using familiar Git workflows. No more clicking through GUI builders.</p>
           </div>
         </div>
       </div>
@@ -481,16 +507,19 @@
               </div>
             </div>
           </div>
-          <div class="relative w-full overflow-hidden rounded-2xl">
-            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
-            <div class="relative bg-muted/50 backdrop-blur-sm p-4 lg:p-6 ring-1 ring-primary/10">
-              <div class="flex items-center gap-2 mb-4">
-                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+          <div class="relative w-full overflow-hidden rounded-md border border-dashed border-border/60">
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent"></div>
+            <div class="relative bg-muted/30 backdrop-blur-sm">
+              <div class="flex items-center justify-between px-4 py-2.5 border-b border-dashed border-border/60 bg-background/50">
+                <div class="flex items-center gap-2">
+                  <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                </div>
+                <div class="text-xs text-muted-foreground/60 font-medium">main.go</div>
               </div>
               <div class="overflow-x-auto no-scrollbar">
-                <pre class="text-xs lg:text-sm font-mono w-[calc(100vw-2rem)] lg:w-auto lg:min-w-[600px]"><code><span class="code-keyword">package</span> main
+                <pre class="text-[13px] leading-5 font-mono w-[calc(100vw-2rem)] lg:w-auto lg:min-w-[600px] border-0 my-0 rounded-none bg-transparent"><code><span class="code-keyword">package</span> main
 
 <span class="code-keyword">import</span> <span class="code-string">"github.com/trysourcetool.com/sourcetool-go"</span>
 
@@ -534,70 +563,72 @@
           <h2 class="section-title">Choose your favorite backend language.</h2>
           <p class="section-subtitle">Build powerful internal tools with the programming language you love and trust.</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Go SDK -->
-          <div class="group relative">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-primary/10 flex flex-col">
-              <div class="absolute top-4 right-4">
-                <span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-500/20 px-3 py-1 text-sm font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">
-                  Available now
-                </span>
-              </div>
-              <div class="mb-6">
-                <img src="./assets/images/golang-logo.png" alt="Go Logo" class="h-16" />
-              </div>
-              <h3 class="text-2xl font-bold mb-4">Go SDK</h3>
-              <p class="text-muted-foreground mb-6 flex-grow">Create powerful internal tools with Go's type-safe approach and excellent performance. Perfect for backend developers who want to focus on business logic.</p>
-              <div class="mt-4">
-                <a href="https://github.com/trysourcetool/sourcetool-go" class="btn btn-primary w-full group" target="_blank">
-                  View documentation
-                  <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- TypeScript SDK -->
-          <div class="group relative">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3178c6] to-[#3178c6]/50 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
-            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-border flex flex-col">
-              <div class="absolute top-4 right-4">
-                <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground ring-1 ring-inset ring-border">
-                  Coming soon
-                </span>
-              </div>
-              <div class="mb-6">
-                <img src="./assets/images/ts-logo.png" alt="TypeScript Logo" class="h-16" />
-              </div>
-              <h3 class="text-2xl font-bold mb-4">TypeScript SDK</h3>
-              <p class="text-muted-foreground mb-6 flex-grow">Build type-safe internal tools with TypeScript's modern syntax and the extensive Node.js ecosystem. Perfect for full-stack JavaScript developers.</p>
-              <div class="mt-4">
-                <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
-                  Stay tuned
-                </button>
+        <div class="rounded-md border-dashed border border-border/60 bg-card/50 backdrop-blur-sm">
+          <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-dashed divide-border/60">
+            <!-- Go SDK -->
+            <div class="group relative">
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-md blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+              <div class="relative p-8 flex flex-col h-full">
+                <div class="absolute top-4 right-4">
+                  <span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-500/20 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">
+                    Available now
+                  </span>
+                </div>
+                <div class="mb-6">
+                  <img src="./assets/images/golang-logo.png" alt="Go Logo" class="h-16" />
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Go SDK</h3>
+                <p class="text-muted-foreground mb-6">Create powerful internal tools with Go's type-safe approach and excellent performance. Perfect for backend developers who want to focus on business logic.</p>
+                <div class="mt-auto">
+                  <a href="https://github.com/trysourcetool/sourcetool-go" class="btn btn-primary w-full group h-10" target="_blank">
+                    View documentation
+                    <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Python SDK -->
-          <div class="group relative">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3776ab] to-[#3776ab]/50 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
-            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-border flex flex-col">
-              <div class="absolute top-4 right-4">
-                <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground ring-1 ring-inset ring-border">
-                  Coming soon
-                </span>
+            <!-- TypeScript SDK -->
+            <div class="group relative">
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3178c6] to-[#3178c6]/50 rounded-md blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+              <div class="relative p-8 flex flex-col h-full">
+                <div class="absolute top-4 right-4">
+                  <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border">
+                    Coming soon
+                  </span>
+                </div>
+                <div class="mb-6">
+                  <img src="./assets/images/ts-logo.png" alt="TypeScript Logo" class="h-16" />
+                </div>
+                <h3 class="text-2xl font-bold mb-4">TypeScript SDK</h3>
+                <p class="text-muted-foreground mb-6">Build type-safe internal tools with TypeScript's modern syntax and the extensive Node.js ecosystem. Perfect for full-stack JavaScript developers.</p>
+                <div class="mt-auto">
+                  <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
+                    Stay tuned
+                  </button>
+                </div>
               </div>
-              <div class="mb-6">
-                <img src="./assets/images/python-logo.png" alt="Python Logo" class="h-16" />
-              </div>
-              <h3 class="text-2xl font-bold mb-4">Python SDK</h3>
-              <p class="text-muted-foreground mb-6 flex-grow">Leverage Python's simplicity and extensive libraries to create powerful internal tools. Perfect for data scientists and Python developers.</p>
-              <div class="mt-4">
-                <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
-                  Stay tuned
-                </button>
+            </div>
+
+            <!-- Python SDK -->
+            <div class="group relative">
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3776ab] to-[#3776ab]/50 rounded-md blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+              <div class="relative p-8 flex flex-col h-full">
+                <div class="absolute top-4 right-4">
+                  <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border">
+                    Coming soon
+                  </span>
+                </div>
+                <div class="mb-6">
+                  <img src="./assets/images/python-logo.png" alt="Python Logo" class="h-16" />
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Python SDK</h3>
+                <p class="text-muted-foreground mb-6">Leverage Python's simplicity and extensive libraries to create powerful internal tools. Perfect for data scientists and Python developers.</p>
+                <div class="mt-auto">
+                  <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
+                    Stay tuned
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -610,60 +641,62 @@
       <div class="section-container">
         <h2 class="section-title">Questions? We've got answers.</h2>
         <p class="section-subtitle">Everything you need to know about building better tools with code.</p>
-        <div class="space-y-6">
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">What is Sourcetool?</h3>
-            <p class="text-muted-foreground">Sourcetool is an <span class="font-bold">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</p>
-          </div>
+        <div class="rounded-md border-dashed border border-border/60 bg-card/50 backdrop-blur-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-x-0 md:divide-x lg:divide-x divide-y divide-dashed divide-border/60">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">What is Sourcetool?</h3>
+              <p class="text-muted-foreground">Sourcetool is an <span class="font-bold">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Do I need frontend skills to use Sourcetool?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only backend code</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">Do I need frontend skills to use Sourcetool?</h3>
+              <p class="text-muted-foreground"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only backend code</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">What types of applications can I build with Sourcetool?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">What types of applications can I build with Sourcetool?</h3>
+              <p class="text-muted-foreground"><span class="font-bold">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Is Sourcetool compatible with existing backend code?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing backend code and libraries.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">Is Sourcetool compatible with existing backend code?</h3>
+              <p class="text-muted-foreground"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing backend code and libraries.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">How does Sourcetool work behind the scenes?</h3>
-            <p class="text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in backend code.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">How does Sourcetool work behind the scenes?</h3>
+              <p class="text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in backend code.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">What's the difference between Sourcetool and React/Vue?</h3>
-            <p class="text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend code, without the complexity of managing a separate frontend codebase.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">What's the difference between Sourcetool and React/Vue?</h3>
+              <p class="text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend code, without the complexity of managing a separate frontend codebase.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">How does Sourcetool differ from Retool?</h3>
-            <p class="text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe backend code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">How does Sourcetool differ from Retool?</h3>
+              <p class="text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe backend code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Is Sourcetool secure?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. The Sourcetool server <span class="font-bold">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">Is Sourcetool secure?</h3>
+              <p class="text-muted-foreground"><span class="font-bold">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. The Sourcetool server <span class="font-bold">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Is Sourcetool free to use?</h3>
-            <p class="text-muted-foreground">Yes, Sourcetool is completely open-source and free to use. The SDK is <span class="font-bold">open source under the MIT license</span>. We're building a cloud offering with additional features, but the core platform will always remain free and open source.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">Is Sourcetool free to use?</h3>
+              <p class="text-muted-foreground">Yes, Sourcetool is completely open-source and free to use. The SDK is <span class="font-bold">open source under the MIT license</span>. We're building a cloud offering with additional features, but the core platform will always remain free and open source.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">How can I contribute to Sourcetool?</h3>
-            <p class="text-muted-foreground">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary hover:underline" target="_blank">GitHub repository</a> and review the contribution guidelines.</p>
-          </div>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">How can I contribute to Sourcetool?</h3>
+              <p class="text-muted-foreground">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary hover:underline" target="_blank">GitHub repository</a> and review the contribution guidelines.</p>
+            </div>
 
-          <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Where can I learn more about Sourcetool?</h3>
-            <p class="text-muted-foreground">Visit our <a href="https://docs.trysourcetool.com" class="text-primary hover:underline" target="_blank">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary hover:underline" target="_blank">Twitter</a> for updates and announcements.</p>
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-2">Where can I learn more about Sourcetool?</h3>
+              <p class="text-muted-foreground">Visit our <a href="https://docs.trysourcetool.com" class="text-primary hover:underline" target="_blank">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary hover:underline" target="_blank">Twitter</a> for updates and announcements.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -683,7 +716,11 @@
                   Get started
                   <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
                 </a>
-                <a href="https://docs.trysourcetool.com" class="btn btn-outline" target="_blank">View documentation</a>
+                <a href="https://discord.gg/36UMfMZy" class="btn btn-outline flex items-center gap-2" target="_blank">
+                  <img src="./assets/images/discord-logo-dark.png" alt="Discord" class="w-[18px] block dark:hidden" style="aspect-ratio: 71/55;" />
+                  <img src="./assets/images/discord-logo-light.png" alt="Discord" class="w-[18px] hidden dark:block" style="aspect-ratio: 71/55;" />
+                  Join Discord
+                </a>
               </div>
             </div>
           </div>
@@ -703,6 +740,10 @@
             </a>
             <a href="https://x.com/sourcetool" class="text-gray-600 hover:text-primary" aria-label="Twitter" target="_blank">
               <i data-lucide="twitter" class="w-5 h-5"></i>
+            </a>
+            <a href="https://discord.gg/36UMfMZy" class="text-gray-600 hover:text-primary flex items-center justify-center" aria-label="Discord Community" target="_blank">
+              <img src="./assets/images/discord-logo-dark.png" alt="Discord" class="w-[18px] block dark:hidden" style="aspect-ratio: 71/55;" />
+              <img src="./assets/images/discord-logo-light.png" alt="Discord" class="w-[18px] hidden dark:block" style="aspect-ratio: 71/55;" />
             </a>
             <a href="https://docs.trysourcetool.com/" class="text-gray-600 hover:text-primary" aria-label="Documentation" target="_blank">
               <i data-lucide="book-open" class="w-5 h-5"></i>
