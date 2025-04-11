@@ -401,69 +401,125 @@
     </section>
 
     <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
+    <!-- Features Section -->
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="features" class="section-title">Features</h2>
-        <table class="border-collapse w-full my-5">
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">💻</span>Backend-only, code-first development</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows</td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🎨</span>Rich UI components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Pre-built components (forms, tables, inputs, etc.)</td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔐</span>Granular permissions</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Manage access to your internal tools with flexible group-based permissions</td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🌐</span>Multiple environment support</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">Easily switch between different environments (development, staging, production)</td>
-          </tr>
-        </table>
+        <p class="section-subtitle">Build powerful internal tools with these key features</p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Feature Card 1 -->
+          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
+            <div class="text-3xl">💻</div>
+            <h3 class="font-semibold">Backend-only Development</h3>
+            <p class="text-sm text-muted-foreground">Build full-featured internal tools using only backend code with type-safe APIs and Git version control.</p>
+          </div>
+          <!-- Feature Card 2 -->
+          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
+            <div class="text-3xl">🎨</div>
+            <h3 class="font-semibold">Rich UI Components</h3>
+            <p class="text-sm text-muted-foreground">Pre-built components for forms, tables, inputs, and more to create beautiful interfaces instantly.</p>
+          </div>
+          <!-- Feature Card 3 -->
+          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
+            <div class="text-3xl">🔐</div>
+            <h3 class="font-semibold">Granular Permissions</h3>
+            <p class="text-sm text-muted-foreground">Manage access to your internal tools with flexible group-based permissions system.</p>
+          </div>
+          <!-- Feature Card 4 -->
+          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
+            <div class="text-3xl">🌐</div>
+            <h3 class="font-semibold">Multiple Environments</h3>
+            <p class="text-sm text-muted-foreground">Easily switch between different environments for development, staging, and production.</p>
+          </div>
+        </div>
       </div>
     </section>
 
     <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
+
     <!-- Components Section -->
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="components" class="section-title">Components</h2>
-        <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool provides UI components you can use directly from Go code:</p>
+        <p class="section-subtitle">Build powerful interfaces with our pre-built UI components</p>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          <!-- Input Components Card -->
+          <div class="card p-6 border border-primary/10">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl">📝</div>
+              <div>
+                <h3 class="font-semibold mb-2">Input Components</h3>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li>TextInput</li>
+                  <li>TextArea</li>
+                  <li>NumberInput</li>
+                  <li>DateInput</li>
+                  <li>DateTimeInput</li>
+                  <li>TimeInput</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-        <table class="border-collapse w-full my-5">
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📝</span>Input components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
-              TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput
-            </td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📋</span>Selection components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
-              Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup
-            </td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔳</span>Layout components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
-              Columns, Form
-            </td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">📊</span>Display components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
-              Markdown, Table
-            </td>
-          </tr>
-          <tr>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]"><span class="text-[22px] mr-2 inline-block align-middle">🔘</span>Interactive components</td>
-            <td class="p-[8px_12px] border border-zinc-100 dark:border-zinc-800 align-top font-normal text-[16.5px] leading-[1.5]">
-              Button
-            </td>
-          </tr>
-        </table>
+          <!-- Selection Components Card -->
+          <div class="card p-6 border border-primary/10">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl">📋</div>
+              <div>
+                <h3 class="font-semibold mb-2">Selection Components</h3>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li>Selectbox</li>
+                  <li>MultiSelect</li>
+                  <li>Radio</li>
+                  <li>Checkbox</li>
+                  <li>CheckboxGroup</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout Components Card -->
+          <div class="card p-6 border border-primary/10">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl">🔳</div>
+              <div>
+                <h3 class="font-semibold mb-2">Layout Components</h3>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li>Columns</li>
+                  <li>Form</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display Components Card -->
+          <div class="card p-6 border border-primary/10">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl">📊</div>
+              <div>
+                <h3 class="font-semibold mb-2">Display Components</h3>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li>Markdown</li>
+                  <li>Table</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Components Card -->
+          <div class="card p-6 border border-primary/10">
+            <div class="flex items-start space-x-4">
+              <div class="text-3xl">🔘</div>
+              <div>
+                <h3 class="font-semibold mb-2">Interactive Components</h3>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li>Button</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -515,7 +571,7 @@
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="architecture" class="section-title">Architecture</h2>
-        <p class="my-[10px] font-normal text-[17px] leading-relaxed">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development.</p>
+        <p class="section-subtitle">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development.</p>
 
         <div class="mt-12">
           <h3 class="text-xl font-semibold mb-6">System overview</h3>
