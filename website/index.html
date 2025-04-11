@@ -109,11 +109,11 @@
       }
 
       :root[class~="dark"] {
-        --background: 240 10% 4%;
+        --background: 240 10% 8%;
         --foreground: 0 0% 98%;
-        --card: 240 10% 4%;
+        --card: 240 10% 8%;
         --card-foreground: 0 0% 98%;
-        --popover: 240 10% 4%;
+        --popover: 240 10% 8%;
         --popover-foreground: 0 0% 98%;
         --primary: 258 90% 66%;
         --primary-foreground: 0 0% 100%;
@@ -351,7 +351,7 @@
   <!-- Main Content -->
   <main class="pt-[72px]">
     <!-- Hero Section -->
-    <section class="relative overflow-hidden py-10 md:py-32">
+    <section class="relative overflow-hidden py-10 md:py-32 border-b border-border/40">
       <div class="section-container">
         <!-- Hero Section Cloud Edition Banner -->
         <div class="inline-flex items-center rounded bg-primary/10 px-6 h-10 text-sm font-medium text-primary mb-12">
@@ -378,14 +378,10 @@
           </a>
         </div>
       </div>
-      <div class="absolute inset-0 -z-10 h-full w-full">
-        <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent"></div>
-        <div class="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-      </div>
     </section>
 
     <!-- Demo Video Section -->
-    <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
+    <section class="section border-b border-border/40">
       <div class="section-container">
         <div class="mb-16">
           <h2 class="section-title">Watch the magic happen.</h2>
@@ -408,7 +404,7 @@
     </section>
 
     <!-- Features Section -->
-    <section class="section" id="features">
+    <section class="section border-b border-border/40" id="features">
       <div class="section-container">
         <div class="max-w-2xl">
           <h2 class="section-title">Code beats drag-and-drop.</h2>
@@ -450,7 +446,7 @@
     </section>
 
     <!-- Code Example Section -->
-    <section class="section overflow-hidden" id="how-it-works">
+    <section class="section overflow-hidden border-b border-border/40" id="how-it-works">
       <div class="section-container">
         <div class="grid lg:grid-cols-[1fr,1fr] gap-8 lg:gap-12 items-start">
           <div class="max-w-full lg:max-w-[600px]">
@@ -557,7 +553,7 @@
     </section>
 
     <!-- SDK Section -->
-    <section class="section bg-gradient-to-b from-background via-primary/5 to-background" id="sdk">
+    <section class="section border-b border-border/40" id="sdk">
       <div class="section-container">
         <div class="max-w-2xl">
           <h2 class="section-title">Choose your favorite backend language.</h2>
@@ -637,7 +633,7 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="section" id="faq">
+    <section class="section border-b border-border/40" id="faq">
       <div class="section-container">
         <h2 class="section-title">Questions? We've got answers.</h2>
         <p class="section-subtitle">Everything you need to know about building better tools with code.</p>
@@ -703,7 +699,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
+    <section class="section border-b border-border/40">
       <div class="section-container">
         <div class="relative">
           <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent rounded-3xl"></div>
