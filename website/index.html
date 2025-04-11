@@ -142,6 +142,19 @@
       }
     }
 
+    @layer utilities {
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+    }
+
     @layer components {
       /* Header Styles */
       .header-nav {
@@ -351,8 +364,8 @@
     <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
       <div class="section-container">
         <div class="mb-16">
-          <h2 class="section-title">See Sourcetool in action</h2>
-          <p class="section-subtitle">Watch how Sourcetool transforms your backend code into powerful internal tools.</p>
+          <h2 class="section-title">Watch the magic happen.</h2>
+          <p class="section-subtitle">No drag-and-drop. No UI design. Just pure code turning into powerful internal tools.</p>
         </div>
         <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
           <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
@@ -374,51 +387,37 @@
     <section class="section" id="features">
       <div class="section-container">
         <div class="max-w-2xl">
-          <h2 class="section-title">Supercharge your internal tooling</h2>
-          <p class="section-subtitle">Build powerful internal tools faster than ever with our comprehensive feature set.</p>
+          <h2 class="section-title">Code beats drag-and-drop.</h2>
+          <p class="section-subtitle">GUI builders are yesterday's tools. Build better internal tools with code in the AI era.</p>
         </div>
-        <div class="features-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
           <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="zap" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">Zero frontend code</h3>
-            <p class="feature-description">Focus on your backend logic while we handle all the UI components and interactions.</p>
+            <p class="feature-description">Focus purely on your backend logic. Our declarative API automatically handles UI components, layouts, and interactions. No CSS, no JavaScript, no hassle.</p>
           </div>
           <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="check" class="h-6 w-6"></i>
             </div>
-            <h3 class="feature-title">Type-safe development</h3>
-            <p class="feature-description">Catch errors at compile time with full type safety across your entire application.</p>
+            <h3 class="feature-title">Type safety</h3>
+            <p class="feature-description">Catch errors before they happen with end-to-end type safety. Your UI definitions are validated at compile time, ensuring robust and maintainable applications.</p>
           </div>
           <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="cpu" class="h-6 w-6"></i>
             </div>
-            <h3 class="feature-title">AI-powered development</h3>
-            <p class="feature-description">Accelerate development with AI tools through our code-first approach.</p>
-          </div>
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="shield" class="h-6 w-6"></i>
-            </div>
-            <h3 class="feature-title">Built-in security</h3>
-            <p class="feature-description">Deploy on your infrastructure with complete control over your code and data.</p>
-          </div>
-          <div class="feature-card card">
-            <div class="feature-icon">
-              <i data-lucide="layers" class="h-6 w-6"></i>
-            </div>
-            <h3 class="feature-title">Multiple environment support</h3>
-            <p class="feature-description">Seamlessly switch between development, staging, and production environments.</p>
+            <h3 class="feature-title">Built for AI workflows</h3>
+            <p class="feature-description">Perfect for the AI era. Code-first approach means AI can understand, modify, and generate your internal tools. Seamlessly integrate with AI assistants for rapid development.</p>
           </div>
           <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="folder" class="h-6 w-6"></i>
             </div>
-            <h3 class="feature-title">Git version control</h3>
-            <p class="feature-description">Stay in your familiar environment with Git version control and your favorite editor. No context switching needed.</p>
+            <h3 class="feature-title">Pure code, pure Git</h3>
+            <p class="feature-description">Everything is just code in your repo. Track changes, review diffs, and collaborate with your team using familiar Git workflows. No more clicking through GUI builders.</p>
           </div>
         </div>
       </div>
@@ -427,52 +426,73 @@
     <!-- Code Example Section -->
     <section class="section overflow-hidden" id="how-it-works">
       <div class="section-container">
-        <div class="grid lg:grid-cols-[1fr,1fr] gap-8 items-start">
+        <div class="grid lg:grid-cols-[1fr,1fr] gap-8 lg:gap-12 items-start">
           <div class="max-w-full lg:max-w-[600px]">
             <h2 class="section-title text-3xl lg:text-4xl">Write backend code.<br/>Get a complete internal tool.</h2>
             <p class="section-subtitle">Focus on your business logic while Sourcetool handles the frontend automatically.</p>
             
             <!-- How it works content -->
-            <div class="space-y-6 mb-8">
-              <div class="relative pl-8">
-                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <i data-lucide="code" class="w-4 h-4 text-primary"></i>
+            <div class="relative space-y-12 mb-8">
+              <!-- Connecting line -->
+              <div class="absolute left-[15px] top-[36px] bottom-4 border-l-2 border-dashed border-primary/20"></div>
+
+              <!-- Step 1: Code -->
+              <div class="relative pl-12 group">
+                <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-background flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  <i data-lucide="code" class="w-5 h-5 text-primary"></i>
                 </div>
-                <h4 class="text-base lg:text-lg font-semibold mb-2">Define UI and logic in your backend</h4>
-                <p class="text-sm lg:text-base text-muted-foreground">Write type-safe UI definitions directly in your backend code using our declarative API.</p>
+                <div>
+                  <h4 class="text-base lg:text-lg font-semibold mb-2">Define UI and logic in your backend</h4>
+                  <p class="text-sm lg:text-base text-muted-foreground">Write type-safe UI definitions directly in your backend code using our declarative API.</p>
+                </div>
               </div>
-              <div class="relative pl-8">
-                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <i data-lucide="plug" class="w-4 h-4 text-primary"></i>
+
+              <!-- Step 2: Connect -->
+              <div class="relative pl-12 group">
+                <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-background flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  <i data-lucide="plug" class="w-5 h-5 text-primary"></i>
                 </div>
-                <h4 class="text-base lg:text-lg font-semibold mb-2">Connect to Sourcetool server</h4>
-                <p class="text-sm lg:text-base text-muted-foreground">The Sourcetool server establishes a WebSocket connection with your backend.</p>
+                <div>
+                  <h4 class="text-base lg:text-lg font-semibold mb-2">Connect to Sourcetool server</h4>
+                  <p class="text-sm lg:text-base text-muted-foreground">The Sourcetool server establishes a WebSocket connection with your backend.</p>
+                </div>
               </div>
-              <div class="relative pl-8">
-                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <i data-lucide="wand-2" class="w-4 h-4 text-primary"></i>
+
+              <!-- Step 3: Generate -->
+              <div class="relative pl-12 group">
+                <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-background flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  <i data-lucide="wand-2" class="w-5 h-5 text-primary"></i>
                 </div>
-                <h4 class="text-base lg:text-lg font-semibold mb-2">Automatic UI generation</h4>
-                <p class="text-sm lg:text-base text-muted-foreground">Your UI definitions are transformed into a beautiful, responsive interface.</p>
+                <div>
+                  <h4 class="text-base lg:text-lg font-semibold mb-2">Automatic UI generation</h4>
+                  <p class="text-sm lg:text-base text-muted-foreground">Your UI definitions are transformed into a beautiful, responsive interface.</p>
+                </div>
               </div>
-              <div class="relative pl-8">
-                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <i data-lucide="refresh-cw" class="w-4 h-4 text-primary"></i>
+
+              <!-- Step 4: Updates -->
+              <div class="relative pl-12 group">
+                <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-background flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  <i data-lucide="refresh-cw" class="w-5 h-5 text-primary"></i>
                 </div>
-                <h4 class="text-base lg:text-lg font-semibold mb-2">Real-time updates</h4>
-                <p class="text-sm lg:text-base text-muted-foreground">Changes in your data are instantly reflected in the UI through WebSocket communication.</p>
+                <div>
+                  <h4 class="text-base lg:text-lg font-semibold mb-2">Real-time updates</h4>
+                  <p class="text-sm lg:text-base text-muted-foreground">Changes in your data are instantly reflected in the UI through WebSocket communication.</p>
+                </div>
               </div>
             </div>
           </div>
-          <div class="relative w-full overflow-x-auto">
-            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent rounded-2xl"></div>
-            <div class="relative rounded-2xl bg-muted/50 backdrop-blur-sm p-4 lg:p-6 ring-1 ring-primary/10">
+          <div class="relative w-full overflow-hidden rounded-2xl">
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
+            <div class="relative bg-muted/50 backdrop-blur-sm p-4 lg:p-6 ring-1 ring-primary/10">
               <div class="flex items-center gap-2 mb-4">
                 <div class="w-3 h-3 rounded-full bg-red-500"></div>
                 <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <div class="w-3 h-3 rounded-full bg-green-500"></div>
               </div>
-              <pre class="text-xs lg:text-sm font-mono overflow-x-auto"><code><span class="code-keyword">import</span> <span class="code-string">"github.com/trysourcetool.com/sourcetool-go"</span>
+              <div class="overflow-x-auto no-scrollbar">
+                <pre class="text-xs lg:text-sm font-mono w-[calc(100vw-2rem)] lg:w-auto lg:min-w-[600px]"><code><span class="code-keyword">package</span> main
+
+<span class="code-keyword">import</span> <span class="code-string">"github.com/trysourcetool.com/sourcetool-go"</span>
 
 <span class="code-keyword">func</span> <span class="code-function">listUsersPage</span>(ui sourcetool.UIBuilder) error {
     name := ui.TextInput(<span class="code-string">"Name"</span>)
@@ -486,7 +506,21 @@
     ui.Table(users)
 
     <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
+}
+
+<span class="code-keyword">func</span> <span class="code-function">main</span>() {
+    s := sourcetool.New(sourcetool.Config{
+        APIKey:   <span class="code-string">"your_api_key"</span>,
+        Endpoint: <span class="code-string">"wss://acme.trysourcetool.com"</span>,
+    })
+
+    s.Page(<span class="code-string">"/users"</span>, <span class="code-string">"Users"</span>, listUsersPage)
+
+    <span class="code-keyword">if</span> err := s.Listen(); err != <span class="code-keyword">nil</span> {
+        log.Fatalf(<span class="code-string">"failed to listen sourcetool: %v"</span>, err)
+    }
 }</code></pre>
+              </div>
             </div>
           </div>
         </div>
@@ -497,7 +531,7 @@
     <section class="section bg-gradient-to-b from-background via-primary/5 to-background" id="sdk">
       <div class="section-container">
         <div class="max-w-2xl">
-          <h2 class="section-title">Choose your favorite backend language</h2>
+          <h2 class="section-title">Choose your favorite backend language.</h2>
           <p class="section-subtitle">Build powerful internal tools with the programming language you love and trust.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -517,7 +551,7 @@
               <p class="text-muted-foreground mb-6 flex-grow">Create powerful internal tools with Go's type-safe approach and excellent performance. Perfect for backend developers who want to focus on business logic.</p>
               <div class="mt-4">
                 <a href="https://github.com/trysourcetool/sourcetool-go" class="btn btn-primary w-full group" target="_blank">
-                  View Documentation
+                  View documentation
                   <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
                 </a>
               </div>
@@ -574,8 +608,8 @@
     <!-- FAQ Section -->
     <section class="section" id="faq">
       <div class="section-container">
-        <h2 class="section-title">FAQ</h2>
-        <p class="section-subtitle">Everything you need to know about Sourcetool.</p>
+        <h2 class="section-title">Questions? We've got answers.</h2>
+        <p class="section-subtitle">Everything you need to know about building better tools with code.</p>
         <div class="space-y-6">
           <div class="max-w-3xl">
             <h3 class="text-xl font-semibold mb-3">What is Sourcetool?</h3>
