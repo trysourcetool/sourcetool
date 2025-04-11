@@ -170,7 +170,7 @@
       }
 
       .hero-title {
-        @apply text-4xl md:text-6xl font-bold tracking-tighter text-foreground mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80;
+        @apply text-4xl md:text-6xl font-bold tracking-tighter text-foreground mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 leading-tight pb-2;
       }
 
       .hero-subtitle {
@@ -324,11 +324,11 @@
           Cloud Edition Coming in 2025
         </div>
         <div class="max-w-[800px]">
-          <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">
-            Backend logic seamlessly<br/>becomes reality.
+          <h1 class="text-4xl md:text-6xl font-bold tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80 leading-tight pb-2">
+            Backend logic seamlessly becomes reality.
           </h1>
-          <p class="text-xl md:text-2xl text-muted-foreground mb-16 leading-relaxed max-w-2xl">
-            Sourcetool transforms your backend code into powerful internal tools. No frontend skills required.
+          <p class="text-l md:text-xl text-muted-foreground mb-16 leading-relaxed max-w-2xl">
+            Sourcetool transforms your backend code into powerful internal tools.<br/>No frontend skills required.
           </p>
         </div>
         <div class="flex flex-col sm:flex-row gap-4">
@@ -350,20 +350,22 @@
     <!-- Demo Video Section -->
     <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
       <div class="section-container">
-        <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="mb-16">
           <h2 class="section-title">See Sourcetool in action</h2>
-          <p class="section-subtitle">Watch how Sourcetool transforms your backend code into powerful internal tools</p>
+          <p class="section-subtitle">Watch how Sourcetool transforms your backend code into powerful internal tools.</p>
         </div>
-        <div class="relative aspect-video w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
+        <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
           <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
-          <iframe
-            class="w-full h-full"
-            src="https://www.youtube.com/embed/WVlk30_k9CM"
-            title="Sourcetool Demo"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          <div class="relative aspect-video w-full">
+            <iframe
+              class="w-full h-full"
+              src="https://www.youtube.com/embed/WVlk30_k9CM"
+              title="Sourcetool Demo"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
         </div>
       </div>
     </section>
@@ -427,7 +429,7 @@
       <div class="section-container">
         <div class="grid lg:grid-cols-[1fr,1fr] gap-8 items-start">
           <div class="max-w-full lg:max-w-[600px]">
-            <h2 class="section-title text-3xl lg:text-4xl">Write backend code.<br class="hidden sm:block"/>Get a complete internal tool.</h2>
+            <h2 class="section-title text-3xl lg:text-4xl">Write backend code.<br/>Get a complete internal tool.</h2>
             <p class="section-subtitle">Focus on your business logic while Sourcetool handles the frontend automatically.</p>
             
             <!-- How it works content -->
@@ -582,7 +584,7 @@
 
           <div class="max-w-3xl">
             <h3 class="text-xl font-semibold mb-3">Do I need frontend skills to use Sourcetool?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
+            <p class="text-muted-foreground"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only backend code</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
           </div>
 
           <div class="max-w-3xl">
@@ -591,23 +593,23 @@
           </div>
 
           <div class="max-w-3xl">
-            <h3 class="text-xl font-semibold mb-3">Is Sourcetool compatible with existing Go code?</h3>
-            <p class="text-muted-foreground"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</p>
+            <h3 class="text-xl font-semibold mb-3">Is Sourcetool compatible with existing backend code?</h3>
+            <p class="text-muted-foreground"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing backend code and libraries.</p>
           </div>
 
           <div class="max-w-3xl">
             <h3 class="text-xl font-semibold mb-3">How does Sourcetool work behind the scenes?</h3>
-            <p class="text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</p>
+            <p class="text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in backend code.</p>
           </div>
 
           <div class="max-w-3xl">
             <h3 class="text-xl font-semibold mb-3">What's the difference between Sourcetool and React/Vue?</h3>
-            <p class="text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</p>
+            <p class="text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend code, without the complexity of managing a separate frontend codebase.</p>
           </div>
 
           <div class="max-w-3xl">
             <h3 class="text-xl font-semibold mb-3">How does Sourcetool differ from Retool?</h3>
-            <p class="text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe Go code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows.</p>
+            <p class="text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe backend code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows.</p>
           </div>
 
           <div class="max-w-3xl">
