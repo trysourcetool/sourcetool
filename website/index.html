@@ -149,138 +149,6 @@
       }
 
       .nav-container {
-        @apply max-w-[1400px] mx-auto px-4 sm:px-6 py-4 flex justify-between items-center;
-      }
-
-      .nav-link {
-        @apply relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full;
-      }
-
-      /* Hero Section */
-      .hero-section {
-        @apply relative overflow-hidden;
-        background: radial-gradient(circle at 50% 50%, rgba(var(--primary), 0.1) 0%, transparent 50%);
-      }
-
-      .hero-content {
-        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-24 md:py-32 flex flex-col;
-      }
-
-      .hero-title {
-        @apply text-4xl md:text-6xl font-bold tracking-tighter text-foreground mb-6;
-      }
-
-      .hero-subtitle {
-        @apply text-xl md:text-2xl text-muted-foreground mb-8 leading-normal;
-      }
-
-      .hero-buttons {
-        @apply flex flex-col sm:flex-row gap-6 justify-center;
-      }
-
-      /* Button */
-      .btn {
-        @apply inline-flex items-center justify-center text-base font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
-      }
-
-      .btn-primary {
-        @apply bg-primary text-primary-foreground rounded-full shadow-[0_0_0_0_rgba(var(--primary),0.3)] hover:shadow-[0_0_0_8px_rgba(var(--primary),0)] hover:bg-primary/90 h-12 px-8;
-        transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-      }
-
-      .btn-outline {
-        @apply border border-input bg-background shadow-sm hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-colors h-10 px-8;
-      }
-
-      /* Section */
-      .section {
-        @apply py-24 md:py-32 relative;
-      }
-
-      .section-container {
-        @apply max-w-[1400px] mx-auto px-4 sm:px-6;
-      }
-
-      .section-title {
-        @apply text-4xl md:text-5xl font-bold tracking-tighter text-foreground mb-6;
-      }
-
-      .section-subtitle {
-        @apply text-xl text-muted-foreground mb-16 max-w-2xl;
-      }
-
-      .section-grid {
-        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
-      }
-
-      /* Card */
-      .card {
-        @apply rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
-      }
-
-      .card-header {
-        @apply flex flex-col space-y-2 p-8;
-      }
-
-      .card-title {
-        @apply text-2xl font-bold tracking-tight;
-      }
-
-      .card-description {
-        @apply text-base text-muted-foreground leading-relaxed;
-      }
-
-      .card-content {
-        @apply px-8 pb-8;
-      }
-
-      .card-footer {
-        @apply flex items-center justify-between px-8 pb-8;
-      }
-
-      /* Features Grid */
-      .features-grid {
-        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
-      }
-
-      .feature-card {
-        @apply flex flex-col p-8 rounded-2xl border bg-card/50 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
-      }
-
-      .feature-icon {
-        @apply w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6;
-      }
-
-      .feature-title {
-        @apply text-xl font-semibold mb-3;
-      }
-
-      .feature-description {
-        @apply text-muted-foreground leading-relaxed;
-      }
-
-      /* Architecture Diagram Styles */
-      .arch-box {
-        @apply flex flex-col items-center justify-center p-4 bg-card border border-border rounded-lg shadow-sm text-center min-h-[120px] w-full;
-      }
-      
-      .arch-box strong {
-        @apply text-lg font-semibold text-primary mb-2;
-      }
-      
-      .arch-box span {
-        @apply text-sm text-muted-foreground;
-      }
-      
-      .arch-arrow-symbol {
-        @apply text-2xl text-primary font-bold;
-      }
-      
-      .arch-arrow-label {
-        @apply text-xs text-muted-foreground bg-accent px-2 py-1 rounded-full;
-      }
-
-      .nav-container {
         @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-4 flex justify-between items-center;
       }
 
@@ -289,7 +157,7 @@
       }
 
       .nav-link {
-        @apply text-sm font-medium text-muted-foreground hover:text-primary transition-colors;
+        @apply relative text-sm font-medium text-muted-foreground hover:text-primary transition-colors after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full;
       }
 
       /* Hero Section */
@@ -338,25 +206,31 @@
         @apply text-lg text-muted-foreground mb-12 max-w-2xl;
       }
 
-      .section-grid {
-        @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
+      /* Card (General, used implicitly by Feature Cards) */
+      .card {
+        @apply rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm transition-all duration-300;
       }
 
-      /* Table */
-      .table-container {
-        @apply w-full overflow-hidden rounded-lg border;
+      /* Features Grid */
+      .features-grid {
+        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
       }
 
-      .table {
-        @apply w-full caption-bottom text-sm;
+      .feature-card {
+        /* Inherits from .card, applies specific styles */
+        @apply flex flex-col p-8; /* Removed redundant card styles, kept flex layout */
       }
 
-      .table th {
-        @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground;
+      .feature-icon {
+        @apply w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6;
       }
 
-      .table td {
-        @apply p-4 align-middle;
+      .feature-title {
+        @apply text-xl font-semibold mb-3;
+      }
+
+      .feature-description {
+        @apply text-muted-foreground leading-relaxed;
       }
 
       /* Code Block */
@@ -368,17 +242,16 @@
         @apply font-mono text-sm leading-relaxed;
       }
 
-      /* Button */
+      /* Button (Consolidated) */
       .btn {
         @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
       }
 
       .btn-primary {
-        @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-8;
-      }
-
-      .btn-secondary {
-        @apply bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 h-10 px-8;
+        @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-8; /* Adjusted height/padding for consistency, kept specific shadow/hover */
+        /* Original primary had h-12 px-8 */
+        /* Original secondary hero button had h-11 px-8 */
+        /* Adjusting to h-10 px-8 as a common base, might need visual check */
       }
 
       .btn-outline {
@@ -390,15 +263,6 @@
       }
       .code-string {
         @apply text-[#0A3069] dark:text-[#A5D6FF];
-      }
-      .code-comment {
-        @apply text-[#6E7781] dark:text-[#8B949E];
-      }
-      .code-function {
-        @apply text-[#0550AE] dark:text-[#79C0FF];
-      }
-      .code-package {
-        @apply text-[#0550AE] dark:text-[#79C0FF];
       }
     }
   </style>
@@ -415,10 +279,9 @@
         </a>
         <!-- Desktop Navigation Links -->
         <nav class="hidden md:flex items-center space-x-6">
-          <a href="#about" class="nav-link">About</a>
           <a href="#features" class="nav-link">Features</a>
-          <a href="#components" class="nav-link">Components</a>
-          <a href="#architecture" class="nav-link">Architecture</a>
+          <a href="#how-it-works" class="nav-link">How it works</a>
+          <a href="#sdk" class="nav-link">SDKs</a>
           <a href="#faq" class="nav-link">FAQ</a>
         </nav>
       </div>
@@ -441,10 +304,9 @@
     <!-- Mobile Menu -->
     <div id="mobile-menu" class="hidden md:hidden border-t">
       <nav class="px-4 py-4 space-y-4">
-        <a href="#about" class="nav-link block py-2">About</a>
         <a href="#features" class="nav-link block py-2">Features</a>
-        <a href="#components" class="nav-link block py-2">Components</a>
-        <a href="#architecture" class="nav-link block py-2">Architecture</a>
+        <a href="#how-it-works" class="nav-link block py-2">How it works</a>
+        <a href="#sdk" class="nav-link block py-2">SDKs</a>
         <a href="#faq" class="nav-link block py-2">FAQ</a>
         <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary w-full" target="_blank">Get started</a>
       </nav>
@@ -489,7 +351,7 @@
     <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
       <div class="section-container">
         <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="section-title">See it in action</h2>
+          <h2 class="section-title">See Sourcetool in action</h2>
           <p class="section-subtitle">Watch how Sourcetool transforms your backend code into powerful internal tools</p>
         </div>
         <div class="relative aspect-video w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
@@ -507,49 +369,49 @@
     </section>
 
     <!-- Features Section -->
-    <section class="section">
+    <section class="section" id="features">
       <div class="section-container">
         <div class="max-w-2xl">
           <h2 class="section-title">Supercharge your internal tooling</h2>
           <p class="section-subtitle">Build powerful internal tools faster than ever with our comprehensive feature set.</p>
         </div>
         <div class="features-grid">
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="zap" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">Zero frontend code</h3>
             <p class="feature-description">Focus on your backend logic while we handle all the UI components and interactions.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="check" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">Type-safe development</h3>
             <p class="feature-description">Catch errors at compile time with full type safety across your entire application.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="cpu" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">AI-powered development</h3>
             <p class="feature-description">Accelerate development with AI tools through our code-first approach.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="shield" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">Built-in security</h3>
             <p class="feature-description">Deploy on your infrastructure with complete control over your code and data.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="layers" class="h-6 w-6"></i>
             </div>
             <h3 class="feature-title">Multiple environment support</h3>
             <p class="feature-description">Seamlessly switch between development, staging, and production environments.</p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card card">
             <div class="feature-icon">
               <i data-lucide="folder" class="h-6 w-6"></i>
             </div>
@@ -561,7 +423,7 @@
     </section>
 
     <!-- Code Example Section -->
-    <section class="section overflow-hidden">
+    <section class="section overflow-hidden" id="how-it-works">
       <div class="section-container">
         <div class="grid lg:grid-cols-[1fr,1fr] gap-8 items-start">
           <div class="max-w-full lg:max-w-[600px]">
@@ -651,21 +513,7 @@
               </div>
               <h3 class="text-2xl font-bold mb-4">Go SDK</h3>
               <p class="text-muted-foreground mb-6 flex-grow">Create powerful internal tools with Go's type-safe approach and excellent performance. Perfect for backend developers who want to focus on business logic.</p>
-              <div class="space-y-4">
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
-                  <span class="text-sm">Full type safety</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
-                  <span class="text-sm">Automatic UI generation</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
-                  <span class="text-sm">Database integration</span>
-                </div>
-              </div>
-              <div class="mt-8">
+              <div class="mt-4">
                 <a href="https://github.com/trysourcetool/sourcetool-go" class="btn btn-primary w-full group" target="_blank">
                   View Documentation
                   <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
@@ -688,23 +536,9 @@
               </div>
               <h3 class="text-2xl font-bold mb-4">TypeScript SDK</h3>
               <p class="text-muted-foreground mb-6 flex-grow">Build type-safe internal tools with TypeScript's modern syntax and the extensive Node.js ecosystem. Perfect for full-stack JavaScript developers.</p>
-              <div class="space-y-4">
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">End-to-end type safety</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">Node.js integration</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">Express & Next.js support</span>
-                </div>
-              </div>
-              <div class="mt-8">
-                <button class="btn w-full border-2 border-muted text-muted-foreground cursor-not-allowed opacity-80" disabled>
-                  Coming Soon
+              <div class="mt-4">
+                <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
+                  Stay tuned
                 </button>
               </div>
             </div>
@@ -724,23 +558,9 @@
               </div>
               <h3 class="text-2xl font-bold mb-4">Python SDK</h3>
               <p class="text-muted-foreground mb-6 flex-grow">Leverage Python's simplicity and extensive libraries to create powerful internal tools. Perfect for data scientists and Python developers.</p>
-              <div class="space-y-4">
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">FastAPI & Django support</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">Data science integration</span>
-                </div>
-                <div class="flex items-start gap-3">
-                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
-                  <span class="text-sm text-muted-foreground">Pandas & NumPy support</span>
-                </div>
-              </div>
-              <div class="mt-8">
-                <button class="btn w-full border-2 border-muted text-muted-foreground cursor-not-allowed opacity-80" disabled>
-                  Coming Soon
+              <div class="mt-4">
+                <button class="btn w-full border border-muted text-muted-foreground cursor-not-allowed opacity-80 h-10" disabled>
+                  Stay tuned
                 </button>
               </div>
             </div>
@@ -752,7 +572,7 @@
     <!-- FAQ Section -->
     <section class="section" id="faq">
       <div class="section-container">
-        <h2 class="section-title">Frequently Asked Questions</h2>
+        <h2 class="section-title">FAQ</h2>
         <p class="section-subtitle">Everything you need to know about Sourcetool.</p>
         <div class="space-y-6">
           <div class="max-w-3xl">
