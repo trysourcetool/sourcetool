@@ -31,15 +31,14 @@ func TokenExpiration() time.Duration {
 }
 
 type User struct {
-	ID                   uuid.UUID  `db:"id"`
-	Email                string     `db:"email"`
-	FirstName            string     `db:"first_name"`
-	LastName             string     `db:"last_name"`
-	Secret               string     `db:"secret"`
-	GoogleID             string     `db:"google_id"`
-	EmailAuthenticatedAt *time.Time `db:"email_authenticated_at"`
-	CreatedAt            time.Time  `db:"created_at"`
-	UpdatedAt            time.Time  `db:"updated_at"`
+	ID           uuid.UUID `db:"id"`
+	Email        string    `db:"email"`
+	FirstName    string    `db:"first_name"`
+	LastName     string    `db:"last_name"`
+	HashedSecret string    `db:"hashed_secret"`
+	GoogleID     string    `db:"google_id"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }
 
 type UserOrganizationRole int

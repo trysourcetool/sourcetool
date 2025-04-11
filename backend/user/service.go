@@ -472,7 +472,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 	}
 
 	// Update user with new secret
-	user.Secret = hashedSecret
+	user.HashedSecret = hashedSecret
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
@@ -517,12 +517,11 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	// Create a new user
 	now := time.Now()
 	user := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		Email:                claims.Email,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
+		ID:           uuid.Must(uuid.NewV4()),
+		Email:        claims.Email,
+		FirstName:    in.FirstName,
+		LastName:     in.LastName,
+		HashedSecret: hashedSecret,
 	}
 
 	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(user.ID))
@@ -663,7 +662,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 
 	// Get user by secret
 	hashedSecret := hashSecret(in.Secret)
-	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(hashedSecret))
+	u, err := s.Store.User().Get(ctx, storeopts.UserByHashedSecret(hashedSecret))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -758,7 +757,7 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	}
 
 	// Update user's secret
-	u.Secret = hashedSecret
+	u.HashedSecret = hashedSecret
 
 	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -1289,12 +1288,11 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                c.Email,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
+		ID:           uuid.Must(uuid.NewV4()),
+		FirstName:    in.FirstName,
+		LastName:     in.LastName,
+		Email:        c.Email,
+		HashedSecret: hashedSecret,
 	}
 
 	// Create organization access
@@ -1566,7 +1564,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		return nil, err
 	}
 
-	user.Secret = hashedSecret
+	user.HashedSecret = hashedSecret
 	if needsGoogleIDUpdate {
 		user.GoogleID = userInfo.id
 	}
@@ -1641,13 +1639,12 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	tokenExpiration := model.TokenExpiration()
 	expiresAt := now.Add(tokenExpiration)
 	user := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		Email:                claims.Email,
-		FirstName:            claims.FirstName,
-		LastName:             claims.LastName,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-		GoogleID:             claims.GoogleID,
+		ID:           uuid.Must(uuid.NewV4()),
+		Email:        claims.Email,
+		FirstName:    claims.FirstName,
+		LastName:     claims.LastName,
+		HashedSecret: hashedSecret,
+		GoogleID:     claims.GoogleID,
 	}
 
 	var token, xsrfToken string

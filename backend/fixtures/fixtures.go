@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 
@@ -35,15 +34,13 @@ func Load(ctx context.Context, store infra.Store) error {
 		return err
 	}
 
-	now := time.Now()
 	return store.RunTransaction(func(tx infra.Transaction) error {
 		u := &model.User{
-			ID:                   uuid.Must(uuid.NewV4()),
-			FirstName:            "John",
-			LastName:             "Doe",
-			Email:                email,
-			Secret:               hashedSecret,
-			EmailAuthenticatedAt: &now,
+			ID:           uuid.Must(uuid.NewV4()),
+			FirstName:    "John",
+			LastName:     "Doe",
+			Email:        email,
+			HashedSecret: hashedSecret,
 		}
 		if err := tx.User().Create(ctx, u); err != nil {
 			return err
