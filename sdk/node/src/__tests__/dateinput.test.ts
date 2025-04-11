@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { DateInputState } from '../internal/session/state/dateinput';
+import { DateInputState } from '../session/state/dateinput';
 import {
   convertDateInputProtoToState,
   convertStateToDateInputProto,
   dateInput,
-} from '../dateinput';
-import { createSessionManager, newSession } from '../internal/session';
+} from '../uibuilder/widgets/dateinput';
+import { createSessionManager, newSession } from '../session';
 import { UIBuilder } from '../uibuilder';
-import { Page, PageManager } from '../internal/page';
+import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
-import { MockClient } from '../internal/websocket/mock/websocket';
+import { MockClient } from '../websocket/mock/websocket';
 
 // Helper function to format date to YYYY-MM-DD
 const formatDate = (date: Date | null): string | null => {

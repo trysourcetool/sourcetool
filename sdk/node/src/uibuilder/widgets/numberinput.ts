@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   NumberInputState,
   WidgetTypeNumberInput,
-} from './internal/session/state/numberinput';
-import { NumberInputOptions } from './internal/options';
+} from '../../session/state/numberinput';
+import { NumberInputOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   NumberInput as NumberInputProto,
   NumberInputSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * NumberInput component options
  */

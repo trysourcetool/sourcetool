@@ -7,9 +7,7 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-const entryPoints = glob.sync('./src/**/*.ts', {
-  ignore: ['**/*.test.ts'],
-});
+const entryPoints = glob.sync('./src/index.ts');
 
 const args = arg({
   '--watch': Boolean,

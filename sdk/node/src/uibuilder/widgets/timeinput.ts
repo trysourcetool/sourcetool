@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   TimeInputState,
   WidgetTypeTimeInput,
-} from './internal/session/state/timeinput';
-import { TimeInputOptions } from './internal/options';
+} from '../../session/state/timeinput';
+import { TimeInputOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TimeInput as TimeInputProto,
   TimeInputSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * TimeInput component options
  */

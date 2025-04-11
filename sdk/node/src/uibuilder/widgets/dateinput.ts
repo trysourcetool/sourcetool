@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   DateInputState,
   WidgetTypeDateInput,
-} from './internal/session/state/dateinput';
-import { DateInputOptions } from './internal/options';
+} from '../../session/state/dateinput';
+import { DateInputOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   DateInput as DateInputProto,
   DateInputSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 
 /**
  * DateInput component options

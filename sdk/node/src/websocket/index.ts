@@ -1,5 +1,4 @@
 import WebSocket from 'ws';
-import * as logger from '../logger';
 import { create } from '@bufbuild/protobuf';
 import { Message, MessageSchema } from '../pb/websocket/v1/message_pb';
 
@@ -129,7 +128,7 @@ class Client implements WebSocketClient {
 
       // Set up event handlers
       this.conn.on('open', () => {
-        logger.info('WebSocket connection established');
+        console.info('[INFO] WebSocket connection established');
         this.startPingPongLoop();
         this.startSendEnqueuedMessagesLoop();
       });
@@ -139,24 +138,24 @@ class Client implements WebSocketClient {
           const msg = JSON.parse(data.toString());
           this.handleMessage(msg);
         } catch (err) {
-          logger.error('Error parsing message', err);
+          console.error('[ERROR] Error parsing message', err);
         }
       });
 
       this.conn.on('close', () => {
-        logger.info('WebSocket connection closed');
+        console.info('[INFO] WebSocket connection closed');
         this.conn = null;
         this.reconnect();
       });
 
       this.conn.on('error', (err) => {
-        logger.error('WebSocket error', err);
+        console.error('[ERROR] WebSocket error', err);
         this.conn?.close();
         this.conn = null;
         this.reconnect();
       });
     } catch (err) {
-      logger.error('Error connecting to WebSocket server', err);
+      console.error('[ERROR] Error connecting to WebSocket server', err);
       this.reconnect();
     }
   }
@@ -177,7 +176,7 @@ class Client implements WebSocketClient {
         }
         return;
       } catch (err) {
-        logger.error('Reconnection failed, retrying', err);
+        console.error('[ERROR] Reconnection failed, retrying', err);
         await new Promise((resolve) =>
           setTimeout(resolve, this.config.reconnectDelay),
         );
@@ -198,7 +197,7 @@ class Client implements WebSocketClient {
       try {
         this.conn.ping();
       } catch (err) {
-        logger.error('Ping failed', err);
+        console.error('[ERROR] Ping failed', err);
         this.conn.close();
         this.conn = null;
         clearInterval(pingInterval);
@@ -222,7 +221,7 @@ class Client implements WebSocketClient {
         try {
           this.send(msg);
         } catch (err) {
-          logger.error('Error sending message', err);
+          console.error('[ERROR] Error sending message', err);
           this.messageQueue.unshift(msg);
         }
       }
@@ -259,10 +258,10 @@ class Client implements WebSocketClient {
       try {
         this.handler(msg);
       } catch (err) {
-        logger.error('Error handling message', err);
+        console.error('[ERROR] Error handling message', err);
       }
     } else {
-      logger.error('No message handler registered');
+      console.error('[ERROR] No message handler registered');
     }
   }
 
@@ -284,7 +283,7 @@ class Client implements WebSocketClient {
       const msg = newMessage(id, payload);
       this.messageQueue.push(msg);
     } catch (err) {
-      logger.error('Error creating message', err);
+      console.error('[ERROR] Error creating message', err);
     }
   }
 
@@ -345,7 +344,7 @@ class Client implements WebSocketClient {
 export function createWebSocketClient(
   config: WebSocketClientConfig,
 ): WebSocketClient {
-  logger.info(`Creating WebSocket client for ${config.url}`);
+  console.info(`[INFO] Creating WebSocket client for ${config.url}`);
 
   const client = new Client(config);
 

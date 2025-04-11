@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   CheckboxState,
   WidgetTypeCheckbox,
-} from './internal/session/state/checkbox';
-import { CheckboxOptions } from './internal/options';
+} from '../../session/state/checkbox';
+import { CheckboxOptions } from '../../types/options';
 import {
   Checkbox as CheckboxProto,
   CheckboxSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
+} from '../../pb/widget/v1/widget_pb';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * Checkbox component options
  */

@@ -7,7 +7,7 @@ managed:
       - buf.build/googleapis/googleapis
 plugins:
   - plugin: buf.build/bufbuild/es:v2.0.0
-    out: ../sdk/node/src/internal/pb
+    out: ../sdk/node/src/pb
     opt:
       - target=ts
       - import_extension=js

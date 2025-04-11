@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
-import { ButtonState, WidgetTypeButton } from './internal/session/state/button';
-import { ButtonOptions } from './internal/options';
+import { UIBuilder } from '../';
+import { ButtonState, WidgetTypeButton } from '../../session/state/button';
+import { ButtonOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   ButtonSchema,
   Button as ButtonProto,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 
 /**
  * Button component options

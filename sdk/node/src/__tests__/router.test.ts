@@ -1,7 +1,7 @@
 import { expect, test, describe } from 'vitest';
 import { removeDuplicates, Router } from '../router';
 import { createSourcetool, SourcetoolConfig } from '../sourcetool';
-import { Page } from '../internal/page';
+import { Page } from '../page';
 
 const findPageByPath = (pages: Record<string, Page>, path: string): Page => {
   const page = Object.values(pages).find((p) => p.route === path);

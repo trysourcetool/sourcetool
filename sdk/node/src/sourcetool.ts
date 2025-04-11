@@ -1,5 +1,5 @@
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager, newPageManager } from './internal/page';
+import { Page, PageManager, newPageManager } from './page';
 import { RouterInterface, newRouter } from './router';
 import { Runtime, startRuntime } from './runtime';
 
@@ -96,9 +96,6 @@ export class Sourcetool implements RouterInterface {
   async listen(): Promise<void> {
     // Validate pages
     this.validatePages();
-
-    // Initialize logger
-    // await initLogger();
 
     // Start runtime
     const runtime = await startRuntime(this.apiKey, this.endpoint, this.pages);

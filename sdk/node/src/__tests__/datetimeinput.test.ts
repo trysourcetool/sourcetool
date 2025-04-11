@@ -1,16 +1,16 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { DateTimeInputState } from '../internal/session/state/datetimeinput';
+import { DateTimeInputState } from '../session/state/datetimeinput';
 import {
   convertDateTimeInputProtoToState,
   convertStateToDateTimeInputProto,
   dateTimeInput,
-} from '../datetimeinput';
-import { createSessionManager, newSession } from '../internal/session';
+} from '../uibuilder/widgets/datetimeinput';
+import { createSessionManager, newSession } from '../session';
 import { UIBuilder } from '../uibuilder';
-import { Page, PageManager } from '../internal/page';
+import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
-import { MockClient } from '../internal/websocket/mock/websocket';
+import { MockClient } from '../websocket/mock/websocket';
 
 // Helper function to format date to ISO string
 const formatDateTime = (date: Date | null): string | null => {

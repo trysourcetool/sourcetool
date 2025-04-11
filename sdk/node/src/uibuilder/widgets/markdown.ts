@@ -1,17 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   MarkdownState,
   WidgetTypeMarkdown,
-} from './internal/session/state/markdown';
-import { MarkdownOptions } from './internal/options';
+} from '../../session/state/markdown';
+import { MarkdownOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   Markdown as MarkdownProto,
   MarkdownSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * Add markdown content to the UI
  * @param builder The UI builder

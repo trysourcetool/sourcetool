@@ -1,6 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
 import { UIBuilder } from './uibuilder';
-import { Page } from './internal/page';
+import { Page } from './page';
 import { Sourcetool } from './sourcetool';
 
 export function removeDuplicates(groups: string[]): string[] {

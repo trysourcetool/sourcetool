@@ -1,18 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilder } from '../';
 import {
   MultiSelectState,
   MultiSelectValue,
   WidgetTypeMultiSelect,
-} from './internal/session/state/multiselect';
-import { MultiSelectOptions } from './internal/options';
+} from '../../session/state/multiselect';
+import { MultiSelectOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   MultiSelect as MultiSelectProto,
   MultiSelectSchema,
   WidgetSchema,
-} from './internal/pb/widget/v1/widget_pb';
-import { RenderWidgetSchema } from './internal/pb/websocket/v1/message_pb';
+} from '../../pb/widget/v1/widget_pb';
+import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
 /**
  * MultiSelect component options
  */
