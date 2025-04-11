@@ -378,22 +378,16 @@
         <h2 class="section-title">About Sourcetool</h2>
         <p class="section-subtitle">We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.</p>
         <div class="grid md:grid-cols-2 gap-8">
-          <div class="arch-box h-full flex-none p-4 text-left items-start">
-            <div class="card-header">
-              <h3 class="card-title">Backend-first development</h3>
-              <p class="card-description">Focus on your business logic while we handle the UI</p>
-            </div>
-            <div class="card-content">
-              <p class="text-muted-foreground">Build complete internal tools using only Go code. No frontend expertise required.</p>
+          <div class="card p-6 border border-primary/10">
+            <div class="flex flex-col space-y-4">
+              <h3 class="text-xl font-semibold text-primary">Backend-first development</h3>
+              <p class="text-sm text-muted-foreground">Focus on your business logic while we handle the UI. Build complete internal tools using only Go code. No frontend expertise required.</p>
             </div>
           </div>
-          <div class="arch-box h-full flex-none p-4 text-left items-start">
-            <div class="card-header">
-              <h3 class="card-title">Type-safe & flexible</h3>
-              <p class="card-description">Built with Go's type system for reliability</p>
-            </div>
-            <div class="card-content">
-              <p class="text-muted-foreground">Create robust applications with type-safe APIs and seamless integration.</p>
+          <div class="card p-6 border border-primary/10">
+            <div class="flex flex-col space-y-4">
+              <h3 class="text-xl font-semibold text-primary">Type-safe & flexible</h3>
+              <p class="text-sm text-muted-foreground">Built with Go's type system for reliability. Create robust applications with type-safe APIs and seamless integration.</p>
             </div>
           </div>
         </div>
@@ -670,40 +664,73 @@
     <section class="section">
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
         <h2 id="faq" class="section-title">FAQ</h2>
-        <dl>
-          <dt class="mt-[25px] text-primary font-bold">$ What is Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool is an <span class="font-bold">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</dd>
+        <div class="grid gap-8">
+          <!-- What is Sourcetool? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">What is Sourcetool?</h3>
+            <p class="text-sm text-muted-foreground">Sourcetool is an <span class="font-medium">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-medium">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ Do I need frontend skills to use Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</dd>
+          <!-- Do I need frontend skills? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">Do I need frontend skills to use Sourcetool?</h3>
+            <p class="text-sm text-muted-foreground"><span class="font-medium">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-medium">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ What types of applications can I build with Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</dd>
+          <!-- What types of applications? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">What types of applications can I build with Sourcetool?</h3>
+            <p class="text-sm text-muted-foreground"><span class="font-medium">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool compatible with existing Go code?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</dd>
+          <!-- Is it compatible? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">Is Sourcetool compatible with existing Go code?</h3>
+            <p class="text-sm text-muted-foreground"><span class="font-medium">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool work behind the scenes?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</dd>
+          <!-- How does it work? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">How does Sourcetool work behind the scenes?</h3>
+            <p class="text-sm text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-medium">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool compare to writing a React/Vue frontend?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</dd>
+          <!-- Compare to React/Vue -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">How does Sourcetool compare to writing a React/Vue frontend?</h3>
+            <p class="text-sm text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-medium">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ How does Sourcetool differ from Retool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe Go code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</dd>
+          <!-- Compare to Retool -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">How does Sourcetool differ from Retool?</h3>
+            <p class="text-sm text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-medium">code-first</span>. This makes Sourcetool <span class="font-medium">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-medium">type-safe Go code</span>, your applications are <span class="font-medium">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool secure?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]"><span class="font-bold">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-bold">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</dd>
+          <!-- Is it secure? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">Is Sourcetool secure?</h3>
+            <p class="text-sm text-muted-foreground"><span class="font-medium">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-medium">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-medium">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ Is Sourcetool free to use?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Check out the <a href="https://trysourcetool.com" class="text-primary underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-bold">open source under the MIT license</span>.</dd>
+          <!-- Is it free? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">Is Sourcetool free to use?</h3>
+            <p class="text-sm text-muted-foreground">Check out the <a href="https://trysourcetool.com" class="text-primary underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-medium">open source under the MIT license</span>.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ How can I contribute to Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary underline">GitHub repository</a> and review the contribution guidelines.</dd>
+          <!-- How to contribute? -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">How can I contribute to Sourcetool?</h3>
+            <p class="text-sm text-muted-foreground">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary underline">GitHub repository</a> and review the contribution guidelines.</p>
+          </div>
 
-          <dt class="mt-[25px] text-primary font-bold">$ Where can I learn more about Sourcetool?</dt>
-          <dd class="ml-0 mb-[25px] leading-[1.6]">Visit our <a href="https://docs.trysourcetool.com" class="text-primary underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary underline">Twitter</a> for updates and announcements.</dd>
-        </dl>
+          <!-- Learn more -->
+          <div class="flex flex-col space-y-2">
+            <h3 class="text-lg font-semibold text-primary">Where can I learn more about Sourcetool?</h3>
+            <p class="text-sm text-muted-foreground">Visit our <a href="https://docs.trysourcetool.com" class="text-primary underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary underline">Twitter</a> for updates and announcements.</p>
+          </div>
+        </div>
       </div>
     </section>
 
