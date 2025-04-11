@@ -269,9 +269,9 @@ func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 	if config.Config.IsCloudEdition {
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	} else {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+		h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
 			int(model.TokenExpiration().Seconds()),
-			int(model.SecretExpiration.Seconds()),
+			int(model.RefreshTokenExpiration.Seconds()),
 			int(model.XSRFTokenExpiration.Seconds()),
 			config.Config.BaseDomain)
 	}
@@ -303,14 +303,14 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secretCookie, err := r.Cookie("refresh_token")
+	refreshTokenCookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
 		return
 	}
 
 	req := requests.RefreshTokenRequest{
-		Secret:          secretCookie.Value,
+		RefreshToken:    refreshTokenCookie.Value,
 		XSRFTokenHeader: xsrfTokenHeader,
 		XSRFTokenCookie: xsrfTokenCookie.Value,
 	}
@@ -325,9 +325,9 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
 		int(model.TokenExpiration().Seconds()),
-		int(model.SecretExpiration.Seconds()),
+		int(model.RefreshTokenExpiration.Seconds()),
 		int(model.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
@@ -364,9 +364,9 @@ func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
 		int(model.TokenExpiration().Seconds()),
-		int(model.SecretExpiration.Seconds()),
+		int(model.RefreshTokenExpiration.Seconds()),
 		int(model.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
@@ -567,9 +567,9 @@ func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 		return
 	}
 
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.Secret, out.XSRFToken,
+	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
 		int(model.TokenExpiration().Seconds()),
-		int(model.SecretExpiration.Seconds()),
+		int(model.RefreshTokenExpiration.Seconds()),
 		int(model.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 

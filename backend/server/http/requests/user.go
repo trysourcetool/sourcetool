@@ -11,7 +11,7 @@ type AuthenticateWithMagicLinkRequest struct {
 }
 
 type RefreshTokenRequest struct {
-	Secret          string `validate:"required"`
+	RefreshToken    string `validate:"required"`
 	XSRFTokenHeader string `validate:"required"`
 	XSRFTokenCookie string `validate:"required"`
 }

@@ -38,18 +38,18 @@ func (o userByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`u."email"`: o.email})
 }
 
-func UserByHashedSecret(hashedSecret string) UserOption {
-	return userByHashedSecretOption{hashedSecret: hashedSecret}
+func UserByRefreshTokenHash(refreshTokenHash string) UserOption {
+	return userByRefreshTokenHashOption{refreshTokenHash: refreshTokenHash}
 }
 
-type userByHashedSecretOption struct {
-	hashedSecret string
+type userByRefreshTokenHashOption struct {
+	refreshTokenHash string
 }
 
-func (o userByHashedSecretOption) isUserOption() {}
+func (o userByRefreshTokenHashOption) isUserOption() {}
 
-func (o userByHashedSecretOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`u."hashed_secret"`: o.hashedSecret})
+func (o userByRefreshTokenHashOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."refresh_token_hash"`: o.refreshTokenHash})
 }
 
 func UserByOrganizationID(id uuid.UUID) UserOption {

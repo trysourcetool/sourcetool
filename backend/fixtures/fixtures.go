@@ -29,18 +29,18 @@ func Load(ctx context.Context, store infra.Store) error {
 		return nil
 	}
 
-	_, hashedSecret, err := generateSecret()
+	_, hashedRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return err
 	}
 
 	return store.RunTransaction(func(tx infra.Transaction) error {
 		u := &model.User{
-			ID:           uuid.Must(uuid.NewV4()),
-			FirstName:    "John",
-			LastName:     "Doe",
-			Email:        email,
-			HashedSecret: hashedSecret,
+			ID:               uuid.Must(uuid.NewV4()),
+			FirstName:        "John",
+			LastName:         "Doe",
+			Email:            email,
+			RefreshTokenHash: hashedRefreshToken,
 		}
 		if err := tx.User().Create(ctx, u); err != nil {
 			return err
@@ -106,16 +106,16 @@ func Load(ctx context.Context, store infra.Store) error {
 	})
 }
 
-func generateSecret() (plainSecret, hashedSecret string, err error) {
+func generateRefreshToken() (plainRefreshToken, hashedRefreshToken string, err error) {
 	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
 		return "", "", err
 	}
 
-	plainSecret = base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
+	plainRefreshToken = base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(randomBytes)
 
-	hash := sha256.Sum256([]byte(plainSecret))
-	hashedSecret = hex.EncodeToString(hash[:])
+	hash := sha256.Sum256([]byte(plainRefreshToken))
+	hashedRefreshToken = hex.EncodeToString(hash[:])
 
-	return plainSecret, hashedSecret, nil
+	return plainRefreshToken, hashedRefreshToken, nil
 }

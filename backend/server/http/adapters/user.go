@@ -175,7 +175,7 @@ func RegisterWithMagicLinkOutputToResponse(out *dto.RegisterWithMagicLinkOutput)
 // RefreshTokenRequestToDTOInput converts from requests.RefreshTokenRequest to dto.RefreshTokenInput.
 func RefreshTokenRequestToDTOInput(in requests.RefreshTokenRequest) dto.RefreshTokenInput {
 	return dto.RefreshTokenInput{
-		Secret:          in.Secret,
+		RefreshToken:    in.RefreshToken,
 		XSRFTokenHeader: in.XSRFTokenHeader,
 		XSRFTokenCookie: in.XSRFTokenCookie,
 	}
