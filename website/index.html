@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <title>Sourcetool</title>
@@ -23,7 +23,7 @@
 
   <!-- Other Meta Tags -->
   <meta name="theme-color" content="#7C3AED">
-  <meta name="keywords" content="internal tools, backend development, Go, open source, developer tools, admin panel, dashboard builder">
+  <meta name="keywords" content="internal tools, internal tool builder, Retool, backend development, Go, TypeScript, Python, open source, developer tools, admin panel, dashboard builder">
   <meta name="author" content="Sourcetool">
 
   <link rel="apple-touch-icon" sizes="180x180" href="https://trysourcetool.com/assets/images/apple-touch-icon.png">
@@ -87,56 +87,178 @@
     @layer base {
       :root {
         --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
+        --foreground: 240 10% 3.9%;
         --card: 0 0% 100%;
-        --card-foreground: 222.2 84% 4.9%;
+        --card-foreground: 240 10% 3.9%;
         --popover: 0 0% 100%;
-        --popover-foreground: 222.2 84% 4.9%;
-        --primary: 222.2 47.4% 11.2%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
-        --ring: 222.2 84% 4.9%;
-        --radius: 0.5rem;
+        --popover-foreground: 240 10% 3.9%;
+        --primary: 258 90% 66%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 240 5% 96%;
+        --secondary-foreground: 240 10% 3.9%;
+        --muted: 240 5% 96%;
+        --muted-foreground: 240 4% 46%;
+        --accent: 258 90% 66%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 84% 60%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 6% 90%;
+        --input: 240 6% 90%;
+        --ring: 258 90% 66%;
+        --radius: 1rem;
       }
 
       :root[class~="dark"] {
-        --background: 222.2 84% 4.9%;
-        --foreground: 210 40% 98%;
-        --card: 222.2 84% 4.9%;
-        --card-foreground: 210 40% 98%;
-        --popover: 222.2 84% 4.9%;
-        --popover-foreground: 210 40% 98%;
-        --primary: 210 40% 98%;
-        --primary-foreground: 222.2 47.4% 11.2%;
-        --secondary: 217.2 32.6% 17.5%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 217.2 32.6% 17.5%;
-        --muted-foreground: 215 20.2% 65.1%;
-        --accent: 217.2 32.6% 17.5%;
-        --accent-foreground: 210 40% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 217.2 32.6% 17.5%;
-        --input: 217.2 32.6% 17.5%;
-        --ring: 212.7 26.8% 83.9%;
+        --background: 240 10% 4%;
+        --foreground: 0 0% 98%;
+        --card: 240 10% 4%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 10% 4%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 258 90% 66%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 240 4% 16%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 4% 16%;
+        --muted-foreground: 240 5% 65%;
+        --accent: 258 90% 66%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 63% 31%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 240 4% 16%;
+        --input: 240 4% 16%;
+        --ring: 258 90% 66%;
+      }
+
+      * {
+        @apply border-border;
+      }
+
+      body {
+        @apply bg-background text-foreground antialiased;
+        background-image: radial-gradient(circle at center, rgba(var(--primary), 0.05) 0%, transparent 70%),
+                         linear-gradient(to bottom right, rgba(var(--primary), 0.05), transparent);
+        background-attachment: fixed;
       }
     }
 
     @layer components {
       /* Header Styles */
       .header-nav {
-        @apply fixed top-0 left-0 right-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-zinc-100 dark:border-zinc-800 z-50;
+        @apply fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-b border-border/40 z-50;
       }
-      
+
+      .nav-container {
+        @apply max-w-[1400px] mx-auto px-4 sm:px-6 py-4 flex justify-between items-center;
+      }
+
+      .nav-link {
+        @apply relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors after:absolute after:left-0 after:bottom-[-4px] after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full;
+      }
+
+      /* Hero Section */
+      .hero-section {
+        @apply relative overflow-hidden;
+        background: radial-gradient(circle at 50% 50%, rgba(var(--primary), 0.1) 0%, transparent 50%);
+      }
+
+      .hero-content {
+        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-24 md:py-32 flex flex-col;
+      }
+
+      .hero-title {
+        @apply text-4xl md:text-6xl font-bold tracking-tighter text-foreground mb-6;
+      }
+
+      .hero-subtitle {
+        @apply text-xl md:text-2xl text-muted-foreground mb-8 leading-normal;
+      }
+
+      .hero-buttons {
+        @apply flex flex-col sm:flex-row gap-6 justify-center;
+      }
+
+      /* Button */
+      .btn {
+        @apply inline-flex items-center justify-center text-base font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+      }
+
+      .btn-primary {
+        @apply bg-primary text-primary-foreground rounded-full shadow-[0_0_0_0_rgba(var(--primary),0.3)] hover:shadow-[0_0_0_8px_rgba(var(--primary),0)] hover:bg-primary/90 h-12 px-8;
+        transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+
+      .btn-outline {
+        @apply border border-input bg-background shadow-sm hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-colors h-10 px-8;
+      }
+
+      /* Section */
+      .section {
+        @apply py-24 md:py-32 relative;
+      }
+
+      .section-container {
+        @apply max-w-[1400px] mx-auto px-4 sm:px-6;
+      }
+
+      .section-title {
+        @apply text-4xl md:text-5xl font-bold tracking-tighter text-foreground mb-6;
+      }
+
+      .section-subtitle {
+        @apply text-xl text-muted-foreground mb-16 max-w-2xl;
+      }
+
+      .section-grid {
+        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
+      }
+
+      /* Card */
+      .card {
+        @apply rounded-2xl border bg-card/50 backdrop-blur-sm text-card-foreground shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+      }
+
+      .card-header {
+        @apply flex flex-col space-y-2 p-8;
+      }
+
+      .card-title {
+        @apply text-2xl font-bold tracking-tight;
+      }
+
+      .card-description {
+        @apply text-base text-muted-foreground leading-relaxed;
+      }
+
+      .card-content {
+        @apply px-8 pb-8;
+      }
+
+      .card-footer {
+        @apply flex items-center justify-between px-8 pb-8;
+      }
+
+      /* Features Grid */
+      .features-grid {
+        @apply grid gap-8 md:grid-cols-2 lg:grid-cols-3;
+      }
+
+      .feature-card {
+        @apply flex flex-col p-8 rounded-2xl border bg-card/50 backdrop-blur-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+      }
+
+      .feature-icon {
+        @apply w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6;
+      }
+
+      .feature-title {
+        @apply text-xl font-semibold mb-3;
+      }
+
+      .feature-description {
+        @apply text-muted-foreground leading-relaxed;
+      }
+
       /* Architecture Diagram Styles */
       .arch-box {
         @apply flex flex-col items-center justify-center p-4 bg-card border border-border rounded-lg shadow-sm text-center min-h-[120px] w-full;
@@ -172,57 +294,52 @@
 
       /* Hero Section */
       .hero-section {
-        @apply relative overflow-hidden bg-gradient-to-b from-background to-secondary/20;
+        @apply relative overflow-hidden bg-background border-b border-border;
       }
 
       .hero-content {
-        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-24 md:py-32;
+        @apply max-w-[1200px] mx-auto px-4 sm:px-6 py-24 md:py-32 flex flex-col items-center text-center;
       }
 
       .hero-title {
-        @apply text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-6;
+        @apply text-4xl md:text-6xl font-bold tracking-tighter text-foreground mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80;
       }
 
       .hero-subtitle {
-        @apply text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl;
+        @apply text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl leading-normal;
       }
 
       .hero-buttons {
-        @apply flex flex-col sm:flex-row gap-4;
+        @apply flex flex-col sm:flex-row gap-4 justify-center;
+      }
+
+      .hero-button-primary {
+        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8;
+      }
+
+      .hero-button-secondary {
+        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background border border-input hover:bg-accent hover:text-accent-foreground h-11 px-8;
       }
 
       /* Section */
       .section {
-        @apply py-16 md:py-24;
+        @apply py-16 md:py-24 border-b border-border;
+      }
+
+      .section-container {
+        @apply max-w-[1200px] mx-auto px-4 sm:px-6;
       }
 
       .section-title {
-        @apply text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-8;
+        @apply text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4;
       }
 
       .section-subtitle {
         @apply text-lg text-muted-foreground mb-12 max-w-2xl;
       }
 
-      /* Card */
-      .card {
-        @apply rounded-lg border bg-card text-card-foreground shadow-sm;
-      }
-
-      .card-header {
-        @apply flex flex-col space-y-1.5 p-6;
-      }
-
-      .card-title {
-        @apply text-2xl font-semibold leading-none tracking-tight;
-      }
-
-      .card-description {
-        @apply text-sm text-muted-foreground;
-      }
-
-      .card-content {
-        @apply p-6 pt-0;
+      .section-grid {
+        @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3;
       }
 
       /* Table */
@@ -265,7 +382,7 @@
       }
 
       .btn-outline {
-        @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-10 px-8;
+        @apply border border-input bg-background shadow-sm hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-colors h-10 px-8;
       }
 
       .code-keyword {
@@ -337,29 +454,46 @@
   <!-- Main Content -->
   <main class="pt-[72px]">
     <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-content">
-        <h1 class="hero-title">Backend logic seamlessly becomes reality.</h1>
-        <p class="hero-subtitle mb-6">Sourcetool is an open-source internal tool builder that lets you create complete tools with only backend code.</p>
-        <div class="mb-8 inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm text-muted-foreground shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-          </svg>
+    <section class="relative overflow-hidden py-20 md:py-32">
+      <div class="section-container">
+        <!-- Hero Section Cloud Edition Banner -->
+        <div class="inline-flex items-center rounded-full bg-primary/10 px-6 py-2.5 text-sm font-medium text-primary mb-12">
+          <i data-lucide="zap" class="h-5 w-5 mr-2"></i>
           Cloud Edition Coming in 2025
         </div>
-        <div class="hero-buttons">
-          <a class="btn btn-primary" href="https://github.com/trysourcetool/sourcetool" target="_blank">Get started</a>
-          <a class="btn btn-outline" href="https://docs.trysourcetool.com/" target="_blank">View documentation</a>
+        <div class="max-w-[800px]">
+          <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">
+            Backend logic seamlessly<br/>becomes reality.
+          </h1>
+          <p class="text-xl md:text-2xl text-muted-foreground mb-16 leading-relaxed max-w-2xl">
+            Sourcetool transforms your backend code into powerful internal tools. No frontend skills required.
+          </p>
         </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a class="btn btn-primary group" href="https://github.com/trysourcetool/sourcetool" target="_blank">
+            Get started
+            <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
+          </a>
+          <a class="btn btn-outline" href="https://docs.trysourcetool.com/" target="_blank">
+            View documentation
+          </a>
+        </div>
+      </div>
+      <div class="absolute inset-0 -z-10 h-full w-full">
+        <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent"></div>
+        <div class="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       </div>
     </section>
 
     <!-- Demo Video Section -->
-    <section class="section bg-secondary/20 border-t border-zinc-100 dark:border-zinc-800">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 class="section-title text-center">See Sourcetool in action</h2>
-        <p class="section-subtitle text-center mx-auto">Watch how easy it is to build internal tools with just backend code</p>
-        <div class="aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
+    <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
+      <div class="section-container">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="section-title">See it in action</h2>
+          <p class="section-subtitle">Watch how Sourcetool transforms your backend code into powerful internal tools</p>
+        </div>
+        <div class="relative aspect-video w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
+          <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
           <iframe
             class="w-full h-full"
             src="https://www.youtube.com/embed/WVlk30_k9CM"
@@ -372,363 +506,330 @@
       </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 class="section-title">About Sourcetool</h2>
-        <p class="section-subtitle">We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.</p>
-        <div class="grid md:grid-cols-2 gap-8">
-          <div class="card p-6 border border-primary/10">
-            <div class="flex flex-col space-y-4">
-              <h3 class="text-xl font-semibold text-primary">Backend-first development</h3>
-              <p class="text-sm text-muted-foreground">Focus on your business logic while we handle the UI. Build complete internal tools using only Go code. No frontend expertise required.</p>
-            </div>
-          </div>
-          <div class="card p-6 border border-primary/10">
-            <div class="flex flex-col space-y-4">
-              <h3 class="text-xl font-semibold text-primary">Type-safe & flexible</h3>
-              <p class="text-sm text-muted-foreground">Built with Go's type system for reliability. Create robust applications with type-safe APIs and seamless integration.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
     <!-- Features Section -->
     <section class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 id="features" class="section-title">Features</h2>
-        <p class="section-subtitle">Build powerful internal tools with these key features</p>
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Feature Card 1 -->
-          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
-            <div class="text-3xl">💻</div>
-            <h3 class="font-semibold">Backend-only Development</h3>
-            <p class="text-sm text-muted-foreground">Build full-featured internal tools using only backend code with type-safe APIs and Git version control.</p>
+      <div class="section-container">
+        <div class="max-w-2xl">
+          <h2 class="section-title">Supercharge your internal tooling</h2>
+          <p class="section-subtitle">Build powerful internal tools faster than ever with our comprehensive feature set.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="zap" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">Zero frontend code</h3>
+            <p class="feature-description">Focus on your backend logic while we handle all the UI components and interactions.</p>
           </div>
-          <!-- Feature Card 2 -->
-          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
-            <div class="text-3xl">🎨</div>
-            <h3 class="font-semibold">Rich UI Components</h3>
-            <p class="text-sm text-muted-foreground">Pre-built components for forms, tables, inputs, and more to create beautiful interfaces instantly.</p>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="check" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">Type-safe development</h3>
+            <p class="feature-description">Catch errors at compile time with full type safety across your entire application.</p>
           </div>
-          <!-- Feature Card 3 -->
-          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
-            <div class="text-3xl">🔐</div>
-            <h3 class="font-semibold">Granular Permissions</h3>
-            <p class="text-sm text-muted-foreground">Manage access to your internal tools with flexible group-based permissions system.</p>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="cpu" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">AI-powered development</h3>
+            <p class="feature-description">Accelerate development with AI tools through our code-first approach.</p>
           </div>
-          <!-- Feature Card 4 -->
-          <div class="card p-6 flex flex-col space-y-4 border border-primary/10">
-            <div class="text-3xl">🌐</div>
-            <h3 class="font-semibold">Multiple Environments</h3>
-            <p class="text-sm text-muted-foreground">Easily switch between different environments for development, staging, and production.</p>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="shield" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">Built-in security</h3>
+            <p class="feature-description">Deploy on your infrastructure with complete control over your code and data.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="layers" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">Multiple environment support</h3>
+            <p class="feature-description">Seamlessly switch between development, staging, and production environments.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i data-lucide="folder" class="h-6 w-6"></i>
+            </div>
+            <h3 class="feature-title">Git version control</h3>
+            <p class="feature-description">Stay in your familiar environment with Git version control and your favorite editor. No context switching needed.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
-
-    <!-- Components Section -->
-    <section class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 id="components" class="section-title">Components</h2>
-        <p class="section-subtitle">Build powerful interfaces with our pre-built UI components</p>
-        
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          <!-- Input Components Card -->
-          <div class="card p-6 border border-primary/10">
-            <div class="flex items-start space-x-4">
-              <div class="text-3xl">📝</div>
-              <div>
-                <h3 class="font-semibold mb-2">Input Components</h3>
-                <ul class="space-y-2 text-sm text-muted-foreground">
-                  <li>TextInput</li>
-                  <li>TextArea</li>
-                  <li>NumberInput</li>
-                  <li>DateInput</li>
-                  <li>DateTimeInput</li>
-                  <li>TimeInput</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Selection Components Card -->
-          <div class="card p-6 border border-primary/10">
-            <div class="flex items-start space-x-4">
-              <div class="text-3xl">📋</div>
-              <div>
-                <h3 class="font-semibold mb-2">Selection Components</h3>
-                <ul class="space-y-2 text-sm text-muted-foreground">
-                  <li>Selectbox</li>
-                  <li>MultiSelect</li>
-                  <li>Radio</li>
-                  <li>Checkbox</li>
-                  <li>CheckboxGroup</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Layout Components Card -->
-          <div class="card p-6 border border-primary/10">
-            <div class="flex items-start space-x-4">
-              <div class="text-3xl">🔳</div>
-              <div>
-                <h3 class="font-semibold mb-2">Layout Components</h3>
-                <ul class="space-y-2 text-sm text-muted-foreground">
-                  <li>Columns</li>
-                  <li>Form</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Display Components Card -->
-          <div class="card p-6 border border-primary/10">
-            <div class="flex items-start space-x-4">
-              <div class="text-3xl">📊</div>
-              <div>
-                <h3 class="font-semibold mb-2">Display Components</h3>
-                <ul class="space-y-2 text-sm text-muted-foreground">
-                  <li>Markdown</li>
-                  <li>Table</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Interactive Components Card -->
-          <div class="card p-6 border border-primary/10">
-            <div class="flex items-start space-x-4">
-              <div class="text-3xl">🔘</div>
-              <div>
-                <h3 class="font-semibold mb-2">Interactive Components</h3>
-                <ul class="space-y-2 text-sm text-muted-foreground">
-                  <li>Button</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
-
-    <!-- Supported Languages Section -->
-    <section id="sdk" class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 class="section-title">Supported Languages</h2>
-        <p class="section-subtitle">Build internal tools with your favorite backend language. Go is available now, with more languages coming soon.</p>
-        <div class="grid md:grid-cols-3 gap-6 sm:gap-8 mt-12">
-          <!-- Go SDK -->
-          <div class="language-card card text-center p-6 flex flex-col h-full border border-primary/10 relative">
-            <div class="absolute top-3 right-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-medium px-2 py-1 rounded-full">Available now</div>
-            <img src="./assets/images/golang-logo.png" alt="Go Logo" class="h-16 mx-auto my-6">
-            <h3 class="text-lg font-medium mb-2">Go SDK</h3>
-            <p class="text-sm text-muted-foreground mb-6">Create powerful internal tools with Go's type-safe approach and excellent performance.</p>
-            <div class="mt-auto">
-              <a href="https://github.com/trysourcetool/sourcetool-go" target="_blank" class="btn btn-primary btn-sm px-4 h-8 text-xs w-full">View Go SDK</a>
-            </div>
-          </div>
-          <!-- TypeScript SDK -->
-          <div class="language-card card text-center p-6 flex flex-col h-full border border-zinc-100 dark:border-zinc-800 relative">
-            <div class="absolute top-3 right-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-xs font-medium px-2 py-1 rounded-full">Coming soon</div>
-            <img src="./assets/images/ts-logo.png" alt="TypeScript Logo" class="h-16 mx-auto my-6">
-            <h3 class="text-lg font-medium mb-2">TypeScript SDK</h3>
-            <p class="text-sm text-muted-foreground mb-6">Build type-safe internal tools with TypeScript's modern syntax and Node.js ecosystem.</p>
-            <div class="mt-auto">
-              <span class="inline-flex items-center justify-center rounded-md text-xs font-medium h-8 px-4 text-muted-foreground bg-zinc-100 dark:bg-zinc-800 w-full">Stay tuned</span>
-            </div>
-          </div>
-          <!-- Python SDK -->
-          <div class="language-card card text-center p-6 flex flex-col h-full border border-zinc-100 dark:border-zinc-800 relative">
-            <div class="absolute top-3 right-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-xs font-medium px-2 py-1 rounded-full">Coming soon</div>
-            <img src="./assets/images/python-logo.png" alt="Python Logo" class="h-16 mx-auto my-6">
-            <h3 class="text-lg font-medium mb-2">Python SDK</h3>
-            <p class="text-sm text-muted-foreground mb-6">Leverage Python's simplicity and extensive libraries to create powerful internal tools.</p>
-            <div class="mt-auto">
-              <span class="inline-flex items-center justify-center rounded-md text-xs font-medium h-8 px-4 text-muted-foreground bg-zinc-100 dark:bg-zinc-800 w-full">Stay tuned</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
-
-    <!-- Architecture Section -->
-    <section class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 id="architecture" class="section-title">Architecture</h2>
-        <p class="section-subtitle">Sourcetool connects your backend code directly to web browsers, eliminating the need for frontend development.</p>
-
-        <div class="mt-12">
-          <h3 class="text-xl font-semibold mb-6">System overview</h3>
-          <div class="text-center">
-            <div class="flex justify-center items-center gap-6 flex-wrap mb-8 flex-col md:flex-row">
-              <!-- Step 1: Your Backend -->
-              <div class="relative w-full md:w-[280px]">
-                <div class="card p-6 border border-primary/10">
-                  <strong class="text-lg font-semibold text-primary mb-2 block">Your backend</strong>
-                  <span class="text-sm text-muted-foreground">Backend logic & UI definitions</span>
+    <!-- Code Example Section -->
+    <section class="section overflow-hidden">
+      <div class="section-container">
+        <div class="grid lg:grid-cols-[1fr,1fr] gap-8 items-start">
+          <div class="max-w-full lg:max-w-[600px]">
+            <h2 class="section-title text-3xl lg:text-4xl">Write backend code.<br class="hidden sm:block"/>Get a complete internal tool.</h2>
+            <p class="section-subtitle">Focus on your business logic while Sourcetool handles the frontend automatically.</p>
+            
+            <!-- How it works content -->
+            <div class="space-y-6 mb-8">
+              <div class="relative pl-8">
+                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="code" class="w-4 h-4 text-primary"></i>
                 </div>
+                <h4 class="text-base lg:text-lg font-semibold mb-2">Define UI and logic in your backend</h4>
+                <p class="text-sm lg:text-base text-muted-foreground">Write type-safe UI definitions directly in your backend code using our declarative API.</p>
               </div>
-
-              <!-- Bidirectional Arrow -->
-              <div class="flex flex-row md:flex-col items-center my-4 md:my-0 md:mx-4 gap-3 md:gap-2">
-                <span class="arch-arrow-symbol hidden md:block">⟷</span>
-                <span class="arch-arrow-symbol block md:hidden">↕︎</span>
-                <span class="arch-arrow-label">WebSocket</span>
-              </div>
-
-              <!-- Step 2: Sourcetool Server -->
-              <div class="relative w-full md:w-[280px]">
-                <div class="card p-6 border border-primary/10">
-                  <strong class="text-lg font-semibold text-primary mb-2 block">Sourcetool server</strong>
-                  <span class="text-sm text-muted-foreground">Authentication & Authorization</span>
+              <div class="relative pl-8">
+                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="plug" class="w-4 h-4 text-primary"></i>
                 </div>
+                <h4 class="text-base lg:text-lg font-semibold mb-2">Connect to Sourcetool server</h4>
+                <p class="text-sm lg:text-base text-muted-foreground">The Sourcetool server establishes a WebSocket connection with your backend.</p>
               </div>
-
-              <!-- Bidirectional Arrow -->
-              <div class="flex flex-row md:flex-col items-center my-2 md:my-0 md:mx-0.5 gap-2 md:gap-0">
-                <span class="arch-arrow-symbol hidden md:block">⟷</span>
-                <span class="arch-arrow-symbol block md:hidden">↕︎</span>
-                <span class="arch-arrow-label">WebSocket</span>
-              </div>
-
-              <!-- Step 3: Web Browser -->
-              <div class="relative w-full md:w-[280px]">
-                <div class="card p-6 border border-primary/10">
-                  <strong class="text-lg font-semibold text-primary mb-2 block">Web browser</strong>
-                  <span class="text-sm text-muted-foreground">Auto-generates browser UI</span>
+              <div class="relative pl-8">
+                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="wand-2" class="w-4 h-4 text-primary"></i>
                 </div>
+                <h4 class="text-base lg:text-lg font-semibold mb-2">Automatic UI generation</h4>
+                <p class="text-sm lg:text-base text-muted-foreground">Your UI definitions are transformed into a beautiful, responsive interface.</p>
               </div>
-            </div>
-
-            <!-- Note about bidirectional communication -->
-            <div class="text-center mt-6 text-sm text-muted-foreground italic">
-              All components communicate bidirectionally in real-time
+              <div class="relative pl-8">
+                <div class="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="refresh-cw" class="w-4 h-4 text-primary"></i>
+                </div>
+                <h4 class="text-base lg:text-lg font-semibold mb-2">Real-time updates</h4>
+                <p class="text-sm lg:text-base text-muted-foreground">Changes in your data are instantly reflected in the UI through WebSocket communication.</p>
+              </div>
             </div>
           </div>
-        </div>
+          <div class="relative w-full overflow-x-auto">
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent rounded-2xl"></div>
+            <div class="relative rounded-2xl bg-muted/50 backdrop-blur-sm p-4 lg:p-6 ring-1 ring-primary/10">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+              </div>
+              <pre class="text-xs lg:text-sm font-mono overflow-x-auto"><code><span class="code-keyword">import</span> <span class="code-string">"github.com/trysourcetool.com/sourcetool-go"</span>
 
-        <div class="mt-12">
-          <h3 class="text-xl font-semibold mb-6">How it works</h3>
-          <div class="grid md:grid-cols-2 grid-cols-1 gap-8 bg-accent/10 rounded-xl p-6 shadow-sm">
-            <div>
-              <ol class="space-y-4 list-decimal pl-5">
-                <li class="pl-2 text-foreground">You define UI components in your backend code</li>
-                <li class="pl-2 text-foreground">Sourcetool Server handles auth & permissions</li>
-                <li class="pl-2 text-foreground">UI is automatically rendered in browser</li>
-                <li class="pl-2 text-foreground">User interactions return to your backend code</li>
-              </ol>
-            </div>
-            <div>
-              <pre class="p-4 overflow-x-auto border border-[#e6deff] rounded-[6px] leading-[1.45] shadow-[0_2px_4px_rgba(107,70,193,0.05)]"><code class="font-['SFMono-Regular',_Consolas,_'Liberation_Mono',_Menlo,_monospace] p-0 text-[13.6px] font-light text-[#24292F] dark:text-[#E6EDF3]"><span class="code-comment">// Your backend code defines UI and handles business logic</span>
-<span class="code-keyword">func</span> userListPage(ui sourcetool.UIBuilder) <span class="code-keyword">error</span> {
-    ui.Markdown(<span class="code-string">"## Users"</span>)
-    users, _ := listUsers()
+<span class="code-keyword">func</span> <span class="code-function">listUsersPage</span>(ui sourcetool.UIBuilder) error {
+    name := ui.TextInput(<span class="code-string">"Name"</span>)
+    email := ui.TextInput(<span class="code-string">"Email"</span>)
+
+    users, err := listUsers(name, email)
+    <span class="code-keyword">if</span> err != <span class="code-keyword">nil</span> {
+        <span class="code-keyword">return</span> err
+    }
+
     ui.Table(users)
+
     <span class="code-keyword">return</span> <span class="code-keyword">nil</span>
 }</code></pre>
             </div>
           </div>
         </div>
-
-        <div class="mt-12">
-          <h3 class="text-xl font-semibold mb-6">Example implementation</h3>
-          <div class="grid md:grid-cols-2 gap-8">
-            <div class="space-y-4">
-              <h4 class="text-primary">Backend code</h4>
-              <p class="text-muted-foreground">Define your UI components directly in Go code</p>
-              <img src="./assets/images/service-image-code.png" alt="Sourcetool code example" class="w-full rounded-lg shadow-lg border border-zinc-100 dark:border-zinc-800">
-            </div>
-            <div class="space-y-4">
-              <h4 class="text-primary">Generated interface</h4>
-              <p class="text-muted-foreground">Beautiful UI automatically generated from your code</p>
-              <img src="./assets/images/service-image-interface.png" alt="Sourcetool interface" class="w-full rounded-lg shadow-lg border border-zinc-100 dark:border-zinc-800">
-            </div>
-          </div>
-        </div>
-
-        <p class="mt-12 text-lg leading-relaxed text-foreground">This architecture allows you to create complete internal tools while writing only backend code. The Sourcetool server handles authentication, authorization, and communication with the browser - <span class="font-semibold text-primary">no frontend expertise required</span>.</p>
       </div>
     </section>
 
-    <hr class="border-none h-px bg-zinc-100 dark:bg-zinc-800 my-[30px]">
-    <section class="section">
-      <div class="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <h2 id="faq" class="section-title">FAQ</h2>
-        <div class="grid gap-8">
-          <!-- What is Sourcetool? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">What is Sourcetool?</h3>
-            <p class="text-sm text-muted-foreground">Sourcetool is an <span class="font-medium">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-medium">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</p>
+    <!-- SDK Section -->
+    <section class="section bg-gradient-to-b from-background via-primary/5 to-background" id="sdk">
+      <div class="section-container">
+        <div class="max-w-2xl">
+          <h2 class="section-title">Choose your favorite backend language</h2>
+          <p class="section-subtitle">Build powerful internal tools with the programming language you love and trust.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Go SDK -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-primary/10 flex flex-col">
+              <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-500/20 px-3 py-1 text-sm font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">
+                  Available now
+                </span>
+              </div>
+              <div class="mb-6">
+                <img src="./assets/images/golang-logo.png" alt="Go Logo" class="h-16" />
+              </div>
+              <h3 class="text-2xl font-bold mb-4">Go SDK</h3>
+              <p class="text-muted-foreground mb-6 flex-grow">Create powerful internal tools with Go's type-safe approach and excellent performance. Perfect for backend developers who want to focus on business logic.</p>
+              <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
+                  <span class="text-sm">Full type safety</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
+                  <span class="text-sm">Automatic UI generation</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-primary mt-0.5"></i>
+                  <span class="text-sm">Database integration</span>
+                </div>
+              </div>
+              <div class="mt-8">
+                <a href="https://github.com/trysourcetool/sourcetool-go" class="btn btn-primary w-full group" target="_blank">
+                  View Documentation
+                  <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
+                </a>
+              </div>
+            </div>
           </div>
 
-          <!-- Do I need frontend skills? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">Do I need frontend skills to use Sourcetool?</h3>
-            <p class="text-sm text-muted-foreground"><span class="font-medium">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-medium">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
+          <!-- TypeScript SDK -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3178c6] to-[#3178c6]/50 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-border flex flex-col">
+              <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground ring-1 ring-inset ring-border">
+                  Coming soon
+                </span>
+              </div>
+              <div class="mb-6">
+                <img src="./assets/images/ts-logo.png" alt="TypeScript Logo" class="h-16" />
+              </div>
+              <h3 class="text-2xl font-bold mb-4">TypeScript SDK</h3>
+              <p class="text-muted-foreground mb-6 flex-grow">Build type-safe internal tools with TypeScript's modern syntax and the extensive Node.js ecosystem. Perfect for full-stack JavaScript developers.</p>
+              <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">End-to-end type safety</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">Node.js integration</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">Express & Next.js support</span>
+                </div>
+              </div>
+              <div class="mt-8">
+                <button class="btn w-full border-2 border-muted text-muted-foreground cursor-not-allowed opacity-80" disabled>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- What types of applications? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">What types of applications can I build with Sourcetool?</h3>
-            <p class="text-sm text-muted-foreground"><span class="font-medium">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</p>
+          <!-- Python SDK -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-[#3776ab] to-[#3776ab]/50 rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+            <div class="relative h-full rounded-2xl bg-card/50 backdrop-blur-sm p-8 ring-1 ring-border flex flex-col">
+              <div class="absolute top-4 right-4">
+                <span class="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground ring-1 ring-inset ring-border">
+                  Coming soon
+                </span>
+              </div>
+              <div class="mb-6">
+                <img src="./assets/images/python-logo.png" alt="Python Logo" class="h-16" />
+              </div>
+              <h3 class="text-2xl font-bold mb-4">Python SDK</h3>
+              <p class="text-muted-foreground mb-6 flex-grow">Leverage Python's simplicity and extensive libraries to create powerful internal tools. Perfect for data scientists and Python developers.</p>
+              <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">FastAPI & Django support</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">Data science integration</span>
+                </div>
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check" class="w-5 h-5 text-muted-foreground mt-0.5"></i>
+                  <span class="text-sm text-muted-foreground">Pandas & NumPy support</span>
+                </div>
+              </div>
+              <div class="mt-8">
+                <button class="btn w-full border-2 border-muted text-muted-foreground cursor-not-allowed opacity-80" disabled>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section" id="faq">
+      <div class="section-container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know about Sourcetool.</p>
+        <div class="space-y-6">
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">What is Sourcetool?</h3>
+            <p class="text-muted-foreground">Sourcetool is an <span class="font-bold">open-source internal tool builder</span> that enables you to build full-featured internal tools <span class="font-bold">without writing any frontend code</span>. It handles all frontend complexities automatically, allowing you to focus on implementing business logic in your backend code.</p>
           </div>
 
-          <!-- Is it compatible? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">Is Sourcetool compatible with existing Go code?</h3>
-            <p class="text-sm text-muted-foreground"><span class="font-medium">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">Do I need frontend skills to use Sourcetool?</h3>
+            <p class="text-muted-foreground"><span class="font-bold">No</span>. As an internal tool builder, Sourcetool lets you create <span class="font-bold">complete applications using only Go</span>. The system automatically handles all UI rendering and interactions without requiring any frontend code.</p>
           </div>
 
-          <!-- How does it work? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">How does Sourcetool work behind the scenes?</h3>
-            <p class="text-sm text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-medium">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">What types of applications can I build with Sourcetool?</h3>
+            <p class="text-muted-foreground"><span class="font-bold">Admin panels, dashboards, data management systems, monitoring tools</span>, and any application where development speed is more important than custom UI/UX.</p>
           </div>
 
-          <!-- Compare to React/Vue -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">How does Sourcetool compare to writing a React/Vue frontend?</h3>
-            <p class="text-sm text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-medium">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">Is Sourcetool compatible with existing Go code?</h3>
+            <p class="text-muted-foreground"><span class="font-bold">Yes</span>. Sourcetool works alongside your existing Go code and libraries.</p>
           </div>
 
-          <!-- Compare to Retool -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">How does Sourcetool differ from Retool?</h3>
-            <p class="text-sm text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-medium">code-first</span>. This makes Sourcetool <span class="font-medium">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-medium">type-safe Go code</span>, your applications are <span class="font-medium">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows, making internal tool creation faster and more maintainable.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">How does Sourcetool work behind the scenes?</h3>
+            <p class="text-muted-foreground">Sourcetool connects browsers to your backend code through <span class="font-bold">WebSockets via the Sourcetool server</span>. This approach eliminates the need for frontend development while enabling real-time interaction between users and your business logic implemented in Go.</p>
           </div>
 
-          <!-- Is it secure? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">Is Sourcetool secure?</h3>
-            <p class="text-sm text-muted-foreground"><span class="font-medium">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-medium">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. By design, the Sourcetool server <span class="font-medium">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">What's the difference between Sourcetool and React/Vue?</h3>
+            <p class="text-muted-foreground">React/Vue gives you more UI customization options, but as an internal tool builder, Sourcetool <span class="font-bold">eliminates the need for frontend code entirely</span>. It lets you build functional internal tools faster using only backend Go code, without the complexity of managing a separate frontend codebase.</p>
           </div>
 
-          <!-- Is it free? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">Is Sourcetool free to use?</h3>
-            <p class="text-sm text-muted-foreground">Check out the <a href="https://trysourcetool.com" class="text-primary underline">Sourcetool website</a> for pricing information. The SDK is <span class="font-medium">open source under the MIT license</span>.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">How does Sourcetool differ from Retool?</h3>
+            <p class="text-muted-foreground">Retool uses a GUI-based drag-and-drop approach, while Sourcetool is <span class="font-bold">code-first</span>. This makes Sourcetool <span class="font-bold">ideal for the AI era</span> where code can be easily understood and modified by AI tools. With <span class="font-bold">type-safe Go code</span>, your applications are <span class="font-bold">Git version-controllable</span> and integrate seamlessly with AI-assisted development workflows.</p>
           </div>
 
-          <!-- How to contribute? -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">How can I contribute to Sourcetool?</h3>
-            <p class="text-sm text-muted-foreground">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary underline">GitHub repository</a> and review the contribution guidelines.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">Is Sourcetool secure?</h3>
+            <p class="text-muted-foreground"><span class="font-bold">Yes</span>, Sourcetool is designed with security in mind. You <span class="font-bold">deploy and run Sourcetool applications on your own infrastructure</span>, keeping your code and sensitive data within your control. The Sourcetool server <span class="font-bold">cannot access your code or secrets</span>, ensuring your internal tools remain private and secure.</p>
           </div>
 
-          <!-- Learn more -->
-          <div class="flex flex-col space-y-2">
-            <h3 class="text-lg font-semibold text-primary">Where can I learn more about Sourcetool?</h3>
-            <p class="text-sm text-muted-foreground">Visit our <a href="https://docs.trysourcetool.com" class="text-primary underline">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary underline">Twitter</a> for updates and announcements.</p>
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">Is Sourcetool free to use?</h3>
+            <p class="text-muted-foreground">Yes, Sourcetool is completely open-source and free to use. The SDK is <span class="font-bold">open source under the MIT license</span>. We're building a cloud offering with additional features, but the core platform will always remain free and open source.</p>
+          </div>
+
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">How can I contribute to Sourcetool?</h3>
+            <p class="text-muted-foreground">Check out our <a href="https://github.com/trysourcetool/sourcetool" class="text-primary hover:underline" target="_blank">GitHub repository</a> and review the contribution guidelines.</p>
+          </div>
+
+          <div class="max-w-3xl">
+            <h3 class="text-xl font-semibold mb-3">Where can I learn more about Sourcetool?</h3>
+            <p class="text-muted-foreground">Visit our <a href="https://docs.trysourcetool.com" class="text-primary hover:underline" target="_blank">documentation site</a> for detailed guides, API reference, and examples. You can also follow us on <a href="https://x.com/sourcetool" class="text-primary hover:underline" target="_blank">Twitter</a> for updates and announcements.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section bg-gradient-to-b from-background via-primary/5 to-background">
+      <div class="section-container">
+        <div class="relative">
+          <div class="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent rounded-3xl"></div>
+          <div class="relative">
+            <div class="max-w-[600px]">
+              <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6">Ready to start building?</h2>
+              <p class="text-xl text-muted-foreground mb-8">Join the growing community of developers<br>using Sourcetool to build better internal tools, faster.</p>
+              <div class="flex flex-col sm:flex-row gap-4">
+                <a href="https://github.com/trysourcetool/sourcetool" class="btn btn-primary group" target="_blank">
+                  Get started
+                  <i data-lucide="arrow-right" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"></i>
+                </a>
+                <a href="https://docs.trysourcetool.com" class="btn btn-outline" target="_blank">View documentation</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -780,7 +881,7 @@
         const html = document.documentElement;
 
         // Get theme from local storage
-        const savedTheme = localStorage.getItem('theme') || 'light';
+        const savedTheme = localStorage.getItem('theme') || 'dark';
         html.className = savedTheme;
 
         // Theme toggle
