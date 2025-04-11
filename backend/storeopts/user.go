@@ -38,18 +38,18 @@ func (o userByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`u."email"`: o.email})
 }
 
-func UserBySecret(secret string) UserOption {
-	return userBySecretOption{secret: secret}
+func UserByRefreshTokenHash(refreshTokenHash string) UserOption {
+	return userByRefreshTokenHashOption{refreshTokenHash: refreshTokenHash}
 }
 
-type userBySecretOption struct {
-	secret string
+type userByRefreshTokenHashOption struct {
+	refreshTokenHash string
 }
 
-func (o userBySecretOption) isUserOption() {}
+func (o userByRefreshTokenHashOption) isUserOption() {}
 
-func (o userBySecretOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`u."secret"`: o.secret})
+func (o userByRefreshTokenHashOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."refresh_token_hash"`: o.refreshTokenHash})
 }
 
 func UserByOrganizationID(id uuid.UUID) UserOption {
@@ -208,7 +208,7 @@ func (o userOrganizationAccessOrderByOption) Apply(b sq.SelectBuilder) sq.Select
 	return b.OrderBy(o.orderBy)
 }
 
-// TODO: Role should be a model.UserOrganizationRole but we need to resolve the circular dependency first
+// TODO: Role should be a model.UserOrganizationRole but we need to resolve the circular dependency first.
 func UserOrganizationAccessByRole(role int) UserOrganizationAccessOption {
 	return userOrganizationAccessByRoleOption{role: role}
 }

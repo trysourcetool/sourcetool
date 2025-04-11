@@ -66,7 +66,7 @@ func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOption) 
 		`u."first_name"`,
 		`u."last_name"`,
 		`u."updated_at"`,
-		`u."secret"`,
+		`u."refresh_token_hash"`,
 		`u."google_id"`,
 	).
 		From(`"user" u`)
@@ -91,7 +91,7 @@ func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
 			`"email"`,
 			`"first_name"`,
 			`"last_name"`,
-			`"secret"`,
+			`"refresh_token_hash"`,
 			`"google_id"`,
 		).
 		Values(
@@ -99,7 +99,7 @@ func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
 			m.Email,
 			m.FirstName,
 			m.LastName,
-			m.Secret,
+			m.RefreshTokenHash,
 			m.GoogleID,
 		).
 		RunWith(s.db).
@@ -119,7 +119,7 @@ func (s *StoreCE) Update(ctx context.Context, m *model.User) error {
 		Set(`"email"`, m.Email).
 		Set(`"first_name"`, m.FirstName).
 		Set(`"last_name"`, m.LastName).
-		Set(`"secret"`, m.Secret).
+		Set(`"refresh_token_hash"`, m.RefreshTokenHash).
 		Set(`"google_id"`, m.GoogleID).
 		Where(sq.Eq{`"id"`: m.ID}).
 		RunWith(s.db).

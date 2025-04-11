@@ -144,7 +144,7 @@ type AuthenticateWithMagicLinkOutput struct {
 	AuthURL         string
 	Token           string
 	HasOrganization bool
-	Secret          string
+	RefreshToken    string
 	XSRFToken       string
 	Domain          string
 	IsNewUser       bool // Indicates if a new user was created
@@ -152,18 +152,18 @@ type AuthenticateWithMagicLinkOutput struct {
 
 // RefreshTokenInput is the input for Refresh Token operation.
 type RefreshTokenInput struct {
-	Secret          string
+	RefreshToken    string
 	XSRFTokenHeader string
 	XSRFTokenCookie string
 }
 
 // RefreshTokenOutput is the output for Refresh Token operation.
 type RefreshTokenOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
+	Token        string
+	RefreshToken string
+	XSRFToken    string
+	ExpiresAt    string
+	Domain       string
 }
 
 // SaveAuthInput is the input for Save Auth operation.
@@ -173,12 +173,12 @@ type SaveAuthInput struct {
 
 // SaveAuthOutput is the output for Save Auth operation.
 type SaveAuthOutput struct {
-	Token       string
-	Secret      string
-	XSRFToken   string
-	ExpiresAt   string
-	RedirectURL string
-	Domain      string
+	Token        string
+	RefreshToken string
+	XSRFToken    string
+	ExpiresAt    string
+	RedirectURL  string
+	Domain       string
 }
 
 // ObtainAuthTokenOutput is the output for Obtain Auth Token operation.
@@ -223,7 +223,7 @@ type RegisterWithMagicLinkInput struct {
 // RegisterWithMagicLinkOutput is the output for registering with a magic link.
 type RegisterWithMagicLinkOutput struct {
 	Token           string
-	Secret          string
+	RefreshToken    string
 	XSRFToken       string
 	ExpiresAt       string
 	HasOrganization bool
@@ -262,11 +262,11 @@ type RegisterWithInvitationMagicLinkInput struct {
 
 // RegisterWithInvitationMagicLinkOutput represents the output for registering with an invitation magic link.
 type RegisterWithInvitationMagicLinkOutput struct {
-	Token     string
-	Secret    string
-	XSRFToken string
-	ExpiresAt string
-	Domain    string
+	Token        string
+	RefreshToken string
+	XSRFToken    string
+	ExpiresAt    string
+	Domain       string
 }
 
 // RequestGoogleAuthLinkOutput represents the output for requesting a Google Auth link.
@@ -288,7 +288,7 @@ type AuthenticateWithGoogleOutput struct {
 	Token                    string
 	HasOrganization          bool
 	HasMultipleOrganizations bool
-	Secret                   string
+	RefreshToken             string
 	XSRFToken                string
 	Domain                   string
 	IsNewUser                bool
@@ -305,7 +305,7 @@ type RegisterWithGoogleInput struct {
 // RegisterWithGoogleOutput defines the output after successfully registering a new user via Google.
 type RegisterWithGoogleOutput struct {
 	Token           string
-	Secret          string
+	RefreshToken    string
 	XSRFToken       string
 	ExpiresAt       string
 	AuthURL         string
@@ -332,7 +332,7 @@ type AuthenticateWithInvitationGoogleAuthLinkInput struct {
 type AuthenticateWithInvitationGoogleAuthLinkOutput struct {
 	AuthURL         string
 	Token           string
-	Secret          string
+	RefreshToken    string
 	XSRFToken       string
 	Domain          string
 	HasOrganization bool

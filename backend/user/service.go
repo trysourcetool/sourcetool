@@ -464,15 +464,15 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 		}
 	}
 
-	// Create token, secret, etc.
-	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(
+	// Create token, refresh token, etc.
+	token, xsrfToken, plainRefreshToken, hashedRefreshToken, _, err := s.createTokens(
 		user.ID, model.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update user with new secret
-	user.Secret = hashedSecret
+	// Update user with new refresh token
+	user.RefreshTokenHash = hashedRefreshToken
 	authURL, err := buildSaveAuthURL(orgSubdomain)
 	if err != nil {
 		return nil, err
@@ -489,7 +489,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: orgAccess != nil,
-		Secret:          plainSecret,
+		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
 		Domain:          config.Config.OrgDomain(orgSubdomain),
 		IsNewUser:       false,
@@ -508,8 +508,8 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 		return nil, errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
-	// Generate secret and XSRF token
-	plainSecret, hashedSecret, err := generateSecret()
+	// Generate refresh token and XSRF token
+	plainRefreshToken, hashedRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return nil, err
 	}
@@ -517,12 +517,11 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	// Create a new user
 	now := time.Now()
 	user := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		Email:                claims.Email,
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
+		ID:               uuid.Must(uuid.NewV4()),
+		Email:            claims.Email,
+		FirstName:        in.FirstName,
+		LastName:         in.LastName,
+		RefreshTokenHash: hashedRefreshToken,
 	}
 
 	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByUserID(user.ID))
@@ -551,7 +550,7 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 
 		// Create token
 		var err error
-		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(user.ID, expiration)
+		token, xsrfToken, _, _, _, err = s.createTokens(user.ID, expiration)
 		if err != nil {
 			return err
 		}
@@ -564,7 +563,7 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 
 	return &dto.RegisterWithMagicLinkOutput{
 		Token:           token,
-		Secret:          plainSecret,
+		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
 		ExpiresAt:       strconv.FormatInt(now.Add(expiration).Unix(), 10),
 		HasOrganization: hasOrganization,
@@ -661,9 +660,9 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
 	}
 
-	// Get user by secret
-	hashedSecret := hashSecret(in.Secret)
-	u, err := s.Store.User().Get(ctx, storeopts.UserBySecret(hashedSecret))
+	// Get user by refresh token
+	hashedRefreshToken := hashRefreshToken(in.RefreshToken)
+	u, err := s.Store.User().Get(ctx, storeopts.UserByRefreshTokenHash(hashedRefreshToken))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -699,11 +698,11 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 	}
 
 	return &dto.RefreshTokenOutput{
-		Token:     token,
-		Secret:    in.Secret,
-		XSRFToken: xsrfToken,
-		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(orgSubdomain),
+		Token:        token,
+		RefreshToken: in.RefreshToken,
+		XSRFToken:    xsrfToken,
+		ExpiresAt:    strconv.FormatInt(expiresAt.Unix(), 10),
+		Domain:       config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
@@ -743,7 +742,7 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		}
 	}
 
-	// Generate token and secret
+	// Generate token and refresh token
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -752,13 +751,13 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	plainSecret, hashedSecret, err := generateSecret()
+	plainRefreshToken, hashedRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	// Update user's secret
-	u.Secret = hashedSecret
+	// Update user's refresh token
+	u.RefreshTokenHash = hashedRefreshToken
 
 	// Save changes
 	if err = s.Store.RunTransaction(func(tx infra.Transaction) error {
@@ -768,12 +767,12 @@ func (s *ServiceCE) SaveAuth(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	}
 
 	return &dto.SaveAuthOutput{
-		Token:       token,
-		Secret:      plainSecret,
-		XSRFToken:   xsrfToken,
-		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
-		RedirectURL: config.Config.OrgBaseURL(orgSubdomain),
-		Domain:      config.Config.OrgDomain(orgSubdomain),
+		Token:        token,
+		RefreshToken: plainRefreshToken,
+		XSRFToken:    xsrfToken,
+		ExpiresAt:    strconv.FormatInt(expiresAt.Unix(), 10),
+		RedirectURL:  config.Config.OrgBaseURL(orgSubdomain),
+		Domain:       config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
@@ -979,8 +978,8 @@ func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx infra.Transacti
 
 // Helper functions for common operations
 
-// createTokenWithSecret creates a new authentication token and secret.
-func (s *ServiceCE) createTokenWithSecret(userID uuid.UUID, expiration time.Duration) (token, xsrfToken, plainSecret, hashedSecret string, expiresAt time.Time, err error) {
+// createTokens creates a new authentication token and refresh token.
+func (s *ServiceCE) createTokens(userID uuid.UUID, expiration time.Duration) (token, xsrfToken, plainRefreshToken, hashedRefreshToken string, expiresAt time.Time, err error) {
 	now := time.Now()
 	expiresAt = now.Add(expiration)
 	xsrfToken = uuid.Must(uuid.NewV4()).String()
@@ -990,12 +989,12 @@ func (s *ServiceCE) createTokenWithSecret(userID uuid.UUID, expiration time.Dura
 		return "", "", "", "", time.Time{}, err
 	}
 
-	plainSecret, hashedSecret, err = generateSecret()
+	plainRefreshToken, hashedRefreshToken, err = generateRefreshToken()
 	if err != nil {
 		return "", "", "", "", time.Time{}, errdefs.ErrInternal(err)
 	}
 
-	return token, xsrfToken, plainSecret, hashedSecret, expiresAt, nil
+	return token, xsrfToken, plainRefreshToken, hashedRefreshToken, expiresAt, nil
 }
 
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
@@ -1203,7 +1202,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 		Role:           userInvitation.Role,
 	}
 
-	// Generate token and secret
+	// Generate token and refresh token
 	now := time.Now()
 	expiresAt := now.Add(model.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
@@ -1279,8 +1278,8 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
 	}
 
-	// Generate secret
-	plainSecret, hashedSecret, err := generateSecret()
+	// Generate refresh token
+	plainRefreshToken, hashedRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return nil, errdefs.ErrInternal(err)
 	}
@@ -1289,12 +1288,11 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 	now := time.Now()
 	expiresAt := now.Add(model.TokenExpiration())
 	u := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		FirstName:            in.FirstName,
-		LastName:             in.LastName,
-		Email:                c.Email,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
+		ID:               uuid.Must(uuid.NewV4()),
+		FirstName:        in.FirstName,
+		LastName:         in.LastName,
+		Email:            c.Email,
+		RefreshTokenHash: hashedRefreshToken,
 	}
 
 	// Create organization access
@@ -1336,11 +1334,11 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 	}
 
 	return &dto.RegisterWithInvitationMagicLinkOutput{
-		Token:     token,
-		Secret:    plainSecret,
-		XSRFToken: xsrfToken,
-		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
-		Domain:    config.Config.OrgDomain(orgSubdomain),
+		Token:        token,
+		RefreshToken: plainRefreshToken,
+		XSRFToken:    xsrfToken,
+		ExpiresAt:    strconv.FormatInt(expiresAt.Unix(), 10),
+		Domain:       config.Config.OrgDomain(orgSubdomain),
 	}, nil
 }
 
@@ -1561,12 +1559,12 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 	}
 
 	// Generate temporary auth tokens
-	token, xsrfToken, plainSecret, hashedSecret, _, err := s.createTokenWithSecret(user.ID, model.TmpTokenExpiration)
+	token, xsrfToken, plainRefreshToken, hashedRefreshToken, _, err := s.createTokens(user.ID, model.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
 
-	user.Secret = hashedSecret
+	user.RefreshTokenHash = hashedRefreshToken
 	if needsGoogleIDUpdate {
 		user.GoogleID = userInfo.id
 	}
@@ -1604,7 +1602,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: orgAccess != nil,
-		Secret:          plainSecret,
+		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
 		Domain:          config.Config.OrgDomain(orgSubdomain),
 		IsNewUser:       false,
@@ -1632,22 +1630,21 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 		return nil, errdefs.ErrUserEmailAlreadyExists(fmt.Errorf("user with email %s already exists", claims.Email))
 	}
 
-	plainSecret, hashedSecret, err := generateSecret()
+	plainRefreshToken, hashedRefreshToken, err := generateRefreshToken()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate secret: %w", err)
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 
 	now := time.Now()
 	tokenExpiration := model.TokenExpiration()
 	expiresAt := now.Add(tokenExpiration)
 	user := &model.User{
-		ID:                   uuid.Must(uuid.NewV4()),
-		Email:                claims.Email,
-		FirstName:            claims.FirstName,
-		LastName:             claims.LastName,
-		Secret:               hashedSecret,
-		EmailAuthenticatedAt: &now,
-		GoogleID:             claims.GoogleID,
+		ID:               uuid.Must(uuid.NewV4()),
+		Email:            claims.Email,
+		FirstName:        claims.FirstName,
+		LastName:         claims.LastName,
+		RefreshTokenHash: hashedRefreshToken,
+		GoogleID:         claims.GoogleID,
 	}
 
 	var token, xsrfToken string
@@ -1703,7 +1700,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 		}
 
 		var err error
-		token, xsrfToken, _, _, _, err = s.createTokenWithSecret(user.ID, tokenExpiration)
+		token, xsrfToken, _, _, _, err = s.createTokens(user.ID, tokenExpiration)
 		if err != nil {
 			return fmt.Errorf("failed to create auth token: %w", err)
 		}
@@ -1723,7 +1720,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 
 	return &dto.RegisterWithGoogleOutput{
 		Token:           token,
-		Secret:          plainSecret,
+		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
 		ExpiresAt:       strconv.FormatInt(expiresAt.Unix(), 10),
 		AuthURL:         authURL,
