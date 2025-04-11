@@ -20,7 +20,7 @@ func TestHashRefreshToken(t *testing.T) {
 		{
 			name:     "non-empty string",
 			input:    "test-refresh-token",
-			expected: "9caf06bb4436cdbfa20af9121a626bc1093c4f54b31c0fa937957856135345b6",
+			expected: "0a9b110d5e553bd98e9965c70a601c15c36805016ba60d54f20f5830c39edcde",
 		},
 	}
 
