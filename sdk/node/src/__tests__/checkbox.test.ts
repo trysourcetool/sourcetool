@@ -1,16 +1,16 @@
 // src/checkbox.spec.ts
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { CheckboxState } from './internal/session/state/checkbox';
+import { CheckboxState } from '../internal/session/state/checkbox';
 import {
   convertCheckboxProtoToState,
   convertStateToCheckboxProto,
-} from './checkbox';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+} from '../checkbox';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToCheckboxProto', () => {
   const id = uuidv4();

@@ -1,87 +1,77 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { SelectboxState } from './internal/session/state/selectbox';
-import {
-  convertSelectboxProtoToState,
-  convertStateToSelectboxProto,
-  selectbox,
-} from './selectbox';
-import { createSessionManager, newSession } from './internal/session';
-import { MockClient } from './internal/websocket/mock/websocket';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
+import { RadioState } from '../internal/session/state/radio';
+import { convertRadioProtoToState, convertStateToRadioProto } from '../radio';
+import { createSessionManager, newSession } from '../internal/session';
+import { MockClient } from '../internal/websocket/mock/websocket';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
 
-test('convertStateToSelectboxProto', () => {
+test('convertStateToRadioProto', () => {
   const id = uuidv4();
-  const label = 'Test Selectbox';
+  const label = 'Test Radio';
   const value = 1;
   const options = ['Option 1', 'Option 2'];
-  const placeholder = 'Select an option';
   const defaultValue = 0;
   const required = true;
   const disabled = false;
 
-  const state = new SelectboxState(
+  const state = new RadioState(
     id,
     value,
     label,
     options,
-    placeholder,
     defaultValue,
     required,
     disabled,
   );
-  const proto = convertStateToSelectboxProto(state);
+  const proto = convertStateToRadioProto(state);
 
   expect(proto.label).toBe(label);
   expect(proto.value).toBe(value);
   expect(proto.options).toEqual(options);
-  expect(proto.placeholder).toBe(placeholder);
   expect(proto.defaultValue).toBe(defaultValue);
   expect(proto.required).toBe(required);
   expect(proto.disabled).toBe(disabled);
 });
 
-test('convertSelectboxProtoToState', () => {
+test('convertRadioProtoToState', () => {
   const id = uuidv4();
-  const label = 'Test Selectbox';
+  const label = 'Test Radio';
   const value = 1;
   const options = ['Option 1', 'Option 2'];
-  const placeholder = 'Select an option';
   const defaultValue = 0;
   const required = true;
   const disabled = false;
 
-  const tempState = new SelectboxState(
+  const tempState = new RadioState(
     id,
     value,
     label,
     options,
-    placeholder,
     defaultValue,
     required,
     disabled,
   );
-  const proto = convertStateToSelectboxProto(tempState);
+  const proto = convertStateToRadioProto(tempState);
 
-  const state = convertSelectboxProtoToState(id, proto);
+  const state = convertRadioProtoToState(id, proto);
 
   if (!state) {
-    throw new Error('SelectboxState not found');
+    throw new Error('RadioState not found');
   }
 
   expect(state.id).toBe(id);
   expect(state.label).toBe(label);
   expect(state.value).toBe(value);
   expect(state.options).toEqual(options);
-  expect(state.placeholder).toBe(placeholder);
   expect(state.defaultValue).toBe(defaultValue);
   expect(state.required).toBe(required);
   expect(state.disabled).toBe(disabled);
 });
 
-test('selectbox', () => {
+test('radio', () => {
   const sessionId = uuidv4();
   const pageId = uuidv4();
   const session = newSession(sessionId, pageId);
@@ -102,40 +92,39 @@ test('selectbox', () => {
   const runtime = new Runtime(mockWS, sessionManager, pageManager);
 
   const page = pageManager.getPage(pageId);
+
   if (!page) {
     throw new Error('Page not found');
   }
 
   const builder = new UIBuilder(runtime, session, page);
 
-  const label = 'Test Selectbox';
+  const label = 'Test Radio';
   const initialOptions = ['Option 1', 'Option 2'];
   const options = {
     options: initialOptions,
     defaultValue: 'Option 1',
-    placeholder: 'Select an option',
     required: true,
     disabled: false,
-    formatFunc: (val: string) => val.toLowerCase(),
+    formatFunc: (val: string) => val.toUpperCase(),
   };
 
-  selectbox(builder, label, options);
+  builder.radio(label, options);
 
-  const widgetId = builder.generatePageID('selectbox', [0]);
-  const state = session.state.getSelectbox(widgetId);
+  const widgetId = builder.generatePageID('radio', [0]);
+  const state = session.state.getRadio(widgetId);
 
   const expectedDefaultIndex = initialOptions.indexOf(options.defaultValue);
   const expectedFormattedOptions = initialOptions.map(options.formatFunc);
 
   if (!state) {
-    throw new Error('SelectboxState not found');
+    throw new Error('RadioState not found');
   }
 
   expect(state.id).toBe(widgetId);
   expect(state.label).toBe(label);
   expect(state.value).toBe(expectedDefaultIndex);
   expect(state.options).toEqual(expectedFormattedOptions);
-  expect(state.placeholder).toBe(options.placeholder);
   expect(state.defaultValue).toBe(expectedDefaultIndex);
   expect(state.required).toBe(options.required);
   expect(state.disabled).toBe(options.disabled);

@@ -3,11 +3,11 @@ import {
   createSessionManager,
   createSessionState,
   newSession,
-} from './session';
+} from '../internal/session';
 import { v4 as uuidv4 } from 'uuid';
-import { RadioState } from './session/state/radio';
-import { ButtonState } from './session/state/button';
-import { FormState } from './session/state/form';
+import { RadioState } from '../internal/session/state/radio';
+import { ButtonState } from '../internal/session/state/button';
+import { FormState } from '../internal/session/state/form';
 
 test('newSession', () => {
   const id = uuidv4();

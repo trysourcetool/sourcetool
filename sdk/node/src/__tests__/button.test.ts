@@ -1,12 +1,15 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { ButtonState } from './internal/session/state/button';
-import { convertButtonProtoToState, convertStateToButtonProto } from './button';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+import { ButtonState } from '../internal/session/state/button';
+import {
+  convertButtonProtoToState,
+  convertStateToButtonProto,
+} from '../button';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToButtonProto', () => {
   const id = uuidv4();

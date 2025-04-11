@@ -1,28 +1,28 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { TextInputState } from './internal/session/state/textinput';
+import { NumberInputState } from '../internal/session/state/numberinput';
 import {
-  convertTextInputProtoToState,
-  convertStateToTextInputProto,
-} from './textinput';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+  convertNumberInputProtoToState,
+  convertStateToNumberInputProto,
+} from '../numberinput';
+import { createSessionManager, newSession } from '../internal/session';
+import { MockClient } from '../internal/websocket/mock/websocket';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
 
-test('convertStateToTextInputProto', () => {
+test('convertStateToNumberInputProto', () => {
   const id = uuidv4();
-  const label = 'Test TextInput';
-  const value = 'test value';
-  const placeholder = 'Enter text';
-  const defaultValue = 'default';
+  const label = 'Test NumberInput';
+  const value = 42.5;
+  const placeholder = 'Enter number';
+  const defaultValue = 0.0;
   const required = true;
   const disabled = false;
-  const maxLength = 100;
-  const minLength = 10;
+  const maxValue = 100.0;
+  const minValue = 0.0;
 
-  const state = new TextInputState(
+  const state = new NumberInputState(
     id,
     value,
     label,
@@ -30,10 +30,10 @@ test('convertStateToTextInputProto', () => {
     defaultValue,
     required,
     disabled,
-    maxLength,
-    minLength,
+    maxValue,
+    minValue,
   );
-  const proto = convertStateToTextInputProto(state);
+  const proto = convertStateToNumberInputProto(state);
 
   expect(proto.value).toBe(value);
   expect(proto.label).toBe(label);
@@ -41,23 +41,23 @@ test('convertStateToTextInputProto', () => {
   expect(proto.defaultValue).toBe(defaultValue);
   expect(proto.required).toBe(required);
   expect(proto.disabled).toBe(disabled);
-  expect(proto.maxLength).toBe(maxLength);
-  expect(proto.minLength).toBe(minLength);
+  expect(proto.maxValue).toBe(maxValue);
+  expect(proto.minValue).toBe(minValue);
 });
 
-test('convertTextInputProtoToState', () => {
+test('convertNumberInputProtoToState', () => {
   const id = uuidv4();
-  const label = 'Test TextInput';
-  const value = 'test value';
-  const placeholder = 'Enter text';
-  const defaultValue = 'default';
+  const label = 'Test NumberInput';
+  const value = 42.5;
+  const placeholder = 'Enter number';
+  const defaultValue = 0.0;
   const required = true;
   const disabled = false;
-  const maxLength = 100;
-  const minLength = 10;
+  const maxValue = 100.0;
+  const minValue = 0.0;
 
-  const proto = convertStateToTextInputProto(
-    new TextInputState(
+  const proto = convertStateToNumberInputProto(
+    new NumberInputState(
       id,
       value,
       label,
@@ -65,14 +65,14 @@ test('convertTextInputProtoToState', () => {
       defaultValue,
       required,
       disabled,
-      maxLength,
-      minLength,
+      maxValue,
+      minValue,
     ),
   );
-  const state = convertTextInputProtoToState(id, proto);
+  const state = convertNumberInputProtoToState(id, proto);
 
   if (!state) {
-    throw new Error('TextInputState not found');
+    throw new Error('NumberInputState not found');
   }
 
   expect(state.id).toBe(id);
@@ -82,11 +82,11 @@ test('convertTextInputProtoToState', () => {
   expect(state.defaultValue).toBe(defaultValue);
   expect(state.required).toBe(required);
   expect(state.disabled).toBe(disabled);
-  expect(state.maxLength).toBe(maxLength);
-  expect(state.minLength).toBe(minLength);
+  expect(state.maxValue).toBe(maxValue);
+  expect(state.minValue).toBe(minValue);
 });
 
-test('textInput', () => {
+test('numberInput', () => {
   const sessionId = uuidv4();
   const pageId = uuidv4();
   const session = newSession(sessionId, pageId);
@@ -114,23 +114,23 @@ test('textInput', () => {
 
   const builder = new UIBuilder(runtime, session, page);
 
-  const label = 'Test TextInput';
+  const label = 'Test NumberInput';
   const options = {
-    placeholder: 'Enter text',
-    defaultValue: 'default value',
+    placeholder: 'Enter number',
+    defaultValue: 42.5,
     required: true,
     disabled: true,
-    maxLength: 100,
-    minLength: 10,
+    maxValue: 100.0,
+    minValue: 0.0,
   };
 
-  builder.textInput(label, options);
+  builder.numberInput(label, options);
 
-  const widgetId = builder.generatePageID('textInput', [0]);
-  const state = session.state.getTextInput(widgetId);
+  const widgetId = builder.generatePageID('numberInput', [0]);
+  const state = session.state.getNumberInput(widgetId);
 
   if (!state) {
-    throw new Error('TextInput not found');
+    throw new Error('NumberInputState not found');
   }
 
   expect(state.id).toBe(widgetId);
@@ -140,6 +140,6 @@ test('textInput', () => {
   expect(state.defaultValue).toBe(options.defaultValue);
   expect(state.required).toBe(options.required);
   expect(state.disabled).toBe(options.disabled);
-  expect(state.maxLength).toBe(options.maxLength);
-  expect(state.minLength).toBe(options.minLength);
+  expect(state.maxValue).toBe(options.maxValue);
+  expect(state.minValue).toBe(options.minValue);
 });

@@ -10,16 +10,12 @@
     "skipLibCheck": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "types": [
-      "node",
-      "vitest/globals"
-    ],
+    "types": ["node", "vitest/globals"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.mts",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx"
+    "src/**/*.test.ts"
   ]
 }

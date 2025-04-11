@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
-import { FormState } from './internal/session/state/form';
-import { convertFormProtoToState, convertStateToFormProto } from './form';
-import { createSessionManager, newSession } from './internal/session';
-import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './internal/page';
-import { Runtime } from './runtime';
-import { MockClient } from './internal/websocket/mock/websocket';
+import { FormState } from '../internal/session/state/form';
+import { convertFormProtoToState, convertStateToFormProto } from '../form';
+import { createSessionManager, newSession } from '../internal/session';
+import { UIBuilder } from '../uibuilder';
+import { Page, PageManager } from '../internal/page';
+import { Runtime } from '../runtime';
+import { MockClient } from '../internal/websocket/mock/websocket';
 
 test('convertStateToFormProto', () => {
   const id = uuidv4();
