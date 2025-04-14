@@ -90,8 +90,8 @@ func (router *Router) Build() chi.Router {
 			r.Use(router.middleware.AuthUserWithOrganization)
 
 			// Authenticated User
-			r.Get("/me/", router.user.GetMe)
-			r.Put("/me/", router.user.UpdateMe)
+			r.Get("/me", router.user.GetMe)
+			r.Put("/me", router.user.UpdateMe)
 			r.Post("/me/email/instructions", router.user.SendUpdateMeEmailInstructions)
 			r.Put("/me/email", router.user.UpdateMeEmail)
 
@@ -101,7 +101,7 @@ func (router *Router) Build() chi.Router {
 			r.Delete("/{userID}", router.user.Delete)
 
 			// Organization Invitations
-			r.Post("/invitations/", router.user.CreateUserInvitations)
+			r.Post("/invitations", router.user.CreateUserInvitations)
 			r.Post("/invitations/{invitationID}/resend", router.user.ResendUserInvitation)
 		})
 
