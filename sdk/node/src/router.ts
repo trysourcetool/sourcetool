@@ -151,13 +151,20 @@ export class Router implements RouterInterface {
     name: string,
     handler: (ui: UIBuilder) => Promise<void>,
   ): void {
+    // Skip page creation only for top-level root path
+    if (relativePath === '/' && this.basePath === '') {
+      return;
+    }
+
     let fullPath: string;
 
     if (relativePath === '') {
       if (this.basePath === '') {
         fullPath = '/';
       } else {
-        fullPath = this.basePath;
+        fullPath = this.basePath.endsWith('/')
+          ? this.basePath.slice(0, -1)
+          : this.basePath;
       }
     } else {
       fullPath = this.joinPath(relativePath);
