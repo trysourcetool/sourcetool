@@ -1,13 +1,18 @@
 FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
 
 # Set environment variables for the build
 ENV VITE_IS_CLOUD_EDITION=true
 
-COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --frozen-lockfile
-COPY frontend/ ./
-RUN yarn build
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY frontend/package.json ./frontend/
+RUN pnpm install --frozen-lockfile
+COPY frontend/ ./frontend/
+RUN pnpm build:frontend
 
 FROM golang:1.23 AS backend-builder
 WORKDIR /go/src/github.com/trysourcetool/sourcetool
