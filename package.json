@@ -1,0 +1,27 @@
+{
+  "name": "sourcetool",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build:frontend": "pnpm --filter source-tool-frontend build",
+    "dev:frontend": "pnpm --filter source-tool-frontend dev",
+    "lint:frontend": "pnpm --filter source-tool-frontend lint",
+    "format:frontend": "pnpm --filter source-tool-frontend format",
+    "preview:frontend": "pnpm --filter source-tool-frontend preview",
+    "typecheck:frontend": "pnpm --filter source-tool-frontend typecheck",
+
+    "build:docs": "pnpm --filter sourcetool-docs build",
+    "dev:docs": "pnpm --filter sourcetool-docs start",
+    "typecheck:docs": "pnpm --filter sourcetool-docs typecheck"
+  },
+  "engines": {
+    "npm": "use pnpm please!",
+    "yarn": "use pnpm please!",
+    "pnpm": ">=10.8.0",
+    "node": ">=20.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.8.0"
+}
