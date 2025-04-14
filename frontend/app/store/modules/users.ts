@@ -14,7 +14,6 @@ import {
 import type { User, UserInvitation } from '@/api/modules/users';
 import { groupsStore } from './groups';
 import { pagesStore } from './pages';
-import type { AuthState } from './auth';
 
 // =============================================
 // asyncActions
@@ -404,8 +403,9 @@ const getUser = createSelector(
 );
 
 const getSubDomainMatched = createSelector(
-  (state: RootState & { auth: AuthState }, subDomain: string | null) => {
-    const isAuthChecked = state.auth.isAuthChecked;
+  (state: RootState, subDomain: string | null) => {
+    const isAuthChecked = state.auth.isAuthChecked &&
+      (state.auth.isAuthFailed || (state.auth.isAuthSucceeded && state.users.me));
     const matched = state.users.me?.organization?.subdomain === subDomain;
     return {
       isMatched: matched,

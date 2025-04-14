@@ -18,6 +18,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router';
 import { object, string } from 'zod';
 import type { z } from 'zod';
+import { usersStore } from '@/store/modules/users';
 
 export type SearchParams = {
   token: string;
@@ -71,10 +72,8 @@ export default function InvitationSignUpFollowUp() {
         resultAction,
       )
     ) {
+      await dispatch(usersStore.asyncActions.getMe());
       navigate('/');
-      toast({
-        title: t('routes_invitation_signup_followup_toast_success'),
-      });
     } else {
       toast({
         title: t('routes_invitation_signup_followup_toast_error'),
