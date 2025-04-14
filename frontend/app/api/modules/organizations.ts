@@ -1,5 +1,4 @@
 import * as api from '@/api/instance';
-import type { User, UserRole } from './users';
 
 export type Organization = {
   createdAt: string;
@@ -28,33 +27,6 @@ export const checkSubdomainAvailability = async (params: {
   }>({
     path: '/organizations/checkSubdomainAvailability',
     params: params,
-    auth: true,
-  });
-
-  return res;
-};
-
-export const updateOrganizationUser = async (params: {
-  userId: string;
-  data: {
-    groupIds: string[];
-    role: UserRole;
-  };
-}) => {
-  const res = await api.put<User>({
-    path: `/organizations/users/${params.userId}`,
-    data: params.data,
-    auth: true,
-  });
-
-  return res;
-};
-
-export const deleteOrganizationUser = async (params: {
-  userId: string;
-}) => {
-  const res = await api.del<void>({
-    path: `/organizations/users/${params.userId}`,
     auth: true,
   });
 
