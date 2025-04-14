@@ -122,7 +122,7 @@ backend-lint:
 
 frontend-lint:
 	@echo "Running frontend linters..."
-	@cd frontend && yarn lint
+	pnpm lint
 
 go-sdk-lint:
 	@echo "Running Go SDK linters..."
