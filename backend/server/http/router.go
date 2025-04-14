@@ -11,6 +11,7 @@ import (
 type Router struct {
 	middleware   Middleware
 	apikey       *handlers.APIKeyHandler
+	auth         *handlers.AuthHandler
 	environment  *handlers.EnvironmentHandler
 	group        *handlers.GroupHandler
 	hostInstance *handlers.HostInstanceHandler
@@ -22,6 +23,7 @@ type Router struct {
 func NewRouter(
 	middleware Middleware,
 	apiKeyHandler *handlers.APIKeyHandler,
+	authHandler *handlers.AuthHandler,
 	environmentHandler *handlers.EnvironmentHandler,
 	groupHandler *handlers.GroupHandler,
 	hostInstanceHandler *handlers.HostInstanceHandler,
@@ -32,6 +34,7 @@ func NewRouter(
 	return &Router{
 		middleware:   middleware,
 		apikey:       apiKeyHandler,
+		auth:         authHandler,
 		environment:  environmentHandler,
 		group:        groupHandler,
 		hostInstance: hostInstanceHandler,
@@ -52,61 +55,60 @@ func (router *Router) Build() chi.Router {
 	})
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
+		r.Route("/auth", func(r chi.Router) {
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthOrganizationIfSubdomainExists)
 
-				// Passwordless Authentication
-				r.Post("/auth/magic/request", router.user.RequestMagicLink)
-				r.Post("/auth/magic/authenticate", router.user.AuthenticateWithMagicLink)
-				r.Post("/auth/magic/register", router.user.RegisterWithMagicLink)
-				r.Post("/auth/invitations/magic/request", router.user.RequestInvitationMagicLink)
-				r.Post("/auth/invitations/magic/authenticate", router.user.AuthenticateWithInvitationMagicLink)
-				r.Post("/auth/invitations/magic/register", router.user.RegisterWithInvitationMagicLink)
+				r.Post("/magic/request", router.auth.RequestMagicLink)
+				r.Post("/magic/authenticate", router.auth.AuthenticateWithMagicLink)
+				r.Post("/magic/register", router.auth.RegisterWithMagicLink)
+				r.Post("/invitations/magic/request", router.auth.RequestInvitationMagicLink)
+				r.Post("/invitations/magic/authenticate", router.auth.AuthenticateWithInvitationMagicLink)
+				r.Post("/invitations/magic/register", router.auth.RegisterWithInvitationMagicLink)
 
-				// Google Authentication
-				r.Post("/auth/google/request", router.user.RequestGoogleAuthLink)
-				r.Post("/auth/google/authenticate", router.user.AuthenticateWithGoogle)
-				r.Post("/auth/google/register", router.user.RegisterWithGoogle)
-				r.Post("/auth/invitations/google/request", router.user.RequestInvitationGoogleAuthLink)
+				r.Post("/google/request", router.auth.RequestGoogleAuthLink)
+				r.Post("/google/authenticate", router.auth.AuthenticateWithGoogle)
+				r.Post("/google/register", router.auth.RegisterWithGoogle)
+				r.Post("/invitations/google/request", router.auth.RequestInvitationGoogleAuthLink)
 
-				r.Post("/saveAuth", router.user.SaveAuth)
-				r.Post("/refreshToken", router.user.RefreshToken)
+				r.Post("/save", router.auth.Save)
+				r.Post("/refresh", router.auth.RefreshToken)
 			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganizationIfSubdomainExists)
-				r.Post("/obtainAuthToken", router.user.ObtainAuthToken)
+				r.Post("/token/obtain", router.auth.ObtainAuthToken)
 			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(router.middleware.AuthUserWithOrganization)
-				r.Get("/me", router.user.GetMe)
-				r.Get("/", router.user.List)
-				r.Put("/", router.user.Update)
-				r.Post("/sendUpdateEmailInstructions", router.user.SendUpdateEmailInstructions)
-				r.Put("/email", router.user.UpdateEmail)
-				r.Post("/invite", router.user.Invite)
-				r.Post("/invitations/resend", router.user.ResendInvitation)
-				r.Post("/signout", router.user.SignOut)
+				r.Post("/logout", router.auth.Logout)
 			})
 		})
 
+		r.Route("/users", func(r chi.Router) {
+			r.Use(router.middleware.AuthUserWithOrganization)
+
+			// Authenticated User
+			r.Get("/me/", router.user.GetMe)
+			r.Put("/me/", router.user.UpdateMe)
+			r.Post("/me/email/instructions", router.user.SendUpdateMeEmailInstructions)
+			r.Put("/me/email", router.user.UpdateMeEmail)
+
+			// Organization Users
+			r.Get("/", router.user.List)
+			r.Put("/{userID}", router.user.Update)
+			r.Delete("/{userID}", router.user.Delete)
+
+			// Organization Invitations
+			r.Post("/invitations/", router.user.CreateUserInvitations)
+			r.Post("/invitations/{invitationID}/resend", router.user.ResendUserInvitation)
+		})
+
 		r.Route("/organizations", func(r chi.Router) {
-			r.Group(func(r chi.Router) {
-				r.Use(router.middleware.AuthUser)
-				r.Post("/", router.organization.Create)
-				r.Get("/checkSubdomainAvailability", router.organization.CheckSubdomainAvailability)
-			})
-
-			r.Group(func(r chi.Router) {
-				r.Use(router.middleware.AuthUserWithOrganization)
-
-				r.Route("/users", func(r chi.Router) {
-					r.Put("/{userID}", router.organization.UpdateUser)
-					r.Delete("/{userID}", router.organization.DeleteUser)
-				})
-			})
+			r.Use(router.middleware.AuthUser)
+			r.Post("/", router.organization.Create)
+			r.Get("/checkSubdomainAvailability", router.organization.CheckSubdomainAvailability)
 		})
 
 		r.Route("/environments", func(r chi.Router) {

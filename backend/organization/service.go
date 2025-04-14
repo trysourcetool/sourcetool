@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/samber/lo"
 
-	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
@@ -21,8 +20,6 @@ import (
 type Service interface {
 	Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error)
 	CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error
-	UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error)
-	DeleteUser(ctx context.Context, in dto.DeleteOrganizationUserInput) error
 }
 
 type ServiceCE struct {
@@ -138,155 +135,6 @@ func (s *ServiceCE) CheckSubdomainAvailability(ctx context.Context, in dto.Check
 
 	if lo.Contains(reservedSubdomains, in.Subdomain) {
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
-	}
-
-	return nil
-}
-
-func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error) {
-	userID, err := uuid.FromString(in.UserID)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
-	if err != nil {
-		return nil, err
-	}
-
-	currentOrg := ctxutil.CurrentOrganization(ctx)
-	if currentOrg == nil {
-		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if in.Role != nil {
-			orgAccess.Role = model.UserOrganizationRoleFromString(conv.SafeValue(in.Role))
-
-			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
-				return err
-			}
-		}
-
-		if len(in.GroupIDs) != 0 {
-			userGroups := make([]*model.UserGroup, 0, len(in.GroupIDs))
-			for _, groupID := range in.GroupIDs {
-				groupID, err := uuid.FromString(groupID)
-				if err != nil {
-					return err
-				}
-				userGroups = append(userGroups, &model.UserGroup{
-					ID:      uuid.Must(uuid.NewV4()),
-					UserID:  u.ID,
-					GroupID: groupID,
-				})
-			}
-
-			existingGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(u.ID))
-			if err != nil {
-				return err
-			}
-
-			if err := tx.User().BulkDeleteGroups(ctx, existingGroups); err != nil {
-				return err
-			}
-
-			if err := tx.User().BulkInsertGroups(ctx, userGroups); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.UpdateOrganizationUserOutput{
-		User: dto.UserFromModel(u, currentOrg, orgAccess.Role),
-	}, nil
-}
-
-func (s *ServiceCE) DeleteUser(ctx context.Context, in dto.DeleteOrganizationUserInput) error {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditUser); err != nil {
-		return err
-	}
-
-	currentUser := ctxutil.CurrentUser(ctx)
-	currentOrg := ctxutil.CurrentOrganization(ctx)
-	if currentOrg == nil {
-		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
-	}
-
-	userIDToRemove, err := uuid.FromString(in.UserID)
-	if err != nil {
-		return errdefs.ErrInvalidArgument(err)
-	}
-
-	if currentUser.ID == userIDToRemove {
-		return errdefs.ErrPermissionDenied(errors.New("cannot remove yourself from the organization"))
-	}
-
-	userToRemove, err := s.Store.User().Get(ctx, storeopts.UserByID(userIDToRemove))
-	if err != nil {
-		return err
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByUserID(userToRemove.ID),
-		storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
-	if err != nil {
-		if errdefs.IsUserOrganizationAccessNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if orgAccess.Role == model.UserOrganizationRoleAdmin {
-		adminAccesses, err := s.Store.User().ListOrganizationAccesses(ctx,
-			storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID),
-			storeopts.UserOrganizationAccessByRole(int(model.UserOrganizationRoleAdmin)))
-		if err != nil {
-			return err
-		}
-		if len(adminAccesses) <= 1 {
-			return errdefs.ErrPermissionDenied(errors.New("cannot remove the last admin from the organization"))
-		}
-	}
-
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if err := tx.User().DeleteOrganizationAccess(ctx, orgAccess); err != nil {
-			return err
-		}
-
-		apiKeys, err := tx.APIKey().List(ctx, storeopts.APIKeyByUserID(userToRemove.ID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
-		if err != nil {
-			return err
-		}
-		for _, apiKey := range apiKeys {
-			if err := tx.APIKey().Delete(ctx, apiKey); err != nil {
-				return err
-			}
-		}
-
-		userGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(userToRemove.ID), storeopts.UserGroupByOrganizationID(currentOrg.ID))
-		if err != nil {
-			return err
-		}
-
-		if len(userGroups) > 0 {
-			if err := tx.User().BulkDeleteGroups(ctx, userGroups); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return err
 	}
 
 	return nil

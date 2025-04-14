@@ -6,44 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/model"
 )
-
-func TestBuildUserActivateURL(t *testing.T) {
-	// Setup test config
-	config.Config = &config.Cfg{
-		BaseURL:      "https://example.com",
-		SSL:          true,
-		Protocol:     "https",
-		BaseDomain:   "example.com",
-		BaseHostname: "example.com",
-	}
-
-	tests := []struct {
-		name     string
-		token    string
-		expected string
-	}{
-		{
-			name:     "valid token",
-			token:    "test-token",
-			expected: "https://example.com/signup/activate?token=test-token",
-		},
-		{
-			name:     "empty token",
-			token:    "",
-			expected: "https://example.com/signup/activate?token=",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := buildUserActivateURL(tt.token)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
 
 func TestBuildUpdateEmailURL(t *testing.T) {
 	// Setup test config
@@ -120,42 +83,6 @@ func TestBuildInvitationURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := buildInvitationURL(tt.subdomain, tt.token, tt.email)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestBuildSaveAuthURL(t *testing.T) {
-	// Setup test config
-	config.Config = &config.Cfg{
-		BaseURL:      "https://example.com",
-		SSL:          true,
-		Protocol:     "https",
-		BaseDomain:   "example.com",
-		BaseHostname: "example.com",
-	}
-
-	tests := []struct {
-		name      string
-		subdomain string
-		expected  string
-	}{
-		{
-			name:      "valid subdomain",
-			subdomain: "test",
-			expected:  "https://example.com" + model.SaveAuthPath,
-		},
-		{
-			name:      "empty subdomain",
-			subdomain: "",
-			expected:  "https://example.com" + model.SaveAuthPath,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := buildSaveAuthURL(tt.subdomain)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
 		})

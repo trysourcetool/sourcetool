@@ -44,26 +44,3 @@ func CheckSubdomainAvailabilityRequestToDTOInput(in requests.CheckSubdomainAvail
 		Subdomain: in.Subdomain,
 	}
 }
-
-// UpdateOrganizationUserRequestToDTOInput converts from requests.UpdateOrganizationUserRequest to dto.UpdateOrganizationUserInput.
-func UpdateOrganizationUserRequestToDTOInput(in requests.UpdateOrganizationUserRequest) dto.UpdateOrganizationUserInput {
-	return dto.UpdateOrganizationUserInput{
-		UserID:   in.UserID,
-		Role:     in.Role,
-		GroupIDs: in.GroupIDs,
-	}
-}
-
-// UpdateOrganizationUserOutputToResponse converts from dto.UpdateOrganizationUserOutput to responses.UpdateUserResponse.
-func UpdateOrganizationUserOutputToResponse(out *dto.UpdateOrganizationUserOutput) *responses.UpdateUserResponse {
-	return &responses.UpdateUserResponse{
-		User: UserDTOToResponse(out.User),
-	}
-}
-
-// DeleteOrganizationUserRequestToDTOInput converts from requests.DeleteOrganizationUserRequest to dto.DeleteOrganizationUserInput.
-func DeleteOrganizationUserRequestToDTOInput(in requests.DeleteOrganizationUserRequest) dto.DeleteOrganizationUserInput {
-	return dto.DeleteOrganizationUserInput{
-		UserID: in.UserID,
-	}
-}
