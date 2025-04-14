@@ -3,10 +3,13 @@ import { removeDuplicates, Router } from '../router';
 import { createSourcetool, SourcetoolConfig } from '../sourcetool';
 import { Page } from '../page';
 
-const findPageByPath = (pages: Record<string, Page>, path: string): Page => {
+const findPageByPath = (
+  pages: Record<string, Page>,
+  path: string,
+): Page | null => {
   const page = Object.values(pages).find((p) => p.route === path);
   if (!page) {
-    throw new Error(`Page not found: ${path}`);
+    return null;
   }
   return page;
 };
@@ -186,6 +189,9 @@ describe('router access groups', () => {
     for (const t of tests) {
       test(t.path, () => {
         const result = findPageByPath(sourcetool.pages, t.path);
+        if (!result) {
+          throw new Error(`Page not found: ${t.path}`);
+        }
         expect(result.accessGroups.length).toEqual(t.expectedGroups.length);
         expect(
           result.accessGroups.every((group) =>
@@ -236,6 +242,9 @@ describe('router access groups', () => {
     for (const t of tests) {
       test(t.path, () => {
         const result = findPageByPath(sourcetool.pages, t.path);
+        if (!result) {
+          throw new Error(`Page not found: ${t.path}`);
+        }
         expect(result.accessGroups.length).toEqual(t.expectedGroups.length);
         expect(
           result.accessGroups.every((group) =>
@@ -277,6 +286,9 @@ describe('router access groups', () => {
     for (const t of tests) {
       test(t.path, () => {
         const result = findPageByPath(sourcetool.pages, t.path);
+        if (!result) {
+          throw new Error(`Page not found: ${t.path}`);
+        }
         expect(result.accessGroups.length).toEqual(t.expectedGroups.length);
         expect(
           result.accessGroups.every((group) =>
@@ -322,6 +334,10 @@ describe('router access groups', () => {
       'settings_admin',
     ];
 
+    if (!page) {
+      throw new Error('Page not found');
+    }
+
     expect(page.accessGroups.length).toEqual(expectedGroups.length);
     expect(
       page.accessGroups.every((group) => expectedGroups.includes(group)),
@@ -365,7 +381,9 @@ describe('router access groups', () => {
     for (const t of tests) {
       test(t.path, () => {
         const result = findPageByPath(sourcetool.pages, t.path);
-
+        if (!result) {
+          throw new Error(`Page not found: ${t.path}`);
+        }
         expect(result.accessGroups.length).toEqual(t.expectedGroups.length);
         expect(
           result.accessGroups.every((group) =>
@@ -392,7 +410,9 @@ describe('router groups', () => {
     settings.page('/users', 'User Settings', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/admin/settings/users');
-
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/admin/settings/users');
   });
 
@@ -410,7 +430,9 @@ describe('router groups', () => {
     users.page('/list', 'Users List', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/api/v1/users/list');
-
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/api/v1/users/list');
   });
 });
@@ -428,6 +450,9 @@ describe('router page', () => {
     sourcetool.page('/test', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/test');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/test');
   });
 
@@ -440,11 +465,15 @@ describe('router page', () => {
     const sourcetool = createSourcetool(config);
 
     sourcetool.page('/', 'Root Page', pageHandler);
+    console.log(sourcetool.pages);
     const page = findPageByPath(sourcetool.pages, '/');
-    expect(page.route).toBe('/');
+    expect(page).toBe(null);
 
     sourcetool.page('/other', 'Other Page', pageHandler);
     const otherPage = findPageByPath(sourcetool.pages, '/other');
+    if (!otherPage) {
+      throw new Error('Page not found');
+    }
     expect(otherPage.route).toBe('/other');
   });
 
@@ -459,6 +488,9 @@ describe('router page', () => {
     users.page('/', 'Users List', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/users');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/users');
 
     const admin = sourcetool.group('/admin');
@@ -466,6 +498,9 @@ describe('router page', () => {
     settings.page('/', 'Settings Home', pageHandler);
 
     const settingsPage = findPageByPath(sourcetool.pages, '/admin/settings');
+    if (!settingsPage) {
+      throw new Error('Page not found');
+    }
     expect(settingsPage.route).toBe('/admin/settings');
   });
 
@@ -480,6 +515,9 @@ describe('router page', () => {
     sourcetool.page('/admin', 'Admin Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/admin');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/admin');
     expect(page.accessGroups.length).toEqual(1);
     expect(page.accessGroups[0]).toBe('admin');
@@ -497,6 +535,9 @@ describe('router page', () => {
     });
 
     const page = findPageByPath(sourcetool.pages, '/error');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/error');
 
     try {
@@ -517,6 +558,9 @@ describe('router page', () => {
     sourcetool.page('', 'Root Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/');
   });
 
@@ -531,6 +575,9 @@ describe('router page', () => {
     sourcetool.page('/duplicate', 'Second Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/duplicate');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/duplicate');
     expect(page.name).toBe('Second Page');
   });
@@ -550,6 +597,9 @@ describe('router group', () => {
     group.page('/page', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/test/page');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/test/page');
   });
 
@@ -565,6 +615,9 @@ describe('router group', () => {
     group.page('/dashboard', 'Admin Dashboard', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/admin/dashboard');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/admin/dashboard');
     expect(page.accessGroups.length).toEqual(1);
     expect(page.accessGroups[0]).toBe('admin');
@@ -582,6 +635,9 @@ describe('router group', () => {
     child.page('/page', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/parent/child/page');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/parent/child/page');
   });
 
@@ -596,6 +652,9 @@ describe('router group', () => {
     group.page('/page', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/page');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/page');
   });
 });
@@ -613,6 +672,9 @@ describe('router access groups', () => {
     sourcetool.page('/test', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/test');
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/test');
     expect(page.accessGroups.length).toEqual(2);
     expect(page.accessGroups[0]).toBe('admin');
@@ -632,7 +694,9 @@ describe('router access groups', () => {
     sourcetool.page('/test', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/test');
-
+    if (!page) {
+      throw new Error('Page not found');
+    }
     expect(page.route).toBe('/test');
     expect(page.accessGroups.length).toEqual(1);
     expect(page.accessGroups[0]).toBe('admin');

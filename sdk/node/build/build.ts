@@ -1,9 +1,7 @@
 import arg from 'arg';
 import { build, context } from 'esbuild';
-import type { Plugin, PluginBuild, BuildOptions } from 'esbuild';
+import type { BuildOptions } from 'esbuild';
 import * as glob from 'glob';
-import path from 'path';
-import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
