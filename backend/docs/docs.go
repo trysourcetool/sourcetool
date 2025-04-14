@@ -236,7 +236,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "operationId": "authenticate-with-google",
                 "responses": {
@@ -244,6 +244,34 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.AuthenticateWithGoogleResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "register-with-google",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RegisterWithGoogleResponse"
                         }
                     },
                     "default": {
@@ -264,7 +292,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "operationId": "request-google-auth-link",
                 "responses": {
@@ -272,6 +300,404 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/responses.RequestGoogleAuthLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/invitations/google/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "request-invitation-google-auth-link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestInvitationGoogleAuthLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/invitations/magic/authenticate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "authenticate-with-invitation-magic-link",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AuthenticateWithInvitationMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AuthenticateWithInvitationMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/invitations/magic/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "register-with-invitation-magic-link",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RegisterWithInvitationMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RegisterWithInvitationMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/invitations/magic/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "request-invitation-magic-link",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestInvitationMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.StatusResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/magic/authenticate": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "authenticate-with-magic-link",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AuthenticateWithMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.AuthenticateWithMagicLinkResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/magic/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "register-with-magic-link",
+                "parameters": [
+                    {
+                        "description": "Registration data with magic link token",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RegisterWithMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RegisterWithMagicLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired magic link token",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/magic/request": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "request-magic-link",
+                "parameters": [
+                    {
+                        "description": "Email address for magic link",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RequestMagicLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RequestMagicLinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email format",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "refresh-token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RefreshTokenResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/save": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "save-auth",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SaveAuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.SaveAuthResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/token/obtain": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "operationId": "obtain-auth-token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ObtainAuthTokenResponse"
                         }
                     },
                     "default": {
@@ -830,87 +1256,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/organizations/users/{userID}": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "organizations"
-                ],
-                "operationId": "update-organization-user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": " ",
-                        "name": "userID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateOrganizationUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.UpdateUserResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "organizations"
-                ],
-                "operationId": "delete-organization-user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": " ",
-                        "name": "userID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.StatusResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/pages": {
             "get": {
                 "consumes": [
@@ -974,8 +1319,10 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/users/invitations": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -985,7 +1332,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "update-user",
+                "operationId": "create-user-invitations",
                 "parameters": [
                     {
                         "description": " ",
@@ -993,7 +1340,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateUserRequest"
+                            "$ref": "#/definitions/requests.CreateUserInvitationsRequest"
                         }
                     }
                 ],
@@ -1001,7 +1348,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.UpdateUserResponse"
+                            "$ref": "#/definitions/responses.CreateUserInvitationsResponse"
                         }
                     },
                     "default": {
@@ -1013,7 +1360,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/auth/google/register": {
+        "/users/invitations/{invitationID}/resend": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1024,326 +1371,21 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "register-with-google",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RegisterWithGoogleResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/auth/invitations/google/request": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "request-invitation-google-auth-link",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RequestInvitationGoogleAuthLinkResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/auth/invitations/magic/request": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "request-invitation-magic-link",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RequestInvitationMagicLinkResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/auth/magic/authenticate": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "authenticate-with-magic-link",
+                "operationId": "resend-user-invitation",
                 "parameters": [
                     {
+                        "type": "string",
                         "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AuthenticateWithMagicLinkRequest"
-                        }
+                        "name": "invitationID",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.AuthenticateWithMagicLinkResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/auth/magic/register": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "register-with-magic-link",
-                "parameters": [
-                    {
-                        "description": "Registration data with magic link token",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.RegisterWithMagicLinkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RegisterWithMagicLinkResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request parameters",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid or expired magic link token",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/auth/magic/request": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "request-magic-link",
-                "parameters": [
-                    {
-                        "description": "Email address for magic link",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.RequestMagicLinkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RequestMagicLinkResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid email format",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/email": {
-            "put": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "update-user-email",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateUserEmailRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.UpdateUserEmailResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invitations/resend": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "resend-invitation",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.ResendInvitationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ResendInvitationResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/invite": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "invite-users",
-                "parameters": [
-                    {
-                        "description": " ",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.InviteUsersRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.InviteUsersResponse"
+                            "$ref": "#/definitions/responses.ResendUserInvitationResponse"
                         }
                     },
                     "default": {
@@ -1381,10 +1423,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/users/obtainAuthToken": {
-            "post": {
+            },
+            "put": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1394,63 +1434,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "obtain-auth-token",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ObtainAuthTokenResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/refreshToken": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "refresh-token",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/responses.RefreshTokenResponse"
-                        }
-                    },
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/errdefs.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/users/saveAuth": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "operationId": "save-auth",
+                "operationId": "update-me",
                 "parameters": [
                     {
                         "description": " ",
@@ -1458,7 +1442,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SaveAuthRequest"
+                            "$ref": "#/definitions/requests.UpdateMeRequest"
                         }
                     }
                 ],
@@ -1466,7 +1450,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.SaveAuthResponse"
+                            "$ref": "#/definitions/responses.UpdateMeResponse"
                         }
                     },
                     "default": {
@@ -1478,7 +1462,46 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/sendUpdateEmailInstructions": {
+        "/users/me/email": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "update-me-email",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMeEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UpdateMeEmailResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/email/instructions": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1489,7 +1512,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "send-update-email-instructions",
+                "operationId": "send-update-me-email-instructions",
                 "parameters": [
                     {
                         "description": " ",
@@ -1497,7 +1520,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.SendUpdateUserEmailInstructionsRequest"
+                            "$ref": "#/definitions/requests.SendUpdateMeEmailInstructionsRequest"
                         }
                     }
                 ],
@@ -1517,8 +1540,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/signout": {
-            "post": {
+        "/users/{userID}": {
+            "put": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1528,7 +1551,60 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "operationId": "sign-out",
+                "operationId": "update-user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": " ",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": " ",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UpdateUserResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/errdefs.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "operationId": "delete-user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": " ",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1564,6 +1640,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.AuthenticateWithInvitationMagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
@@ -1652,7 +1739,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.InviteUsersRequest": {
+        "requests.CreateUserInvitationsRequest": {
             "type": "object",
             "required": [
                 "emails",
@@ -1672,6 +1759,25 @@ const docTemplate = `{
                         "developer",
                         "member"
                     ]
+                }
+            }
+        },
+        "requests.RegisterWithInvitationMagicLinkRequest": {
+            "type": "object",
+            "required": [
+                "firstName",
+                "lastName",
+                "token"
+            ],
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -1700,17 +1806,6 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.ResendInvitationRequest": {
-            "type": "object",
-            "required": [
-                "invitationId"
-            ],
-            "properties": {
-                "invitationId": {
-                    "type": "string"
-                }
-            }
-        },
         "requests.SaveAuthRequest": {
             "type": "object",
             "required": [
@@ -1722,7 +1817,7 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.SendUpdateUserEmailInstructionsRequest": {
+        "requests.SendUpdateMeEmailInstructionsRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -1778,7 +1873,29 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdateOrganizationUserRequest": {
+        "requests.UpdateMeEmailRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateMeRequest": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "groupIds": {
@@ -1794,28 +1911,6 @@ const docTemplate = `{
                         "developer",
                         "member"
                     ]
-                }
-            }
-        },
-        "requests.UpdateUserEmailRequest": {
-            "type": "object",
-            "required": [
-                "token"
-            ],
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.UpdateUserRequest": {
-            "type": "object",
-            "properties": {
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
                 }
             }
         },
@@ -1868,6 +1963,20 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.AuthenticateWithInvitationMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "type": "string"
+                },
+                "isNewUser": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.AuthenticateWithMagicLinkResponse": {
             "type": "object",
             "properties": {
@@ -1914,6 +2023,17 @@ const docTemplate = `{
             "properties": {
                 "organization": {
                     "$ref": "#/definitions/responses.OrganizationResponse"
+                }
+            }
+        },
+        "responses.CreateUserInvitationsResponse": {
+            "type": "object",
+            "properties": {
+                "userInvitations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserInvitationResponse"
+                    }
                 }
             }
         },
@@ -2056,17 +2176,6 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                }
-            }
-        },
-        "responses.InviteUsersResponse": {
-            "type": "object",
-            "properties": {
-                "userInvitations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/responses.UserInvitationResponse"
-                    }
                 }
             }
         },
@@ -2251,6 +2360,14 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.RegisterWithInvitationMagicLinkResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.RegisterWithMagicLinkResponse": {
             "type": "object",
             "properties": {
@@ -2297,7 +2414,7 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.ResendInvitationResponse": {
+        "responses.ResendUserInvitationResponse": {
             "type": "object",
             "properties": {
                 "userInvitation": {
@@ -2351,7 +2468,15 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.UpdateUserEmailResponse": {
+        "responses.UpdateMeEmailResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/responses.UserResponse"
+                }
+            }
+        },
+        "responses.UpdateMeResponse": {
             "type": "object",
             "properties": {
                 "user": {

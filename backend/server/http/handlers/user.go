@@ -236,15 +236,15 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ResendInvitation godoc
-// @ID resend-invitation
+// ResendUserInvitation godoc
+// @ID resend-user-invitation
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body requests.ResendInvitationRequest true " "
-// @Success 200 {object} responses.ResendInvitationResponse
+// @Param invitationID path string true " "
+// @Success 200 {object} responses.ResendUserInvitationResponse
 // @Failure default {object} errdefs.Error
-// @Router /users/invitations/resend [post].
+// @Router /users/invitations/{invitationID}/resend [post].
 func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Request) {
 	var req requests.ResendUserInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

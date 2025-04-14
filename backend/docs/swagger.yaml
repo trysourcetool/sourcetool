@@ -14,6 +14,13 @@ definitions:
       title:
         type: string
     type: object
+  requests.AuthenticateWithInvitationMagicLinkRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
   requests.AuthenticateWithMagicLinkRequest:
     properties:
       firstName:
@@ -70,7 +77,7 @@ definitions:
     required:
     - subdomain
     type: object
-  requests.InviteUsersRequest:
+  requests.CreateUserInvitationsRequest:
     properties:
       emails:
         items:
@@ -85,6 +92,19 @@ definitions:
     required:
     - emails
     - role
+    type: object
+  requests.RegisterWithInvitationMagicLinkRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      token:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - token
     type: object
   requests.RegisterWithMagicLinkRequest:
     properties:
@@ -102,13 +122,6 @@ definitions:
     required:
     - email
     type: object
-  requests.ResendInvitationRequest:
-    properties:
-      invitationId:
-        type: string
-    required:
-    - invitationId
-    type: object
   requests.SaveAuthRequest:
     properties:
       token:
@@ -116,7 +129,7 @@ definitions:
     required:
     - token
     type: object
-  requests.SendUpdateUserEmailInstructionsRequest:
+  requests.SendUpdateMeEmailInstructionsRequest:
     properties:
       email:
         type: string
@@ -153,7 +166,21 @@ definitions:
     - name
     - userIds
     type: object
-  requests.UpdateOrganizationUserRequest:
+  requests.UpdateMeEmailRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  requests.UpdateMeRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+  requests.UpdateUserRequest:
     properties:
       groupIds:
         items:
@@ -164,20 +191,6 @@ definitions:
         - admin
         - developer
         - member
-        type: string
-    type: object
-  requests.UpdateUserEmailRequest:
-    properties:
-      token:
-        type: string
-    required:
-    - token
-    type: object
-  requests.UpdateUserRequest:
-    properties:
-      firstName:
-        type: string
-      lastName:
         type: string
     type: object
   responses.APIKeyResponse:
@@ -212,6 +225,15 @@ definitions:
       token:
         type: string
     type: object
+  responses.AuthenticateWithInvitationMagicLinkResponse:
+    properties:
+      authUrl:
+        type: string
+      isNewUser:
+        type: boolean
+      token:
+        type: string
+    type: object
   responses.AuthenticateWithMagicLinkResponse:
     properties:
       authUrl:
@@ -242,6 +264,13 @@ definitions:
     properties:
       organization:
         $ref: '#/definitions/responses.OrganizationResponse'
+    type: object
+  responses.CreateUserInvitationsResponse:
+    properties:
+      userInvitations:
+        items:
+          $ref: '#/definitions/responses.UserInvitationResponse'
+        type: array
     type: object
   responses.DeleteAPIKeyResponse:
     properties:
@@ -333,13 +362,6 @@ definitions:
         type: string
       updatedAt:
         type: string
-    type: object
-  responses.InviteUsersResponse:
-    properties:
-      userInvitations:
-        items:
-          $ref: '#/definitions/responses.UserInvitationResponse'
-        type: array
     type: object
   responses.ListAPIKeysResponse:
     properties:
@@ -458,6 +480,11 @@ definitions:
       token:
         type: string
     type: object
+  responses.RegisterWithInvitationMagicLinkResponse:
+    properties:
+      expiresAt:
+        type: string
+    type: object
   responses.RegisterWithMagicLinkResponse:
     properties:
       expiresAt:
@@ -487,7 +514,7 @@ definitions:
       isNew:
         type: boolean
     type: object
-  responses.ResendInvitationResponse:
+  responses.ResendUserInvitationResponse:
     properties:
       userInvitation:
         $ref: '#/definitions/responses.UserInvitationResponse'
@@ -521,7 +548,12 @@ definitions:
       group:
         $ref: '#/definitions/responses.GroupResponse'
     type: object
-  responses.UpdateUserEmailResponse:
+  responses.UpdateMeEmailResponse:
+    properties:
+      user:
+        $ref: '#/definitions/responses.UserResponse'
+    type: object
+  responses.UpdateMeResponse:
     properties:
       user:
         $ref: '#/definitions/responses.UserResponse'
@@ -735,7 +767,25 @@ paths:
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
-      - users
+      - auth
+  /auth/google/register:
+    post:
+      consumes:
+      - application/json
+      operationId: register-with-google
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterWithGoogleResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
   /auth/google/request:
     post:
       consumes:
@@ -753,7 +803,263 @@ paths:
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
-      - users
+      - auth
+  /auth/invitations/google/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-invitation-google-auth-link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestInvitationGoogleAuthLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/invitations/magic/authenticate:
+    post:
+      consumes:
+      - application/json
+      operationId: authenticate-with-invitation-magic-link
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AuthenticateWithInvitationMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AuthenticateWithInvitationMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/invitations/magic/register:
+    post:
+      consumes:
+      - application/json
+      operationId: register-with-invitation-magic-link
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterWithInvitationMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterWithInvitationMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/invitations/magic/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-invitation-magic-link
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestInvitationMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.StatusResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/magic/authenticate:
+    post:
+      consumes:
+      - application/json
+      operationId: authenticate-with-magic-link
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AuthenticateWithMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AuthenticateWithMagicLinkResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/magic/register:
+    post:
+      consumes:
+      - application/json
+      operationId: register-with-magic-link
+      parameters:
+      - description: Registration data with magic link token
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterWithMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterWithMagicLinkResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "401":
+          description: Invalid or expired magic link token
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/magic/request:
+    post:
+      consumes:
+      - application/json
+      operationId: request-magic-link
+      parameters:
+      - description: Email address for magic link
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RequestMagicLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RequestMagicLinkResponse'
+        "400":
+          description: Invalid email format
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      operationId: refresh-token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RefreshTokenResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/save:
+    post:
+      consumes:
+      - application/json
+      operationId: save-auth
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SaveAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.SaveAuthResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
+  /auth/token/obtain:
+    post:
+      consumes:
+      - application/json
+      operationId: obtain-auth-token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ObtainAuthTokenResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - auth
   /environments:
     get:
       consumes:
@@ -1111,59 +1417,6 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - organizations
-  /organizations/users/{userID}:
-    delete:
-      consumes:
-      - application/json
-      operationId: delete-organization-user
-      parameters:
-      - description: ' '
-        in: path
-        name: userID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.StatusResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - organizations
-    put:
-      consumes:
-      - application/json
-      operationId: update-organization-user
-      parameters:
-      - description: ' '
-        in: path
-        name: userID
-        required: true
-        type: string
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateOrganizationUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.UpdateUserResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - organizations
   /pages:
     get:
       consumes:
@@ -1206,11 +1459,40 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
+  /users/{userID}:
+    delete:
+      consumes:
+      - application/json
+      operationId: delete-user
+      parameters:
+      - description: ' '
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.StatusResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/errdefs.Error'
+      tags:
+      - users
     put:
       consumes:
       - application/json
       operationId: update-user
       parameters:
+      - description: ' '
+        in: path
+        name: userID
+        required: true
+        type: string
       - description: ' '
         in: body
         name: Body
@@ -1230,220 +1512,49 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/auth/google/register:
+  /users/invitations:
     post:
       consumes:
       - application/json
-      operationId: register-with-google
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RegisterWithGoogleResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/auth/invitations/google/request:
-    post:
-      consumes:
-      - application/json
-      operationId: request-invitation-google-auth-link
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RequestInvitationGoogleAuthLinkResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/auth/invitations/magic/request:
-    post:
-      consumes:
-      - application/json
-      operationId: request-invitation-magic-link
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RequestInvitationMagicLinkResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/auth/magic/authenticate:
-    post:
-      consumes:
-      - application/json
-      operationId: authenticate-with-magic-link
+      operationId: create-user-invitations
       parameters:
       - description: ' '
         in: body
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/requests.AuthenticateWithMagicLinkRequest'
+          $ref: '#/definitions/requests.CreateUserInvitationsRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.AuthenticateWithMagicLinkResponse'
+            $ref: '#/definitions/responses.CreateUserInvitationsResponse'
         default:
           description: ""
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/auth/magic/register:
+  /users/invitations/{invitationID}/resend:
     post:
       consumes:
       - application/json
-      operationId: register-with-magic-link
-      parameters:
-      - description: Registration data with magic link token
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.RegisterWithMagicLinkRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RegisterWithMagicLinkResponse'
-        "400":
-          description: Invalid request parameters
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-        "401":
-          description: Invalid or expired magic link token
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/auth/magic/request:
-    post:
-      consumes:
-      - application/json
-      operationId: request-magic-link
-      parameters:
-      - description: Email address for magic link
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.RequestMagicLinkRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RequestMagicLinkResponse'
-        "400":
-          description: Invalid email format
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-        "404":
-          description: User not found
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/email:
-    put:
-      consumes:
-      - application/json
-      operationId: update-user-email
+      operationId: resend-user-invitation
       parameters:
       - description: ' '
-        in: body
-        name: Body
+        in: path
+        name: invitationID
         required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateUserEmailRequest'
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.UpdateUserEmailResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invitations/resend:
-    post:
-      consumes:
-      - application/json
-      operationId: resend-invitation
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.ResendInvitationRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ResendInvitationResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/invite:
-    post:
-      consumes:
-      - application/json
-      operationId: invite-users
-      parameters:
-      - description: ' '
-        in: body
-        name: Body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.InviteUsersRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.InviteUsersResponse'
+            $ref: '#/definitions/responses.ResendUserInvitationResponse'
         default:
           description: ""
           schema:
@@ -1468,97 +1579,67 @@ paths:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/obtainAuthToken:
-    post:
+    put:
       consumes:
       - application/json
-      operationId: obtain-auth-token
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.ObtainAuthTokenResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/refreshToken:
-    post:
-      consumes:
-      - application/json
-      operationId: refresh-token
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/responses.RefreshTokenResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/errdefs.Error'
-      tags:
-      - users
-  /users/saveAuth:
-    post:
-      consumes:
-      - application/json
-      operationId: save-auth
+      operationId: update-me
       parameters:
       - description: ' '
         in: body
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/requests.SaveAuthRequest'
+          $ref: '#/definitions/requests.UpdateMeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.SaveAuthResponse'
+            $ref: '#/definitions/responses.UpdateMeResponse'
         default:
           description: ""
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/sendUpdateEmailInstructions:
-    post:
+  /users/me/email:
+    put:
       consumes:
       - application/json
-      operationId: send-update-email-instructions
+      operationId: update-me-email
       parameters:
       - description: ' '
         in: body
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/requests.SendUpdateUserEmailInstructionsRequest'
+          $ref: '#/definitions/requests.UpdateMeEmailRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/responses.StatusResponse'
+            $ref: '#/definitions/responses.UpdateMeEmailResponse'
         default:
           description: ""
           schema:
             $ref: '#/definitions/errdefs.Error'
       tags:
       - users
-  /users/signout:
+  /users/me/email/instructions:
     post:
       consumes:
       - application/json
-      operationId: sign-out
+      operationId: send-update-me-email-instructions
+      parameters:
+      - description: ' '
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendUpdateMeEmailInstructionsRequest'
       produces:
       - application/json
       responses:
