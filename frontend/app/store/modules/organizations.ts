@@ -2,7 +2,6 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
 import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
-import type { UserRole } from '@/api/modules/users';
 import { createSlice } from '@reduxjs/toolkit';
 
 // =============================================
@@ -17,7 +16,6 @@ const createOrganization = createAsyncThunk(
   ) => {
     try {
       const res = await api.organizations.createOrganization(params);
-
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -31,7 +29,6 @@ const checkSubdomainAvailability = createAsyncThunk(
   async (params: { subdomain: string }, { dispatch, rejectWithValue }) => {
     try {
       const res = await api.organizations.checkSubdomainAvailability(params);
-
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -39,66 +36,29 @@ const checkSubdomainAvailability = createAsyncThunk(
     }
   },
 );
-
-const updateOrganizationUser = createAsyncThunk(
-  'organizations/updateOrganizationUser',
-  async (
-    params: { userId: string; data: { groupIds: string[]; role: UserRole } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.organizations.updateOrganizationUser(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const deleteOrganizationUser = createAsyncThunk(
-  'organizations/deleteOrganizationUser',
-  async (params: { userId: string }, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await api.organizations.deleteOrganizationUser(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-// =============================================
-// slice
-// =============================================
-
-// =============================================
-// schema
 
 // =============================================
 // State
+// =============================================
 
 export type State = {
   isCreateOrganizationWaiting: boolean;
   isCheckSubdomainAvailabilityWaiting: boolean;
-  isUpdateOrganizationUserWaiting: boolean;
-  isDeleteOrganizationUserWaiting: boolean;
 };
 
 const initialState: State = {
   isCreateOrganizationWaiting: false,
   isCheckSubdomainAvailabilityWaiting: false,
-  isUpdateOrganizationUserWaiting: false,
-  isDeleteOrganizationUserWaiting: false,
 };
 
 // =============================================
 // slice
+// =============================================
 
 export const slice = createSlice({
+  name: 'organizations',
+  initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder
       // createOrganization
@@ -120,31 +80,8 @@ export const slice = createSlice({
       })
       .addCase(checkSubdomainAvailability.rejected, (state) => {
         state.isCheckSubdomainAvailabilityWaiting = false;
-      })
-      // updateOrganizationUser
-      .addCase(updateOrganizationUser.pending, (state) => {
-        state.isUpdateOrganizationUserWaiting = true;
-      })
-      .addCase(updateOrganizationUser.fulfilled, (state) => {
-        state.isUpdateOrganizationUserWaiting = false;
-      })
-      .addCase(updateOrganizationUser.rejected, (state) => {
-        state.isUpdateOrganizationUserWaiting = false;
-      })
-      // deleteOrganizationUser
-      .addCase(deleteOrganizationUser.pending, (state) => {
-        state.isDeleteOrganizationUserWaiting = true;
-      })
-      .addCase(deleteOrganizationUser.fulfilled, (state) => {
-        state.isDeleteOrganizationUserWaiting = false;
-      })
-      .addCase(deleteOrganizationUser.rejected, (state) => {
-        state.isDeleteOrganizationUserWaiting = false;
       });
   },
-  initialState,
-  name: 'organizations',
-  reducers: {},
 });
 
 // =============================================
@@ -156,8 +93,6 @@ export const organizationsStore = {
   asyncActions: {
     createOrganization,
     checkSubdomainAvailability,
-    updateOrganizationUser,
-    deleteOrganizationUser,
   },
   reducer: slice.reducer,
 };

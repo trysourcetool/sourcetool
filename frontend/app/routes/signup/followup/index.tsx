@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { useDispatch } from '@/store';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useToast } from '@/hooks/use-toast';
+import { authStore } from '@/store/modules/auth';
 import { usersStore } from '@/store/modules/users';
 import { ENVIRONMENTS } from '@/environments';
 
@@ -57,7 +58,7 @@ export default function Followup() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.registerWithMagicLink({
+      authStore.asyncActions.registerWithMagicLink({
         data: {
           token,
           ...data,
@@ -65,7 +66,7 @@ export default function Followup() {
       }),
     );
     if (
-      usersStore.asyncActions.registerWithMagicLink.fulfilled.match(
+      authStore.asyncActions.registerWithMagicLink.fulfilled.match(
         resultAction,
       )
     ) {
@@ -79,7 +80,7 @@ export default function Followup() {
           description: t('routes_signup_followup_toast_success_description'),
         });
       } else {
-        await dispatch(usersStore.asyncActions.getUsersMe());
+        await dispatch(usersStore.asyncActions.getMe());
         navigate('/');
       }
     } else {

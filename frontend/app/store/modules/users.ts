@@ -14,70 +14,79 @@ import {
 import type { User, UserInvitation } from '@/api/modules/users';
 import { groupsStore } from './groups';
 import { pagesStore } from './pages';
-import { organizationsStore } from './organizations';
+import type { AuthState } from './auth';
 
 // =============================================
 // asyncActions
 // =============================================
-const refreshToken = createAsyncThunk(
-  'users/refreshToken',
+
+const getMe = createAsyncThunk(
+  'users/getMe',
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      const res = await api.users.usersRefreshToken();
-
-      api.setExpiresAt(res.expiresAt);
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const obtainAuthToken = createAsyncThunk(
-  'users/obtainAuthToken',
-  async (_, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await api.users.usersObtainAuthToken();
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const saveAuth = createAsyncThunk(
-  'users/saveAuth',
-  async (
-    params: { authUrl: string; data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersSaveAuth(params);
-
-      api.setExpiresAt(res.expiresAt);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const getUsersMe = createAsyncThunk(
-  'users/getUsersMe',
-  async (_, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await api.users.getUsersMe();
-
+      const res = await api.users.getMe();
       return res;
     } catch (error: any) {
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+const updateMe = createAsyncThunk(
+  'users/updateMe',
+  async (
+    params: {
+      data: {
+        firstName?: string;
+        lastName?: string;
+      };
+    },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.updateMe(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+const sendUpdateMeEmailInstructions = createAsyncThunk(
+  'users/sendUpdateMeEmailInstructions',
+  async (
+    params: { data: { email: string; emailConfirmation: string } },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.sendUpdateMeEmailInstructions(params);
+      return res;
+    } catch (error: any) {
+      dispatch(errorStore.asyncActions.handleError(error));
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
+const updateMeEmail = createAsyncThunk(
+  'users/updateMeEmail',
+  async (
+    params: {
+      data: {
+        token: string;
+      };
+    },
+    { dispatch, rejectWithValue },
+  ) => {
+    try {
+      const res = await api.users.updateMeEmail(params);
+      return res;
+    } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
@@ -89,187 +98,11 @@ const listUsers = createAsyncThunk(
   async (_, { dispatch, rejectWithValue }) => {
     try {
       const res = await api.users.listUsers();
-
       return res;
     } catch (error: any) {
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const signout = createAsyncThunk(
-  'users/signout',
-  async (_, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await api.users.usersSignout();
-
-      location.href = '/login';
-
-      return res;
-    } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const requestGoogleAuthLink = createAsyncThunk(
-  'users/requestGoogleAuthLink',
-  async (_, { dispatch, rejectWithValue }) => {
-    try {
-      const res = await api.users.usersRequestGoogleAuthLink();
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const authenticateWithGoogle = createAsyncThunk(
-  'users/authenticateWithGoogle',
-  async (
-    params: {
-      data: { code: string; state: string };
-    },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersAuthenticateWithGoogle(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const registerWithGoogle = createAsyncThunk(
-  'users/registerWithGoogle',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRegisterWithGoogle(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const invite = createAsyncThunk(
-  'users/invite',
-  async (
-    params: { data: { emails: string[]; role: UserRole } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersInvite(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const invitationsResend = createAsyncThunk(
-  'users/invitationsResend',
-  async (
-    params: { data: { invitationId: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersInvitationsResend(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const requestInvitationGoogleAuthLink = createAsyncThunk(
-  'users/requestInvitationGoogleAuthLink',
-  async (
-    params: {
-      data: {
-        invitationToken: string;
-      };
-    },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRequestInvitationGoogleAuthLink(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const authenticateWithInvitationGoogleAuthLink = createAsyncThunk(
-  'users/authenticateWithInvitationGoogleAuthLink',
-  async (
-    params: { data: { code: string; state: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const registerWithInvitationGoogleAuthLink = createAsyncThunk(
-  'users/registerWithInvitationGoogleAuthLink',
-  async (
-    params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const updateUserEmail = createAsyncThunk(
-  'users/updateUserEmail',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.updateUserEmail(params);
-
-      return res;
-    } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
@@ -280,16 +113,16 @@ const updateUser = createAsyncThunk(
   'users/updateUser',
   async (
     params: {
+      userId: string;
       data: {
-        firstName: string;
-        lastName: string;
+        role?: UserRole;
+        groupIds?: string[];
       };
     },
     { dispatch, rejectWithValue },
   ) => {
     try {
       const res = await api.users.updateUser(params);
-
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -298,15 +131,14 @@ const updateUser = createAsyncThunk(
   },
 );
 
-const usersSendUpdateEmailInstructions = createAsyncThunk(
-  'users/usersSendUpdateEmailInstructions',
+const deleteUser = createAsyncThunk(
+  'users/deleteUser',
   async (
-    params: { data: { email: string; emailConfirmation: string } },
+    params: { userId: string },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersSendUpdateEmailInstructions(params);
-
+      const res = await api.users.deleteUser(params);
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -315,72 +147,30 @@ const usersSendUpdateEmailInstructions = createAsyncThunk(
   },
 );
 
-const requestMagicLink = createAsyncThunk(
-  'users/requestMagicLink',
+const createUserInvitations = createAsyncThunk(
+  'users/createUserInvitations',
   async (
-    params: { data: { email: string } },
+    params: { data: { emails: string[]; role: UserRole } },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersRequestMagicLink(params);
+      const res = await api.users.createUserInvitations(params);
       return res;
     } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
       dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
 );
 
-const authenticateWithMagicLink = createAsyncThunk(
-  'users/authenticateWithMagicLink',
+const resendUserInvitation = createAsyncThunk(
+  'users/resendUserInvitation',
   async (
-    params: { data: { token: string } },
+    params: { invitationId: string },
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersAuthenticateWithMagicLink(params);
-      return res;
-    } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const registerWithMagicLink = createAsyncThunk(
-  'users/registerWithMagicLink',
-  async (
-    params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRegisterWithMagicLink(params);
-      api.setExpiresAt(res.expiresAt);
-      return res;
-    } catch (error: any) {
-      if (ENVIRONMENTS.MODE === 'development') {
-        console.log({ error });
-      }
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const requestInvitationMagicLink = createAsyncThunk(
-  'users/requestInvitationMagicLink',
-  async (
-    params: { data: { invitationToken: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRequestInvitationMagicLink(params);
+      const res = await api.users.resendUserInvitation(params);
       return res;
     } catch (error: any) {
       dispatch(errorStore.asyncActions.handleError(error));
@@ -388,53 +178,10 @@ const requestInvitationMagicLink = createAsyncThunk(
     }
   },
 );
-
-const authenticateWithInvitationMagicLink = createAsyncThunk(
-  'users/authenticateWithInvitationMagicLink',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res =
-        await api.users.usersAuthenticateWithInvitationMagicLink(params);
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-const registerWithInvitationMagicLink = createAsyncThunk(
-  'users/registerWithInvitationMagicLink',
-  async (
-    params: {
-      data: {
-        token: string;
-        firstName: string;
-        lastName: string;
-      };
-    },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.users.usersRegisterWithInvitationMagicLink(params);
-      api.setExpiresAt(res.expiresAt);
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-// =============================================
-// slice
-// =============================================
 
 // =============================================
 // schema
+// =============================================
 
 const usersAdapter = createEntityAdapter<User, string>({
   selectId: (user) => user.id,
@@ -446,37 +193,21 @@ const userInvitationsAdapter = createEntityAdapter<UserInvitation, string>({
 
 // =============================================
 // State
+// =============================================
 
 export type State = {
   me: User | null;
   users: EntityState<User, string>;
   userInvitations: EntityState<UserInvitation, string>;
   isGetMeWaiting: boolean;
-  isRefreshTokenWaiting: boolean;
+  isUpdateMeWaiting: boolean;
+  isSendUpdateMeEmailInstructionsWaiting: boolean;
+  isUpdateMeEmailWaiting: boolean;
   isListUsersWaiting: boolean;
-  isRequestMagicLinkWaiting: boolean;
-  isRegisterWithMagicLinkWaiting: boolean;
-  isAuthenticateWithMagicLinkWaiting: boolean;
-  isAuthChecked: boolean;
-  isAuthSucceeded: boolean;
-  isAuthFailed: boolean;
-  isInviteWaiting: boolean;
-  isSaveAuthWaiting: boolean;
-  isSignoutWaiting: boolean;
-  isObtainAuthTokenWaiting: boolean;
-  isRequestGoogleAuthLinkWaiting: boolean;
-  isAuthenticateWithGoogleWaiting: boolean;
-  isRegisterWithGoogleWaiting: boolean;
   isUpdateUserWaiting: boolean;
-  isUpdateUserEmailWaiting: boolean;
-  isUsersSendUpdateEmailInstructionsWaiting: boolean;
-  isInvitationsResendWaiting: boolean;
-  isRequestInvitationMagicLinkWaiting: boolean;
-  isAuthenticateWithInvitationMagicLinkWaiting: boolean;
-  isRegisterWithInvitationMagicLinkWaiting: boolean;
-  isRequestInvitationGoogleAuthLinkWaiting: boolean;
-  isAuthenticateWithInvitationGoogleAuthLinkWaiting: boolean;
-  isRegisterWithInvitationGoogleAuthLinkWaiting: boolean;
+  isDeleteUserWaiting: boolean;
+  isCreateUserInvitationsWaiting: boolean;
+  isResendUserInvitationWaiting: boolean;
 };
 
 const initialState: State = {
@@ -484,87 +215,93 @@ const initialState: State = {
   users: usersAdapter.getInitialState(),
   userInvitations: userInvitationsAdapter.getInitialState(),
   isGetMeWaiting: false,
-  isRefreshTokenWaiting: false,
+  isUpdateMeWaiting: false,
+  isSendUpdateMeEmailInstructionsWaiting: false,
+  isUpdateMeEmailWaiting: false,
   isListUsersWaiting: false,
-  isRequestMagicLinkWaiting: false,
-  isRegisterWithMagicLinkWaiting: false,
-  isAuthenticateWithMagicLinkWaiting: false,
-  isAuthChecked: false,
-  isAuthSucceeded: false,
-  isAuthFailed: false,
-  isInviteWaiting: false,
-  isObtainAuthTokenWaiting: false,
-  isSaveAuthWaiting: false,
-  isSignoutWaiting: false,
-  isRequestGoogleAuthLinkWaiting: false,
-  isAuthenticateWithGoogleWaiting: false,
-  isRegisterWithGoogleWaiting: false,
   isUpdateUserWaiting: false,
-  isUpdateUserEmailWaiting: false,
-  isUsersSendUpdateEmailInstructionsWaiting: false,
-  isInvitationsResendWaiting: false,
-  isRequestInvitationMagicLinkWaiting: false,
-  isAuthenticateWithInvitationMagicLinkWaiting: false,
-  isRegisterWithInvitationMagicLinkWaiting: false,
-  isRequestInvitationGoogleAuthLinkWaiting: false,
-  isAuthenticateWithInvitationGoogleAuthLinkWaiting: false,
-  isRegisterWithInvitationGoogleAuthLinkWaiting: false,
+  isDeleteUserWaiting: false,
+  isCreateUserInvitationsWaiting: false,
+  isResendUserInvitationWaiting: false,
 };
+
 // =============================================
 // slice
+// =============================================
 
 export const slice = createSlice({
+  name: 'users',
+  initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      // refreshToken
-      .addCase(refreshToken.pending, (state) => {
-        state.isRefreshTokenWaiting = true;
-      })
-      .addCase(refreshToken.fulfilled, (state) => {
-        state.isRefreshTokenWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(refreshToken.rejected, (state) => {
-        state.isRefreshTokenWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // obtainAuthToken
-      .addCase(obtainAuthToken.pending, (state) => {
-        state.isSaveAuthWaiting = true;
-      })
-      .addCase(obtainAuthToken.fulfilled, (state) => {
-        state.isSaveAuthWaiting = false;
-      })
-      .addCase(obtainAuthToken.rejected, (state) => {
-        state.isSaveAuthWaiting = false;
-      })
-
-      // saveAuth
-      .addCase(saveAuth.pending, (state) => {
-        state.isSaveAuthWaiting = true;
-      })
-      .addCase(saveAuth.fulfilled, (state) => {
-        state.isSaveAuthWaiting = false;
-      })
-      .addCase(saveAuth.rejected, (state) => {
-        state.isSaveAuthWaiting = false;
-      })
-
-      // getUsersMe
-      .addCase(getUsersMe.pending, (state) => {
+      // getMe
+      .addCase(getMe.pending, (state) => {
         state.isGetMeWaiting = true;
       })
-      .addCase(getUsersMe.fulfilled, (state, action) => {
+      .addCase(getMe.fulfilled, (state, action) => {
         state.me = action.payload.user;
         state.isGetMeWaiting = false;
       })
-      .addCase(getUsersMe.rejected, (state) => {
+      .addCase(getMe.rejected, (state) => {
         state.isGetMeWaiting = false;
+      })
+
+      // updateMe
+      .addCase(updateMe.pending, (state) => {
+        state.isUpdateMeWaiting = true;
+      })
+      .addCase(updateMe.fulfilled, (state, action) => {
+        state.me = action.payload.user;
+        state.isUpdateMeWaiting = false;
+      })
+      .addCase(updateMe.rejected, (state) => {
+        state.isUpdateMeWaiting = false;
+      })
+
+      // sendUpdateMeEmailInstructions
+      .addCase(sendUpdateMeEmailInstructions.pending, (state) => {
+        state.isSendUpdateMeEmailInstructionsWaiting = true;
+      })
+      .addCase(sendUpdateMeEmailInstructions.fulfilled, (state) => {
+        state.isSendUpdateMeEmailInstructionsWaiting = false;
+      })
+      .addCase(sendUpdateMeEmailInstructions.rejected, (state) => {
+        state.isSendUpdateMeEmailInstructionsWaiting = false;
+      })
+
+      // updateMeEmail
+      .addCase(updateMeEmail.pending, (state) => {
+        state.isUpdateMeEmailWaiting = true;
+      })
+      .addCase(updateMeEmail.fulfilled, (state, action) => {
+        state.me = action.payload.user;
+        state.isUpdateMeEmailWaiting = false;
+      })
+      .addCase(updateMeEmail.rejected, (state) => {
+        state.isUpdateMeEmailWaiting = false;
+      })
+
+      // createUserInvitations
+      .addCase(createUserInvitations.pending, (state) => {
+        state.isCreateUserInvitationsWaiting = true;
+      })
+      .addCase(createUserInvitations.fulfilled, (state) => {
+        state.isCreateUserInvitationsWaiting = false;
+      })
+      .addCase(createUserInvitations.rejected, (state) => {
+        state.isCreateUserInvitationsWaiting = false;
+      })
+
+      // resendUserInvitation
+      .addCase(resendUserInvitation.pending, (state) => {
+        state.isResendUserInvitationWaiting = true;
+      })
+      .addCase(resendUserInvitation.fulfilled, (state) => {
+        state.isResendUserInvitationWaiting = false;
+      })
+      .addCase(resendUserInvitation.rejected, (state) => {
+        state.isResendUserInvitationWaiting = false;
       })
 
       // listUsers
@@ -583,116 +320,30 @@ export const slice = createSlice({
         state.isListUsersWaiting = false;
       })
 
-      // requestMagicLink
-      .addCase(requestMagicLink.pending, (state) => {
-        state.isRequestMagicLinkWaiting = true;
+      // updateUser
+      .addCase(updateUser.pending, (state) => {
+        state.isUpdateUserWaiting = true;
       })
-      .addCase(requestMagicLink.fulfilled, (state) => {
-        state.isRequestMagicLinkWaiting = false;
+      .addCase(updateUser.fulfilled, (state, action) => {
+        usersAdapter.updateOne(state.users, {
+          id: action.payload.user.id,
+          changes: action.payload.user,
+        });
+        state.isUpdateUserWaiting = false;
       })
-      .addCase(requestMagicLink.rejected, (state) => {
-        state.isRequestMagicLinkWaiting = false;
-      })
-
-      // authenticateWithMagicLink
-      .addCase(authenticateWithMagicLink.pending, (state) => {
-        state.isAuthenticateWithMagicLinkWaiting = true;
-      })
-      .addCase(authenticateWithMagicLink.fulfilled, (state) => {
-        state.isAuthenticateWithMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(authenticateWithMagicLink.rejected, (state) => {
-        state.isAuthenticateWithMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
+      .addCase(updateUser.rejected, (state) => {
+        state.isUpdateUserWaiting = false;
       })
 
-      // registerWithMagicLink
-      .addCase(registerWithMagicLink.pending, (state) => {
-        state.isRegisterWithMagicLinkWaiting = true;
+      // deleteUser
+      .addCase(deleteUser.pending, (state) => {
+        state.isDeleteUserWaiting = true;
       })
-      .addCase(registerWithMagicLink.fulfilled, (state) => {
-        state.isRegisterWithMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
+      .addCase(deleteUser.fulfilled, (state) => {
+        state.isDeleteUserWaiting = false;
       })
-      .addCase(registerWithMagicLink.rejected, (state) => {
-        state.isRegisterWithMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // signout
-      .addCase(signout.pending, (state) => {
-        state.isSignoutWaiting = true;
-      })
-      .addCase(signout.fulfilled, (state) => {
-        state.isSignoutWaiting = false;
-      })
-      .addCase(signout.rejected, (state) => {
-        state.isSignoutWaiting = false;
-      })
-
-      // invite
-      .addCase(invite.pending, (state) => {
-        state.isInviteWaiting = true;
-      })
-      .addCase(invite.fulfilled, (state) => {
-        state.isInviteWaiting = false;
-      })
-      .addCase(invite.rejected, (state) => {
-        state.isInviteWaiting = false;
-      })
-
-      // requestGoogleAuthLink
-      .addCase(requestGoogleAuthLink.pending, (state) => {
-        state.isRequestGoogleAuthLinkWaiting = true;
-      })
-      .addCase(requestGoogleAuthLink.fulfilled, (state) => {
-        state.isRequestGoogleAuthLinkWaiting = false;
-      })
-      .addCase(requestGoogleAuthLink.rejected, (state) => {
-        state.isRequestGoogleAuthLinkWaiting = false;
-      })
-
-      // authenticateWithGoogle
-      .addCase(authenticateWithGoogle.pending, (state) => {
-        state.isAuthenticateWithGoogleWaiting = true;
-      })
-      .addCase(authenticateWithGoogle.fulfilled, (state) => {
-        state.isAuthenticateWithGoogleWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(authenticateWithGoogle.rejected, (state) => {
-        state.isAuthenticateWithGoogleWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // registerWithGoogle
-      .addCase(registerWithGoogle.pending, (state) => {
-        state.isRegisterWithGoogleWaiting = true;
-      })
-      .addCase(registerWithGoogle.fulfilled, (state) => {
-        state.isRegisterWithGoogleWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(registerWithGoogle.rejected, (state) => {
-        state.isRegisterWithGoogleWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
+      .addCase(deleteUser.rejected, (state) => {
+        state.isDeleteUserWaiting = false;
       })
 
       // getUserGroups
@@ -705,180 +356,20 @@ export const slice = createSlice({
       )
       .addCase(groupsStore.asyncActions.listGroups.rejected, () => {})
 
-      // updateUser
-      .addCase(updateUser.pending, (state) => {
-        state.isUpdateUserWaiting = true;
-      })
-      .addCase(updateUser.fulfilled, (state, action) => {
-        state.isUpdateUserWaiting = false;
-        if (state.me) {
-          state.me = action.payload.user;
-        }
-      })
-      .addCase(updateUser.rejected, (state) => {
-        state.isUpdateUserWaiting = false;
-      })
-
-      // updateUserEmail
-      .addCase(updateUserEmail.pending, (state) => {
-        state.isUpdateUserEmailWaiting = true;
-      })
-      .addCase(updateUserEmail.fulfilled, (state, action) => {
-        state.isUpdateUserEmailWaiting = false;
-        state.me = action.payload.user;
-      })
-      .addCase(updateUserEmail.rejected, (state) => {
-        state.isUpdateUserEmailWaiting = false;
-      })
-
-      // usersSendUpdateEmailInstructions
-      .addCase(usersSendUpdateEmailInstructions.pending, (state) => {
-        state.isUsersSendUpdateEmailInstructionsWaiting = true;
-      })
-      .addCase(usersSendUpdateEmailInstructions.fulfilled, (state) => {
-        state.isUsersSendUpdateEmailInstructionsWaiting = false;
-      })
-      .addCase(usersSendUpdateEmailInstructions.rejected, (state) => {
-        state.isUsersSendUpdateEmailInstructionsWaiting = false;
-      })
-
       // listPages
       .addCase(pagesStore.asyncActions.listPages.pending, () => {})
       .addCase(pagesStore.asyncActions.listPages.fulfilled, (state, action) => {
         usersAdapter.setAll(state.users, action.payload.users);
       })
-      .addCase(pagesStore.asyncActions.listPages.rejected, () => {})
-
-      // updateOrganizationUser
-      .addCase(
-        organizationsStore.asyncActions.updateOrganizationUser.pending,
-        () => {},
-      )
-      .addCase(
-        organizationsStore.asyncActions.updateOrganizationUser.fulfilled,
-        (state, action) => {
-          usersAdapter.updateOne(state.users, {
-            id: action.payload.id,
-            changes: action.payload,
-          });
-        },
-      )
-      .addCase(
-        organizationsStore.asyncActions.updateOrganizationUser.rejected,
-        () => {},
-      )
-
-      // invitationsResend
-      .addCase(invitationsResend.pending, (state) => {
-        state.isInvitationsResendWaiting = true;
-      })
-      .addCase(invitationsResend.fulfilled, (state) => {
-        state.isInvitationsResendWaiting = false;
-      })
-      .addCase(invitationsResend.rejected, (state) => {
-        state.isInvitationsResendWaiting = false;
-      })
-
-      // requestInvitationMagicLink
-      .addCase(requestInvitationMagicLink.pending, (state) => {
-        state.isRequestInvitationMagicLinkWaiting = true;
-      })
-      .addCase(requestInvitationMagicLink.fulfilled, (state) => {
-        state.isRequestInvitationMagicLinkWaiting = false;
-      })
-      .addCase(requestInvitationMagicLink.rejected, (state) => {
-        state.isRequestInvitationMagicLinkWaiting = false;
-      })
-
-      // authenticateWithInvitationMagicLink
-      .addCase(authenticateWithInvitationMagicLink.pending, (state) => {
-        state.isAuthenticateWithInvitationMagicLinkWaiting = true;
-      })
-      .addCase(authenticateWithInvitationMagicLink.fulfilled, (state) => {
-        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(authenticateWithInvitationMagicLink.rejected, (state) => {
-        state.isAuthenticateWithInvitationMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // registerWithInvitationMagicLink
-      .addCase(registerWithInvitationMagicLink.pending, (state) => {
-        state.isRegisterWithInvitationMagicLinkWaiting = true;
-      })
-      .addCase(registerWithInvitationMagicLink.fulfilled, (state) => {
-        state.isRegisterWithInvitationMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(registerWithInvitationMagicLink.rejected, (state) => {
-        state.isRegisterWithInvitationMagicLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // requestInvitationGoogleAuthLink
-      .addCase(requestInvitationGoogleAuthLink.pending, (state) => {
-        state.isRequestInvitationGoogleAuthLinkWaiting = true;
-      })
-      .addCase(requestInvitationGoogleAuthLink.fulfilled, (state) => {
-        state.isRequestInvitationGoogleAuthLinkWaiting = false;
-      })
-      .addCase(requestInvitationGoogleAuthLink.rejected, (state) => {
-        state.isRequestInvitationGoogleAuthLinkWaiting = false;
-      })
-
-      // authenticateWithInvitationGoogleAuthLink
-      .addCase(authenticateWithInvitationGoogleAuthLink.pending, (state) => {
-        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = true;
-      })
-      .addCase(authenticateWithInvitationGoogleAuthLink.fulfilled, (state) => {
-        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(authenticateWithInvitationGoogleAuthLink.rejected, (state) => {
-        state.isAuthenticateWithInvitationGoogleAuthLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      })
-
-      // registerWithInvitationGoogleAuthLink
-      .addCase(registerWithInvitationGoogleAuthLink.pending, (state) => {
-        state.isRegisterWithInvitationGoogleAuthLinkWaiting = true;
-      })
-      .addCase(registerWithInvitationGoogleAuthLink.fulfilled, (state) => {
-        state.isRegisterWithInvitationGoogleAuthLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = true;
-        state.isAuthFailed = false;
-      })
-      .addCase(registerWithInvitationGoogleAuthLink.rejected, (state) => {
-        state.isRegisterWithInvitationGoogleAuthLinkWaiting = false;
-        state.isAuthChecked = true;
-        state.isAuthSucceeded = false;
-        state.isAuthFailed = true;
-      });
+      .addCase(pagesStore.asyncActions.listPages.rejected, () => {});
   },
-  initialState,
-  name: 'users',
-  reducers: {},
 });
 
 // =============================================
 // selectors
 // =============================================
 
-const getMe = createSelector(
+const getUserMe = createSelector(
   (state: RootState) => state.users,
   (values) => values.me,
 );
@@ -913,11 +404,8 @@ const getUser = createSelector(
 );
 
 const getSubDomainMatched = createSelector(
-  (state: RootState, subDomain: string | null) => {
-    const isAuthChecked =
-      state.users.isAuthChecked &&
-      (state.users.isAuthFailed ||
-        (state.users.isAuthSucceeded && state.users.me));
+  (state: RootState & { auth: AuthState }, subDomain: string | null) => {
+    const isAuthChecked = state.auth.isAuthChecked;
     const matched = state.users.me?.organization?.subdomain === subDomain;
     return {
       isMatched: matched,
@@ -937,33 +425,19 @@ const getSubDomainMatched = createSelector(
 export const usersStore = {
   actions: slice.actions,
   asyncActions: {
-    refreshToken,
-    obtainAuthToken,
-    saveAuth,
-    getUsersMe,
+    getMe,
     listUsers,
-    signout,
-    requestGoogleAuthLink,
-    authenticateWithGoogle,
-    registerWithGoogle,
-    invite,
-    invitationsResend,
-    updateUserEmail,
+    createUserInvitations,
+    resendUserInvitation,
     updateUser,
-    usersSendUpdateEmailInstructions,
-    requestMagicLink,
-    authenticateWithMagicLink,
-    registerWithMagicLink,
-    requestInvitationMagicLink,
-    authenticateWithInvitationMagicLink,
-    registerWithInvitationMagicLink,
-    requestInvitationGoogleAuthLink,
-    authenticateWithInvitationGoogleAuthLink,
-    registerWithInvitationGoogleAuthLink,
+    updateMe,
+    updateMeEmail,
+    sendUpdateMeEmailInstructions,
+    deleteUser,
   },
   reducer: slice.reducer,
   selector: {
-    getMe,
+    getUserMe,
     getUserIds,
     getUserEntities,
     getUsers,

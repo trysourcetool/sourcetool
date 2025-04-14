@@ -26,6 +26,7 @@ import {
   hostInstancesStore,
   type HostInstancesState,
 } from './modules/hostInstances';
+import { type AuthState, authStore } from './modules/auth';
 
 export type RootState = {
   users: UsersState;
@@ -37,6 +38,7 @@ export type RootState = {
   groups: GroupsState;
   hostInstances: HostInstancesState;
   error: ErrorState;
+  auth: AuthState;
 };
 
 export const configureStore = () => {
@@ -50,6 +52,7 @@ export const configureStore = () => {
     groups: groupsStore.reducer,
     hostInstances: hostInstancesStore.reducer,
     error: errorStore.reducer,
+    auth: authStore.reducer,
   });
 
   const store = createConfigureStore({

@@ -27,13 +27,13 @@ export default function Settings() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
 
-  const user = useSelector(usersStore.selector.getMe);
+  const user = useSelector(usersStore.selector.getUserMe);
 
-  const isUpdateUserWaiting = useSelector(
-    (state) => state.users.isUpdateUserWaiting,
+  const isUpdateMeWaiting = useSelector(
+    (state) => state.users.isUpdateMeWaiting,
   );
-  const isUsersSendUpdateEmailInstructionsWaiting = useSelector(
-    (state) => state.users.isUsersSendUpdateEmailInstructionsWaiting,
+  const isSendUpdateMeEmailInstructionsWaiting = useSelector(
+    (state) => state.users.isSendUpdateMeEmailInstructionsWaiting,
   );
 
   const accountSchema = object({
@@ -76,17 +76,17 @@ export default function Settings() {
 
   const handleSubmitAccount = accountForm.handleSubmit(
     async (data: AccountSchema) => {
-      if (isUpdateUserWaiting) {
+      if (isUpdateMeWaiting) {
         return;
       }
       console.log({ data });
       const resultAction = await dispatch(
-        usersStore.asyncActions.updateUser({
+        usersStore.asyncActions.updateMe({
           data,
         }),
       );
 
-      if (usersStore.asyncActions.updateUser.fulfilled.match(resultAction)) {
+      if (usersStore.asyncActions.updateMe.fulfilled.match(resultAction)) {
         toast({
           title: t('routes_settings_toast_user_updated'),
         });
@@ -101,18 +101,18 @@ export default function Settings() {
 
   const handleSubmitEmail = emailForm.handleSubmit(
     async (data: EmailSchema) => {
-      if (isUsersSendUpdateEmailInstructionsWaiting) {
+      if (isSendUpdateMeEmailInstructionsWaiting) {
         return;
       }
       console.log({ data });
       const resultAction = await dispatch(
-        usersStore.asyncActions.usersSendUpdateEmailInstructions({
+        usersStore.asyncActions.sendUpdateMeEmailInstructions({
           data,
         }),
       );
 
       if (
-        usersStore.asyncActions.usersSendUpdateEmailInstructions.fulfilled.match(
+        usersStore.asyncActions.sendUpdateMeEmailInstructions.fulfilled.match(
           resultAction,
         )
       ) {

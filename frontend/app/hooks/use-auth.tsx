@@ -1,6 +1,7 @@
 import { checkDomain } from '@/lib/checkDomain';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { Loader2 } from 'lucide-react';
 import {
   createContext,
@@ -37,10 +38,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
     [],
   );
 
-  const isAuthChecked = useSelector((state) => state.users.isAuthChecked);
-  const isAuthSucceeded = useSelector((state) => state.users.isAuthSucceeded);
+  const isAuthChecked = useSelector((state) => state.auth.isAuthChecked);
+  const isAuthSucceeded = useSelector((state) => state.auth.isAuthSucceeded);
   const isRefreshTokenWaiting = useSelector(
-    (state) => state.users.isRefreshTokenWaiting,
+    (state) => state.auth.isRefreshTokenWaiting,
   );
 
   const subDomainMatched = useSelector((state) =>
@@ -58,15 +59,15 @@ export const AuthProvider: FC<{ children: ReactNode }> = (props) => {
       isInitialAuthChecking.current = true;
       (async () => {
         const resultAction = await dispatch(
-          usersStore.asyncActions.refreshToken(),
+          authStore.asyncActions.refreshToken(),
         );
         if (
-          usersStore.asyncActions.refreshToken.fulfilled.match(resultAction)
+          authStore.asyncActions.refreshToken.fulfilled.match(resultAction)
         ) {
           const resultUser = await dispatch(
-            usersStore.asyncActions.getUsersMe(),
+            usersStore.asyncActions.getMe(),
           );
-          if (usersStore.asyncActions.getUsersMe.fulfilled.match(resultUser)) {
+          if (usersStore.asyncActions.getMe.fulfilled.match(resultUser)) {
             const user = resultUser.payload.user;
             const userOrganization = user.organization;
             if (

@@ -37,7 +37,6 @@ import { Separator } from '@/components/ui/separator';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
-import { organizationsStore } from '@/store/modules/organizations';
 import { Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
@@ -83,7 +82,7 @@ const InviteForm = () => {
   const { toast } = useToast();
   const { t } = useTranslation('common');
 
-  const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
+  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
 
   const schema = object({
     emails: string({
@@ -128,7 +127,7 @@ const InviteForm = () => {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.invite({
+      usersStore.asyncActions.createUserInvitations({
         data: {
           emails: data.emails.split(',').map((email) => email.trim()),
           role: data.role as UserRole,
@@ -136,7 +135,7 @@ const InviteForm = () => {
       }),
     );
 
-    if (usersStore.asyncActions.invite.fulfilled.match(resultAction)) {
+    if (usersStore.asyncActions.createUserInvitations.fulfilled.match(resultAction)) {
       navigate($path('/users'));
       toast({
         title: t('routes_users_toast_invited'),
@@ -235,13 +234,13 @@ export default function Users() {
 
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
-  const me = useSelector(usersStore.selector.getMe);
-  const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
+  const me = useSelector(usersStore.selector.getUserMe);
+  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
   const isInvitationsResendWaiting = useSelector(
-    (state) => state.users.isInvitationsResendWaiting,
+    (state) => state.users.isResendUserInvitationWaiting,
   );
   const isDeleteUserWaiting = useSelector(
-    (state) => state.organizations.isDeleteOrganizationUserWaiting,
+    (state) => state.users.isDeleteUserWaiting,
   );
 
   const filteredUsers = useMemo(() => {
@@ -294,15 +293,13 @@ export default function Users() {
 
   const handleResendInvitation = async (invitationId: string) => {
     const resultAction = await dispatch(
-      usersStore.asyncActions.invitationsResend({
-        data: {
-          invitationId,
-        },
+      usersStore.asyncActions.resendUserInvitation({
+        invitationId,
       }),
     );
 
     if (
-      usersStore.asyncActions.invitationsResend.fulfilled.match(resultAction)
+      usersStore.asyncActions.resendUserInvitation.fulfilled.match(resultAction)
     ) {
       toast({
         title: t('routes_users_toast_invitation_resent'),
@@ -324,15 +321,13 @@ export default function Users() {
       return;
     }
     const resultAction = await dispatch(
-      organizationsStore.asyncActions.deleteOrganizationUser({
+      usersStore.asyncActions.deleteUser({
         userId: userToDelete.id,
       }),
     );
 
     if (
-      organizationsStore.asyncActions.deleteOrganizationUser.fulfilled.match(
-        resultAction,
-      )
+      usersStore.asyncActions.deleteUser.fulfilled.match(resultAction)
     ) {
       toast({
         title: t('routes_users_toast_user_deleted'),

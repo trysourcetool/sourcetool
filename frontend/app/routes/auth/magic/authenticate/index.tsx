@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router';
 import { useDispatch } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { $path } from 'safe-routes';
 import { Loader2 } from 'lucide-react';
@@ -38,13 +38,13 @@ export default function MagicLinkAuth() {
       }
 
       const resultAction = await dispatch(
-        usersStore.asyncActions.authenticateWithMagicLink({
+        authStore.asyncActions.authenticateWithMagicLink({
           data: { token },
         }),
       );
 
       if (
-        usersStore.asyncActions.authenticateWithMagicLink.fulfilled.match(
+        authStore.asyncActions.authenticateWithMagicLink.fulfilled.match(
           resultAction,
         )
       ) {
@@ -59,13 +59,13 @@ export default function MagicLinkAuth() {
           }
 
           const saveAuthResult = await dispatch(
-            usersStore.asyncActions.saveAuth({
+            authStore.asyncActions.saveAuth({
               authUrl: result.authUrl,
               data: { token: result.token },
             }),
           );
 
-          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
+          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
             throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
           }
 
