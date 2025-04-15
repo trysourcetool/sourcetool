@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 
@@ -115,7 +114,7 @@ func (s *ServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.Se
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	// Create token for email update
-	tok, err := createUserToken(currentUser.ID.String(), in.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectUpdateEmail)
+	tok, err := createUpdateEmailToken(currentUser.ID.String(), in.Email)
 	if err != nil {
 		return err
 	}
@@ -390,7 +389,7 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 			continue
 		}
 
-		tok, err := createUserEmailToken(email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
+		tok, err := createInvitationToken(email)
 		if err != nil {
 			return nil, err
 		}
@@ -457,7 +456,7 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 
 	u := ctxutil.CurrentUser(ctx)
 
-	tok, err := createUserEmailToken(userInvitation.Email, time.Now().Add(model.EmailTokenExpiration), jwt.UserSignatureSubjectInvitation)
+	tok, err := createInvitationToken(userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}

@@ -6,27 +6,28 @@ import (
 	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/jwt"
+	"github.com/trysourcetool/sourcetool/backend/model"
 )
 
-func createUserToken(userID, email string, expirationTime time.Time, subject string) (string, error) {
+func createUpdateEmailToken(userID, email string) (string, error) {
 	return jwt.SignToken(&jwt.UserClaims{
 		UserID: userID,
 		Email:  email,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
 			Issuer:    jwt.Issuer,
-			Subject:   subject,
+			Subject:   jwt.UserSignatureSubjectUpdateEmail,
 		},
 	})
 }
 
-func createUserEmailToken(email string, expirationTime time.Time, subject string) (string, error) {
-	return jwt.SignToken(&jwt.UserEmailClaims{
+func createInvitationToken(email string) (string, error) {
+	return jwt.SignToken(&jwt.UserClaims{
 		Email: email,
 		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
+			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(model.EmailTokenExpiration)),
 			Issuer:    jwt.Issuer,
-			Subject:   subject,
+			Subject:   jwt.UserSignatureSubjectInvitation,
 		},
 	})
 }
