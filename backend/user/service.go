@@ -6,13 +6,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/permission"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -285,8 +285,8 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 }
 
 func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditUser); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -367,8 +367,8 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 }
 
 func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUserInvitationsInput) (*dto.CreateUserInvitationsOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditUser); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return nil, err
 	}
 
@@ -434,8 +434,8 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 }
 
 func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserInvitationInput) (*dto.ResendUserInvitationOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditUser); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return nil, err
 	}
 
