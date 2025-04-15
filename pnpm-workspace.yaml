@@ -2,20 +2,17 @@ packages:
   - 'frontend'
   - 'docs'
 catalogs:
-  # Can be referenced through "catalog:react18"
-  react18:
-    react: ^18.2.0
-    react-dom: ^18.2.0
-
   # Can be referenced through "catalog:react19"
   react19:
     react: ^19.0.0
     react-dom: ^19.0.0
+    '@types/react': ^19.0.0
+    '@types/react-dom': ^19.0.0
 
 catalog:
   clsx: ^2.1.1
-  eslint: ^9.21.0
-  prettier: ^3.5.3
   typescript: ^5.1.6
-  eslint-plugin-vitest: ^0.5.4
   vitest: ^2.1.8
+
+publicHoistPattern:
+  - '*eslint*'

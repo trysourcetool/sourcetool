@@ -3,7 +3,6 @@ import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ENVIRONMENTS } from '@/environments';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import type { UserRole } from '@/api/modules/users';
 import {
@@ -21,14 +20,13 @@ import { organizationsStore } from './organizations';
 // =============================================
 const refreshToken = createAsyncThunk(
   'users/refreshToken',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.usersRefreshToken();
 
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -36,13 +34,12 @@ const refreshToken = createAsyncThunk(
 
 const obtainAuthToken = createAsyncThunk(
   'users/obtainAuthToken',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.usersObtainAuthToken();
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -52,7 +49,7 @@ const saveAuth = createAsyncThunk(
   'users/saveAuth',
   async (
     params: { authUrl: string; data: { token: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersSaveAuth(params);
@@ -61,7 +58,6 @@ const saveAuth = createAsyncThunk(
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -69,7 +65,7 @@ const saveAuth = createAsyncThunk(
 
 const getUsersMe = createAsyncThunk(
   'users/getUsersMe',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.getUsersMe();
 
@@ -78,7 +74,6 @@ const getUsersMe = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -86,7 +81,7 @@ const getUsersMe = createAsyncThunk(
 
 const listUsers = createAsyncThunk(
   'users/listUsers',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.listUsers();
 
@@ -95,7 +90,6 @@ const listUsers = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -103,7 +97,7 @@ const listUsers = createAsyncThunk(
 
 const signout = createAsyncThunk(
   'users/signout',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.usersSignout();
 
@@ -114,7 +108,6 @@ const signout = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -122,13 +115,12 @@ const signout = createAsyncThunk(
 
 const requestGoogleAuthLink = createAsyncThunk(
   'users/requestGoogleAuthLink',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.usersRequestGoogleAuthLink();
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -140,14 +132,13 @@ const authenticateWithGoogle = createAsyncThunk(
     params: {
       data: { code: string; state: string };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersAuthenticateWithGoogle(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -155,16 +146,12 @@ const authenticateWithGoogle = createAsyncThunk(
 
 const registerWithGoogle = createAsyncThunk(
   'users/registerWithGoogle',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { token: string } }, { rejectWithValue }) => {
     try {
       const res = await api.users.usersRegisterWithGoogle(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -174,14 +161,13 @@ const invite = createAsyncThunk(
   'users/invite',
   async (
     params: { data: { emails: string[]; role: UserRole } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersInvite(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -189,16 +175,12 @@ const invite = createAsyncThunk(
 
 const invitationsResend = createAsyncThunk(
   'users/invitationsResend',
-  async (
-    params: { data: { invitationId: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { invitationId: string } }, { rejectWithValue }) => {
     try {
       const res = await api.users.usersInvitationsResend(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -212,14 +194,13 @@ const requestInvitationGoogleAuthLink = createAsyncThunk(
         invitationToken: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersRequestInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -229,14 +210,14 @@ const authenticateWithInvitationGoogleAuthLink = createAsyncThunk(
   'users/authenticateWithInvitationGoogleAuthLink',
   async (
     params: { data: { code: string; state: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
+      const res =
+        await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -246,14 +227,14 @@ const registerWithInvitationGoogleAuthLink = createAsyncThunk(
   'users/registerWithInvitationGoogleAuthLink',
   async (
     params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
+      const res =
+        await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -261,16 +242,12 @@ const registerWithInvitationGoogleAuthLink = createAsyncThunk(
 
 const updateUserEmail = createAsyncThunk(
   'users/updateUserEmail',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { token: string } }, { rejectWithValue }) => {
     try {
       const res = await api.users.updateUserEmail(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -285,14 +262,13 @@ const updateUser = createAsyncThunk(
         lastName: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.updateUser(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -302,14 +278,13 @@ const usersSendUpdateEmailInstructions = createAsyncThunk(
   'users/usersSendUpdateEmailInstructions',
   async (
     params: { data: { email: string; emailConfirmation: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersSendUpdateEmailInstructions(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -317,10 +292,7 @@ const usersSendUpdateEmailInstructions = createAsyncThunk(
 
 const requestMagicLink = createAsyncThunk(
   'users/requestMagicLink',
-  async (
-    params: { data: { email: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { email: string } }, { rejectWithValue }) => {
     try {
       const res = await api.users.usersRequestMagicLink(params);
       return res;
@@ -328,7 +300,6 @@ const requestMagicLink = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -336,10 +307,7 @@ const requestMagicLink = createAsyncThunk(
 
 const authenticateWithMagicLink = createAsyncThunk(
   'users/authenticateWithMagicLink',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { token: string } }, { rejectWithValue }) => {
     try {
       const res = await api.users.usersAuthenticateWithMagicLink(params);
       return res;
@@ -347,7 +315,6 @@ const authenticateWithMagicLink = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -357,7 +324,7 @@ const registerWithMagicLink = createAsyncThunk(
   'users/registerWithMagicLink',
   async (
     params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersRegisterWithMagicLink(params);
@@ -367,7 +334,6 @@ const registerWithMagicLink = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -377,13 +343,12 @@ const requestInvitationMagicLink = createAsyncThunk(
   'users/requestInvitationMagicLink',
   async (
     params: { data: { invitationToken: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersRequestInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -391,16 +356,12 @@ const requestInvitationMagicLink = createAsyncThunk(
 
 const authenticateWithInvitationMagicLink = createAsyncThunk(
   'users/authenticateWithInvitationMagicLink',
-  async (
-    params: { data: { token: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { token: string } }, { rejectWithValue }) => {
     try {
       const res =
         await api.users.usersAuthenticateWithInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -416,14 +377,13 @@ const registerWithInvitationMagicLink = createAsyncThunk(
         lastName: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.usersRegisterWithInvitationMagicLink(params);
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },

@@ -9,7 +9,6 @@ import {
 } from 'react-redux';
 import { ENVIRONMENTS } from '@/environments';
 import { type UsersState, usersStore } from './modules/users';
-import { type ErrorState, errorStore } from './modules/error';
 import {
   organizationsStore,
   type OrganizationsState,
@@ -36,7 +35,6 @@ export type RootState = {
   apiKeys: ApiKeysState;
   groups: GroupsState;
   hostInstances: HostInstancesState;
-  error: ErrorState;
 };
 
 export const configureStore = () => {
@@ -49,7 +47,6 @@ export const configureStore = () => {
     widgets: widgetsStore.reducer,
     groups: groupsStore.reducer,
     hostInstances: hostInstancesStore.reducer,
-    error: errorStore.reducer,
   });
 
   const store = createConfigureStore({
