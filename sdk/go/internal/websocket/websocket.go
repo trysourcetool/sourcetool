@@ -213,10 +213,7 @@ func (c *client) reconnect() error {
 
 	for {
 		// Calculate delay with exponential backoff, but cap it
-		delay := initialReconnectDelay * time.Duration(1<<uint(attempt))
-		if delay > maxReconnectDelay {
-			delay = maxReconnectDelay
-		}
+		delay := min(initialReconnectDelay*time.Duration(1<<uint(attempt)), maxReconnectDelay)
 
 		// Add some jitter to prevent thundering herd
 		// Use crypto/rand for better randomness
@@ -464,7 +461,7 @@ func (c *client) sendEnqueuedMessagesLoop() {
 
 func (c *client) sendWithRetry(msg *websocketv1.Message) error {
 	var lastErr error
-	for attempt := 0; attempt < maxMessageRetries; attempt++ {
+	for attempt := range maxMessageRetries {
 		if attempt > 0 {
 			delay := messageRetryDelay * time.Duration(1<<uint(attempt-1))
 			logger.Log.Debug("retrying message send",

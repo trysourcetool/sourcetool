@@ -32,10 +32,10 @@ const (
 	// Time allowed to read the next pong message from the host.
 	hostPongWait = 6 * time.Hour
 
-	// Maximum number of reconnection attempts
+	// Maximum number of reconnection attempts.
 	maxReconnectAttempts = 5
 
-	// Base delay for exponential backoff (in milliseconds)
+	// Base delay for exponential backoff (in milliseconds).
 	baseReconnectDelay = 100
 )
 
@@ -168,7 +168,7 @@ func InitWebSocketConns(ctx context.Context, store infra.Store) error {
 func (c *connManager) subscribeToHostMessages() {
 	defer c.wg.Done()
 
-	for attempt := 0; attempt < maxReconnectAttempts; attempt++ {
+	for attempt := range maxReconnectAttempts {
 		if err := c.subscribeToHostMessagesWithRetry(); err != nil {
 			if attempt == maxReconnectAttempts-1 {
 				logger.Logger.Sugar().Errorf("Failed to subscribe to host messages after %d attempts: %v", maxReconnectAttempts, err)
@@ -259,7 +259,7 @@ func (c *connManager) processHostMessage(msg *redis.Message) error {
 func (c *connManager) subscribeToClientMessages() {
 	defer c.wg.Done()
 
-	for attempt := 0; attempt < maxReconnectAttempts; attempt++ {
+	for attempt := range maxReconnectAttempts {
 		if err := c.subscribeToClientMessagesWithRetry(); err != nil {
 			if attempt == maxReconnectAttempts-1 {
 				logger.Logger.Sugar().Errorf("Failed to subscribe to client messages after %d attempts: %v", maxReconnectAttempts, err)
