@@ -20,7 +20,7 @@ import { pagesStore } from './pages';
 
 const getMe = createAsyncThunk(
   'users/getMe',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.getMe();
       return res;
@@ -57,7 +57,7 @@ const sendUpdateMeEmailInstructions = createAsyncThunk(
   'users/sendUpdateMeEmailInstructions',
   async (
     params: { data: { email: string; emailConfirmation: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.sendUpdateMeEmailInstructions(params);
@@ -89,7 +89,7 @@ const updateMeEmail = createAsyncThunk(
 
 const listUsers = createAsyncThunk(
   'users/listUsers',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.users.listUsers();
       return res;
@@ -97,7 +97,6 @@ const listUsers = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -126,10 +125,7 @@ const updateUser = createAsyncThunk(
 
 const deleteUser = createAsyncThunk(
   'users/deleteUser',
-  async (
-    params: { userId: string },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { userId: string }, { rejectWithValue }) => {
     try {
       const res = await api.users.deleteUser(params);
       return res;
@@ -143,7 +139,7 @@ const createUserInvitations = createAsyncThunk(
   'users/createUserInvitations',
   async (
     params: { data: { emails: string[]; role: UserRole } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.createUserInvitations(params);
@@ -156,10 +152,7 @@ const createUserInvitations = createAsyncThunk(
 
 const resendUserInvitation = createAsyncThunk(
   'users/resendUserInvitation',
-  async (
-    params: { invitationId: string },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { invitationId: string }, { rejectWithValue }) => {
     try {
       const res = await api.users.resendUserInvitation(params);
       return res;
@@ -395,8 +388,10 @@ const getUser = createSelector(
 
 const getSubDomainMatched = createSelector(
   (state: RootState, subDomain: string | null) => {
-    const isAuthChecked = state.auth.isAuthChecked &&
-      (state.auth.isAuthFailed || (state.auth.isAuthSucceeded && state.users.me));
+    const isAuthChecked =
+      state.auth.isAuthChecked &&
+      (state.auth.isAuthFailed ||
+        (state.auth.isAuthSucceeded && state.users.me));
     const matched = state.users.me?.organization?.subdomain === subDomain;
     return {
       isMatched: matched,
