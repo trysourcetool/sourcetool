@@ -2,8 +2,9 @@ package websocket
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"sync"
 	"time"
@@ -18,29 +19,27 @@ import (
 )
 
 const (
-	// Time constraints
+	// Time constraints.
 	minPingInterval   = 100 * time.Millisecond
 	maxPingInterval   = 30 * time.Second
 	minReconnectDelay = 100 * time.Millisecond
 
-	// Queue constraints
+	// Queue constraints.
 	minQueueSize = 50
 	maxQueueSize = 1000
 
-	// Default values
+	// Default values.
 	defaultPingInterval   = time.Second
 	defaultReconnectDelay = time.Second
 	defaultQueueSize      = 250
 
-	// Reconnection constants
+	// Reconnection constants.
 	initialReconnectDelay = 500 * time.Millisecond
 	maxReconnectDelay     = 30 * time.Second
-	// 1 hour = 3600 seconds = 3600000 milliseconds
-	// 500ms * 2^13 ≈ 4 seconds
-	// 4s * 2^13 ≈ 1 hour
+	// 4s * 2^13 ≈ 1 hour.
 	maxReconnectAttempts = 26 // Approximately 1 hour of reconnection attempts
 
-	// Message sending constants
+	// Message sending constants.
 	maxMessageRetries = 3
 	messageRetryDelay = 100 * time.Millisecond
 	shutdownTimeout   = 5 * time.Second
@@ -122,7 +121,6 @@ type client struct {
 
 	// Shutdown state
 	shutdownOnce sync.Once
-	shutdownErr  error
 }
 
 func NewClient(config Config) (Client, error) {
@@ -221,8 +219,14 @@ func (c *client) reconnect() error {
 		}
 
 		// Add some jitter to prevent thundering herd
-		jitter := time.Duration(rand.Int63n(int64(delay / 4)))
-		delay += jitter
+		// Use crypto/rand for better randomness
+		maxJitter := int64(delay / 4)
+		if maxJitter > 0 {
+			jitterBig, err := rand.Int(rand.Reader, big.NewInt(maxJitter))
+			if err == nil {
+				delay += time.Duration(jitterBig.Int64())
+			}
+		}
 
 		// Log reconnection attempt with more context
 		logger.Log.Info("attempting to reconnect",
@@ -271,7 +275,7 @@ func (c *client) reconnect() error {
 		// Wait before next attempt
 		select {
 		case <-c.stop:
-			logger.Log.Info("reconnection cancelled during shutdown",
+			logger.Log.Info("reconnection canceled during shutdown",
 				zap.String("instance_id", c.config.InstanceID.String()),
 				zap.Duration("total_downtime", time.Since(lastSuccessTime)))
 			return nil
