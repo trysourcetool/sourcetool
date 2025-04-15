@@ -1,5 +1,5 @@
 {
-  "name": "source-tool-frontend",
+  "name": "sourcetool-frontend",
   "private": true,
   "sideEffects": false,
   "type": "module",
