@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -14,9 +15,85 @@ type User struct {
 	CreatedAt time.Time
 }
 
+var (
+	ErrUserNil        = errors.New("user cannot be nil")
+	ErrNameRequired   = errors.New("name is required")
+	ErrEmailRequired  = errors.New("email is required")
+	ErrAgeInvalid     = errors.New("age must be positive")
+	ErrGenderRequired = errors.New("gender is required")
+	ErrGenderInvalid  = errors.New("gender must be either 'male' or 'female'")
+)
+
 func listUsers(name, email string, age int, gender string, createdAt time.Time) ([]User, error) {
+	users := generateTestUsers()
+
+	if name == "" && email == "" && age == 0 && gender == "" && createdAt.IsZero() {
+		return users, nil
+	}
+
+	return filterUsers(users, name, email, age, gender, createdAt), nil
+}
+
+func filterUsers(users []User, name, email string, age int, gender string, createdAt time.Time) []User {
+	var filtered []User
+	for _, user := range users {
+		if matchesFilter(user, name, email, age, gender, createdAt) {
+			filtered = append(filtered, user)
+		}
+	}
+	return filtered
+}
+
+func matchesFilter(user User, name, email string, age int, gender string, createdAt time.Time) bool {
+	return (name == "" || user.Name == name) &&
+		(email == "" || user.Email == email) &&
+		(age == 0 || user.Age == age) &&
+		(gender == "" || user.Gender == gender) &&
+		(createdAt.IsZero() || user.CreatedAt.Equal(createdAt))
+}
+
+func createUser(u *User) error {
+	if u == nil {
+		return ErrUserNil
+	}
+
+	if err := validateUser(u); err != nil {
+		return err
+	}
+
+	if u.ID == "" {
+		u.ID = fmt.Sprintf("user_%d", time.Now().UnixNano())
+	}
+
+	if u.CreatedAt.IsZero() {
+		u.CreatedAt = time.Now().UTC()
+	}
+
+	return nil
+}
+
+func validateUser(u *User) error {
+	if u.Name == "" {
+		return ErrNameRequired
+	}
+	if u.Email == "" {
+		return ErrEmailRequired
+	}
+	if u.Age <= 0 {
+		return ErrAgeInvalid
+	}
+	if u.Gender == "" {
+		return ErrGenderRequired
+	}
+	if u.Gender != "male" && u.Gender != "female" {
+		return ErrGenderInvalid
+	}
+	return nil
+}
+
+func generateTestUsers() []User {
 	baseTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-	users := []User{
+	return []User{
 		{ID: "1", Name: "John Doe 001", Email: "john.doe+001@acme.com", Age: 25, Gender: "male", CreatedAt: baseTime.Add(24 * time.Hour * 0)},
 		{ID: "2", Name: "John Doe 002", Email: "john.doe+002@acme.com", Age: 30, Gender: "male", CreatedAt: baseTime.Add(24 * time.Hour * 1)},
 		{ID: "3", Name: "Jane Doe 003", Email: "jane.doe+003@acme.com", Age: 35, Gender: "female", CreatedAt: baseTime.Add(24 * time.Hour * 2)},
@@ -38,53 +115,4 @@ func listUsers(name, email string, age int, gender string, createdAt time.Time) 
 		{ID: "19", Name: "Jane Doe 019", Email: "jane.doe+019@acme.com", Age: 35, Gender: "female", CreatedAt: baseTime.Add(24 * time.Hour * 18)},
 		{ID: "20", Name: "John Doe 020", Email: "john.doe+020@acme.com", Age: 30, Gender: "male", CreatedAt: baseTime.Add(24 * time.Hour * 19)},
 	}
-
-	if name == "" && email == "" && age == 0 && gender == "" && createdAt.IsZero() {
-		return users, nil
-	}
-
-	var filteredUsers []User
-	for _, user := range users {
-		if (name != "" && user.Name == name) ||
-			(email != "" && user.Email == email) ||
-			(age > 0 && user.Age == age) ||
-			(gender != "" && user.Gender == gender) ||
-			(!createdAt.IsZero() && user.CreatedAt.Equal(createdAt)) {
-			filteredUsers = append(filteredUsers, user)
-		}
-	}
-
-	return filteredUsers, nil
-}
-
-func createUser(u *User) error {
-	if u == nil {
-		return fmt.Errorf("user cannot be nil")
-	}
-
-	if u.Name == "" {
-		return fmt.Errorf("name is required")
-	}
-	if u.Email == "" {
-		return fmt.Errorf("email is required")
-	}
-	if u.Age <= 0 {
-		return fmt.Errorf("age must be positive")
-	}
-	if u.Gender == "" {
-		return fmt.Errorf("gender is required")
-	}
-	if u.Gender != "male" && u.Gender != "female" {
-		return fmt.Errorf("gender must be either 'male' or 'female'")
-	}
-
-	if u.ID == "" {
-		u.ID = fmt.Sprintf("user_%d", time.Now().UnixNano())
-	}
-
-	if u.CreatedAt.IsZero() {
-		u.CreatedAt = time.Now().UTC()
-	}
-
-	return nil
 }
