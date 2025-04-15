@@ -1,13 +1,10 @@
-module github.com/trysourcetool/sourcetool/examples/go/debug-errors
+module github.com/trysourcetool/sourcetool/examples/go/data-analysis
 
-go 1.22
+go 1.23.5
 
 replace github.com/trysourcetool/sourcetool-go => ../../../sdk/go
 
-require (
-	github.com/trysourcetool/sourcetool-go v0.0.0-00010101000000-000000000000
-	golang.org/x/sync v0.7.0
-)
+require github.com/trysourcetool/sourcetool-go v0.0.0-00010101000000-000000000000
 
 require (
 	github.com/gofrs/uuid/v5 v5.3.0 // indirect
