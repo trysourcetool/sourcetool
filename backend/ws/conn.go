@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -30,6 +31,12 @@ const (
 
 	// Time allowed to read the next pong message from the host.
 	hostPongWait = 6 * time.Hour
+
+	// Maximum number of reconnection attempts
+	maxReconnectAttempts = 5
+
+	// Base delay for exponential backoff (in milliseconds)
+	baseReconnectDelay = 100
 )
 
 var (
@@ -55,8 +62,10 @@ type connectedClient struct {
 }
 
 type connManager struct {
-	connectedHosts   *sync.Map // hostInstanceID -> connectedHost
-	connectedClients *sync.Map // sessionID -> connectedClient
+	connectedHosts   map[uuid.UUID]*connectedHost
+	connectedClients map[uuid.UUID]*connectedClient
+	hostsMutex       sync.RWMutex
+	clientsMutex     sync.RWMutex
 	redisClient      *redisClient
 	store            infra.Store
 	ctx              context.Context    // Context for managing goroutine lifecycle
@@ -67,8 +76,8 @@ type connManager struct {
 func newConnManager(redisClient *redisClient, store infra.Store) *connManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &connManager{
-		connectedHosts:   new(sync.Map),
-		connectedClients: new(sync.Map),
+		connectedHosts:   make(map[uuid.UUID]*connectedHost),
+		connectedClients: make(map[uuid.UUID]*connectedClient),
 		redisClient:      redisClient,
 		store:            store,
 		ctx:              ctx,
@@ -77,20 +86,17 @@ func newConnManager(redisClient *redisClient, store infra.Store) *connManager {
 }
 
 func (c *connManager) pingConnection(conn *websocket.Conn) error {
-	ctx, cancel := context.WithTimeout(context.Background(), writeWait)
-	defer cancel()
-
-	done := make(chan error, 1)
-	go func() {
-		done <- conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait))
-	}()
-
-	select {
-	case err := <-done:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
+	// Set write deadline
+	if err := conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+		return fmt.Errorf("failed to set write deadline: %w", err)
 	}
+
+	// Write ping message directly
+	if err := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(writeWait)); err != nil {
+		return fmt.Errorf("failed to write ping message: %w", err)
+	}
+
+	return nil
 }
 
 func (c *connManager) startHostPingLoop(host *connectedHost) {
@@ -160,167 +166,195 @@ func InitWebSocketConns(ctx context.Context, store infra.Store) error {
 }
 
 func (c *connManager) subscribeToHostMessages() {
-	defer c.wg.Done() // Signal WaitGroup when this goroutine exits
+	defer c.wg.Done()
 
-	// Use the manager's context for the subscription
+	for attempt := 0; attempt < maxReconnectAttempts; attempt++ {
+		if err := c.subscribeToHostMessagesWithRetry(); err != nil {
+			if attempt == maxReconnectAttempts-1 {
+				logger.Logger.Sugar().Errorf("Failed to subscribe to host messages after %d attempts: %v", maxReconnectAttempts, err)
+				return
+			}
+			// Exponential backoff
+			delay := time.Duration(baseReconnectDelay*(1<<attempt)) * time.Millisecond
+			logger.Logger.Sugar().Warnf("Retrying host message subscription in %v (attempt %d/%d)", delay, attempt+1, maxReconnectAttempts)
+			time.Sleep(delay)
+			continue
+		}
+		return
+	}
+}
+
+func (c *connManager) subscribeToHostMessagesWithRetry() error {
 	ch, err := c.redisClient.Subscribe(c.ctx, "host_messages")
 	if err != nil {
-		logger.Logger.Sugar().Errorf("Failed to subscribe to host messages: %v", err)
-		// Consider more robust error handling here (retry, health check failure, etc.)
-		return
+		return fmt.Errorf("failed to subscribe to host messages: %w", err)
 	}
 	logger.Logger.Sugar().Info("Subscribed to host messages")
 
 	for {
 		select {
-		case <-c.ctx.Done(): // Exit loop if manager context is canceled
+		case <-c.ctx.Done():
 			logger.Logger.Sugar().Info("Host message subscriber stopping due to context cancellation.")
-			// The pubsub channel might be closed implicitly by redis client on context cancel/close,
-			// but explicitly returning ensures termination.
-			return
+			return nil
 		case msg, ok := <-ch:
 			if !ok {
-				logger.Logger.Sugar().Info("Host message channel closed.")
-				return // Channel closed, exit goroutine
+				return fmt.Errorf("host message channel closed unexpectedly")
 			}
 
-			// Existing message processing logic...
-			var redisMsg redisv1.RedisMessage
-			if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to unmarshal redis message: %v", err)
+			if err := c.processHostMessage(msg); err != nil {
+				logger.Logger.Sugar().Errorf("Failed to process host message: %v", err)
+				// Continue processing other messages even if one fails
 				continue
-			}
-
-			hostInstanceID, err := uuid.FromString(redisMsg.Id)
-			if err != nil {
-				logger.Logger.Sugar().Errorf("Invalid host instance ID: %v", err)
-				continue
-			}
-
-			var protoMsg websocketv1.Message
-			if err := proto.Unmarshal(redisMsg.Payload, &protoMsg); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to unmarshal protobuf message: %v", err)
-				continue
-			}
-
-			logger.Logger.Sugar().Debugf("Received message: %s", &protoMsg)
-
-			conn, ok := c.connectedHosts.Load(hostInstanceID)
-			if !ok {
-				// Host might have disconnected, log as debug or info?
-				logger.Logger.Sugar().Debugf("Host not found for message: %s", hostInstanceID)
-				continue
-			}
-			host, ok := conn.(*connectedHost)
-			if !ok {
-				logger.Logger.Sugar().Errorf("Invalid connection type stored for host: %s", hostInstanceID)
-				c.connectedHosts.Delete(hostInstanceID) // Clean up invalid entry
-				continue
-			}
-
-			logger.Logger.Sugar().Debugf("Sending message to host %s: %s", host.hostInstance.ID, protoMsg.Id)
-
-			data, err := proto.Marshal(&protoMsg)
-			if err != nil {
-				logger.Logger.Sugar().Errorf("Failed to marshal message for host %s: %v", host.hostInstance.ID, err)
-				continue
-			}
-
-			// Consider adding a write deadline
-			if err := host.conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to send message to host %s: %v. Disconnecting host.", host.hostInstance.ID, err)
-				// Consider attempting to disconnect the host here if writing fails repeatedly
-				// c.DisconnectHost(hostInstanceID)
 			}
 		}
 	}
 }
 
-func (c *connManager) subscribeToClientMessages() {
-	defer c.wg.Done() // Signal WaitGroup when this goroutine exits
+func (c *connManager) processHostMessage(msg *redis.Message) error {
+	var redisMsg redisv1.RedisMessage
+	if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
+		return fmt.Errorf("failed to unmarshal redis message: %w", err)
+	}
 
-	// Use the manager's context for the subscription
+	hostInstanceID, err := uuid.FromString(redisMsg.Id)
+	if err != nil {
+		return fmt.Errorf("invalid host instance ID: %w", err)
+	}
+
+	var protoMsg websocketv1.Message
+	if err := proto.Unmarshal(redisMsg.Payload, &protoMsg); err != nil {
+		return fmt.Errorf("failed to unmarshal protobuf message: %w", err)
+	}
+
+	logger.Logger.Sugar().Debugf("Received message: %s", &protoMsg)
+
+	c.hostsMutex.RLock()
+	host, ok := c.connectedHosts[hostInstanceID]
+	c.hostsMutex.RUnlock()
+
+	if !ok {
+		logger.Logger.Sugar().Debugf("Host not found for message: %s", hostInstanceID)
+		return nil
+	}
+
+	logger.Logger.Sugar().Debugf("Sending message to host %s: %s", host.hostInstance.ID, protoMsg.Id)
+
+	data, err := proto.Marshal(&protoMsg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message for host %s: %w", host.hostInstance.ID, err)
+	}
+
+	if err := host.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+		return fmt.Errorf("failed to set write deadline for host %s: %w", host.hostInstance.ID, err)
+	}
+
+	if err := host.conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
+		c.DisconnectHost(hostInstanceID)
+		return fmt.Errorf("failed to send message to host %s: %w", host.hostInstance.ID, err)
+	}
+
+	return nil
+}
+
+func (c *connManager) subscribeToClientMessages() {
+	defer c.wg.Done()
+
+	for attempt := 0; attempt < maxReconnectAttempts; attempt++ {
+		if err := c.subscribeToClientMessagesWithRetry(); err != nil {
+			if attempt == maxReconnectAttempts-1 {
+				logger.Logger.Sugar().Errorf("Failed to subscribe to client messages after %d attempts: %v", maxReconnectAttempts, err)
+				return
+			}
+			// Exponential backoff
+			delay := time.Duration(baseReconnectDelay*(1<<attempt)) * time.Millisecond
+			logger.Logger.Sugar().Warnf("Retrying client message subscription in %v (attempt %d/%d)", delay, attempt+1, maxReconnectAttempts)
+			time.Sleep(delay)
+			continue
+		}
+		return
+	}
+}
+
+func (c *connManager) subscribeToClientMessagesWithRetry() error {
 	ch, err := c.redisClient.Subscribe(c.ctx, "client_messages")
 	if err != nil {
-		logger.Logger.Sugar().Errorf("Failed to subscribe to client messages: %v", err)
-		// Consider more robust error handling here
-		return
+		return fmt.Errorf("failed to subscribe to client messages: %w", err)
 	}
 	logger.Logger.Sugar().Info("Subscribed to client messages")
 
 	for {
 		select {
-		case <-c.ctx.Done(): // Exit loop if manager context is canceled
+		case <-c.ctx.Done():
 			logger.Logger.Sugar().Info("Client message subscriber stopping due to context cancellation.")
-			return
+			return nil
 		case msg, ok := <-ch:
 			if !ok {
-				logger.Logger.Sugar().Info("Client message channel closed.")
-				return // Channel closed, exit goroutine
+				return fmt.Errorf("client message channel closed unexpectedly")
 			}
 
-			// Existing message processing logic...
-			var redisMsg redisv1.RedisMessage
-			if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to unmarshal redis message: %v", err)
+			if err := c.processClientMessage(msg); err != nil {
+				logger.Logger.Sugar().Errorf("Failed to process client message: %v", err)
+				// Continue processing other messages even if one fails
 				continue
-			}
-
-			sessionID, err := uuid.FromString(redisMsg.Id)
-			if err != nil {
-				logger.Logger.Sugar().Errorf("Invalid session ID: %v", err)
-				continue
-			}
-
-			var protoMsg websocketv1.Message
-			if err := proto.Unmarshal(redisMsg.Payload, &protoMsg); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to unmarshal protobuf message: %v", err)
-				continue
-			}
-
-			logger.Logger.Sugar().Debugf("Received message: %s", &protoMsg)
-
-			conn, ok := c.connectedClients.Load(sessionID)
-			if !ok {
-				// Client might have disconnected
-				logger.Logger.Sugar().Debugf("Client not found for message: %s", sessionID)
-				continue
-			}
-			client, ok := conn.(*connectedClient)
-			if !ok {
-				logger.Logger.Sugar().Errorf("Invalid connection type stored for client: %s", sessionID)
-				c.connectedClients.Delete(sessionID) // Clean up invalid entry
-				continue
-			}
-
-			logger.Logger.Sugar().Debugf("Sending message to client %s: %s", client.session.ID, protoMsg.Id)
-
-			data, err := proto.Marshal(&protoMsg)
-			if err != nil {
-				logger.Logger.Sugar().Errorf("Failed to marshal message for client %s: %v", client.session.ID, err)
-				continue
-			}
-
-			// Consider adding a write deadline
-			if err := client.conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to send message to client %s: %v. Disconnecting client.", client.session.ID, err)
-				// Consider attempting to disconnect the client here
-				// c.DisconnectClient(sessionID)
 			}
 		}
 	}
 }
 
+func (c *connManager) processClientMessage(msg *redis.Message) error {
+	var redisMsg redisv1.RedisMessage
+	if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
+		return fmt.Errorf("failed to unmarshal redis message: %w", err)
+	}
+
+	sessionID, err := uuid.FromString(redisMsg.Id)
+	if err != nil {
+		return fmt.Errorf("invalid session ID: %w", err)
+	}
+
+	var protoMsg websocketv1.Message
+	if err := proto.Unmarshal(redisMsg.Payload, &protoMsg); err != nil {
+		return fmt.Errorf("failed to unmarshal protobuf message: %w", err)
+	}
+
+	logger.Logger.Sugar().Debugf("Received message: %s", &protoMsg)
+
+	c.clientsMutex.RLock()
+	client, ok := c.connectedClients[sessionID]
+	c.clientsMutex.RUnlock()
+
+	if !ok {
+		logger.Logger.Sugar().Debugf("Client not found for message: %s", sessionID)
+		return nil
+	}
+
+	logger.Logger.Sugar().Debugf("Sending message to client %s: %s", client.session.ID, protoMsg.Id)
+
+	data, err := proto.Marshal(&protoMsg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message for client %s: %w", client.session.ID, err)
+	}
+
+	if err := client.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+		return fmt.Errorf("failed to set write deadline for client %s: %w", client.session.ID, err)
+	}
+
+	if err := client.conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
+		c.DisconnectClient(sessionID)
+		return fmt.Errorf("failed to send message to client %s: %w", client.session.ID, err)
+	}
+
+	return nil
+}
+
 func (c *connManager) PingHost(hostInstanceID uuid.UUID) error {
-	conn, ok := c.connectedHosts.Load(hostInstanceID)
-	if !ok {
-		return errors.New("connection not found")
+	c.hostsMutex.RLock()
+	defer c.hostsMutex.RUnlock()
+
+	if host, ok := c.connectedHosts[hostInstanceID]; ok {
+		return c.pingConnection(host.conn)
 	}
-	connectedHost, ok := conn.(*connectedHost)
-	if !ok {
-		return errors.New("invalid connection")
-	}
-	return c.pingConnection(connectedHost.conn)
+	return errors.New("connection not found")
 }
 
 func (c *connManager) SendToHost(ctx context.Context, hostInstanceID uuid.UUID, msg *websocketv1.Message) error {
@@ -355,19 +389,29 @@ func (c *connManager) SetConnectedHost(hostInstance *model.HostInstance, apiKey 
 		done:         make(chan struct{}),
 	}
 
-	c.connectedHosts.Store(hostInstance.ID, host)
+	c.hostsMutex.Lock()
+	c.connectedHosts[hostInstance.ID] = host
+	c.hostsMutex.Unlock()
 
 	go c.startHostPingLoop(host)
 }
 
 func (c *connManager) DisconnectHost(hostInstanceID uuid.UUID) {
-	if conn, ok := c.connectedHosts.Load(hostInstanceID); ok {
-		if host, ok := conn.(*connectedHost); ok {
-			close(host.done) // Stop ping loop
-			logger.Logger.Sugar().Debug("Stopped ping host")
+	c.hostsMutex.Lock()
+	defer c.hostsMutex.Unlock()
+
+	if host, ok := c.connectedHosts[hostInstanceID]; ok {
+		close(host.done) // Stop ping loop
+		logger.Logger.Sugar().Debug("Stopped ping host")
+
+		// Explicitly close the WebSocket connection
+		if err := host.conn.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Failed to close host WebSocket connection: %v", err)
+		} else {
+			logger.Logger.Sugar().Debugf("Closed host WebSocket connection for host %s", hostInstanceID)
 		}
+		delete(c.connectedHosts, hostInstanceID)
 	}
-	c.connectedHosts.Delete(hostInstanceID)
 }
 
 func (c *connManager) SetConnectedClient(session *model.Session, conn *websocket.Conn) {
@@ -381,19 +425,29 @@ func (c *connManager) SetConnectedClient(session *model.Session, conn *websocket
 		done:    make(chan struct{}),
 	}
 
-	c.connectedClients.Store(session.ID, client)
+	c.clientsMutex.Lock()
+	c.connectedClients[session.ID] = client
+	c.clientsMutex.Unlock()
 
 	go c.startClientPingLoop(client)
 }
 
 func (c *connManager) DisconnectClient(sessionID uuid.UUID) {
-	if conn, ok := c.connectedClients.Load(sessionID); ok {
-		if client, ok := conn.(*connectedClient); ok {
-			close(client.done) // Stop ping loop
-			logger.Logger.Sugar().Debug("Stopped ping client")
+	c.clientsMutex.Lock()
+	defer c.clientsMutex.Unlock()
+
+	if client, ok := c.connectedClients[sessionID]; ok {
+		close(client.done) // Stop ping loop
+		logger.Logger.Sugar().Debug("Stopped ping client")
+
+		// Explicitly close the WebSocket connection
+		if err := client.conn.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Failed to close client WebSocket connection: %v", err)
+		} else {
+			logger.Logger.Sugar().Debugf("Closed client WebSocket connection for session %s", sessionID)
 		}
+		delete(c.connectedClients, sessionID)
 	}
-	c.connectedClients.Delete(sessionID)
 }
 
 func (c *connManager) Close() {
@@ -401,20 +455,17 @@ func (c *connManager) Close() {
 
 	// 1. Stop accepting new connections (implicitly done by server shutdown)
 	// 2. Stop ping loops for existing connections
-	c.connectedHosts.Range(func(key, value interface{}) bool {
-		if host, ok := value.(*connectedHost); ok {
-			close(host.done) // Signal ping loop to stop
-		}
-		// Keep host in map for now, might receive final messages from Redis
-		return true
-	})
-	c.connectedClients.Range(func(key, value interface{}) bool {
-		if client, ok := value.(*connectedClient); ok {
-			close(client.done) // Signal ping loop to stop
-		}
-		// Keep client in map for now
-		return true
-	})
+	c.hostsMutex.Lock()
+	for _, host := range c.connectedHosts {
+		close(host.done) // Signal ping loop to stop
+	}
+	c.hostsMutex.Unlock()
+
+	c.clientsMutex.Lock()
+	for _, client := range c.connectedClients {
+		close(client.done) // Signal ping loop to stop
+	}
+	c.clientsMutex.Unlock()
 
 	// 3. Signal Redis subscriber goroutines to stop
 	logger.Logger.Sugar().Info("Canceling connection manager context...")
@@ -431,10 +482,14 @@ func (c *connManager) Close() {
 		logger.Logger.Sugar().Errorf("Failed to close Redis client: %v", err)
 	}
 
-	// 6. Optionally close actual WebSocket connections (gorilla/websocket handles this often)
-	//    Or just clear the maps now.
-	c.connectedHosts = new(sync.Map)
-	c.connectedClients = new(sync.Map)
+	// 6. Clear the maps
+	c.hostsMutex.Lock()
+	c.connectedHosts = make(map[uuid.UUID]*connectedHost)
+	c.hostsMutex.Unlock()
+
+	c.clientsMutex.Lock()
+	c.connectedClients = make(map[uuid.UUID]*connectedClient)
+	c.clientsMutex.Unlock()
 
 	logger.Logger.Sugar().Info("Connection manager closed.")
 }
