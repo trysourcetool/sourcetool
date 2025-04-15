@@ -12,12 +12,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useDispatch } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router';
 import { object, string } from 'zod';
 import type { z } from 'zod';
+import { usersStore } from '@/store/modules/users';
 
 export type SearchParams = {
   token: string;
@@ -58,7 +59,7 @@ export default function InvitationSignUpFollowUp() {
     }
 
     const resultAction = await dispatch(
-      usersStore.asyncActions.registerWithInvitationMagicLink({
+      authStore.asyncActions.registerWithInvitationMagicLink({
         data: {
           token,
           ...data,
@@ -67,14 +68,12 @@ export default function InvitationSignUpFollowUp() {
     );
 
     if (
-      usersStore.asyncActions.registerWithInvitationMagicLink.fulfilled.match(
+      authStore.asyncActions.registerWithInvitationMagicLink.fulfilled.match(
         resultAction,
       )
     ) {
+      await dispatch(usersStore.asyncActions.getMe());
       navigate('/');
-      toast({
-        title: t('routes_invitation_signup_followup_toast_success'),
-      });
     } else {
       toast({
         title: t('routes_invitation_signup_followup_toast_error'),

@@ -38,7 +38,7 @@ export default function ApiKeysNew() {
   const { toast } = useToast();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t, i18n } = useTranslation('common');
-  const account = useSelector(usersStore.selector.getMe);
+  const account = useSelector(usersStore.selector.getUserMe);
   const environments = useSelector(environmentsStore.selector.getEnvironments);
   const isCreateApiKeyWaiting = useSelector(
     (state) => state.apiKeys.isCreateApiKeyWaiting,

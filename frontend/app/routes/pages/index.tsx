@@ -37,7 +37,7 @@ export default function Pages() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
   const pages = useSelector(pagesStore.selector.getPermissionPages);
-  const user = useSelector(usersStore.selector.getMe);
+  const user = useSelector(usersStore.selector.getUserMe);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
   const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const environments = useSelector(environmentsStore.selector.getEnvironments);

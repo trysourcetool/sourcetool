@@ -44,7 +44,6 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useToast } from '@/hooks/use-toast';
 import { useDispatch, useSelector } from '@/store';
 import { groupsStore } from '@/store/modules/groups';
-import { organizationsStore } from '@/store/modules/organizations';
 import { usersStore } from '@/store/modules/users';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ellipsis, Loader2 } from 'lucide-react';
@@ -63,12 +62,12 @@ export default function UsersUserId() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const [search, setSearch] = useState('');
   const { t } = useTranslation('common');
-  const me = useSelector(usersStore.selector.getMe);
+  const me = useSelector(usersStore.selector.getUserMe);
   const user = useSelector((state) =>
     usersStore.selector.getUser(state, userId ?? ''),
   );
-  const isUpdateOrganizationUserWaiting = useSelector(
-    (state) => state.organizations.isUpdateOrganizationUserWaiting,
+  const isUpdateUserWaiting = useSelector(
+    (state) => state.users.isUpdateUserWaiting,
   );
   const groups = useSelector((state) => groupsStore.selector.getGroups(state));
   const userGroups = useSelector((state) =>
@@ -105,11 +104,11 @@ export default function UsersUserId() {
   }, [selectedGroupIds, groups]);
 
   const onSubmit = form.handleSubmit(async (data) => {
-    if (isUpdateOrganizationUserWaiting || !user) {
+    if (isUpdateUserWaiting || !user) {
       return;
     }
     const resultAction = await dispatch(
-      organizationsStore.asyncActions.updateOrganizationUser({
+      usersStore.asyncActions.updateUser({
         userId: user.id,
         data: {
           role: data.role as UserRole,
@@ -118,7 +117,7 @@ export default function UsersUserId() {
       }),
     );
     if (
-      organizationsStore.asyncActions.updateOrganizationUser.fulfilled.match(
+      usersStore.asyncActions.updateUser.fulfilled.match(
         resultAction,
       )
     ) {
@@ -320,10 +319,10 @@ export default function UsersUserId() {
               <div className="flex flex-col justify-start gap-3 md:flex-row">
                 <Button
                   type="button"
-                  disabled={isUpdateOrganizationUserWaiting}
+                  disabled={isUpdateUserWaiting}
                   onClick={onSubmit}
                 >
-                  {isUpdateOrganizationUserWaiting && (
+                  {isUpdateUserWaiting && (
                     <Loader2 className="size-4 animate-spin" />
                   )}
                   {t('routes_users_edit_save_button')}
@@ -331,7 +330,7 @@ export default function UsersUserId() {
                 <Button
                   variant="outline"
                   asChild
-                  disabled={isUpdateOrganizationUserWaiting}
+                  disabled={isUpdateUserWaiting}
                 >
                   <Link to={$path('/users')}>
                     {t('routes_users_edit_cancel_button')}

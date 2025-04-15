@@ -2,12 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/go-chi/chi/v5"
+
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
@@ -16,14 +14,12 @@ import (
 )
 
 type UserHandler struct {
-	service      user.Service
-	cookieConfig *CookieConfig
+	service user.Service
 }
 
 func NewUserHandler(service user.Service) *UserHandler {
 	return &UserHandler{
-		service:      service,
-		cookieConfig: NewCookieConfig(),
+		service: service,
 	}
 }
 
@@ -43,6 +39,107 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.GetMeOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// UpdateMe godoc
+// @ID update-me
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.UpdateMeRequest true " "
+// @Success 200 {object} responses.UpdateMeResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/me [put].
+func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	var req requests.UpdateMeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.UpdateMe(r.Context(), adapters.UpdateMeRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateMeOutputToResponse(out)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// SendUpdateMeEmailInstructions godoc
+// @ID send-update-me-email-instructions
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.SendUpdateMeEmailInstructionsRequest true " "
+// @Success 200 {object} responses.StatusResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/me/email/instructions [post].
+func (h *UserHandler) SendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Request) {
+	var req requests.SendUpdateMeEmailInstructionsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := h.service.SendUpdateMeEmailInstructions(r.Context(), adapters.SendUpdateMeEmailInstructionsRequestToDTOInput(req)); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Successfully sent update email instructions",
+	}); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+}
+
+// UpdateMeEmail godoc
+// @ID update-me-email
+// @Accept json
+// @Produce json
+// @Tags users
+// @Param Body body requests.UpdateMeEmailRequest true " "
+// @Success 200 {object} responses.UpdateMeEmailResponse
+// @Failure default {object} errdefs.Error
+// @Router /users/me/email [put].
+func (h *UserHandler) UpdateMeEmail(w http.ResponseWriter, r *http.Request) {
+	var req requests.UpdateMeEmailRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.ValidateRequest(req); err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	out, err := h.service.UpdateMeEmail(r.Context(), adapters.UpdateMeEmailRequestToDTOInput(req))
+	if err != nil {
+		httputil.WriteErrJSON(r.Context(), w, err)
+		return
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateMeEmailOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -69,17 +166,20 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Update godoc
+// UpdateUser godoc
 // @ID update-user
 // @Accept json
 // @Produce json
 // @Tags users
+// @Param userID path string true " "
 // @Param Body body requests.UpdateUserRequest true " "
 // @Success 200 {object} responses.UpdateUserResponse
 // @Failure default {object} errdefs.Error
-// @Router /users [put].
+// @Router /users/{userID} [put].
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-	var req requests.UpdateUserRequest
+	req := requests.UpdateUserRequest{
+		UserID: chi.URLParam(r, "userID"),
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -102,52 +202,51 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// SendUpdateEmailInstructions godoc
-// @ID send-update-email-instructions
+// DeleteUser godoc
+// @ID delete-user
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body requests.SendUpdateUserEmailInstructionsRequest true " "
+// @Param userID path string true " "
 // @Success 200 {object} responses.StatusResponse
 // @Failure default {object} errdefs.Error
-// @Router /users/sendUpdateEmailInstructions [post].
-func (h *UserHandler) SendUpdateEmailInstructions(w http.ResponseWriter, r *http.Request) {
-	var req requests.SendUpdateUserEmailInstructionsRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
+// @Router /users/{userID} [delete].
+func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	req := requests.DeleteUserRequest{
+		UserID: chi.URLParam(r, "userID"),
 	}
-
 	if err := httputil.ValidateRequest(req); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := h.service.SendUpdateEmailInstructions(r.Context(), adapters.SendUpdateUserEmailInstructionsRequestToDTOInput(req)); err != nil {
+	if err := h.service.Delete(r.Context(), adapters.DeleteUserRequestToDTOInput(req)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	response := &responses.StatusResponse{
 		Code:    http.StatusOK,
-		Message: "Successfully sent update email instructions",
-	}); err != nil {
+		Message: "Successfully deleted user",
+	}
+
+	if err := httputil.WriteJSON(w, http.StatusOK, response); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
 
-// UpdateEmail godoc
-// @ID update-user-email
+// ResendUserInvitation godoc
+// @ID resend-user-invitation
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body requests.UpdateUserEmailRequest true " "
-// @Success 200 {object} responses.UpdateUserEmailResponse
+// @Param invitationID path string true " "
+// @Success 200 {object} responses.ResendUserInvitationResponse
 // @Failure default {object} errdefs.Error
-// @Router /users/email [put].
-func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
-	var req requests.UpdateUserEmailRequest
+// @Router /users/invitations/{invitationID}/resend [post].
+func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Request) {
+	var req requests.ResendUserInvitationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -158,64 +257,29 @@ func (h *UserHandler) UpdateEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.UpdateEmail(r.Context(), adapters.UpdateUserEmailRequestToDTOInput(req))
+	out, err := h.service.ResendUserInvitation(r.Context(), adapters.ResendUserInvitationRequestToDTOInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.UpdateUserEmailOutputToResponse(out)); err != nil {
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ResendUserInvitationOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
 
-// RequestMagicLink godoc
-// @ID request-magic-link
+// CreateUserInvitations godoc
+// @ID create-user-invitations
 // @Accept json
 // @Produce json
 // @Tags users
-// @Param Body body requests.RequestMagicLinkRequest true "Email address for magic link"
-// @Success 200 {object} responses.RequestMagicLinkResponse
-// @Failure 400 {object} errdefs.Error "Invalid email format"
-// @Failure 404 {object} errdefs.Error "User not found"
-// @Failure 500 {object} errdefs.Error "Internal server error"
-// @Router /users/auth/magic/request [post].
-func (h *UserHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RequestMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	res, err := h.service.RequestMagicLink(r.Context(), adapters.RequestMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestMagicLinkOutputToResponse(res)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// AuthenticateWithMagicLink godoc
-// @ID authenticate-with-magic-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.AuthenticateWithMagicLinkRequest true " "
-// @Success 200 {object} responses.AuthenticateWithMagicLinkResponse
+// @Param Body body requests.CreateUserInvitationsRequest true " "
+// @Success 200 {object} responses.CreateUserInvitationsResponse
 // @Failure default {object} errdefs.Error
-// @Router /users/auth/magic/authenticate [post].
-func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.AuthenticateWithMagicLinkRequest
+// @Router /users/invitations [post].
+func (h *UserHandler) CreateUserInvitations(w http.ResponseWriter, r *http.Request) {
+	var req requests.CreateUserInvitationsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -226,477 +290,13 @@ func (h *UserHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	out, err := h.service.AuthenticateWithMagicLink(r.Context(), adapters.AuthenticateWithMagicLinkRequestToDTOInput(req))
+	out, err := h.service.CreateUserInvitations(r.Context(), adapters.CreateUserInvitationsRequestToDTOInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if !out.HasOrganization {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RegisterWithMagicLink godoc
-// @ID register-with-magic-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.RegisterWithMagicLinkRequest true "Registration data with magic link token"
-// @Success 200 {object} responses.RegisterWithMagicLinkResponse
-// @Failure 400 {object} errdefs.Error "Invalid request parameters"
-// @Failure 401 {object} errdefs.Error "Invalid or expired magic link token"
-// @Failure 500 {object} errdefs.Error "Internal server error"
-// @Router /users/auth/magic/register [post].
-func (h *UserHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RegisterWithMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
-		return
-	}
-
-	out, err := h.service.RegisterWithMagicLink(r.Context(), adapters.RegisterWithMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if config.Config.IsCloudEdition {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-	} else {
-		h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.RefreshTokenExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
-			config.Config.BaseDomain)
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RefreshToken godoc
-// @ID refresh-token
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.RefreshTokenResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/refreshToken [post].
-func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
-	if xsrfTokenHeader == "" {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
-		return
-	}
-
-	xsrfTokenCookie, err := r.Cookie("xsrf_token_same_site")
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
-		return
-	}
-
-	refreshTokenCookie, err := r.Cookie("refresh_token")
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
-		return
-	}
-
-	req := requests.RefreshTokenRequest{
-		RefreshToken:    refreshTokenCookie.Value,
-		XSRFTokenHeader: xsrfTokenHeader,
-		XSRFTokenCookie: xsrfTokenCookie.Value,
-	}
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RefreshToken(r.Context(), adapters.RefreshTokenRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
-		out.Domain)
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SaveAuth godoc
-// @ID save-auth
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.SaveAuthRequest true " "
-// @Success 200 {object} responses.SaveAuthResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/saveAuth [post].
-func (h *UserHandler) SaveAuth(w http.ResponseWriter, r *http.Request) {
-	var req requests.SaveAuthRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.SaveAuth(r.Context(), adapters.SaveAuthRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
-		out.Domain)
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// ObtainAuthToken godoc
-// @ID obtain-auth-token
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.ObtainAuthTokenResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/obtainAuthToken [post].
-func (h *UserHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
-	out, err := h.service.ObtainAuthToken(r.Context())
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.DeleteTmpAuthCookie(w, r)
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ObtainAuthTokenOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// ResendInvitation godoc
-// @ID resend-invitation
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.ResendInvitationRequest true " "
-// @Success 200 {object} responses.ResendInvitationResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/invitations/resend [post].
-func (h *UserHandler) ResendInvitation(w http.ResponseWriter, r *http.Request) {
-	var req requests.ResendInvitationRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.ResendInvitation(r.Context(), adapters.ResendInvitationRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.ResendInvitationOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// SignOut godoc
-// @ID sign-out
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.StatusResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/signout [post].
-func (h *UserHandler) SignOut(w http.ResponseWriter, r *http.Request) {
-	out, err := h.service.SignOut(r.Context())
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.DeleteAuthCookie(w, r, out.Domain)
-
-	if err := httputil.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
-		Code:    http.StatusOK,
-		Message: "Successfully signed out",
-	}); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// Invite godoc
-// @ID invite-users
-// @Accept json
-// @Produce json
-// @Tags users
-// @Param Body body requests.InviteUsersRequest true " "
-// @Success 200 {object} responses.InviteUsersResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/invite [post].
-func (h *UserHandler) Invite(w http.ResponseWriter, r *http.Request) {
-	var req requests.InviteUsersRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.Invite(r.Context(), adapters.InviteUsersRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.InviteUsersOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RequestInvitationMagicLink godoc
-// @ID request-invitation-magic-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.RequestInvitationMagicLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/auth/invitations/magic/request [post].
-func (h *UserHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RequestInvitationMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// AuthenticateWithInvitationMagicLink handles authentication with an invitation magic link.
-func (h *UserHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.AuthenticateWithInvitationMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), adapters.AuthenticateWithInvitationMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RegisterWithInvitationMagicLink handles registration with an invitation magic link.
-func (h *UserHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RegisterWithInvitationMagicLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), adapters.RegisterWithInvitationMagicLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
-		out.Domain)
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RequestGoogleAuthLink godoc
-// @ID request-google-auth-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.RequestGoogleAuthLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /auth/google/request [post].
-func (h *UserHandler) RequestGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
-	out, err := h.service.RequestGoogleAuthLink(r.Context())
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestGoogleAuthLinkOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// AuthenticateWithGoogle godoc
-// @ID authenticate-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.AuthenticateWithGoogleResponse
-// @Failure default {object} errdefs.Error
-// @Router /auth/google/authenticate [post].
-func (h *UserHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var req requests.AuthenticateWithGoogleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.AuthenticateWithGoogle(r.Context(), adapters.AuthenticateWithGoogleRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if !out.HasOrganization && out.Flow != "invitation" {
-		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.AuthenticateWithGoogleOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RegisterWithGoogle godoc
-// @ID register-with-google
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.RegisterWithGoogleResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/auth/google/register [post].
-func (h *UserHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request) {
-	var req requests.RegisterWithGoogleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RegisterWithGoogle(r.Context(), adapters.RegisterWithGoogleRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithGoogleOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-}
-
-// RequestInvitationGoogleAuthLink godoc
-// @ID request-invitation-google-auth-link
-// @Accept json
-// @Produce json
-// @Tags users
-// @Success 200 {object} responses.RequestInvitationGoogleAuthLinkResponse
-// @Failure default {object} errdefs.Error
-// @Router /users/auth/invitations/google/request [post].
-func (h *UserHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
-	var req requests.RequestInvitationGoogleAuthLinkRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
-		return
-	}
-
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	out, err := h.service.RequestInvitationGoogleAuthLink(r.Context(), adapters.RequestInvitationGoogleAuthLinkRequestToDTOInput(req))
-	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
-		return
-	}
-
-	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RequestInvitationGoogleAuthLinkOutputToResponse(out)); err != nil {
+	if err := httputil.WriteJSON(w, http.StatusOK, adapters.CreateUserInvitationsOutputToResponse(out)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}

@@ -32,7 +32,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
     handleNoAuthRoute,
   } = useAuth();
   const dispatch = useDispatch();
-  const user = useSelector(usersStore.selector.getMe);
+  const user = useSelector(usersStore.selector.getUserMe);
   const pages = useSelector(pagesStore.selector.getPermissionPages);
   const { t } = useTranslation('common');
   const navigate = useNavigate();

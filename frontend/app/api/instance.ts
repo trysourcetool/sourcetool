@@ -1,6 +1,6 @@
 import { ENVIRONMENTS } from '@/environments';
 import dayjs from 'dayjs';
-import { usersRefreshToken } from './modules/users';
+import { refreshToken } from './modules/auth';
 
 type SuccessResponse = {
   code: 0;
@@ -67,7 +67,7 @@ class Api {
         return null;
       }
       try {
-        const res = await usersRefreshToken();
+        const res = await refreshToken();
         this.expiresAt = res.expiresAt;
         this.parseExpiresAt = dayjs(res.expiresAt);
         this.isRefreshWaiting = false;

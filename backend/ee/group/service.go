@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/group"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/permission"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -108,8 +108,8 @@ func (s *serviceEE) List(ctx context.Context) (*dto.ListGroupsOutput, error) {
 }
 
 func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
 	}
 
@@ -177,8 +177,8 @@ func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.C
 }
 
 func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
 	}
 
@@ -249,8 +249,8 @@ func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.U
 }
 
 func (s *serviceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*dto.DeleteGroupOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditGroup); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
 	}
 

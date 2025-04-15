@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { $path } from 'safe-routes';
 
@@ -26,7 +26,7 @@ export default function EmailSent() {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const isRequestMagicLinkWaiting = useSelector(
-    (state) => state.users.isRequestMagicLinkWaiting,
+    (state) => state.auth.isRequestMagicLinkWaiting,
   );
 
   const handleResendEmail = async () => {
@@ -35,12 +35,12 @@ export default function EmailSent() {
     }
 
     const resultAction = await dispatch(
-      usersStore.asyncActions.requestMagicLink({
+      authStore.asyncActions.requestMagicLink({
         data: { email },
       }),
     );
     if (
-      usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
+      authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
     ) {
       toast({
         title: t('routes_login_email_sent_resend_success'),

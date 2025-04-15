@@ -23,7 +23,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
     checkDomain();
   }
 
-  const account = useSelector(usersStore.selector.getMe);
+  const account = useSelector(usersStore.selector.getUserMe);
   const { isAuthChecked, subDomain } = useAuth();
 
   const checkComplete = () => {

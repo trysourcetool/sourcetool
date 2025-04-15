@@ -20,7 +20,7 @@ const (
 	RefreshTokenMaxAgeBuffer = time.Duration(7*24) * time.Hour
 	TmpTokenExpiration       = time.Duration(30) * time.Minute
 
-	SaveAuthPath = "/api/v1/users/saveAuth"
+	SaveAuthPath = "/api/v1/auth/save"
 )
 
 func TokenExpiration() time.Duration {

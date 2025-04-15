@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router';
 import { $path } from 'safe-routes';
 import { useDispatch, useSelector } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -33,10 +33,10 @@ export default function Login() {
   const { t } = useTranslation('common');
 
   const isRequestMagicLinkWaiting = useSelector(
-    (state) => state.users.isRequestMagicLinkWaiting,
+    (state) => state.auth.isRequestMagicLinkWaiting,
   );
   const isOauthGoogleAuthWaiting = useSelector(
-    (state) => state.users.isRequestGoogleAuthLinkWaiting,
+    (state) => state.auth.isRequestGoogleAuthLinkWaiting,
   );
 
   const schema = object({
@@ -56,10 +56,10 @@ export default function Login() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.requestMagicLink({ data }),
+      authStore.asyncActions.requestMagicLink({ data }),
     );
     if (
-      usersStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
+      authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
     ) {
       navigate($path('/login/emailSent', { email: data.email }));
     } else {
@@ -76,10 +76,10 @@ export default function Login() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.requestGoogleAuthLink(),
+      authStore.asyncActions.requestGoogleAuthLink(),
     );
     if (
-      usersStore.asyncActions.requestGoogleAuthLink.fulfilled.match(
+      authStore.asyncActions.requestGoogleAuthLink.fulfilled.match(
         resultAction,
       )
     ) {

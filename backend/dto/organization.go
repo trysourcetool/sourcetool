@@ -41,20 +41,3 @@ type CreateOrganizationOutput struct {
 type CheckSubdomainAvailabilityInput struct {
 	Subdomain string
 }
-
-// UpdateOrganizationUserInput is the input for updating an organization user.
-type UpdateOrganizationUserInput struct {
-	UserID   string
-	Role     *string
-	GroupIDs []string
-}
-
-// UpdateOrganizationUserOutput is the output for updating an organization user.
-type UpdateOrganizationUserOutput struct {
-	User *User // This requires dto.User to be implemented
-}
-
-// DeleteOrganizationUserInput defines the input for deleting a user from an organization.
-type DeleteOrganizationUserInput struct {
-	UserID string
-}
