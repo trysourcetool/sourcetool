@@ -4,10 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 // =============================================
 // asyncActions
 // =============================================
-const handleError = createAsyncThunk(
-  'error/handleError',
-  async (data: any, { dispatch }) => {},
-);
+const handleError = createAsyncThunk('error/handleError', async () => {});
 
 // =============================================
 //  slice

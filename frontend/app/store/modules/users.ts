@@ -232,7 +232,8 @@ const authenticateWithInvitationGoogleAuthLink = createAsyncThunk(
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
+      const res =
+        await api.users.usersAuthenticateWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
@@ -249,7 +250,8 @@ const registerWithInvitationGoogleAuthLink = createAsyncThunk(
     { dispatch, rejectWithValue },
   ) => {
     try {
-      const res = await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
+      const res =
+        await api.users.usersRegisterWithInvitationGoogleAuthLink(params);
 
       return res;
     } catch (error: any) {
