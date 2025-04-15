@@ -1,10 +1,12 @@
-module github.com/trysourcetool/sourcetool/examples/go/user-management
+module github.com/trysourcetool/sourcetool/examples/go/customer-support
 
 go 1.22
 
+toolchain go1.23.5
+
 replace github.com/trysourcetool/sourcetool-go => ../../../sdk/go
 
-require github.com/trysourcetool/sourcetool-go v0.0.0-00010101000000-000000000000
+require github.com/trysourcetool/sourcetool-go v0.0.0-20240415000000-000000000000
 
 require (
 	github.com/gofrs/uuid/v5 v5.3.0 // indirect
