@@ -3,7 +3,6 @@ import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ENVIRONMENTS } from '@/environments';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import type { UserRole } from '@/api/modules/users';
 import {
@@ -29,7 +28,6 @@ const getMe = createAsyncThunk(
       if (ENVIRONMENTS.MODE === 'development') {
         console.log({ error });
       }
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -44,13 +42,12 @@ const updateMe = createAsyncThunk(
         lastName?: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.updateMe(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -66,7 +63,6 @@ const sendUpdateMeEmailInstructions = createAsyncThunk(
       const res = await api.users.sendUpdateMeEmailInstructions(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -80,13 +76,12 @@ const updateMeEmail = createAsyncThunk(
         token: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.updateMeEmail(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -118,13 +113,12 @@ const updateUser = createAsyncThunk(
         groupIds?: string[];
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.users.updateUser(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -140,7 +134,6 @@ const deleteUser = createAsyncThunk(
       const res = await api.users.deleteUser(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -156,7 +149,6 @@ const createUserInvitations = createAsyncThunk(
       const res = await api.users.createUserInvitations(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -172,7 +164,6 @@ const resendUserInvitation = createAsyncThunk(
       const res = await api.users.resendUserInvitation(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },

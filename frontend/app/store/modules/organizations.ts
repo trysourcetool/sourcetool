@@ -1,6 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -10,15 +9,11 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const createOrganization = createAsyncThunk(
   'organizations/createOrganization',
-  async (
-    params: { data: { subdomain: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { subdomain: string } }, { rejectWithValue }) => {
     try {
       const res = await api.organizations.createOrganization(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -26,12 +21,11 @@ const createOrganization = createAsyncThunk(
 
 const checkSubdomainAvailability = createAsyncThunk(
   'organizations/checkSubdomainAvailability',
-  async (params: { subdomain: string }, { dispatch, rejectWithValue }) => {
+  async (params: { subdomain: string }, { rejectWithValue }) => {
     try {
       const res = await api.organizations.checkSubdomainAvailability(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
