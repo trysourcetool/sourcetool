@@ -19,21 +19,17 @@ import (
 )
 
 type Service interface {
-	InitializeClient(context.Context, *websocketv1.Message) error
-	InitializeHost(context.Context, string, *websocketv1.Message) (*model.HostInstance, error)
-	RerunPage(context.Context, *websocketv1.Message) error
-	RenderWidget(context.Context, *websocketv1.Message) error
-	CloseSession(context.Context, *websocketv1.Message) error
-	ScriptFinished(context.Context, *websocketv1.Message) error
-	Exception(context.Context, *websocketv1.Message) error
+	InitializeClient(context.Context, *websocket.Conn, *websocketv1.Message) error
+	InitializeHost(context.Context, *websocket.Conn, string, *websocketv1.Message) (*model.HostInstance, error)
+	RerunPage(context.Context, *websocket.Conn, *websocketv1.Message) error
+	RenderWidget(context.Context, *websocket.Conn, *websocketv1.Message) error
+	CloseSession(context.Context, *websocket.Conn, *websocketv1.Message) error
+	ScriptFinished(context.Context, *websocket.Conn, *websocketv1.Message) error
+	Exception(context.Context, *websocket.Conn, *websocketv1.Message) error
 	UpdateStatus(context.Context, dto.UpdateHostInstanceStatusInput) (*dto.UpdateHostInstanceStatusOutput, error)
-
-	GetConn() *websocket.Conn
-	SetConn(conn *websocket.Conn)
 }
 
 type ServiceCE struct {
-	conn *websocket.Conn
 	*infra.Dependency
 }
 
@@ -41,7 +37,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 	return &ServiceCE{Dependency: d}
 }
 
-func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetInitializeClient()
 	if in == nil {
 		return errors.New("invalid message")
@@ -72,14 +68,18 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return err
 	}
 
+	// Try to find an online host that responds to ping
 	var onlineHostInstance *model.HostInstance
+	connManager := GetConnManager()
+
+	// First, try hosts that are already marked as online
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == model.HostInstanceStatusOnline {
-			connManager := GetConnManager()
 			if err := connManager.PingHost(hostInstance.ID); err != nil {
+				// Update host status to offline if ping fails
 				hostInstance.Status = model.HostInstanceStatusOffline
 				if err := s.Store.HostInstance().Update(ctx, hostInstance); err != nil {
-					return err
+					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 				}
 				continue
 			}
@@ -89,8 +89,26 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		}
 	}
 
+	// If no online host found, try hosts that might be unreachable
 	if onlineHostInstance == nil {
-		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
+		for _, hostInstance := range hostInstances {
+			if hostInstance.Status == model.HostInstanceStatusUnreachable {
+				if err := connManager.PingHost(hostInstance.ID); err == nil {
+					// Host is actually reachable, update its status
+					hostInstance.Status = model.HostInstanceStatusOnline
+					if err := s.Store.HostInstance().Update(ctx, hostInstance); err != nil {
+						logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
+						continue
+					}
+					onlineHostInstance = hostInstance
+					break
+				}
+			}
+		}
+	}
+
+	if onlineHostInstance == nil {
+		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("no available host instances"))
 	}
 
 	currentUser := ctxutil.CurrentUser(ctx)
@@ -135,7 +153,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return err
 	}
 
-	if err := SendResponse(s.conn, &websocketv1.Message{
+	if err := SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeClientCompleted{
 			InitializeClientCompleted: &websocketv1.InitializeClientCompleted{
@@ -146,7 +164,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 		return err
 	}
 
-	GetConnManager().SetConnectedClient(sess, s.conn)
+	GetConnManager().SetConnectedClient(sess, conn)
 
 	if err := GetConnManager().SendToHost(ctx, onlineHostInstance.ID, &websocketv1.Message{
 		Id: uuid.Must(uuid.NewV4()).String(),
@@ -166,7 +184,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, msg *websocketv1.Messa
 	return nil
 }
 
-func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
+func (s *ServiceCE) InitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
 		return nil, errors.New("invalid message")
@@ -281,9 +299,9 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 		return nil, err
 	}
 
-	GetConnManager().SetConnectedHost(hostInstance, apikey, s.conn)
+	GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
 
-	if err := SendResponse(s.conn, &websocketv1.Message{
+	if err := SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeHostCompleted{
 			InitializeHostCompleted: &websocketv1.InitializeHostCompleted{
@@ -297,7 +315,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, instanceID string, msg *
 	return hostInstance, nil
 }
 
-func (s *ServiceCE) RerunPage(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) RerunPage(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetRerunPage()
 	if in == nil {
 		return errors.New("invalid message")
@@ -339,7 +357,7 @@ func (s *ServiceCE) RerunPage(ctx context.Context, msg *websocketv1.Message) err
 	return nil
 }
 
-func (s *ServiceCE) RenderWidget(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) RenderWidget(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetRenderWidget()
 	if in == nil {
 		return errors.New("invalid message")
@@ -362,7 +380,7 @@ func (s *ServiceCE) RenderWidget(ctx context.Context, msg *websocketv1.Message) 
 	return nil
 }
 
-func (s *ServiceCE) CloseSession(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) CloseSession(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetCloseSession()
 	if in == nil {
 		return errors.New("invalid message")
@@ -410,7 +428,7 @@ func (s *ServiceCE) CloseSession(ctx context.Context, msg *websocketv1.Message) 
 	return nil
 }
 
-func (s *ServiceCE) ScriptFinished(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) ScriptFinished(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetScriptFinished()
 	if in == nil {
 		return errors.New("invalid message")
@@ -435,7 +453,7 @@ func (s *ServiceCE) ScriptFinished(ctx context.Context, msg *websocketv1.Message
 	return nil
 }
 
-func (s *ServiceCE) Exception(ctx context.Context, msg *websocketv1.Message) error {
+func (s *ServiceCE) Exception(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetException()
 	if in == nil {
 		return errors.New("invalid message")
@@ -483,12 +501,4 @@ func (s *ServiceCE) UpdateStatus(ctx context.Context, in dto.UpdateHostInstanceS
 	return &dto.UpdateHostInstanceStatusOutput{
 		HostInstance: dto.HostInstanceFromModel(host),
 	}, nil
-}
-
-func (s *ServiceCE) GetConn() *websocket.Conn {
-	return s.conn
-}
-
-func (s *ServiceCE) SetConn(conn *websocket.Conn) {
-	s.conn = conn
 }
