@@ -1,7 +1,9 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -29,6 +31,19 @@ const (
 	defaultPingInterval   = time.Second
 	defaultReconnectDelay = time.Second
 	defaultQueueSize      = 250
+
+	// Reconnection constants
+	initialReconnectDelay = 500 * time.Millisecond
+	maxReconnectDelay     = 30 * time.Second
+	// 1 hour = 3600 seconds = 3600000 milliseconds
+	// 500ms * 2^13 ≈ 4 seconds
+	// 4s * 2^13 ≈ 1 hour
+	maxReconnectAttempts = 26 // Approximately 1 hour of reconnection attempts
+
+	// Message sending constants
+	maxMessageRetries = 3
+	messageRetryDelay = 100 * time.Millisecond
+	shutdownTimeout   = 5 * time.Second
 )
 
 func validateConfig(config Config) error {
@@ -104,6 +119,10 @@ type client struct {
 	// Goroutine management
 	stop chan struct{}
 	wg   sync.WaitGroup
+
+	// Shutdown state
+	shutdownOnce sync.Once
+	shutdownErr  error
 }
 
 func NewClient(config Config) (Client, error) {
@@ -191,19 +210,74 @@ func (c *client) reconnect() error {
 		c.config.OnReconnecting()
 	}
 
+	attempt := 0
+	lastSuccessTime := time.Now()
+
 	for {
+		// Calculate delay with exponential backoff, but cap it
+		delay := initialReconnectDelay * time.Duration(1<<uint(attempt))
+		if delay > maxReconnectDelay {
+			delay = maxReconnectDelay
+		}
+
+		// Add some jitter to prevent thundering herd
+		jitter := time.Duration(rand.Int63n(int64(delay / 4)))
+		delay += jitter
+
+		// Log reconnection attempt with more context
+		logger.Log.Info("attempting to reconnect",
+			zap.Int("attempt", attempt+1),
+			zap.Duration("delay", delay),
+			zap.String("instance_id", c.config.InstanceID.String()),
+			zap.Time("last_success", lastSuccessTime),
+			zap.Duration("time_since_last_success", time.Since(lastSuccessTime)))
+
+		// Try to connect
 		err := c.connect()
 		if err == nil {
+			logger.Log.Info("reconnection successful",
+				zap.Int("attempts", attempt+1),
+				zap.String("instance_id", c.config.InstanceID.String()),
+				zap.Duration("total_downtime", time.Since(lastSuccessTime)))
+
 			if c.config.OnReconnected != nil {
 				c.config.OnReconnected()
 			}
 			return nil
 		}
 
-		logger.Log.Error("reconnection failed, retrying",
-			zap.Error(err),
-			zap.Duration("delay", c.config.ReconnectDelay))
-		time.Sleep(c.config.ReconnectDelay)
+		attempt++
+
+		// Check if we should stop trying
+		if attempt >= maxReconnectAttempts {
+			// If less than an hour has passed since the last successful connection, stop trying
+			if time.Since(lastSuccessTime) < time.Hour {
+				logger.Log.Error("max reconnection attempts reached within an hour",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()),
+					zap.Duration("total_downtime", time.Since(lastSuccessTime)))
+				return fmt.Errorf("failed to reconnect after %d attempts within an hour: %w", maxReconnectAttempts, err)
+			}
+
+			// If more than an hour has passed, continue reconnection attempts
+			logger.Log.Warn("continuing reconnection attempts after an hour",
+				zap.Error(err),
+				zap.String("instance_id", c.config.InstanceID.String()),
+				zap.Duration("total_downtime", time.Since(lastSuccessTime)))
+			attempt = 0 // Reset counter
+			continue
+		}
+
+		// Wait before next attempt
+		select {
+		case <-c.stop:
+			logger.Log.Info("reconnection cancelled during shutdown",
+				zap.String("instance_id", c.config.InstanceID.String()),
+				zap.Duration("total_downtime", time.Since(lastSuccessTime)))
+			return nil
+		case <-time.After(delay):
+			continue
+		}
 	}
 }
 
@@ -247,7 +321,7 @@ func (c *client) pingPongLoop() {
 }
 
 func (c *client) readMessages() {
-	defer c.wg.Done() // Signal completion on exit
+	defer c.wg.Done()
 	for {
 		select {
 		case <-c.stop:
@@ -277,10 +351,15 @@ func (c *client) readMessages() {
 					return
 				default:
 					if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+						logger.Log.Info("connection closed normally",
+							zap.String("instance_id", c.config.InstanceID.String()))
 						return
 					}
 
-					logger.Log.Error("read error", zap.Error(err))
+					logger.Log.Warn("read error, initiating reconnection",
+						zap.Error(err),
+						zap.String("instance_id", c.config.InstanceID.String()))
+
 					c.connMu.Lock()
 					if c.conn == conn {
 						conn.Close()
@@ -288,9 +367,12 @@ func (c *client) readMessages() {
 					}
 					c.connMu.Unlock()
 
+					// Start reconnection in a separate goroutine
 					go func() {
 						if err := c.reconnect(); err != nil {
-							logger.Log.Error("reconnection failed", zap.Error(err))
+							logger.Log.Error("reconnection failed",
+								zap.Error(err),
+								zap.String("instance_id", c.config.InstanceID.String()))
 						}
 					}()
 					continue
@@ -299,54 +381,45 @@ func (c *client) readMessages() {
 
 			msg, err := unmarshalMessage(data)
 			if err != nil {
-				logger.Log.Error("error unmarshaling message", zap.Error(err))
+				logger.Log.Error("error unmarshaling message",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()))
 				continue
 			}
 
 			if err := c.handleMessage(msg); err != nil {
-				logger.Log.Error("error handling message", zap.Error(err))
+				logger.Log.Error("error handling message",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()))
 			}
 		}
 	}
 }
 
 func (c *client) sendEnqueuedMessagesLoop() {
-	defer c.wg.Done() // Signal completion on exit
+	defer c.wg.Done()
 
 	const batchInterval = 10 * time.Millisecond
 	var messageBuffer []*websocketv1.Message
+	var retryBuffer []*websocketv1.Message
 
 	for {
 		select {
 		case <-c.stop:
 			logger.Log.Debug("sendEnqueuedMessagesLoop stopping")
-			c.connMu.RLock()
-			conn := c.conn
-			c.connMu.RUnlock()
-			if conn != nil && len(messageBuffer) > 0 {
-				logger.Log.Info("sending remaining messages before shutdown", zap.Int("count", len(messageBuffer)))
-				rateLimiter := time.NewTicker(time.Millisecond)
-				defer rateLimiter.Stop()
-				for _, msg := range messageBuffer {
-					_ = c.send(msg)
-					<-rateLimiter.C
-				}
+			if err := c.sendRemainingMessages(messageBuffer, retryBuffer); err != nil {
+				logger.Log.Error("failed to send remaining messages during shutdown",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()))
 			}
 			return
 		case msg, ok := <-c.messageQueue:
 			if !ok {
 				logger.Log.Debug("sendEnqueuedMessagesLoop stopping (queue closed)")
-				c.connMu.RLock()
-				conn := c.conn
-				c.connMu.RUnlock()
-				if conn != nil && len(messageBuffer) > 0 {
-					logger.Log.Info("sending remaining messages on queue close", zap.Int("count", len(messageBuffer)))
-					rateLimiter := time.NewTicker(time.Millisecond)
-					defer rateLimiter.Stop()
-					for _, m := range messageBuffer {
-						_ = c.send(m)
-						<-rateLimiter.C
-					}
+				if err := c.sendRemainingMessages(messageBuffer, retryBuffer); err != nil {
+					logger.Log.Error("failed to send remaining messages on queue close",
+						zap.Error(err),
+						zap.String("instance_id", c.config.InstanceID.String()))
 				}
 				return
 			}
@@ -364,9 +437,12 @@ func (c *client) sendEnqueuedMessagesLoop() {
 
 				var remainingMessages []*websocketv1.Message
 				for _, msg := range messageBuffer {
-					if err := c.send(msg); err != nil {
+					if err := c.sendWithRetry(msg); err != nil {
 						remainingMessages = append(remainingMessages, msg)
-						logger.Log.Error("error sending message", zap.Error(err))
+						logger.Log.Error("error sending message after retries",
+							zap.Error(err),
+							zap.String("message_id", msg.Id),
+							zap.String("instance_id", c.config.InstanceID.String()))
 						break
 					}
 					time.Sleep(time.Millisecond)
@@ -379,6 +455,73 @@ func (c *client) sendEnqueuedMessagesLoop() {
 				}
 			}
 		}
+	}
+}
+
+func (c *client) sendWithRetry(msg *websocketv1.Message) error {
+	var lastErr error
+	for attempt := 0; attempt < maxMessageRetries; attempt++ {
+		if attempt > 0 {
+			delay := messageRetryDelay * time.Duration(1<<uint(attempt-1))
+			logger.Log.Debug("retrying message send",
+				zap.Int("attempt", attempt+1),
+				zap.Duration("delay", delay),
+				zap.String("message_id", msg.Id),
+				zap.String("instance_id", c.config.InstanceID.String()))
+			time.Sleep(delay)
+		}
+
+		if err := c.send(msg); err != nil {
+			lastErr = err
+			logger.Log.Warn("message send failed",
+				zap.Error(err),
+				zap.Int("attempt", attempt+1),
+				zap.String("message_id", msg.Id),
+				zap.String("instance_id", c.config.InstanceID.String()))
+			continue
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("failed to send message after %d attempts: %w", maxMessageRetries, lastErr)
+}
+
+func (c *client) sendRemainingMessages(messageBuffer, retryBuffer []*websocketv1.Message) error {
+	if len(messageBuffer) == 0 && len(retryBuffer) == 0 {
+		return nil
+	}
+
+	logger.Log.Info("sending remaining messages before shutdown",
+		zap.Int("message_count", len(messageBuffer)+len(retryBuffer)),
+		zap.String("instance_id", c.config.InstanceID.String()))
+
+	// Create a context with timeout for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	// Create a channel to signal completion
+	done := make(chan error, 1)
+	go func() {
+		var err error
+		for _, msg := range append(messageBuffer, retryBuffer...) {
+			if err = c.sendWithRetry(msg); err != nil {
+				break
+			}
+			time.Sleep(time.Millisecond)
+		}
+		done <- err
+	}()
+
+	// Wait for completion or timeout
+	select {
+	case err := <-done:
+		if err != nil {
+			return fmt.Errorf("failed to send remaining messages: %w", err)
+		}
+		return nil
+	case <-ctx.Done():
+		return fmt.Errorf("timeout while sending remaining messages: %w", ctx.Err())
 	}
 }
 
@@ -426,50 +569,78 @@ func (c *client) Wait() error {
 }
 
 func (c *client) Close() error {
-	c.connMu.Lock()
-	if c.conn == nil {
+	var closeErr error
+	c.shutdownOnce.Do(func() {
+		logger.Log.Info("initiating client shutdown",
+			zap.String("instance_id", c.config.InstanceID.String()))
+
+		// 1. Signal all goroutines to stop
+		close(c.stop)
+
+		// 2. Close the message queue to prevent new messages
+		close(c.messageQueue)
+
+		// 3. Wait for goroutines to finish with timeout
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+
+		shutdownDone := make(chan struct{})
+		go func() {
+			c.wg.Wait()
+			close(shutdownDone)
+		}()
+
+		select {
+		case <-shutdownDone:
+			logger.Log.Debug("all goroutines stopped successfully")
+		case <-shutdownCtx.Done():
+			logger.Log.Warn("timeout waiting for goroutines to stop",
+				zap.String("instance_id", c.config.InstanceID.String()))
+		}
+
+		// 4. Close the WebSocket connection
+		c.connMu.Lock()
+		if c.conn != nil {
+			// Try to send a close message
+			err := c.conn.WriteMessage(
+				websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+			)
+			if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				logger.Log.Warn("error sending close message",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()))
+			}
+
+			// Close the underlying connection
+			if err := c.conn.Close(); err != nil {
+				logger.Log.Error("error closing websocket connection",
+					zap.Error(err),
+					zap.String("instance_id", c.config.InstanceID.String()))
+				closeErr = fmt.Errorf("failed to close websocket connection: %w", err)
+			}
+			c.conn = nil
+		}
 		c.connMu.Unlock()
-		return nil // Already closed or never connected
-	}
 
-	logger.Log.Debug("closing websocket client")
+		// 5. Clean up response channels
+		c.respMu.Lock()
+		for id, ch := range c.responses {
+			close(ch)
+			delete(c.responses, id)
+		}
+		c.responses = make(map[string]chan *websocketv1.Message)
+		c.respMu.Unlock()
 
-	// Signal goroutines to stop
-	close(c.stop)
+		// 6. Signal that the client is fully closed
+		select {
+		case c.done <- nil:
+		default:
+		}
 
-	// Close the message queue to unblock sender if waiting
-	// Do this *after* signaling stop to allow sender to potentially process buffer on stop signal
-	close(c.messageQueue)
+		logger.Log.Info("client shutdown completed",
+			zap.String("instance_id", c.config.InstanceID.String()))
+	})
 
-	// Send close message (best effort)
-	err := c.conn.WriteMessage(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
-	)
-	if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-		// Log error only if it's not a standard close error
-		logger.Log.Warn("error sending close message", zap.Error(err))
-	}
-
-	// Close the underlying connection
-	connErr := c.conn.Close()
-	if connErr != nil {
-		logger.Log.Error("error closing websocket connection", zap.Error(connErr))
-	}
-	c.conn = nil
-	c.connMu.Unlock() // Unlock before waiting
-
-	// Wait for goroutines to finish
-	logger.Log.Debug("waiting for goroutines to stop")
-	c.wg.Wait()
-	logger.Log.Debug("goroutines stopped")
-
-	// Signal that the client is fully closed
-	// Use non-blocking send in case Wait() already returned due to previous error
-	select {
-	case c.done <- nil:
-	default:
-	}
-
-	return connErr // Return error from closing the connection, if any
+	return closeErr
 }
