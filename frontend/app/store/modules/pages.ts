@@ -2,7 +2,6 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import {
   createEntityAdapter,
@@ -19,13 +18,12 @@ import type { ExceptionJson } from '@/pb/ts/exception/v1/exception_pb';
 
 export const listPages = createAsyncThunk(
   'pages/listPages',
-  async (params: { environmentId: string }, { dispatch, rejectWithValue }) => {
+  async (params: { environmentId: string }, { rejectWithValue }) => {
     try {
       const res = await api.pages.listPages(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },

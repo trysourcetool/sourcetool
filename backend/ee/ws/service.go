@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/gofrs/uuid/v5"
+	gorillaws "github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -26,7 +27,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	}
 }
 
-func (s *serviceEE) InitializeHost(ctx context.Context, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
+func (s *serviceEE) InitializeHost(ctx context.Context, conn *gorillaws.Conn, instanceID string, msg *websocketv1.Message) (*model.HostInstance, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
 		return nil, errors.New("invalid message")
@@ -197,9 +198,9 @@ func (s *serviceEE) InitializeHost(ctx context.Context, instanceID string, msg *
 		return nil, err
 	}
 
-	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, s.GetConn())
+	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
 
-	if err := ws.SendResponse(s.GetConn(), &websocketv1.Message{
+	if err := ws.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeHostCompleted{
 			InitializeHostCompleted: &websocketv1.InitializeHostCompleted{

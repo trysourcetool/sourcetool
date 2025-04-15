@@ -1,6 +1,6 @@
-module github.com/trysourcetool/sourcetool/examples/go/user-management
+module github.com/trysourcetool/sourcetool/examples/go/data-analysis
 
-go 1.22
+go 1.23.5
 
 replace github.com/trysourcetool/sourcetool-go => ../../../sdk/go
 

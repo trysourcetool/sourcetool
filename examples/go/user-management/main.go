@@ -1,13 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/trysourcetool/sourcetool-go"
@@ -17,20 +12,9 @@ import (
 	"github.com/trysourcetool/sourcetool-go/selectbox"
 	"github.com/trysourcetool/sourcetool-go/table"
 	"github.com/trysourcetool/sourcetool-go/textinput"
-	"golang.org/x/sync/errgroup"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	fmt.Fprintf(w, "Hello, World!")
-}
-
 func listUsersPage(ui sourcetool.UIBuilder) error {
-	ui.Markdown("## Users")
-
 	searchCols := ui.Columns(2)
 	name := searchCols[0].TextInput("Name", textinput.WithPlaceholder("Enter name to filter"))
 	email := searchCols[1].TextInput("Email", textinput.WithPlaceholder("Enter email to filter"))
@@ -43,7 +27,6 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 	baseCols := ui.Columns(2, columns.WithWeight(3, 1))
 	table := baseCols[0].Table(
 		users,
-		table.WithHeader("Users"),
 		table.WithHeight(10),
 		table.WithColumnOrder("ID", "Name", "Email", "Age", "Gender", "CreatedAt"),
 		table.WithOnSelect(table.OnSelectRerun),
@@ -51,7 +34,7 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 
 	var defaultName, defaultEmail, defaultGender string
 	var defaultAge int
-	if table.Selection != nil {
+	if table.Selection != nil && table.Selection.Row < len(users) {
 		selectedData := users[table.Selection.Row]
 		defaultName = selectedData.Name
 		defaultEmail = selectedData.Email
@@ -81,8 +64,6 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 }
 
 func createUserPage(ui sourcetool.UIBuilder) error {
-	ui.Markdown("## Create New User")
-
 	form, submitted := ui.Form("Create User", form.WithClearOnSubmit(true))
 	formName := form.TextInput("Name", textinput.WithPlaceholder("Enter user name"), textinput.WithRequired(true))
 	formEmail := form.TextInput("Email", textinput.WithPlaceholder("Enter user email"))
@@ -106,80 +87,17 @@ func createUserPage(ui sourcetool.UIBuilder) error {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", helloHandler)
-
-	server := &http.Server{
-		Addr:    ":8081",
-		Handler: mux,
-	}
-
-	fmt.Println("Starting server at http://localhost:8081/")
-
-	// Replace with your own API key for development
-	config := &sourcetool.Config{
-		APIKey:   "your_development_api_key",
+	s := sourcetool.New(&sourcetool.Config{
+		APIKey:   "your_api_key",
 		Endpoint: "ws://localhost:3000",
-	}
-	s := sourcetool.New(config)
-
-	var (
-		groupAdmin           = "admin"
-		groupUserAdmin       = "user_admin"
-		groupCustomerSupport = "customer_support"
-	)
-	s.AccessGroups(groupAdmin)
-	usersGroup := s.Group("/users")
-	{
-		usersGroup.AccessGroups(groupUserAdmin)
-		usersGroup.Page("/", "Users", listUsersPage)
-
-		csGroup := usersGroup.Group("/")
-		{
-			csGroup.AccessGroups(groupCustomerSupport)
-			csGroup.Page("/new", "Create user", createUserPage)
-		}
-	}
-
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
-	eg, egCtx := errgroup.WithContext(ctx)
-
-	eg.Go(func() error {
-		if err := s.Listen(); err != nil {
-			return fmt.Errorf("failed to listen sourcetool: %v", err)
-		}
-		return nil
 	})
 
-	eg.Go(func() error {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			return fmt.Errorf("failed to start server: %v", err)
-		}
-		return nil
-	})
-	eg.Go(func() error {
-		<-egCtx.Done()
-		log.Println("Shutting down server...")
+	s.Page("/users", "Users", listUsersPage)
+	s.Page("/users/new", "Create user", createUserPage)
 
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer shutdownCancel()
-
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("server shutdown failed: %v", err)
-		}
-
-		if err := s.Close(); err != nil {
-			return fmt.Errorf("sourcetool shutdown failed: %v", err)
-		}
-
-		log.Println("Server shutdown complete")
-		return nil
-	})
-
-	if err := eg.Wait(); err != nil {
-		log.Printf("Error during shutdown: %v", err)
-		os.Exit(1)
+	if err := s.Listen(); err != nil {
+		log.Printf("Failed to listen sourcetool: %v", err)
+		s.Close()
+		return
 	}
 }

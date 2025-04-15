@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "frontend": "pnpm --filter sourcetool-frontend",
+    "docs": "pnpm --filter sourcetool-docs",
+    "lint": "eslint .",
     "build:frontend": "pnpm --filter sourcetool-frontend build",
     "dev:frontend": "pnpm --filter sourcetool-frontend dev",
-    "lint:frontend": "pnpm --filter sourcetool-frontend lint",
-    "format:frontend": "pnpm --filter sourcetool-frontend format",
+    "lint:frontend": "eslint ./frontend",
+    "format:frontend": "eslint ./frontend --fix && prettier ./frontend --write",
     "preview:frontend": "pnpm --filter sourcetool-frontend preview",
     "typecheck:frontend": "pnpm --filter sourcetool-frontend typecheck",
-
     "build:docs": "pnpm --filter sourcetool-docs build",
     "dev:docs": "pnpm --filter sourcetool-docs start",
     "typecheck:docs": "pnpm --filter sourcetool-docs typecheck"
@@ -23,5 +25,20 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.8.0"
+  "packageManager": "pnpm@10.8.0",
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "eslint-plugin-vitest": "^0.5.4",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.30.1"
+  }
 }
