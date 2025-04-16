@@ -122,11 +122,3 @@ export class MockClient implements WebSocketClient {
     return create(MessageSchema, msg);
   }
 }
-
-/**
- * Create a new mock WebSocket client
- * @returns Mock WebSocket client
- */
-export function createMockClient(): MockClient {
-  return new MockClient();
-}

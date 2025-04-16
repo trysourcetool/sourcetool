@@ -79,7 +79,7 @@ function newMessage(
 /**
  * WebSocket client implementation
  */
-class Client implements WebSocketClient {
+export class Client implements WebSocketClient {
   private config: WebSocketClientConfig;
   private conn: WebSocket | null = null;
   private messageQueue: any[] = [];
@@ -334,19 +334,4 @@ class Client implements WebSocketClient {
   public wait(): Promise<void> {
     return this.done;
   }
-}
-
-/**
- * Create a WebSocket client
- * @param config WebSocket client configuration
- * @returns WebSocket client
- */
-export function createWebSocketClient(
-  config: WebSocketClientConfig,
-): WebSocketClient {
-  console.info(`[INFO] Creating WebSocket client for ${config.url}`);
-
-  const client = new Client(config);
-
-  return client;
 }

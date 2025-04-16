@@ -1,6 +1,6 @@
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager, newPageManager } from './page';
-import { RouterInterface, newRouter } from './router';
+import { Page, PageManager } from './page';
+import { Router, RouterInterface } from './router';
 import { Runtime, startRuntime } from './runtime';
 
 /**
@@ -74,10 +74,10 @@ export class Sourcetool implements RouterInterface {
     this.pages = {};
 
     // Initialize router
-    this.router = newRouter(this, namespaceDNS);
+    this.router = new Router(this, namespaceDNS);
 
     // Initialize page manager
-    this.pageManager = newPageManager();
+    this.pageManager = new PageManager();
   }
 
   /**
@@ -166,13 +166,4 @@ export class Sourcetool implements RouterInterface {
   group(relativePath: string): RouterInterface {
     return this.router.group(relativePath);
   }
-}
-
-/**
- * Create a new Sourcetool instance
- * @param config Configuration
- * @returns Sourcetool instance
- */
-export function createSourcetool(config: SourcetoolConfig): Sourcetool {
-  return new Sourcetool(config);
 }

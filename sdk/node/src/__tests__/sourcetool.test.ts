@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
-import { createSourcetool, SourcetoolConfig } from '../sourcetool';
-import { newPageManager, Page } from '../page';
+import { Sourcetool, SourcetoolConfig } from '../sourcetool';
+import { Page, PageManager } from '../page';
 import { v4 as uuidv4 } from 'uuid';
 const findPageByPath = (pages: Record<string, Page>, path: string): Page => {
   const page = Object.values(pages).find((p) => p.route === path);
@@ -18,7 +18,7 @@ describe('new', () => {
     endpoint: 'ws://test.trysourcetool.com',
   };
 
-  const sourcetool = createSourcetool(config);
+  const sourcetool = new Sourcetool(config);
 
   const tests = [
     { name: 'APIKey', got: sourcetool.apiKey, want: config.apiKey },
@@ -48,7 +48,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.page('/public', 'Public Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/public');
@@ -62,7 +62,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('admin');
     sourcetool.page('/admin', 'Admin Page', pageHandler);
 
@@ -77,7 +77,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const api = sourcetool.group('/api');
     api.accessGroups('api_user');
     api.page('/users', 'Users API', pageHandler);
@@ -98,7 +98,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const users = sourcetool.group('/users');
     users.accessGroups('admin');
     users.page('/list', 'List users page', pageHandler);
@@ -133,7 +133,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
 
     const admin = sourcetool.group('/admin');
     admin.accessGroups('admin');
@@ -177,7 +177,7 @@ describe('page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const errorHandler = async () => {
       throw new Error('test error');
     };
@@ -201,14 +201,14 @@ describe('page manager', () => {
     const testPage = new Page(pageId, 'TestPage');
     pages[pageId] = testPage;
 
-    const pageManager = newPageManager(pages);
+    const pageManager = new PageManager(pages);
     const got = pageManager.getPage(pageId);
     expect(got?.id).toEqual(pageId);
   });
 
   test('Get non-existent page', () => {
     const pages: Record<string, Page> = {};
-    const pageManager = newPageManager(pages);
+    const pageManager = new PageManager(pages);
     const nonExistentId = uuidv4();
     const got = pageManager.getPage(nonExistentId);
     expect(got).toBeUndefined();

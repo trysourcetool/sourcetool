@@ -215,16 +215,3 @@ export class Router implements RouterInterface {
     );
   }
 }
-
-/**
- * Create a new router
- * @param sourcetool Sourcetool instance
- * @param namespaceDNS Namespace DNS
- * @returns Router
- */
-export function newRouter(
-  sourcetool: Sourcetool,
-  namespaceDNS: string,
-): RouterInterface {
-  return new Router(sourcetool, namespaceDNS);
-}

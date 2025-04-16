@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { newPageManager, Page } from '../page';
+import { Page, PageManager } from '../page';
 import { v4 as uuidv4 } from 'uuid';
 import { MockClient } from '../websocket/mock/websocket';
 import { createSessionManager, newSession } from '../session';
@@ -30,7 +30,7 @@ test('initialize client', () => {
 
   const mockWS = new MockClient();
   const sessionManager = createSessionManager();
-  const pageManager = newPageManager(pages);
+  const pageManager = new PageManager(pages);
   const runtime = new Runtime(mockWS, sessionManager, pageManager);
 
   // Create test message
@@ -81,7 +81,7 @@ test('rerun page', () => {
 
   const mockWS = new MockClient();
   const sessionManager = createSessionManager();
-  const pageManager = newPageManager(pages);
+  const pageManager = new PageManager(pages);
   const runtime = new Runtime(mockWS, sessionManager, pageManager);
 
   // Initialize session
@@ -114,7 +114,7 @@ test('close session', () => {
 
   const mockWS = new MockClient();
   const sessionManager = createSessionManager();
-  const pageManager = newPageManager();
+  const pageManager = new PageManager();
   const runtime = new Runtime(mockWS, sessionManager, pageManager);
 
   // Initialize session

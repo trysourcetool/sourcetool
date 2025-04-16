@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager, newPageManager } from './page';
+import { Page, PageManager } from './page';
 import {
   createSessionManager,
   newSession,
   SessionManager,
   WidgetState,
 } from './session';
-import { createWebSocketClient, WebSocketClient } from './websocket';
+import { Client, WebSocketClient } from './websocket';
 import {
   CloseSession,
   InitializeClient,
@@ -200,7 +200,7 @@ export class Runtime {
       // Convert widget state based on type
       // This is a simplified version, the actual implementation would handle all widget types
       switch (widget.type.case) {
-        case 'textInput':
+        case 'textInput': {
           const textInputState = convertTextInputProtoToState(
             id,
             widget.type.value,
@@ -209,7 +209,8 @@ export class Runtime {
             newWidgetStates.set(id, textInputState);
           }
           break;
-        case 'numberInput':
+        }
+        case 'numberInput': {
           const numberInputState = convertNumberInputProtoToState(
             id,
             widget.type.value,
@@ -218,7 +219,8 @@ export class Runtime {
             newWidgetStates.set(id, numberInputState);
           }
           break;
-        case 'dateInput':
+        }
+        case 'dateInput': {
           const dateInputState = convertDateInputProtoToState(
             id,
             widget.type.value,
@@ -227,7 +229,8 @@ export class Runtime {
             newWidgetStates.set(id, dateInputState);
           }
           break;
-        case 'dateTimeInput':
+        }
+        case 'dateTimeInput': {
           const dateTimeInputState = convertDateTimeInputProtoToState(
             id,
             widget.type.value,
@@ -236,7 +239,8 @@ export class Runtime {
             newWidgetStates.set(id, dateTimeInputState);
           }
           break;
-        case 'timeInput':
+        }
+        case 'timeInput': {
           const timeInputState = convertTimeInputProtoToState(
             id,
             widget.type.value,
@@ -245,19 +249,22 @@ export class Runtime {
             newWidgetStates.set(id, timeInputState);
           }
           break;
-        case 'form':
+        }
+        case 'form': {
           const formState = convertFormProtoToState(id, widget.type.value);
           if (formState) {
             newWidgetStates.set(id, formState);
           }
           break;
-        case 'button':
+        }
+        case 'button': {
           const buttonState = convertButtonProtoToState(id, widget.type.value);
           if (buttonState) {
             newWidgetStates.set(id, buttonState);
           }
           break;
-        case 'markdown':
+        }
+        case 'markdown': {
           const markdownState = convertMarkdownProtoToState(
             id,
             widget.type.value,
@@ -266,7 +273,8 @@ export class Runtime {
             newWidgetStates.set(id, markdownState);
           }
           break;
-        case 'columns':
+        }
+        case 'columns': {
           const columnsState = convertColumnsProtoToState(
             id,
             widget.type.value,
@@ -275,8 +283,8 @@ export class Runtime {
             newWidgetStates.set(id, columnsState);
           }
           break;
-          break;
-        case 'columnItem':
+        }
+        case 'columnItem': {
           const columnItemState = convertColumnItemProtoToState(
             id,
             widget.type.value,
@@ -285,7 +293,8 @@ export class Runtime {
             newWidgetStates.set(id, columnItemState);
           }
           break;
-        case 'checkbox':
+        }
+        case 'checkbox': {
           const checkboxState = convertCheckboxProtoToState(
             id,
             widget.type.value,
@@ -294,7 +303,8 @@ export class Runtime {
             newWidgetStates.set(id, checkboxState);
           }
           break;
-        case 'checkboxGroup':
+        }
+        case 'checkboxGroup': {
           const checkboxGroupState = convertCheckboxGroupProtoToState(
             id,
             widget.type.value,
@@ -303,13 +313,15 @@ export class Runtime {
             newWidgetStates.set(id, checkboxGroupState);
           }
           break;
-        case 'radio':
+        }
+        case 'radio': {
           const radioState = convertRadioProtoToState(id, widget.type.value);
           if (radioState) {
             newWidgetStates.set(id, radioState);
           }
           break;
-        case 'selectbox':
+        }
+        case 'selectbox': {
           const selectboxState = convertSelectboxProtoToState(
             id,
             widget.type.value,
@@ -318,7 +330,8 @@ export class Runtime {
             newWidgetStates.set(id, selectboxState);
           }
           break;
-        case 'multiSelect':
+        }
+        case 'multiSelect': {
           const multiSelectState = convertMultiSelectProtoToState(
             id,
             widget.type.value,
@@ -327,13 +340,15 @@ export class Runtime {
             newWidgetStates.set(id, multiSelectState);
           }
           break;
-        case 'table':
+        }
+        case 'table': {
           const tableState = convertTableProtoToState(id, widget.type.value);
           if (tableState) {
             newWidgetStates.set(id, tableState);
           }
           break;
-        case 'textArea':
+        }
+        case 'textArea': {
           const textAreaState = convertTextAreaProtoToState(
             id,
             widget.type.value,
@@ -342,9 +357,10 @@ export class Runtime {
             newWidgetStates.set(id, textAreaState);
           }
           break;
-
-        default:
+        }
+        default: {
           throw new Error(`Unknown widget type: ${widget.type}`);
+        }
       }
     }
 
@@ -428,10 +444,10 @@ export async function startRuntime(
   const sessionManager = createSessionManager();
 
   // Create page manager
-  const pageManager = newPageManager(pages);
+  const pageManager = new PageManager(pages);
 
   // Create WebSocket client
-  const wsClient = createWebSocketClient({
+  const wsClient = new Client({
     url: endpoint,
     apiKey,
     instanceID: uuidv4(),

@@ -75,6 +75,13 @@ export default tseslint.config(
     },
   },
   {
+    name: 'sdk-node-rules',
+    files: ['./sdk/node/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-this-alias': 'off',
+    },
+  },
+  {
     name: 'eslint-config-prettier',
     ...eslintConfigPrettier,
   },
