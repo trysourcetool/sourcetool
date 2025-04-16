@@ -1,6 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -10,13 +9,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const refreshToken = createAsyncThunk(
   'auth/refreshToken',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.auth.refreshToken();
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -24,12 +22,11 @@ const refreshToken = createAsyncThunk(
 
 const obtainAuthToken = createAsyncThunk(
   'auth/obtainAuthToken',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.auth.obtainAuthToken();
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -39,14 +36,13 @@ const saveAuth = createAsyncThunk(
   'auth/saveAuth',
   async (
     params: { authUrl: string; data: { token: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.saveAuth(params);
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -54,13 +50,12 @@ const saveAuth = createAsyncThunk(
 
 const logout = createAsyncThunk(
   'auth/logout',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.auth.logout();
       location.href = '/login';
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -68,12 +63,11 @@ const logout = createAsyncThunk(
 
 const requestGoogleAuthLink = createAsyncThunk(
   'auth/requestGoogleAuthLink',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.auth.requestGoogleAuthLink();
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -83,13 +77,12 @@ const authenticateWithGoogle = createAsyncThunk(
   'auth/authenticateWithGoogle',
   async (
     params: { data: { code: string; state: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.authenticateWithGoogle(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -99,13 +92,12 @@ const registerWithGoogle = createAsyncThunk(
   'auth/registerWithGoogle',
   async (
     params: { data: { token: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.registerWithGoogle(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -115,13 +107,12 @@ const requestMagicLink = createAsyncThunk(
   'auth/requestMagicLink',
   async (
     params: { data: { email: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.requestMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -131,13 +122,12 @@ const authenticateWithMagicLink = createAsyncThunk(
   'auth/authenticateWithMagicLink',
   async (
     params: { data: { token: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.authenticateWithMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -147,14 +137,13 @@ const registerWithMagicLink = createAsyncThunk(
   'auth/registerWithMagicLink',
   async (
     params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.registerWithMagicLink(params);
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -164,13 +153,12 @@ const requestInvitationGoogleAuthLink = createAsyncThunk(
   'auth/requestInvitationGoogleAuthLink',
   async (
     params: { data: { invitationToken: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.requestInvitationGoogleAuthLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -180,13 +168,12 @@ const requestInvitationMagicLink = createAsyncThunk(
   'auth/requestInvitationMagicLink',
   async (
     params: { data: { invitationToken: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.requestInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -196,13 +183,12 @@ const authenticateWithInvitationMagicLink = createAsyncThunk(
   'auth/authenticateWithInvitationMagicLink',
   async (
     params: { data: { token: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.authenticateWithInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -212,14 +198,13 @@ const registerWithInvitationMagicLink = createAsyncThunk(
   'auth/registerWithInvitationMagicLink',
   async (
     params: { data: { token: string; firstName: string; lastName: string } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.auth.registerWithInvitationMagicLink(params);
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
