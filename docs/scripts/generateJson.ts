@@ -29,8 +29,5 @@ const json = files.map((file) => {
   };
 });
 
-fs.mkdirSync(path.join('./build/assets/json'), { recursive: true });
-fs.writeFileSync(
-  path.join('./build/assets/json', 'docs.json'),
-  JSON.stringify(json),
-);
+fs.mkdirSync(path.join('./build/json'), { recursive: true });
+fs.writeFileSync(path.join('./build/json', 'docs.json'), JSON.stringify(json));
