@@ -1,6 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -16,7 +15,6 @@ const refreshToken = createAsyncThunk(
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -29,7 +27,6 @@ const obtainAuthToken = createAsyncThunk(
       const res = await api.auth.obtainAuthToken();
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -46,7 +43,6 @@ const saveAuth = createAsyncThunk(
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -60,7 +56,6 @@ const logout = createAsyncThunk(
       location.href = '/login';
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -73,7 +68,6 @@ const requestGoogleAuthLink = createAsyncThunk(
       const res = await api.auth.requestGoogleAuthLink();
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -89,7 +83,6 @@ const authenticateWithGoogle = createAsyncThunk(
       const res = await api.auth.authenticateWithGoogle(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -105,7 +98,6 @@ const registerWithGoogle = createAsyncThunk(
       const res = await api.auth.registerWithGoogle(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -121,7 +113,6 @@ const requestMagicLink = createAsyncThunk(
       const res = await api.auth.requestMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -137,7 +128,6 @@ const authenticateWithMagicLink = createAsyncThunk(
       const res = await api.auth.authenticateWithMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -154,7 +144,6 @@ const registerWithMagicLink = createAsyncThunk(
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -170,7 +159,6 @@ const requestInvitationGoogleAuthLink = createAsyncThunk(
       const res = await api.auth.requestInvitationGoogleAuthLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -186,7 +174,6 @@ const requestInvitationMagicLink = createAsyncThunk(
       const res = await api.auth.requestInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -202,7 +189,6 @@ const authenticateWithInvitationMagicLink = createAsyncThunk(
       const res = await api.auth.authenticateWithInvitationMagicLink(params);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -219,7 +205,6 @@ const registerWithInvitationMagicLink = createAsyncThunk(
       api.setExpiresAt(res.expiresAt);
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
