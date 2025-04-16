@@ -21,7 +21,7 @@ import {
 import { FormComponentOptions } from './uibuilder/widgets/form';
 import { ColumnsComponentOptions } from './uibuilder/widgets/columns';
 
-import { Sourcetool, SourcetoolConfig, createSourcetool } from './sourcetool';
+import { Sourcetool, SourcetoolConfig } from './sourcetool';
 
 // Export all components and types
 export {
@@ -30,7 +30,7 @@ export {
   SelectionMode,
 
   // Sourcetool
-  createSourcetool,
+  Sourcetool,
 };
 
 export type {
@@ -62,6 +62,5 @@ export type {
   RouterInterface,
 
   // Sourcetool
-  Sourcetool,
   SourcetoolConfig,
 };

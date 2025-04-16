@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
 import { removeDuplicates, Router } from '../router';
-import { createSourcetool, SourcetoolConfig } from '../sourcetool';
+import { Sourcetool, SourcetoolConfig } from '../sourcetool';
 import { Page } from '../page';
 
 const findPageByPath = (
@@ -154,7 +154,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const admin = sourcetool.group('/admin');
 
     admin.accessGroups('admin');
@@ -208,7 +208,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const admin = sourcetool.group('/admin');
     admin.accessGroups('admin');
     admin.accessGroups('super_admin');
@@ -261,7 +261,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('global');
 
     const users = sourcetool.group('/users');
@@ -305,7 +305,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('global');
 
     const api = sourcetool.group('/api');
@@ -350,7 +350,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const admin = sourcetool.group('/admin');
     admin.accessGroups('admin');
     admin.page('/dashboard', 'Dashboard', pageHandler);
@@ -404,7 +404,7 @@ describe('router groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const admin = sourcetool.group('/admin');
     const settings = admin.group('/settings');
     settings.page('/users', 'User Settings', pageHandler);
@@ -422,7 +422,7 @@ describe('router groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const api = sourcetool.group('/api');
     const v1 = api.group('/v1');
     const users = v1.group('/users');
@@ -446,7 +446,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.page('/test', 'Test Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/test');
@@ -462,7 +462,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
 
     sourcetool.page('/', 'Root Page', pageHandler);
     console.log(sourcetool.pages);
@@ -483,7 +483,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const users = sourcetool.group('/users');
     users.page('/', 'Users List', pageHandler);
 
@@ -510,7 +510,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('admin');
     sourcetool.page('/admin', 'Admin Page', pageHandler);
 
@@ -529,7 +529,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.page('/error', 'Error Page', async () => {
       throw new Error('Test error');
     });
@@ -554,7 +554,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.page('', 'Root Page', pageHandler);
 
     const page = findPageByPath(sourcetool.pages, '/');
@@ -570,7 +570,7 @@ describe('router page', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.page('/duplicate', 'First Page', pageHandler);
     sourcetool.page('/duplicate', 'Second Page', pageHandler);
 
@@ -591,7 +591,7 @@ describe('router group', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const group = sourcetool.group('/test');
 
     group.page('/page', 'Test Page', pageHandler);
@@ -609,7 +609,7 @@ describe('router group', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const group = sourcetool.group('/admin');
     group.accessGroups('admin');
     group.page('/dashboard', 'Admin Dashboard', pageHandler);
@@ -629,7 +629,7 @@ describe('router group', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const parent = sourcetool.group('/parent');
     const child = parent.group('/child');
     child.page('/page', 'Test Page', pageHandler);
@@ -647,7 +647,7 @@ describe('router group', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     const group = sourcetool.group('');
     group.page('/page', 'Test Page', pageHandler);
 
@@ -667,7 +667,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('admin', 'user');
     sourcetool.page('/test', 'Test Page', pageHandler);
 
@@ -687,7 +687,7 @@ describe('router access groups', () => {
       endpoint: 'ws://test.trysourcetool.com',
     };
 
-    const sourcetool = createSourcetool(config);
+    const sourcetool = new Sourcetool(config);
     sourcetool.accessGroups('admin');
     sourcetool.accessGroups();
 

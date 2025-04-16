@@ -100,7 +100,7 @@ test('form', () => {
   expect(submitted).toBe(false);
 
   const formWidgetId = builder.generatePageID('form', [0]);
-  let formState = session.state.getForm(formWidgetId);
+  const formState = session.state.getForm(formWidgetId);
 
   if (!formState) {
     throw new Error('FormState not found');

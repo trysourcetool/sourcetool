@@ -112,12 +112,3 @@ export class PageManager {
     return this.pages;
   }
 }
-
-/**
- * Create a new page manager
- * @param pages Pages
- * @returns Page manager
- */
-export function newPageManager(pages: Record<string, Page> = {}): PageManager {
-  return new PageManager(pages);
-}
