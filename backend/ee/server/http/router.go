@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/ee/apikey"
+	"github.com/trysourcetool/sourcetool/backend/ee/auth"
 	"github.com/trysourcetool/sourcetool/backend/ee/environment"
 	"github.com/trysourcetool/sourcetool/backend/ee/group"
 	"github.com/trysourcetool/sourcetool/backend/ee/hostinstance"
@@ -16,6 +17,7 @@ import (
 func NewRouter(d *infra.Dependency) *http.Router {
 	middleware := NewMiddlewareEE(d.Store)
 	apiKeyHandler := handlers.NewAPIKeyHandler(apikey.NewServiceEE(d))
+	authHandler := handlers.NewAuthHandler(auth.NewServiceEE(d))
 	environmentHandler := handlers.NewEnvironmentHandler(environment.NewServiceEE(d))
 	groupHandler := handlers.NewGroupHandler(group.NewServiceEE(d))
 	hostInstanceHandler := handlers.NewHostInstanceHandler(hostinstance.NewServiceEE(d))
@@ -25,6 +27,7 @@ func NewRouter(d *infra.Dependency) *http.Router {
 	return http.NewRouter(
 		middleware,
 		apiKeyHandler,
+		authHandler,
 		environmentHandler,
 		groupHandler,
 		hostInstanceHandler,

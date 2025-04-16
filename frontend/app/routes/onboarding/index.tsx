@@ -25,7 +25,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
-  const user = useSelector(usersStore.selector.getMe);
+  const user = useSelector(usersStore.selector.getUserMe);
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
 
   const handleCheckConnection = async () => {

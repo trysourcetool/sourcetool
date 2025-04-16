@@ -19,7 +19,7 @@ import type { ChangeEvent } from 'react';
 import { useDispatch, useSelector } from '@/store';
 import { organizationsStore } from '@/store/modules/organizations';
 import { useDebouncedCallback } from 'use-debounce';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { $path } from 'safe-routes';
 import { useNavigate } from 'react-router';
 import type { ErrorResponse } from '@/api/instance';
@@ -58,15 +58,15 @@ export default function Signup() {
         resultAction,
       )
     ) {
-      const result = await dispatch(usersStore.asyncActions.obtainAuthToken());
-      if (usersStore.asyncActions.obtainAuthToken.fulfilled.match(result)) {
+      const result = await dispatch(authStore.asyncActions.obtainAuthToken());
+      if (authStore.asyncActions.obtainAuthToken.fulfilled.match(result)) {
         const res = await dispatch(
-          usersStore.asyncActions.saveAuth({
+          authStore.asyncActions.saveAuth({
             authUrl: result.payload.authUrl,
             data: { token: result.payload.token },
           }),
         );
-        if (!usersStore.asyncActions.saveAuth.fulfilled.match(res)) {
+        if (!authStore.asyncActions.saveAuth.fulfilled.match(res)) {
           throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
         }
         window.location.replace(res.payload.redirectUrl);

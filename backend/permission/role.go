@@ -1,4 +1,4 @@
-package authz
+package permission
 
 import (
 	"context"
@@ -50,14 +50,14 @@ var rolesAllowedByOperation = map[operation][]model.UserOrganizationRole{
 	},
 }
 
-func (a *authorizer) AuthorizeOperation(ctx context.Context, o operation) error {
+func (c *Checker) AuthorizeOperation(ctx context.Context, o operation) error {
 	currentUser := ctxutil.CurrentUser(ctx)
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	if currentUser == nil || currentOrg == nil {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}
 
-	orgAccess, err := a.store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID), storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccess, err := c.store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID), storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return errdefs.ErrPermissionDenied(err)
 	}

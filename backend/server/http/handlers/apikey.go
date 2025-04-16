@@ -77,9 +77,11 @@ func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags apiKeys
-// @Param Body body requests.CreateAPIKeyRequest true " "
+// @Param Body body requests.CreateAPIKeyRequest true "API key creation data including name and expiration"
 // @Success 200 {object} responses.CreateAPIKeyResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /apiKeys [post].
 func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateAPIKeyRequest
@@ -110,10 +112,13 @@ func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags apiKeys
-// @Param Body body requests.UpdateAPIKeyRequest true " "
-// @Param apiKeyID path string true "API Key ID"
+// @Param Body body requests.UpdateAPIKeyRequest true "API key update data including name and status"
+// @Param apiKeyID path string true "API Key ID to update"
 // @Success 200 {object} responses.UpdateAPIKeyResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 404 {object} errdefs.Error "API key not found"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /apiKeys/{apiKeyID} [put].
 func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req := requests.UpdateAPIKeyRequest{

@@ -12,15 +12,15 @@ import (
 )
 
 const (
-	EmailTokenExpiration = time.Duration(24) * time.Hour
-	tokenExpiration      = time.Duration(60) * time.Minute
-	tokenExpirationDev   = time.Duration(365*24) * time.Hour
-	SecretExpiration     = time.Duration(30*24) * time.Hour
-	XSRFTokenExpiration  = time.Duration(30*24) * time.Hour
-	SecretMaxAgeBuffer   = time.Duration(7*24) * time.Hour
-	TmpTokenExpiration   = time.Duration(30) * time.Minute
+	EmailTokenExpiration     = time.Duration(24) * time.Hour
+	tokenExpiration          = time.Duration(60) * time.Minute
+	tokenExpirationDev       = time.Duration(365*24) * time.Hour
+	RefreshTokenExpiration   = time.Duration(30*24) * time.Hour
+	XSRFTokenExpiration      = time.Duration(30*24) * time.Hour
+	RefreshTokenMaxAgeBuffer = time.Duration(7*24) * time.Hour
+	TmpTokenExpiration       = time.Duration(30) * time.Minute
 
-	SaveAuthPath = "/api/v1/users/saveAuth"
+	SaveAuthPath = "/api/v1/auth/save"
 )
 
 func TokenExpiration() time.Duration {
@@ -31,15 +31,14 @@ func TokenExpiration() time.Duration {
 }
 
 type User struct {
-	ID                   uuid.UUID  `db:"id"`
-	Email                string     `db:"email"`
-	FirstName            string     `db:"first_name"`
-	LastName             string     `db:"last_name"`
-	Secret               string     `db:"secret"`
-	GoogleID             string     `db:"google_id"`
-	EmailAuthenticatedAt *time.Time `db:"email_authenticated_at"`
-	CreatedAt            time.Time  `db:"created_at"`
-	UpdatedAt            time.Time  `db:"updated_at"`
+	ID               uuid.UUID `db:"id"`
+	Email            string    `db:"email"`
+	FirstName        string    `db:"first_name"`
+	LastName         string    `db:"last_name"`
+	RefreshTokenHash string    `db:"refresh_token_hash"`
+	GoogleID         string    `db:"google_id"`
+	CreatedAt        time.Time `db:"created_at"`
+	UpdatedAt        time.Time `db:"updated_at"`
 }
 
 type UserOrganizationRole int
@@ -121,6 +120,7 @@ type UserStore interface {
 	ListOrganizationAccesses(context.Context, ...storeopts.UserOrganizationAccessOption) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 	UpdateOrganizationAccess(context.Context, *UserOrganizationAccess) error
+	DeleteOrganizationAccess(context.Context, *UserOrganizationAccess) error
 
 	GetGroup(context.Context, ...storeopts.UserGroupOption) (*UserGroup, error)
 	ListGroups(context.Context, ...storeopts.UserGroupOption) ([]*UserGroup, error)

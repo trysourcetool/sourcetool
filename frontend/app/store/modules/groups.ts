@@ -2,7 +2,6 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import {
   createEntityAdapter,
@@ -17,13 +16,12 @@ import { pagesStore } from './pages';
 // =============================================
 const listGroups = createAsyncThunk(
   'groups/listGroups',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.groups.listGroups();
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -31,13 +29,12 @@ const listGroups = createAsyncThunk(
 
 const getGroup = createAsyncThunk(
   'groups/getGroup',
-  async (params: { groupId: string }, { dispatch, rejectWithValue }) => {
+  async (params: { groupId: string }, { rejectWithValue }) => {
     try {
       const res = await api.groups.getGroup(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -47,14 +44,13 @@ const createGroup = createAsyncThunk(
   'groups/createGroup',
   async (
     params: { data: { name: string; slug: string; userIds: string[] } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.groups.createGroup(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -64,14 +60,13 @@ const updateGroup = createAsyncThunk(
   'groups/updateGroup',
   async (
     params: { groupId: string; data: { name: string; userIds: string[] } },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.groups.updateGroup(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -79,13 +74,12 @@ const updateGroup = createAsyncThunk(
 
 const deleteGroup = createAsyncThunk(
   'groups/deleteGroup',
-  async (params: { groupId: string }, { dispatch, rejectWithValue }) => {
+  async (params: { groupId: string }, { rejectWithValue }) => {
     try {
       const res = await api.groups.deleteGroup(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },

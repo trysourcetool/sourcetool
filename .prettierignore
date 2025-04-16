@@ -1,0 +1,6 @@
+*.md
+.react-router/**
+.docusaurus/**
+build/**
+dist/**
+node_modules/**

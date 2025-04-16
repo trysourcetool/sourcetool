@@ -14,6 +14,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
+	"github.com/trysourcetool/sourcetool/backend/auth"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/group"
@@ -37,6 +38,7 @@ type Server struct {
 func New(d *infra.Dependency) *Server {
 	httpMiddle := httpserver.NewMiddlewareCE(d.Store)
 	apiKeyHandler := httphandlers.NewAPIKeyHandler(apikey.NewServiceCE(d))
+	authHandler := httphandlers.NewAuthHandler(auth.NewServiceCE(d))
 	environmentHandler := httphandlers.NewEnvironmentHandler(environment.NewServiceCE(d))
 	groupHandler := httphandlers.NewGroupHandler(group.NewServiceCE(d))
 	hostInstanceHandler := httphandlers.NewHostInstanceHandler(hostinstance.NewServiceCE(d))
@@ -60,6 +62,7 @@ func New(d *infra.Dependency) *Server {
 		httpRouter: httpserver.NewRouter(
 			httpMiddle,
 			apiKeyHandler,
+			authHandler,
 			environmentHandler,
 			groupHandler,
 			hostInstanceHandler,

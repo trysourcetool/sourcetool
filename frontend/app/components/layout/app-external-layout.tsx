@@ -50,6 +50,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { usersStore } from '@/store/modules/users';
 import { useDispatch, useSelector } from '@/store';
 import { ENVIRONMENTS } from '@/environments';
+import { authStore } from '@/store/modules/auth';
 
 export function AppExternalLayout(props: PropsWithChildren) {
   const dispatch = useDispatch();
@@ -61,11 +62,11 @@ export function AppExternalLayout(props: PropsWithChildren) {
     isAuthChecked,
     handleNoAuthRoute,
   } = useAuth();
-  const user = useSelector(usersStore.selector.getMe);
+  const user = useSelector(usersStore.selector.getUserMe);
   const { t } = useTranslation('common');
 
   const handleSignout = async () => {
-    await dispatch(usersStore.asyncActions.signout());
+    await dispatch(authStore.asyncActions.logout());
   };
 
   const handleSidebarClose = () => {

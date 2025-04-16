@@ -5,14 +5,14 @@ This repository contains the frontend application for Sourcetool, a web-based pl
 ## Prerequisites
 
 - Node.js >= 20.0.0
-- Yarn package manager
+- pnpm package manager
 
 ## Package Installation
 
 To install the project dependencies, run:
 
 ```bash
-yarn install
+pnpm install
 ```
 
 ## Development
@@ -20,7 +20,7 @@ yarn install
 To start the development server, run:
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 This will start the development server at `auth.local.trysourcetool.com:5173` or `acme.local.trysourcetool.com:5173`.
@@ -36,13 +36,13 @@ cp .env.example .env
 To build the application for production, run:
 
 ```bash
-yarn build
+pnpm build
 ```
 
 To preview the production build locally, run:
 
 ```bash
-yarn preview
+pnpm preview
 ```
 
 ## Directory Structure
@@ -87,7 +87,7 @@ The application supports multiple languages using i18next. Currently, English is
 To run type checking, use:
 
 ```bash
-yarn typecheck
+pnpm typecheck
 ```
 
 ## Linting
@@ -95,5 +95,5 @@ yarn typecheck
 To run the linter, use:
 
 ```bash
-yarn lint
+pnpm lint
 ```

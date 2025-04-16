@@ -6,11 +6,11 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/permission"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -128,13 +128,13 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot create API key for development environment"))
 	}
 
-	authorizer := authz.NewAuthorizer(s.Store)
+	checker := permission.NewChecker(s.Store)
 	if env.Slug == model.EnvironmentSlugDevelopment {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}
@@ -191,13 +191,13 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot update API key for development environment"))
 	}
 
-	authorizer := authz.NewAuthorizer(s.Store)
+	checker := permission.NewChecker(s.Store)
 	if env.Slug == model.EnvironmentSlugDevelopment {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}
@@ -236,13 +236,13 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot delete API key for development environment"))
 	}
 
-	authorizer := authz.NewAuthorizer(s.Store)
+	checker := permission.NewChecker(s.Store)
 	if env.Slug == model.EnvironmentSlugDevelopment {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}

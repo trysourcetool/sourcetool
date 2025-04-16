@@ -20,7 +20,6 @@ import (
 type Service interface {
 	Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error)
 	CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error
-	UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error)
 }
 
 type ServiceCE struct {
@@ -139,71 +138,4 @@ func (s *ServiceCE) CheckSubdomainAvailability(ctx context.Context, in dto.Check
 	}
 
 	return nil
-}
-
-func (s *ServiceCE) UpdateUser(ctx context.Context, in dto.UpdateOrganizationUserInput) (*dto.UpdateOrganizationUserOutput, error) {
-	userID, err := uuid.FromString(in.UserID)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
-	if err != nil {
-		return nil, err
-	}
-
-	currentOrg := ctxutil.CurrentOrganization(ctx)
-	if currentOrg == nil {
-		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
-	}
-
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
-		if in.Role != nil {
-			orgAccess.Role = model.UserOrganizationRoleFromString(conv.SafeValue(in.Role))
-
-			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
-				return err
-			}
-		}
-
-		if len(in.GroupIDs) != 0 {
-			userGroups := make([]*model.UserGroup, 0, len(in.GroupIDs))
-			for _, groupID := range in.GroupIDs {
-				groupID, err := uuid.FromString(groupID)
-				if err != nil {
-					return err
-				}
-				userGroups = append(userGroups, &model.UserGroup{
-					ID:      uuid.Must(uuid.NewV4()),
-					UserID:  u.ID,
-					GroupID: groupID,
-				})
-			}
-
-			existingGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(u.ID))
-			if err != nil {
-				return err
-			}
-
-			if err := tx.User().BulkDeleteGroups(ctx, existingGroups); err != nil {
-				return err
-			}
-
-			if err := tx.User().BulkInsertGroups(ctx, userGroups); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return &dto.UpdateOrganizationUserOutput{
-		User: dto.UserFromModel(u, currentOrg, orgAccess.Role),
-	}, nil
 }

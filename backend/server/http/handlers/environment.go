@@ -77,9 +77,11 @@ func (h *EnvironmentHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags environments
-// @Param Body body requests.CreateEnvironmentRequest true " "
+// @Param Body body requests.CreateEnvironmentRequest true "Environment creation data including name and configuration"
 // @Success 200 {object} responses.CreateEnvironmentResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /environments [post].
 func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateEnvironmentRequest
@@ -110,10 +112,13 @@ func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Tags environments
-// @Param Body body requests.UpdateEnvironmentRequest true " "
-// @Param environmentID path string true "Environment ID"
+// @Param Body body requests.UpdateEnvironmentRequest true "Environment update data including name and configuration"
+// @Param environmentID path string true "Environment ID to update"
 // @Success 200 {object} responses.UpdateEnvironmentResponse
-// @Failure default {object} errdefs.Error
+// @Failure 400 {object} errdefs.Error "Invalid request parameters"
+// @Failure 403 {object} errdefs.Error "Insufficient permissions"
+// @Failure 404 {object} errdefs.Error "Environment not found"
+// @Failure 500 {object} errdefs.Error "Internal server error"
 // @Router /environments/{environmentID} [put].
 func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 	req := requests.UpdateEnvironmentRequest{

@@ -28,14 +28,14 @@ export default function UsersEmailUpdateConfirm() {
     (async () => {
       if (token) {
         const resultAction = await dispatch(
-          usersStore.asyncActions.updateUserEmail({
+          usersStore.asyncActions.updateMeEmail({
             data: {
               token,
             },
           }),
         );
         if (
-          usersStore.asyncActions.updateUserEmail.fulfilled.match(resultAction)
+          usersStore.asyncActions.updateMeEmail.fulfilled.match(resultAction)
         ) {
           toast({
             title: 'Email updated',

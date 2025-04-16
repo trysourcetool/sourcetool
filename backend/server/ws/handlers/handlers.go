@@ -52,7 +52,6 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.Sugar().Errorf("Failed to upgrade connection: %v", err)
 		return
 	}
-	h.service.SetConn(conn)
 
 	conn.SetReadLimit(maxMessageSize)
 	conn.SetPongHandler(func(string) error {
@@ -84,7 +83,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		switch msg.Type.(type) {
 		case *websocketv1.Message_InitializeHost:
 			instanceID := r.Header.Get("X-Instance-Id")
-			hostInstance, err := h.service.InitializeHost(ctx, instanceID, &msg)
+			hostInstance, err := h.service.InitializeHost(ctx, conn, instanceID, &msg)
 			if err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
@@ -99,32 +98,32 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 			go h.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)
 		case *websocketv1.Message_InitializeClient:
-			if err := h.service.InitializeClient(ctx, &msg); err != nil {
+			if err := h.service.InitializeClient(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RenderWidget:
-			if err := h.service.RenderWidget(ctx, &msg); err != nil {
+			if err := h.service.RenderWidget(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RerunPage:
-			if err := h.service.RerunPage(ctx, &msg); err != nil {
+			if err := h.service.RerunPage(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_CloseSession:
-			if err := h.service.CloseSession(ctx, &msg); err != nil {
+			if err := h.service.CloseSession(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_ScriptFinished:
-			if err := h.service.ScriptFinished(ctx, &msg); err != nil {
+			if err := h.service.ScriptFinished(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_Exception:
-			if err := h.service.Exception(ctx, &msg); err != nil {
+			if err := h.service.Exception(ctx, conn, &msg); err != nil {
 				ws.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}

@@ -154,7 +154,7 @@ export const validateWidgetValue = <
   // ==============================
   // numberInput
   if (widget.numberInput && widgetType === 'numberInput') {
-    let schema = z
+    const schema = z
       .number()
       .optional()
       .superRefine((value, ctx) => {
@@ -277,7 +277,7 @@ export const validateWidgetValue = <
   // timeInput
 
   if (widget.timeInput && widgetType === 'timeInput') {
-    let schema = z.string().superRefine((value, ctx) => {
+    const schema = z.string().superRefine((value, ctx) => {
       if (widget.timeInput?.required && !value) {
         ctx.addIssue({
           code: 'custom',
@@ -320,7 +320,7 @@ export const validateWidgetValue = <
   // ==============================
   // checkbox
   if (widget.checkbox && widgetType === 'checkbox') {
-    let schema = z
+    const schema = z
       .boolean()
       .optional()
       .refine((value) => (widget.checkbox?.required ? value === true : true), {
@@ -336,7 +336,7 @@ export const validateWidgetValue = <
   // ==============================
   // checkboxGroup
   if (widget.checkboxGroup && widgetType === 'checkboxGroup') {
-    let schema = z
+    const schema = z
       .array(z.string())
       .refine(
         (value) => (widget.checkboxGroup?.required ? value.length > 0 : true),
@@ -354,7 +354,7 @@ export const validateWidgetValue = <
   // ==============================
   // radio
   if (widget.radio && widgetType === 'radio') {
-    let schema = z
+    const schema = z
       .number()
       .optional()
       .refine((value) => (widget.radio?.required ? !value : true), {
@@ -370,7 +370,7 @@ export const validateWidgetValue = <
   // ==============================
   // selectbox
   if (widget.selectbox && widgetType === 'selectbox') {
-    let schema = z
+    const schema = z
       .number()
       .optional()
       .refine(
@@ -389,7 +389,7 @@ export const validateWidgetValue = <
   // ==============================
   // multiSelect
   if (widget.multiSelect && widgetType === 'multiSelect') {
-    let schema = z
+    const schema = z
       .array(z.number().optional())
       .refine(
         (value) => (widget.multiSelect?.required ? value.length > 0 : true),

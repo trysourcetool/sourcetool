@@ -6,7 +6,7 @@
   "bracketSpacing": true,
   "arrowParens": "always",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./app/tailwind.css",
+  "tailwindStylesheet": "**/app/tailwind.css",
   "tailwindFunctions": ["clsx", "cn"],
-  "tailwindPreserveWhitespace": true
+  "tailwindPreserveWhitespace": false
 }

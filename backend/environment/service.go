@@ -6,11 +6,11 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/authz"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/permission"
 	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
@@ -67,8 +67,8 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, erro
 }
 
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 
@@ -115,8 +115,8 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (
 }
 
 func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 
@@ -159,8 +159,8 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 }
 
 func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error) {
-	authorizer := authz.NewAuthorizer(s.Store)
-	if err := authorizer.AuthorizeOperation(ctx, authz.OperationEditEnvironment); err != nil {
+	checker := permission.NewChecker(s.Store)
+	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 

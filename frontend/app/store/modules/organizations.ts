@@ -1,8 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
-import type { UserRole } from '@/api/modules/users';
 import { createSlice } from '@reduxjs/toolkit';
 
 // =============================================
@@ -11,16 +9,11 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const createOrganization = createAsyncThunk(
   'organizations/createOrganization',
-  async (
-    params: { data: { subdomain: string } },
-    { dispatch, rejectWithValue },
-  ) => {
+  async (params: { data: { subdomain: string } }, { rejectWithValue }) => {
     try {
       const res = await api.organizations.createOrganization(params);
-
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -28,61 +21,38 @@ const createOrganization = createAsyncThunk(
 
 const checkSubdomainAvailability = createAsyncThunk(
   'organizations/checkSubdomainAvailability',
-  async (params: { subdomain: string }, { dispatch, rejectWithValue }) => {
+  async (params: { subdomain: string }, { rejectWithValue }) => {
     try {
       const res = await api.organizations.checkSubdomainAvailability(params);
-
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
 );
-
-const updateOrganizationUser = createAsyncThunk(
-  'organizations/updateOrganizationUser',
-  async (
-    params: { userId: string; data: { groupIds: string[]; role: UserRole } },
-    { dispatch, rejectWithValue },
-  ) => {
-    try {
-      const res = await api.organizations.updateOrganizationUser(params);
-
-      return res;
-    } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
-      return rejectWithValue(error as ErrorResponse);
-    }
-  },
-);
-
-// =============================================
-// slice
-// =============================================
-
-// =============================================
-// schema
 
 // =============================================
 // State
+// =============================================
 
 export type State = {
   isCreateOrganizationWaiting: boolean;
   isCheckSubdomainAvailabilityWaiting: boolean;
-  isUpdateOrganizationUserWaiting: boolean;
 };
 
 const initialState: State = {
   isCreateOrganizationWaiting: false,
   isCheckSubdomainAvailabilityWaiting: false,
-  isUpdateOrganizationUserWaiting: false,
 };
 
 // =============================================
 // slice
+// =============================================
 
 export const slice = createSlice({
+  name: 'organizations',
+  initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder
       // createOrganization
@@ -104,21 +74,8 @@ export const slice = createSlice({
       })
       .addCase(checkSubdomainAvailability.rejected, (state) => {
         state.isCheckSubdomainAvailabilityWaiting = false;
-      })
-      // updateOrganizationUser
-      .addCase(updateOrganizationUser.pending, (state) => {
-        state.isUpdateOrganizationUserWaiting = true;
-      })
-      .addCase(updateOrganizationUser.fulfilled, (state) => {
-        state.isUpdateOrganizationUserWaiting = false;
-      })
-      .addCase(updateOrganizationUser.rejected, (state) => {
-        state.isUpdateOrganizationUserWaiting = false;
       });
   },
-  initialState,
-  name: 'organizations',
-  reducers: {},
 });
 
 // =============================================
@@ -130,7 +87,6 @@ export const organizationsStore = {
   asyncActions: {
     createOrganization,
     checkSubdomainAvailability,
-    updateOrganizationUser,
   },
   reducer: slice.reducer,
 };

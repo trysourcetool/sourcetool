@@ -2,7 +2,6 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/api';
-import { errorStore } from './error';
 import type { ErrorResponse } from '@/api/instance';
 import {
   createEntityAdapter,
@@ -16,13 +15,12 @@ import type { ApiKey } from '@/api/modules/apiKeys';
 // =============================================
 const listApiKeys = createAsyncThunk(
   'apiKeys/listApiKeys',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await api.apiKeys.listApiKeys();
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -30,13 +28,12 @@ const listApiKeys = createAsyncThunk(
 
 const getApiKey = createAsyncThunk(
   'apiKeys/getApiKey',
-  async (params: { apiKeyId: string }, { dispatch, rejectWithValue }) => {
+  async (params: { apiKeyId: string }, { rejectWithValue }) => {
     try {
       const res = await api.apiKeys.getApiKey(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -46,7 +43,7 @@ const createApiKey = createAsyncThunk(
   'apiKeys/createApiKey',
   async (
     params: { environmentId: string; name: string },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.apiKeys.createApiKey({
@@ -58,7 +55,6 @@ const createApiKey = createAsyncThunk(
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -73,14 +69,13 @@ const updateApiKey = createAsyncThunk(
         name: string;
       };
     },
-    { dispatch, rejectWithValue },
+    { rejectWithValue },
   ) => {
     try {
       const res = await api.apiKeys.updateApiKey(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },
@@ -88,13 +83,12 @@ const updateApiKey = createAsyncThunk(
 
 const deleteApiKey = createAsyncThunk(
   'apiKeys/deleteApiKey',
-  async (params: { apiKeyId: string }, { dispatch, rejectWithValue }) => {
+  async (params: { apiKeyId: string }, { rejectWithValue }) => {
     try {
       const res = await api.apiKeys.deleteApiKey(params);
 
       return res;
     } catch (error: any) {
-      dispatch(errorStore.asyncActions.handleError(error));
       return rejectWithValue(error as ErrorResponse);
     }
   },

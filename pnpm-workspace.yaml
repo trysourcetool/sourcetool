@@ -1,0 +1,18 @@
+packages:
+  - 'frontend'
+  - 'docs'
+catalogs:
+  # Can be referenced through "catalog:react19"
+  react19:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+    '@types/react': ^19.0.0
+    '@types/react-dom': ^19.0.0
+
+catalog:
+  clsx: ^2.1.1
+  typescript: ^5.1.6
+  vitest: ^2.1.8
+
+publicHoistPattern:
+  - '*eslint*'

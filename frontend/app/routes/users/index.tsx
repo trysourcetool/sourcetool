@@ -2,6 +2,16 @@ import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -72,7 +82,7 @@ const InviteForm = () => {
   const { toast } = useToast();
   const { t } = useTranslation('common');
 
-  const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
+  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
 
   const schema = object({
     emails: string({
@@ -117,7 +127,7 @@ const InviteForm = () => {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.invite({
+      usersStore.asyncActions.createUserInvitations({
         data: {
           emails: data.emails.split(',').map((email) => email.trim()),
           role: data.role as UserRole,
@@ -125,7 +135,7 @@ const InviteForm = () => {
       }),
     );
 
-    if (usersStore.asyncActions.invite.fulfilled.match(resultAction)) {
+    if (usersStore.asyncActions.createUserInvitations.fulfilled.match(resultAction)) {
       navigate($path('/users'));
       toast({
         title: t('routes_users_toast_invited'),
@@ -220,13 +230,17 @@ export default function Users() {
     parse: (query: string) => parseInt(query, 10),
     serialize: (value) => value.toString(),
   });
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
-  const me = useSelector(usersStore.selector.getMe);
-  const isInviteWaiting = useSelector((state) => state.users.isInviteWaiting);
+  const me = useSelector(usersStore.selector.getUserMe);
+  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
   const isInvitationsResendWaiting = useSelector(
-    (state) => state.users.isInvitationsResendWaiting,
+    (state) => state.users.isResendUserInvitationWaiting,
+  );
+  const isDeleteUserWaiting = useSelector(
+    (state) => state.users.isDeleteUserWaiting,
   );
 
   const filteredUsers = useMemo(() => {
@@ -279,15 +293,13 @@ export default function Users() {
 
   const handleResendInvitation = async (invitationId: string) => {
     const resultAction = await dispatch(
-      usersStore.asyncActions.invitationsResend({
-        data: {
-          invitationId,
-        },
+      usersStore.asyncActions.resendUserInvitation({
+        invitationId,
       }),
     );
 
     if (
-      usersStore.asyncActions.invitationsResend.fulfilled.match(resultAction)
+      usersStore.asyncActions.resendUserInvitation.fulfilled.match(resultAction)
     ) {
       toast({
         title: t('routes_users_toast_invitation_resent'),
@@ -302,6 +314,36 @@ export default function Users() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete || isDeleteUserWaiting) {
+      return;
+    }
+    const resultAction = await dispatch(
+      usersStore.asyncActions.deleteUser({
+        userId: userToDelete.id,
+      }),
+    );
+
+    if (
+      usersStore.asyncActions.deleteUser.fulfilled.match(resultAction)
+    ) {
+      toast({
+        title: t('routes_users_toast_user_deleted'),
+        description: t('routes_users_toast_user_deleted_description', {
+          name: `${userToDelete.firstName} ${userToDelete.lastName}`.trim(),
+        }),
+      });
+      dispatch(usersStore.asyncActions.listUsers()); // Refresh the list
+    } else {
+      toast({
+        title: t('routes_users_toast_user_delete_failed'),
+        description: t('routes_users_toast_user_delete_failed_description'),
+        variant: 'destructive',
+      });
+    }
+    setUserToDelete(null); // Close dialog
   };
 
   useEffect(() => {
@@ -424,8 +466,13 @@ export default function Users() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                {t('routes_users_remove')}
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  setUserToDelete(user);
+                                }}
+                              >
+                                {t('routes_users_delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -563,6 +610,44 @@ export default function Users() {
           <InviteForm />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={!!userToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUserToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('routes_users_delete_confirm_title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('routes_users_delete_confirm_description', {
+                name: `${userToDelete?.firstName} ${userToDelete?.lastName}`.trim(),
+                email: userToDelete?.email,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleteUserWaiting}>
+              {t('common_cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={isDeleteUserWaiting}
+              className="bg-foreground text-background hover:bg-foreground/90"
+            >
+              {isDeleteUserWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
+              {t('routes_users_delete_confirm_button')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

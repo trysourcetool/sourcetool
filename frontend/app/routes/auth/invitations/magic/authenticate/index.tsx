@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useDispatch } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { $path } from 'safe-routes';
 import { useTranslation } from 'react-i18next';
@@ -39,13 +39,13 @@ export default function InvitationMagicLinkAuthenticate() {
       }
 
       const resultAction = await dispatch(
-        usersStore.asyncActions.authenticateWithInvitationMagicLink({
+        authStore.asyncActions.authenticateWithInvitationMagicLink({
           data: { token },
         }),
       );
 
       if (
-        usersStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(
+        authStore.asyncActions.authenticateWithInvitationMagicLink.fulfilled.match(
           resultAction,
         )
       ) {
@@ -57,13 +57,13 @@ export default function InvitationMagicLinkAuthenticate() {
           );
         } else {
           const saveAuthResult = await dispatch(
-            usersStore.asyncActions.saveAuth({
+            authStore.asyncActions.saveAuth({
               authUrl: result.authUrl,
               data: { token: result.token },
             }),
           );
 
-          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
+          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResult)) {
             throw new Error(t('routes_auth_invitations_magic_link_toast_save_auth_failed_desc' as any));
           }
 

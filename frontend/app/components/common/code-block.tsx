@@ -6,6 +6,7 @@ export const CodeBlock: FC<{
   language: string;
 }> = ({ code, language }) => {
   const isInitialLoading = useRef(false);
+
   const [formattedCode, setFormattedCode] = useState('');
 
   useEffect(() => {
@@ -18,8 +19,6 @@ export const CodeBlock: FC<{
         themes: ['github-dark-dimmed'],
         langs: [language],
       });
-
-      console.log({ code });
 
       const html = highlighter.codeToHtml(code, {
         lang: language,

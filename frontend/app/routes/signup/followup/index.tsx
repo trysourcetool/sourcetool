@@ -17,7 +17,9 @@ import { Input } from '@/components/ui/input';
 import { useDispatch } from '@/store';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useToast } from '@/hooks/use-toast';
+import { authStore } from '@/store/modules/auth';
 import { usersStore } from '@/store/modules/users';
+import { ENVIRONMENTS } from '@/environments';
 
 export type SearchParams = {
   token: string;
@@ -56,7 +58,7 @@ export default function Followup() {
       return;
     }
     const resultAction = await dispatch(
-      usersStore.asyncActions.registerWithMagicLink({
+      authStore.asyncActions.registerWithMagicLink({
         data: {
           token,
           ...data,
@@ -64,16 +66,22 @@ export default function Followup() {
       }),
     );
     if (
-      usersStore.asyncActions.registerWithMagicLink.fulfilled.match(
+      authStore.asyncActions.registerWithMagicLink.fulfilled.match(
         resultAction,
       )
     ) {
-      if (!resultAction.payload.hasOrganization) {
+      if (
+        ENVIRONMENTS.IS_CLOUD_EDITION &&
+        !resultAction.payload.hasOrganization
+      ) {
         navigate('/organizations/new');
         toast({
           title: t('routes_signup_followup_toast_success'),
           description: t('routes_signup_followup_toast_success_description'),
         });
+      } else {
+        await dispatch(usersStore.asyncActions.getMe());
+        navigate('/');
       }
     } else {
       toast({
@@ -135,7 +143,7 @@ export default function Followup() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               {t('routes_signup_followup_continue_button')}
             </Button>
           </form>

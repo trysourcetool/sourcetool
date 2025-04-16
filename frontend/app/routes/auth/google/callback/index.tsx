@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 // Use react-router provided by Remix
 import { useSearchParams, useNavigate } from 'react-router'; 
 import { useDispatch } from '@/store';
-import { usersStore } from '@/store/modules/users';
+import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { $path } from 'safe-routes';
 import { Loader2 } from 'lucide-react';
@@ -37,12 +37,12 @@ export default function GoogleAuthenticate() {
 
       try {
         const authResultAction = await dispatch(
-          usersStore.asyncActions.authenticateWithGoogle({
+          authStore.asyncActions.authenticateWithGoogle({
             data: { code, state },
           }),
         );
 
-        if (!usersStore.asyncActions.authenticateWithGoogle.fulfilled.match(authResultAction)) {
+        if (!authStore.asyncActions.authenticateWithGoogle.fulfilled.match(authResultAction)) {
           const errorPayload = (authResultAction.payload as any)?.error || {};
           const errorMessage = errorPayload.message || t('routes_auth_google_toast_auth_failed_desc' as any);
           throw new Error(errorMessage);
@@ -61,14 +61,14 @@ export default function GoogleAuthenticate() {
 
         if (authResult.isNewUser) {
           const registerResultAction = await dispatch(
-            usersStore.asyncActions.registerWithGoogle({
+            authStore.asyncActions.registerWithGoogle({
               data: {
                 token: authResult.token,
               },
             }),
           );
 
-          if (!usersStore.asyncActions.registerWithGoogle.fulfilled.match(registerResultAction)) {
+          if (!authStore.asyncActions.registerWithGoogle.fulfilled.match(registerResultAction)) {
             const errorPayload = (registerResultAction.payload as any)?.error || {};
             const errorMessage = errorPayload.message || t('routes_auth_google_toast_reg_failed_desc' as any);
             throw new Error(errorMessage);
@@ -80,13 +80,13 @@ export default function GoogleAuthenticate() {
           }
 
           const saveAuthResultAction = await dispatch(
-            usersStore.asyncActions.saveAuth({
+            authStore.asyncActions.saveAuth({
               authUrl: registerResultAction.payload.authUrl,
               data: { token: registerResultAction.payload.token },
             }),
           );
 
-          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
+          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
             throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
 
@@ -98,13 +98,13 @@ export default function GoogleAuthenticate() {
           }
 
           const saveAuthResultAction = await dispatch(
-            usersStore.asyncActions.saveAuth({
+            authStore.asyncActions.saveAuth({
               authUrl: authResult.authUrl,
               data: { token: authResult.token },
             }),
           );
 
-          if (!usersStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
+          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
             throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
           }
 
