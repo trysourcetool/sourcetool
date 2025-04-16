@@ -7,34 +7,29 @@
   "main": "dist/cjs/index.js",
   "type": "module",
   "module": "dist/esm/index.js",
-  "engines": {
-    "node": ">=18.20.7"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.13",
-    "@types/ws": "^8.18.0",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "arg": "^5.0.2",
-    "esbuild": "^0.25.1",
-    "eslint": "^9.23.0",
-    "eslint-plugin-vitest": "^0.5.4",
-    "glob": "^11.0.1",
-    "prettier": "^3.5.3",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
-  },
   "scripts": {
     "build": "npx tsx build/build.ts",
     "build:watch": "npx tsx build/build.ts --watch",
     "test": "vitest watch",
     "test:ci": "vitest run"
   },
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "@types/ws": "^8.18.0",
+    "arg": "^5.0.2",
+    "esbuild": "^0.25.1",
+    "glob": "^11.0.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "catalog:"
+  },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.5",
     "protobufjs": "^7.4.0",
     "uuid": "^11.1.0",
     "ws": "^8.18.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
