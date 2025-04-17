@@ -376,6 +376,14 @@ func (c *connManager) SendToClient(ctx context.Context, sessionID uuid.UUID, msg
 }
 
 func (c *connManager) SetConnectedHost(hostInstance *model.HostInstance, apiKey *model.APIKey, conn *websocket.Conn) {
+    // If a connection with the same hostInstance.ID already exists, disconnect it first to avoid duplicate connections.
+    c.hostsMutex.Lock()
+    if _, exists := c.connectedHosts[hostInstance.ID]; exists {
+        c.hostsMutex.Unlock() // Unlock before calling DisconnectHost (which will re-lock internally)
+        c.DisconnectHost(hostInstance.ID)
+        c.hostsMutex.Lock() // Re-lock after disconnect
+    }
+    c.hostsMutex.Unlock()
 	logger.Logger.Sugar().Debugf("Connected host: %s", hostInstance.ID)
 
 	conn.SetPongHandler(func(string) error {
@@ -415,6 +423,14 @@ func (c *connManager) DisconnectHost(hostInstanceID uuid.UUID) {
 }
 
 func (c *connManager) SetConnectedClient(session *model.Session, conn *websocket.Conn) {
+    // If a connection with the same session.ID already exists, disconnect it first to avoid duplicate connections.
+    c.clientsMutex.Lock()
+    if _, exists := c.connectedClients[session.ID]; exists {
+        c.clientsMutex.Unlock() // Unlock before calling DisconnectClient (which will re-lock internally)
+        c.DisconnectClient(session.ID)
+        c.clientsMutex.Lock() // Re-lock after disconnect
+    }
+    c.clientsMutex.Unlock()
 	conn.SetPongHandler(func(string) error {
 		return conn.SetReadDeadline(time.Now().Add(clientPongWait))
 	})
