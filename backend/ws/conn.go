@@ -109,6 +109,8 @@ func (c *connManager) startHostPingLoop(host *connectedHost) {
 			return
 		case <-ticker.C:
 			if err := c.pingConnection(host.conn); err != nil {
+				// Consider retrying the connection a few times before disconnecting the host immediately.
+
 				logger.Logger.Sugar().Errorf("Failed to ping host %s: %v", host.hostInstance.ID, err)
 
 				host.hostInstance.Status = model.HostInstanceStatusUnreachable
@@ -136,7 +138,13 @@ func (c *connManager) startClientPingLoop(client *connectedClient) {
 			return
 		case <-ticker.C:
 			if err := c.pingConnection(client.conn); err != nil {
+				// Consider retrying the connection a few times before disconnecting the client immediately.
+
 				logger.Logger.Sugar().Errorf("Failed to ping client %s: %v", client.session.ID, err)
+
+				if err := c.store.Session().Delete(context.Background(), client.session); err != nil {
+					logger.Logger.Sugar().Errorf("Failed to delete session %s: %v", client.session.ID, err)
+				}
 
 				c.DisconnectClient(client.session.ID)
 				return
@@ -376,14 +384,14 @@ func (c *connManager) SendToClient(ctx context.Context, sessionID uuid.UUID, msg
 }
 
 func (c *connManager) SetConnectedHost(hostInstance *model.HostInstance, apiKey *model.APIKey, conn *websocket.Conn) {
-    // If a connection with the same hostInstance.ID already exists, disconnect it first to avoid duplicate connections.
-    c.hostsMutex.Lock()
-    if _, exists := c.connectedHosts[hostInstance.ID]; exists {
-        c.hostsMutex.Unlock() // Unlock before calling DisconnectHost (which will re-lock internally)
-        c.DisconnectHost(hostInstance.ID)
-        c.hostsMutex.Lock() // Re-lock after disconnect
-    }
-    c.hostsMutex.Unlock()
+	// If a connection with the same hostInstance.ID already exists, disconnect it first to avoid duplicate connections.
+	c.hostsMutex.Lock()
+	if _, exists := c.connectedHosts[hostInstance.ID]; exists {
+		c.hostsMutex.Unlock()
+		c.DisconnectHost(hostInstance.ID)
+		c.hostsMutex.Lock()
+	}
+	c.hostsMutex.Unlock()
 	logger.Logger.Sugar().Debugf("Connected host: %s", hostInstance.ID)
 
 	conn.SetPongHandler(func(string) error {
@@ -423,14 +431,14 @@ func (c *connManager) DisconnectHost(hostInstanceID uuid.UUID) {
 }
 
 func (c *connManager) SetConnectedClient(session *model.Session, conn *websocket.Conn) {
-    // If a connection with the same session.ID already exists, disconnect it first to avoid duplicate connections.
-    c.clientsMutex.Lock()
-    if _, exists := c.connectedClients[session.ID]; exists {
-        c.clientsMutex.Unlock() // Unlock before calling DisconnectClient (which will re-lock internally)
-        c.DisconnectClient(session.ID)
-        c.clientsMutex.Lock() // Re-lock after disconnect
-    }
-    c.clientsMutex.Unlock()
+	// If a connection with the same session.ID already exists, disconnect it first to avoid duplicate connections.
+	c.clientsMutex.Lock()
+	if _, exists := c.connectedClients[session.ID]; exists {
+		c.clientsMutex.Unlock() // Unlock before calling DisconnectClient (which will re-lock internally)
+		c.DisconnectClient(session.ID)
+		c.clientsMutex.Lock() // Re-lock after disconnect
+	}
+	c.clientsMutex.Unlock()
 	conn.SetPongHandler(func(string) error {
 		return conn.SetReadDeadline(time.Now().Add(clientPongWait))
 	})
