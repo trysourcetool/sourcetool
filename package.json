@@ -14,7 +14,9 @@
     "typecheck:frontend": "pnpm --filter sourcetool-frontend typecheck",
     "build:docs": "pnpm --filter sourcetool-docs build",
     "dev:docs": "pnpm --filter sourcetool-docs start",
-    "typecheck:docs": "pnpm --filter sourcetool-docs typecheck"
+    "typecheck:docs": "pnpm --filter sourcetool-docs typecheck",
+    "build:mcp-docs": "pnpm --filter docs-mcp-server build",
+    "test:mcp-docs": "pnpm --filter docs-mcp-server test"
   },
   "engines": {
     "npm": "use pnpm please!",
