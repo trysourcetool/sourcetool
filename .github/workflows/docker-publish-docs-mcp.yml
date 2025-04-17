@@ -8,11 +8,6 @@ on:
       - 'mcp/docs-mcp-server/**'
       - 'docker/mcp/docs-mcp-server/**'
       - '.github/workflows/docker-publish-docs-mcp.yml'
-  pull_request:
-    paths:
-      - 'mcp/docs-mcp-server/**'
-      - 'docker/mcp/docs-mcp-server/**'
-      - '.github/workflows/docker-publish-docs-mcp.yml'
 
 env:
   REGISTRY: ghcr.io
@@ -46,7 +41,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=staging,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
             type=sha,prefix=
 
       - name: Build and push Docker image
