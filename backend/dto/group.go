@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/group"
 )
 
 // Group represents group data in DTOs.
@@ -15,7 +15,7 @@ type Group struct {
 }
 
 // GroupFromModel converts from model.Group to dto.Group.
-func GroupFromModel(group *model.Group) *Group {
+func GroupFromModel(group *group.Group) *Group {
 	if group == nil {
 		return nil
 	}
@@ -40,7 +40,7 @@ type GroupPage struct {
 }
 
 // GroupPageFromModel converts from model.GroupPage to dto.GroupPage.
-func GroupPageFromModel(groupPage *model.GroupPage) *GroupPage {
+func GroupPageFromModel(groupPage *group.GroupPage) *GroupPage {
 	if groupPage == nil {
 		return nil
 	}

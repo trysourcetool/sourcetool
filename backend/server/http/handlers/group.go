@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/group/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type GroupHandler struct {
-	service group.Service
+	service service.GroupService
 }
 
-func NewGroupHandler(service group.Service) *GroupHandler {
+func NewGroupHandler(service service.GroupService) *GroupHandler {
 	return &GroupHandler{service}
 }
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/organization/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
@@ -12,10 +12,10 @@ import (
 )
 
 type OrganizationHandler struct {
-	service organization.Service
+	service service.OrganizationService
 }
 
-func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
+func NewOrganizationHandler(service service.OrganizationService) *OrganizationHandler {
 	return &OrganizationHandler{service}
 }
 

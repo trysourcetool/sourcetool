@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/apikey"
+	"github.com/trysourcetool/sourcetool/backend/apikey/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type APIKeyHandler struct {
-	service apikey.Service
+	service service.APIKeyService
 }
 
-func NewAPIKeyHandler(service apikey.Service) *APIKeyHandler {
+func NewAPIKeyHandler(service service.APIKeyService) *APIKeyHandler {
 	return &APIKeyHandler{service}
 }
 

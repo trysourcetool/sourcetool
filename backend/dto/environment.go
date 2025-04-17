@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/environment"
 )
 
 // Environment represents environment data in DTOs.
@@ -15,7 +15,7 @@ type Environment struct {
 }
 
 // EnvironmentFromModel converts from model.Environment to dto.Environment.
-func EnvironmentFromModel(env *model.Environment) *Environment {
+func EnvironmentFromModel(env *environment.Environment) *Environment {
 	if env == nil {
 		return nil
 	}

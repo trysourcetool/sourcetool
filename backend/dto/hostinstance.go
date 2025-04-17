@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 )
 
 // HostInstance represents host instance data in DTOs.
@@ -17,7 +17,7 @@ type HostInstance struct {
 }
 
 // HostInstanceFromModel converts from model.HostInstance to dto.HostInstance.
-func HostInstanceFromModel(instance *model.HostInstance) *HostInstance {
+func HostInstanceFromModel(instance *hostinstance.HostInstance) *HostInstance {
 	if instance == nil {
 		return nil
 	}

@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/session"
 )
 
 // Session represents session data in DTOs.
@@ -16,7 +16,7 @@ type Session struct {
 }
 
 // SessionFromModel converts from model.Session to dto.Session.
-func SessionFromModel(session *model.Session) *Session {
+func SessionFromModel(session *session.Session) *Session {
 	if session == nil {
 		return nil
 	}

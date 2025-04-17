@@ -5,22 +5,22 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/auth"
+	"github.com/trysourcetool/sourcetool/backend/auth/service"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type AuthHandler struct {
-	service      auth.Service
+	service      service.AuthService
 	cookieConfig *CookieConfig
 }
 
-func NewAuthHandler(service auth.Service) *AuthHandler {
+func NewAuthHandler(service service.AuthService) *AuthHandler {
 	return &AuthHandler{
 		service:      service,
 		cookieConfig: NewCookieConfig(),
@@ -127,9 +127,9 @@ func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	} else {
 		h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.RefreshTokenExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
+			int(user.TokenExpiration().Seconds()),
+			int(user.RefreshTokenExpiration.Seconds()),
+			int(user.XSRFTokenExpiration.Seconds()),
 			config.Config.BaseDomain)
 	}
 
@@ -232,9 +232,9 @@ func (h *AuthHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(user.TokenExpiration().Seconds()),
+		int(user.RefreshTokenExpiration.Seconds()),
+		int(user.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
@@ -410,9 +410,9 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(user.TokenExpiration().Seconds()),
+		int(user.RefreshTokenExpiration.Seconds()),
+		int(user.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
@@ -449,9 +449,9 @@ func (h *AuthHandler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(user.TokenExpiration().Seconds()),
+		int(user.RefreshTokenExpiration.Seconds()),
+		int(user.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {

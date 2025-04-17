@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/page"
 )
 
 // Page represents page data in DTOs.
@@ -18,7 +18,7 @@ type Page struct {
 }
 
 // PageFromModel converts from model.Page to dto.Page.
-func PageFromModel(page *model.Page) *Page {
+func PageFromModel(page *page.Page) *Page {
 	if page == nil {
 		return nil
 	}

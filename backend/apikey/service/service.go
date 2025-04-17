@@ -6,12 +6,12 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/permission"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
@@ -38,12 +38,12 @@ func (s *APIKeyServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, apikey.ByID(apiKeyID), apikey.ByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, environment.ByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
@@ -57,22 +57,22 @@ func (s *APIKeyServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, err
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	currentUser := ctxutil.CurrentUser(ctx)
 
-	envs, err := s.Store.Environment().List(ctx, storeopts.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.Store.Environment().List(ctx, environment.ByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	var devEnv *model.Environment
-	var liveEnvs []*model.Environment
+	var devEnv *environment.Environment
+	var liveEnvs []*environment.Environment
 	for _, env := range envs {
-		if env.Slug == model.EnvironmentSlugDevelopment {
+		if env.Slug == environment.EnvironmentSlugDevelopment {
 			devEnv = env
 		} else {
 			liveEnvs = append(liveEnvs, env)
 		}
 	}
 
-	devKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentID(devEnv.ID), storeopts.APIKeyByUserID(currentUser.ID))
+	devKey, err := s.Store.APIKey().Get(ctx, apikey.ByOrganizationID(currentOrg.ID), apikey.ByEnvironmentID(devEnv.ID), apikey.ByUserID(currentUser.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (s *APIKeyServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, err
 	for _, env := range liveEnvs {
 		liveEnvIDs = append(liveEnvIDs, env.ID)
 	}
-	liveKeys, err := s.Store.APIKey().List(ctx, storeopts.APIKeyByOrganizationID(currentOrg.ID), storeopts.APIKeyByEnvironmentIDs(liveEnvIDs))
+	liveKeys, err := s.Store.APIKey().List(ctx, apikey.ByOrganizationID(currentOrg.ID), apikey.ByEnvironmentIDs(liveEnvIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -119,17 +119,17 @@ func (s *APIKeyServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) 
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(envID))
+	env, err := s.Store.Environment().Get(ctx, environment.ByID(envID))
 	if err != nil {
 		return nil, err
 	}
 
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot create API key for development environment"))
 	}
 
 	checker := permission.NewChecker(s.Store)
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
@@ -145,7 +145,7 @@ func (s *APIKeyServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) 
 	}
 
 	currentUser := ctxutil.CurrentUser(ctx)
-	apiKey := &model.APIKey{
+	apiKey := &apikey.APIKey{
 		ID:             uuid.Must(uuid.NewV4()),
 		OrganizationID: currentOrg.ID,
 		EnvironmentID:  env.ID,
@@ -160,7 +160,7 @@ func (s *APIKeyServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) 
 		return nil, err
 	}
 
-	apiKey, err = s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKey.ID))
+	apiKey, err = s.Store.APIKey().Get(ctx, apikey.ByID(apiKey.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -177,22 +177,22 @@ func (s *APIKeyServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) 
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.Store.APIKey().Get(ctx, apikey.ByID(apiKeyID), apikey.ByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, environment.ByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
 
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot update API key for development environment"))
 	}
 
 	checker := permission.NewChecker(s.Store)
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
@@ -222,22 +222,22 @@ func (s *APIKeyServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) 
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	apiKey, err := s.Store.APIKey().Get(ctx, storeopts.APIKeyByID(apiKeyID))
+	apiKey, err := s.Store.APIKey().Get(ctx, apikey.ByID(apiKeyID))
 	if err != nil {
 		return nil, err
 	}
 
-	env, err := s.Store.Environment().Get(ctx, storeopts.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.Store.Environment().Get(ctx, environment.ByID(apiKey.EnvironmentID))
 	if err != nil {
 		return nil, err
 	}
 
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		return nil, errdefs.ErrInvalidArgument(errors.New("cannot delete API key for development environment"))
 	}
 
 	checker := permission.NewChecker(s.Store)
-	if env.Slug == model.EnvironmentSlugDevelopment {
+	if env.Slug == environment.EnvironmentSlugDevelopment {
 		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}

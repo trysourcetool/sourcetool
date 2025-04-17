@@ -8,8 +8,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
 
@@ -25,28 +24,28 @@ const (
 	OperationEditUser           = operation("EDIT_USER")
 )
 
-var rolesAllowedByOperation = map[operation][]model.UserOrganizationRole{
+var rolesAllowedByOperation = map[operation][]user.UserOrganizationRole{
 	OperationEditOrganization: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 	OperationEditBilling: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 	OperationEditLiveModeAPIKey: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 	OperationEditDevModeAPIKey: {
-		model.UserOrganizationRoleAdmin,
-		model.UserOrganizationRoleDeveloper,
+		user.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleDeveloper,
 	},
 	OperationEditEnvironment: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 	OperationEditGroup: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 	OperationEditUser: {
-		model.UserOrganizationRoleAdmin,
+		user.UserOrganizationRoleAdmin,
 	},
 }
 
@@ -57,7 +56,7 @@ func (c *Checker) AuthorizeOperation(ctx context.Context, o operation) error {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}
 
-	orgAccess, err := c.store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByUserID(currentUser.ID), storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccess, err := c.store.User().GetOrganizationAccess(ctx, user.OrganizationAccessByUserID(currentUser.ID), user.OrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return errdefs.ErrPermissionDenied(err)
 	}

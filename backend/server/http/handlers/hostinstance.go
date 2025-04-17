@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/hostinstance"
+	"github.com/trysourcetool/sourcetool/backend/hostinstance/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
@@ -11,10 +11,10 @@ import (
 )
 
 type HostInstanceHandler struct {
-	service hostinstance.Service
+	service service.HostInstanceService
 }
 
-func NewHostInstanceHandler(service hostinstance.Service) *HostInstanceHandler {
+func NewHostInstanceHandler(service service.HostInstanceService) *HostInstanceHandler {
 	return &HostInstanceHandler{service}
 }
 

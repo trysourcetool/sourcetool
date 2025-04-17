@@ -6,14 +6,15 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
 	"github.com/trysourcetool/sourcetool/backend/permission"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 )
@@ -50,8 +51,8 @@ func (s *UserServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByUserID(currentUser.ID),
-		storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+		user.OrganizationAccessByUserID(currentUser.ID),
+		user.OrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (s *UserServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dt
 		return nil, err
 	}
 
-	var role model.UserOrganizationRole
+	var role user.UserOrganizationRole
 	if orgAccess != nil {
 		role = orgAccess.Role
 	}
@@ -125,7 +126,7 @@ func (s *UserServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dt
 		return err
 	}
 
-	return s.Mailer.User().SendUpdateEmailInstructions(ctx, &model.SendUpdateUserEmailInstructions{
+	return s.Mailer.User().SendUpdateEmailInstructions(ctx, &user.SendUpdateUserEmailInstructions{
 		To:        in.Email,
 		FirstName: currentUser.FirstName,
 		URL:       url,
@@ -146,7 +147,7 @@ func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailI
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
+	u, err := s.Store.User().Get(ctx, user.ByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +170,7 @@ func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailI
 		return nil, err
 	}
 
-	var role model.UserOrganizationRole
+	var role user.UserOrganizationRole
 	if orgAccess != nil {
 		role = orgAccess.Role
 	}
@@ -182,21 +183,21 @@ func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailI
 func (s *UserServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 
-	users, err := s.Store.User().List(ctx, storeopts.UserByOrganizationID(currentOrg.ID))
+	users, err := s.Store.User().List(ctx, user.ByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	userInvitations, err := s.Store.User().ListInvitations(ctx, storeopts.UserInvitationByOrganizationID(currentOrg.ID))
+	userInvitations, err := s.Store.User().ListInvitations(ctx, user.InvitationByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccesses, err := s.Store.User().ListOrganizationAccesses(ctx, user.OrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
-	roleMap := make(map[uuid.UUID]model.UserOrganizationRole)
+	roleMap := make(map[uuid.UUID]user.UserOrganizationRole)
 	for _, oa := range orgAccesses {
 		roleMap[oa.UserID] = oa.Role
 	}
@@ -222,7 +223,7 @@ func (s *UserServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dt
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
-	u, err := s.Store.User().Get(ctx, storeopts.UserByID(userID))
+	u, err := s.Store.User().Get(ctx, user.ByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -232,14 +233,14 @@ func (s *UserServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dt
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
-	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID), storeopts.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx, user.OrganizationAccessByOrganizationID(currentOrg.ID), user.OrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, err
 	}
 
 	if err := s.Store.RunTransaction(func(tx infra.Transaction) error {
 		if in.Role != nil {
-			orgAccess.Role = model.UserOrganizationRoleFromString(conv.SafeValue(in.Role))
+			orgAccess.Role = user.UserOrganizationRoleFromString(conv.SafeValue(in.Role))
 
 			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
@@ -247,20 +248,20 @@ func (s *UserServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dt
 		}
 
 		if len(in.GroupIDs) != 0 {
-			userGroups := make([]*model.UserGroup, 0, len(in.GroupIDs))
+			userGroups := make([]*user.UserGroup, 0, len(in.GroupIDs))
 			for _, groupID := range in.GroupIDs {
 				groupID, err := uuid.FromString(groupID)
 				if err != nil {
 					return err
 				}
-				userGroups = append(userGroups, &model.UserGroup{
+				userGroups = append(userGroups, &user.UserGroup{
 					ID:      uuid.Must(uuid.NewV4()),
 					UserID:  u.ID,
 					GroupID: groupID,
 				})
 			}
 
-			existingGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(u.ID))
+			existingGroups, err := tx.User().ListGroups(ctx, user.GroupByUserID(u.ID))
 			if err != nil {
 				return err
 			}
@@ -305,14 +306,14 @@ func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) erro
 		return errdefs.ErrPermissionDenied(errors.New("cannot remove yourself from the organization"))
 	}
 
-	userToRemove, err := s.Store.User().Get(ctx, storeopts.UserByID(userIDToRemove))
+	userToRemove, err := s.Store.User().Get(ctx, user.ByID(userIDToRemove))
 	if err != nil {
 		return err
 	}
 
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByUserID(userToRemove.ID),
-		storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+		user.OrganizationAccessByUserID(userToRemove.ID),
+		user.OrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		if errdefs.IsUserOrganizationAccessNotFound(err) {
 			return nil
@@ -320,10 +321,10 @@ func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) erro
 		return err
 	}
 
-	if orgAccess.Role == model.UserOrganizationRoleAdmin {
+	if orgAccess.Role == user.UserOrganizationRoleAdmin {
 		adminAccesses, err := s.Store.User().ListOrganizationAccesses(ctx,
-			storeopts.UserOrganizationAccessByOrganizationID(currentOrg.ID),
-			storeopts.UserOrganizationAccessByRole(int(model.UserOrganizationRoleAdmin)))
+			user.OrganizationAccessByOrganizationID(currentOrg.ID),
+			user.OrganizationAccessByRole(user.UserOrganizationRoleAdmin))
 		if err != nil {
 			return err
 		}
@@ -337,7 +338,7 @@ func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) erro
 			return err
 		}
 
-		apiKeys, err := tx.APIKey().List(ctx, storeopts.APIKeyByUserID(userToRemove.ID), storeopts.APIKeyByOrganizationID(currentOrg.ID))
+		apiKeys, err := tx.APIKey().List(ctx, apikey.ByUserID(userToRemove.ID), apikey.ByOrganizationID(currentOrg.ID))
 		if err != nil {
 			return err
 		}
@@ -347,7 +348,7 @@ func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) erro
 			}
 		}
 
-		userGroups, err := tx.User().ListGroups(ctx, storeopts.UserGroupByUserID(userToRemove.ID), storeopts.UserGroupByOrganizationID(currentOrg.ID))
+		userGroups, err := tx.User().ListGroups(ctx, user.GroupByUserID(userToRemove.ID), user.GroupByOrganizationID(currentOrg.ID))
 		if err != nil {
 			return err
 		}
@@ -375,8 +376,8 @@ func (s *UserServiceCE) CreateUserInvitations(ctx context.Context, in dto.Create
 	o := ctxutil.CurrentOrganization(ctx)
 	u := ctxutil.CurrentUser(ctx)
 
-	invitations := make([]*model.UserInvitation, 0)
-	emailInput := &model.SendInvitationEmail{
+	invitations := make([]*user.UserInvitation, 0)
+	emailInput := &user.SendInvitationEmail{
 		Invitees: u.FullName(),
 		URLs:     make(map[string]string),
 	}
@@ -401,11 +402,11 @@ func (s *UserServiceCE) CreateUserInvitations(ctx context.Context, in dto.Create
 
 		emailInput.URLs[email] = url
 
-		invitations = append(invitations, &model.UserInvitation{
+		invitations = append(invitations, &user.UserInvitation{
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: o.ID,
 			Email:          email,
-			Role:           model.UserOrganizationRoleFromString(in.Role),
+			Role:           user.UserOrganizationRoleFromString(in.Role),
 		})
 	}
 
@@ -444,7 +445,7 @@ func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendU
 		return nil, errdefs.ErrInvalidArgument(err)
 	}
 
-	userInvitation, err := s.Store.User().GetInvitation(ctx, storeopts.UserInvitationByID(invitationID))
+	userInvitation, err := s.Store.User().GetInvitation(ctx, user.InvitationByID(invitationID))
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +467,7 @@ func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendU
 		return nil, err
 	}
 
-	emailInput := &model.SendInvitationEmail{
+	emailInput := &user.SendInvitationEmail{
 		Invitees: u.FullName(),
 		URLs:     map[string]string{userInvitation.Email: url},
 	}
@@ -482,13 +483,13 @@ func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendU
 
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
 // and access information for the current user from the context.
-func (s *UserServiceCE) getUserOrganizationInfo(ctx context.Context) (*model.Organization, *model.UserOrganizationAccess, error) {
+func (s *UserServiceCE) getUserOrganizationInfo(ctx context.Context) (*organization.Organization, *user.UserOrganizationAccess, error) {
 	return s.getOrganizationInfo(ctx, ctxutil.CurrentUser(ctx))
 }
 
 // getOrganizationInfo retrieves organization and access information for the specified user.
 // It handles both cloud and self-hosted editions with appropriate subdomain logic.
-func (s *UserServiceCE) getOrganizationInfo(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+func (s *UserServiceCE) getOrganizationInfo(ctx context.Context, u *user.User) (*organization.Organization, *user.UserOrganizationAccess, error) {
 	if u == nil {
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
@@ -505,17 +506,17 @@ func (s *UserServiceCE) getOrganizationInfo(ctx context.Context, u *model.User) 
 }
 
 // getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
-func (s *UserServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model.User, subdomain string) (*model.Organization, *model.UserOrganizationAccess, error) {
+func (s *UserServiceCE) getOrganizationBySubdomain(ctx context.Context, u *user.User, subdomain string) (*organization.Organization, *user.UserOrganizationAccess, error) {
 	// Get organization by subdomain
-	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationBySubdomain(subdomain))
+	org, err := s.Store.Organization().Get(ctx, organization.BySubdomain(subdomain))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Verify user has access to this organization
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByOrganizationID(org.ID),
-		storeopts.UserOrganizationAccessByUserID(u.ID))
+		user.OrganizationAccessByOrganizationID(org.ID),
+		user.OrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -525,17 +526,17 @@ func (s *UserServiceCE) getOrganizationBySubdomain(ctx context.Context, u *model
 
 // getDefaultOrganizationForUser retrieves the default organization for a user
 // (typically the most recently created one).
-func (s *UserServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *model.User) (*model.Organization, *model.UserOrganizationAccess, error) {
+func (s *UserServiceCE) getDefaultOrganizationForUser(ctx context.Context, u *user.User) (*organization.Organization, *user.UserOrganizationAccess, error) {
 	// Get user's organization access
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
-		storeopts.UserOrganizationAccessByUserID(u.ID),
-		storeopts.UserOrganizationAccessOrderBy("created_at DESC"))
+		user.OrganizationAccessByUserID(u.ID),
+		user.OrganizationAccessOrderBy("created_at DESC"))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Get the organization
-	org, err := s.Store.Organization().Get(ctx, storeopts.OrganizationByID(orgAccess.OrganizationID))
+	org, err := s.Store.Organization().Get(ctx, organization.ByID(orgAccess.OrganizationID))
 	if err != nil {
 		return nil, nil, err
 	}

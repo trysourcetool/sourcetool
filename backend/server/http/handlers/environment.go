@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/environment"
+	"github.com/trysourcetool/sourcetool/backend/environment/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type EnvironmentHandler struct {
-	service environment.Service
+	service service.EnvironmentService
 }
 
-func NewEnvironmentHandler(service environment.Service) *EnvironmentHandler {
+func NewEnvironmentHandler(service service.EnvironmentService) *EnvironmentHandler {
 	return &EnvironmentHandler{service}
 }
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/emailutil"
 )
 
@@ -20,7 +20,7 @@ func NewUserMailerCE() *UserMailerCE {
 	}
 }
 
-func (m *UserMailerCE) SendUpdateEmailInstructions(ctx context.Context, in *model.SendUpdateUserEmailInstructions) error {
+func (m *UserMailerCE) SendUpdateEmailInstructions(ctx context.Context, in *user.SendUpdateUserEmailInstructions) error {
 	subject := "[Sourcetool] Confirm your new email address"
 	content := fmt.Sprintf(`Hi %s,
 
@@ -51,7 +51,7 @@ Sourcetool Team`,
 	})
 }
 
-func (m *UserMailerCE) SendInvitationEmail(ctx context.Context, in *model.SendInvitationEmail) error {
+func (m *UserMailerCE) SendInvitationEmail(ctx context.Context, in *user.SendInvitationEmail) error {
 	subject := "You've been invited to join Sourcetool!"
 	baseContent := `You've been invited to join Sourcetool!
 
@@ -92,7 +92,7 @@ To accept the invitation, please create your account by clicking the URL below w
 	return nil
 }
 
-func (m *UserMailerCE) SendMagicLinkEmail(ctx context.Context, in *model.SendMagicLinkEmail) error {
+func (m *UserMailerCE) SendMagicLinkEmail(ctx context.Context, in *user.SendMagicLinkEmail) error {
 	subject := "Log in to your Sourcetool account"
 	content := fmt.Sprintf(`Hi %s,
 
@@ -121,7 +121,7 @@ The Sourcetool Team`, in.FirstName, in.URL)
 	})
 }
 
-func (m *UserMailerCE) SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *model.SendMultipleOrganizationsMagicLinkEmail) error {
+func (m *UserMailerCE) SendMultipleOrganizationsMagicLinkEmail(ctx context.Context, in *user.SendMultipleOrganizationsMagicLinkEmail) error {
 	subject := "Choose your Sourcetool organization to log in"
 
 	urlList := ""
@@ -153,7 +153,7 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 	})
 }
 
-func (m *UserMailerCE) SendMultipleOrganizationsLoginEmail(ctx context.Context, in *model.SendMultipleOrganizationsLoginEmail) error {
+func (m *UserMailerCE) SendMultipleOrganizationsLoginEmail(ctx context.Context, in *user.SendMultipleOrganizationsLoginEmail) error {
 	subject := "Choose your Sourcetool organization to log in"
 
 	urlList := ""
@@ -185,7 +185,7 @@ The Sourcetool Team`, in.FirstName, in.Email, urlList)
 	})
 }
 
-func (m *UserMailerCE) SendInvitationMagicLinkEmail(ctx context.Context, in *model.SendInvitationMagicLinkEmail) error {
+func (m *UserMailerCE) SendInvitationMagicLinkEmail(ctx context.Context, in *user.SendInvitationMagicLinkEmail) error {
 	subject := "Your invitation to join Sourcetool"
 	content := fmt.Sprintf(`Hi %s,
 

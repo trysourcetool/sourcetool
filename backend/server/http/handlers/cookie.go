@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 type CookieConfig struct {
@@ -56,7 +56,7 @@ func (c *CookieConfig) deleteCookie(w http.ResponseWriter, r *http.Request, name
 }
 
 func (c *CookieConfig) SetTmpAuthCookie(w http.ResponseWriter, token, xsrfToken, domain string) {
-	maxAge := int(model.TmpTokenExpiration.Seconds())
+	maxAge := int(user.TmpTokenExpiration.Seconds())
 	xsrfTokenSameSite := c.getXSRFTokenSameSite()
 
 	c.setCookie(w, "access_token", token, maxAge, true, http.SameSiteStrictMode, domain)

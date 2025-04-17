@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
@@ -14,7 +14,7 @@ type Organization struct {
 }
 
 // OrganizationFromModel converts from model.Organization to dto.Organization.
-func OrganizationFromModel(org *model.Organization) *Organization {
+func OrganizationFromModel(org *organization.Organization) *Organization {
 	if org == nil {
 		return nil
 	}

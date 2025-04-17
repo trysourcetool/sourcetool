@@ -7,19 +7,26 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
+	"github.com/trysourcetool/sourcetool/backend/environment"
+	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/page"
+	"github.com/trysourcetool/sourcetool/backend/session"
+	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 type ModelStore interface {
-	APIKey() model.APIKeyStore
-	Environment() model.EnvironmentStore
-	Group() model.GroupStore
-	HostInstance() model.HostInstanceStore
-	Organization() model.OrganizationStore
-	Page() model.PageStore
-	Session() model.SessionStore
-	User() model.UserStore
+	APIKey() apikey.Store
+	Environment() environment.Store
+	Group() group.Store
+	HostInstance() hostinstance.Store
+	Organization() organization.Store
+	Page() page.Store
+	Session() session.Store
+	User() user.Store
 }
 
 type Store interface {

@@ -11,8 +11,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 type UserStoreCE struct {
@@ -27,13 +26,13 @@ func NewUserStoreCE(db infra.DB) *UserStoreCE {
 	}
 }
 
-func (s *UserStoreCE) Get(ctx context.Context, opts ...storeopts.UserOption) (*model.User, error) {
+func (s *UserStoreCE) Get(ctx context.Context, opts ...user.StoreOption) (*user.User, error) {
 	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := model.User{}
+	m := user.User{}
 	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrUserNotFound(err)
@@ -44,13 +43,13 @@ func (s *UserStoreCE) Get(ctx context.Context, opts ...storeopts.UserOption) (*m
 	return &m, nil
 }
 
-func (s *UserStoreCE) List(ctx context.Context, opts ...storeopts.UserOption) ([]*model.User, error) {
+func (s *UserStoreCE) List(ctx context.Context, opts ...user.StoreOption) ([]*user.User, error) {
 	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make([]*model.User, 0)
+	m := make([]*user.User, 0)
 	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -58,7 +57,7 @@ func (s *UserStoreCE) List(ctx context.Context, opts ...storeopts.UserOption) ([
 	return m, nil
 }
 
-func (s *UserStoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOption) (string, []any, error) {
+func (s *UserStoreCE) buildQuery(ctx context.Context, opts ...user.StoreOption) (string, []any, error) {
 	q := s.builder.Select(
 		`u."id"`,
 		`u."created_at"`,
@@ -83,7 +82,7 @@ func (s *UserStoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOpti
 	return query, args, err
 }
 
-func (s *UserStoreCE) Create(ctx context.Context, m *model.User) error {
+func (s *UserStoreCE) Create(ctx context.Context, m *user.User) error {
 	if _, err := s.builder.
 		Insert(`"user"`).
 		Columns(
@@ -113,7 +112,7 @@ func (s *UserStoreCE) Create(ctx context.Context, m *model.User) error {
 	return nil
 }
 
-func (s *UserStoreCE) Update(ctx context.Context, m *model.User) error {
+func (s *UserStoreCE) Update(ctx context.Context, m *user.User) error {
 	if _, err := s.builder.
 		Update(`"user"`).
 		Set(`"email"`, m.Email).
@@ -134,7 +133,7 @@ func (s *UserStoreCE) Update(ctx context.Context, m *model.User) error {
 }
 
 func (s *UserStoreCE) IsEmailExists(ctx context.Context, email string) (bool, error) {
-	if _, err := s.Get(ctx, storeopts.UserByEmail(email)); err != nil {
+	if _, err := s.Get(ctx, user.ByEmail(email)); err != nil {
 		if errdefs.IsUserNotFound(err) {
 			return false, nil
 		}
@@ -143,13 +142,13 @@ func (s *UserStoreCE) IsEmailExists(ctx context.Context, email string) (bool, er
 	return true, nil
 }
 
-func (s *UserStoreCE) GetOrganizationAccess(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (*model.UserOrganizationAccess, error) {
+func (s *UserStoreCE) GetOrganizationAccess(ctx context.Context, opts ...user.OrganizationAccessStoreOption) (*user.UserOrganizationAccess, error) {
 	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := model.UserOrganizationAccess{}
+	m := user.UserOrganizationAccess{}
 	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrUserOrganizationAccessNotFound(err)
@@ -160,13 +159,13 @@ func (s *UserStoreCE) GetOrganizationAccess(ctx context.Context, opts ...storeop
 	return &m, nil
 }
 
-func (s *UserStoreCE) ListOrganizationAccesses(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) ([]*model.UserOrganizationAccess, error) {
+func (s *UserStoreCE) ListOrganizationAccesses(ctx context.Context, opts ...user.OrganizationAccessStoreOption) ([]*user.UserOrganizationAccess, error) {
 	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make([]*model.UserOrganizationAccess, 0)
+	m := make([]*user.UserOrganizationAccess, 0)
 	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -174,7 +173,7 @@ func (s *UserStoreCE) ListOrganizationAccesses(ctx context.Context, opts ...stor
 	return m, nil
 }
 
-func (s *UserStoreCE) buildOrganizationAccessQuery(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (string, []any, error) {
+func (s *UserStoreCE) buildOrganizationAccessQuery(ctx context.Context, opts ...user.OrganizationAccessStoreOption) (string, []any, error) {
 	q := s.builder.Select(
 		`uoa."id"`,
 		`uoa."user_id"`,
@@ -197,7 +196,7 @@ func (s *UserStoreCE) buildOrganizationAccessQuery(ctx context.Context, opts ...
 	return query, args, err
 }
 
-func (s *UserStoreCE) CreateOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
+func (s *UserStoreCE) CreateOrganizationAccess(ctx context.Context, m *user.UserOrganizationAccess) error {
 	if _, err := s.builder.
 		Insert(`"user_organization_access"`).
 		Columns(
@@ -220,7 +219,7 @@ func (s *UserStoreCE) CreateOrganizationAccess(ctx context.Context, m *model.Use
 	return nil
 }
 
-func (s *UserStoreCE) UpdateOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
+func (s *UserStoreCE) UpdateOrganizationAccess(ctx context.Context, m *user.UserOrganizationAccess) error {
 	if _, err := s.builder.
 		Update(`"user_organization_access"`).
 		Set(`"role"`, m.Role).
@@ -233,7 +232,7 @@ func (s *UserStoreCE) UpdateOrganizationAccess(ctx context.Context, m *model.Use
 	return nil
 }
 
-func (s *UserStoreCE) DeleteOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
+func (s *UserStoreCE) DeleteOrganizationAccess(ctx context.Context, m *user.UserOrganizationAccess) error {
 	if _, err := s.builder.
 		Delete(`"user_organization_access"`).
 		Where(sq.Eq{`"user_id"`: m.UserID, `"organization_id"`: m.OrganizationID}).
@@ -248,13 +247,13 @@ func (s *UserStoreCE) DeleteOrganizationAccess(ctx context.Context, m *model.Use
 	return nil
 }
 
-func (s *UserStoreCE) GetGroup(ctx context.Context, opts ...storeopts.UserGroupOption) (*model.UserGroup, error) {
+func (s *UserStoreCE) GetGroup(ctx context.Context, opts ...user.GroupStoreOption) (*user.UserGroup, error) {
 	query, args, err := s.buildGroupQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := model.UserGroup{}
+	m := user.UserGroup{}
 	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrUserGroupNotFound(err)
@@ -265,13 +264,13 @@ func (s *UserStoreCE) GetGroup(ctx context.Context, opts ...storeopts.UserGroupO
 	return &m, nil
 }
 
-func (s *UserStoreCE) ListGroups(ctx context.Context, opts ...storeopts.UserGroupOption) ([]*model.UserGroup, error) {
+func (s *UserStoreCE) ListGroups(ctx context.Context, opts ...user.GroupStoreOption) ([]*user.UserGroup, error) {
 	query, args, err := s.buildGroupQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make([]*model.UserGroup, 0)
+	m := make([]*user.UserGroup, 0)
 	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -279,7 +278,7 @@ func (s *UserStoreCE) ListGroups(ctx context.Context, opts ...storeopts.UserGrou
 	return m, nil
 }
 
-func (s *UserStoreCE) buildGroupQuery(ctx context.Context, opts ...storeopts.UserGroupOption) (string, []any, error) {
+func (s *UserStoreCE) buildGroupQuery(ctx context.Context, opts ...user.GroupStoreOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ug."id"`,
 		`ug."user_id"`,
@@ -301,7 +300,7 @@ func (s *UserStoreCE) buildGroupQuery(ctx context.Context, opts ...storeopts.Use
 	return query, args, err
 }
 
-func (s *UserStoreCE) BulkInsertGroups(ctx context.Context, m []*model.UserGroup) error {
+func (s *UserStoreCE) BulkInsertGroups(ctx context.Context, m []*user.UserGroup) error {
 	if len(m) == 0 {
 		return nil
 	}
@@ -323,12 +322,12 @@ func (s *UserStoreCE) BulkInsertGroups(ctx context.Context, m []*model.UserGroup
 	return nil
 }
 
-func (s *UserStoreCE) BulkDeleteGroups(ctx context.Context, m []*model.UserGroup) error {
+func (s *UserStoreCE) BulkDeleteGroups(ctx context.Context, m []*user.UserGroup) error {
 	if len(m) == 0 {
 		return nil
 	}
 
-	ids := lo.Map(m, func(x *model.UserGroup, _ int) uuid.UUID {
+	ids := lo.Map(m, func(x *user.UserGroup, _ int) uuid.UUID {
 		return x.ID
 	})
 
@@ -343,13 +342,13 @@ func (s *UserStoreCE) BulkDeleteGroups(ctx context.Context, m []*model.UserGroup
 	return nil
 }
 
-func (s *UserStoreCE) GetInvitation(ctx context.Context, opts ...storeopts.UserInvitationOption) (*model.UserInvitation, error) {
+func (s *UserStoreCE) GetInvitation(ctx context.Context, opts ...user.InvitationStoreOption) (*user.UserInvitation, error) {
 	query, args, err := s.buildInvitationQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := model.UserInvitation{}
+	m := user.UserInvitation{}
 	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrUserInvitationNotFound(err)
@@ -360,13 +359,13 @@ func (s *UserStoreCE) GetInvitation(ctx context.Context, opts ...storeopts.UserI
 	return &m, nil
 }
 
-func (s *UserStoreCE) ListInvitations(ctx context.Context, opts ...storeopts.UserInvitationOption) ([]*model.UserInvitation, error) {
+func (s *UserStoreCE) ListInvitations(ctx context.Context, opts ...user.InvitationStoreOption) ([]*user.UserInvitation, error) {
 	query, args, err := s.buildInvitationQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make([]*model.UserInvitation, 0)
+	m := make([]*user.UserInvitation, 0)
 	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -374,7 +373,7 @@ func (s *UserStoreCE) ListInvitations(ctx context.Context, opts ...storeopts.Use
 	return m, nil
 }
 
-func (s *UserStoreCE) buildInvitationQuery(ctx context.Context, opts ...storeopts.UserInvitationOption) (string, []any, error) {
+func (s *UserStoreCE) buildInvitationQuery(ctx context.Context, opts ...user.InvitationStoreOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ui."id"`,
 		`ui."organization_id"`,
@@ -397,7 +396,7 @@ func (s *UserStoreCE) buildInvitationQuery(ctx context.Context, opts ...storeopt
 	return query, args, err
 }
 
-func (s *UserStoreCE) DeleteInvitation(ctx context.Context, m *model.UserInvitation) error {
+func (s *UserStoreCE) DeleteInvitation(ctx context.Context, m *user.UserInvitation) error {
 	if _, err := s.builder.
 		Delete(`"user_invitation"`).
 		Where(sq.Eq{`"id"`: m.ID}).
@@ -409,7 +408,7 @@ func (s *UserStoreCE) DeleteInvitation(ctx context.Context, m *model.UserInvitat
 	return nil
 }
 
-func (s *UserStoreCE) BulkInsertInvitations(ctx context.Context, m []*model.UserInvitation) error {
+func (s *UserStoreCE) BulkInsertInvitations(ctx context.Context, m []*user.UserInvitation) error {
 	if len(m) == 0 {
 		return nil
 	}
@@ -432,7 +431,7 @@ func (s *UserStoreCE) BulkInsertInvitations(ctx context.Context, m []*model.User
 }
 
 func (s *UserStoreCE) IsInvitationEmailExists(ctx context.Context, orgID uuid.UUID, email string) (bool, error) {
-	if _, err := s.GetInvitation(ctx, storeopts.UserInvitationByOrganizationID(orgID), storeopts.UserInvitationByEmail(email)); err != nil {
+	if _, err := s.GetInvitation(ctx, user.InvitationByOrganizationID(orgID), user.InvitationByEmail(email)); err != nil {
 		if errdefs.IsUserInvitationNotFound(err) {
 			return false, nil
 		}

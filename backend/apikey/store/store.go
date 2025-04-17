@@ -7,10 +7,9 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
 type APIKeyStoreCE struct {
@@ -25,13 +24,13 @@ func NewAPIKeyStoreCE(db infra.DB) *APIKeyStoreCE {
 	}
 }
 
-func (s *APIKeyStoreCE) Get(ctx context.Context, opts ...storeopts.APIKeyOption) (*model.APIKey, error) {
+func (s *APIKeyStoreCE) Get(ctx context.Context, opts ...apikey.StoreOption) (*apikey.APIKey, error) {
 	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := model.APIKey{}
+	m := apikey.APIKey{}
 	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrAPIKeyNotFound(err)
@@ -42,13 +41,13 @@ func (s *APIKeyStoreCE) Get(ctx context.Context, opts ...storeopts.APIKeyOption)
 	return &m, nil
 }
 
-func (s *APIKeyStoreCE) List(ctx context.Context, opts ...storeopts.APIKeyOption) ([]*model.APIKey, error) {
+func (s *APIKeyStoreCE) List(ctx context.Context, opts ...apikey.StoreOption) ([]*apikey.APIKey, error) {
 	query, args, err := s.buildQuery(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make([]*model.APIKey, 0)
+	m := make([]*apikey.APIKey, 0)
 	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -56,7 +55,7 @@ func (s *APIKeyStoreCE) List(ctx context.Context, opts ...storeopts.APIKeyOption
 	return m, nil
 }
 
-func (s *APIKeyStoreCE) buildQuery(ctx context.Context, opts ...storeopts.APIKeyOption) (string, []any, error) {
+func (s *APIKeyStoreCE) buildQuery(ctx context.Context, opts ...apikey.StoreOption) (string, []any, error) {
 	q := s.builder.Select(
 		`ak."id"`,
 		`ak."organization_id"`,
@@ -81,7 +80,7 @@ func (s *APIKeyStoreCE) buildQuery(ctx context.Context, opts ...storeopts.APIKey
 	return query, args, err
 }
 
-func (s *APIKeyStoreCE) Create(ctx context.Context, m *model.APIKey) error {
+func (s *APIKeyStoreCE) Create(ctx context.Context, m *apikey.APIKey) error {
 	if _, err := s.builder.
 		Insert(`"api_key"`).
 		Columns(
@@ -111,7 +110,7 @@ func (s *APIKeyStoreCE) Create(ctx context.Context, m *model.APIKey) error {
 	return nil
 }
 
-func (s *APIKeyStoreCE) Update(ctx context.Context, m *model.APIKey) error {
+func (s *APIKeyStoreCE) Update(ctx context.Context, m *apikey.APIKey) error {
 	if _, err := s.builder.
 		Update(`"api_key"`).
 		Set(`"user_id"`, m.UserID).
@@ -126,7 +125,7 @@ func (s *APIKeyStoreCE) Update(ctx context.Context, m *model.APIKey) error {
 	return nil
 }
 
-func (s *APIKeyStoreCE) Delete(ctx context.Context, m *model.APIKey) error {
+func (s *APIKeyStoreCE) Delete(ctx context.Context, m *apikey.APIKey) error {
 	if _, err := s.builder.
 		Delete(`"api_key"`).
 		Where(sq.Eq{`"id"`: m.ID}).

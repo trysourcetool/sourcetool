@@ -2,109 +2,63 @@ package organization
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/gofrs/uuid/v5"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.OrganizationOption) (*model.Organization, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.Organization{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrOrganizationNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.OrganizationOption) ([]*model.Organization, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byIDOption) isStoreOption() {}
 
-	var orgs []*model.Organization
-	if err := s.db.SelectContext(ctx, &orgs, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return orgs, nil
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`o."id"`: o.id})
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.OrganizationOption) (string, []any, error) {
-	q := s.builder.Select(
-		`o."id"`,
-		`o."subdomain"`,
-		`o."created_at"`,
-		`o."updated_at"`,
-	).
-		From(`"organization" o`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func BySubdomain(subdomain string) StoreOption {
+	return bySubdomainOption{subdomain: subdomain}
 }
 
-func (s *StoreCE) Create(ctx context.Context, m *model.Organization) error {
-	if _, err := s.builder.
-		Insert(`"organization"`).
-		Columns(
-			`"id"`,
-			`"subdomain"`,
-		).
-		Values(
-			m.ID,
-			m.Subdomain,
-		).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return errdefs.ErrAlreadyExists(err)
-		}
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type bySubdomainOption struct {
+	subdomain string
 }
 
-func (s *StoreCE) IsSubdomainExists(ctx context.Context, subdomain string) (bool, error) {
-	if _, err := s.Get(ctx, storeopts.OrganizationBySubdomain(subdomain)); err != nil {
-		if errdefs.IsOrganizationNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+func (o bySubdomainOption) isStoreOption() {}
+
+func (o bySubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`o."subdomain"`: o.subdomain})
+}
+
+func ByUserID(id uuid.UUID) StoreOption {
+	return byUserIDOption{id: id}
+}
+
+type byUserIDOption struct {
+	id uuid.UUID
+}
+
+func (o byUserIDOption) isStoreOption() {}
+
+func (o byUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"user_organization_access" uoa ON uoa."organization_id" = o."id"`).
+		Where(sq.Eq{`uoa."user_id"`: o.id})
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*Organization, error)
+	List(context.Context, ...StoreOption) ([]*Organization, error)
+	Create(context.Context, *Organization) error
+	IsSubdomainExists(context.Context, string) (bool, error)
 }

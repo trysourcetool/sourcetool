@@ -9,15 +9,15 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
-	"github.com/trysourcetool/sourcetool/backend/user"
+	"github.com/trysourcetool/sourcetool/backend/user/service"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type UserHandler struct {
-	service user.Service
+	service service.UserService
 }
 
-func NewUserHandler(service user.Service) *UserHandler {
+func NewUserHandler(service service.UserService) *UserHandler {
 	return &UserHandler{
 		service: service,
 	}

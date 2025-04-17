@@ -96,7 +96,7 @@ func (o byKeyOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ak."key"`: o.key})
 }
 
-type APIKeyStore interface {
+type Store interface {
 	Get(context.Context, ...StoreOption) (*APIKey, error)
 	List(context.Context, ...StoreOption) ([]*APIKey, error)
 	Create(context.Context, *APIKey) error

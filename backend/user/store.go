@@ -320,7 +320,7 @@ func (o invitationByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.Where(sq.Eq{`ui."email"`: o.email})
 }
 
-type UserStore interface {
+type Store interface {
 	Get(context.Context, ...StoreOption) (*User, error)
 	List(context.Context, ...StoreOption) ([]*User, error)
 	Create(context.Context, *User) error

@@ -47,7 +47,7 @@ type SendInvitationMagicLinkEmail struct {
 	FirstName string
 }
 
-type UserMailer interface {
+type Mailer interface {
 	SendUpdateEmailInstructions(ctx context.Context, in *SendUpdateUserEmailInstructions) error
 	SendInvitationEmail(ctx context.Context, in *SendInvitationEmail) error
 	SendMagicLinkEmail(ctx context.Context, in *SendMagicLinkEmail) error

@@ -3,17 +3,17 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/page"
+	"github.com/trysourcetool/sourcetool/backend/page/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
 	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type PageHandler struct {
-	service page.Service
+	service service.PageService
 }
 
-func NewPageHandler(service page.Service) *PageHandler {
+func NewPageHandler(service service.PageService) *PageHandler {
 	return &PageHandler{service}
 }
 

@@ -1,7 +1,8 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/apikey"
+	"github.com/trysourcetool/sourcetool/backend/environment"
 )
 
 // APIKey represents API key data in DTOs.
@@ -15,7 +16,7 @@ type APIKey struct {
 }
 
 // APIKeyFromModel converts from model.APIKey to dto.APIKey.
-func APIKeyFromModel(apiKey *model.APIKey, env *model.Environment) *APIKey {
+func APIKeyFromModel(apiKey *apikey.APIKey, env *environment.Environment) *APIKey {
 	if apiKey == nil {
 		return nil
 	}

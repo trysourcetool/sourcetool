@@ -1,7 +1,8 @@
 package dto
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 // User represents user data in DTOs.
@@ -17,7 +18,7 @@ type User struct {
 }
 
 // UserFromModel converts from model.User to dto.User.
-func UserFromModel(user *model.User, org *model.Organization, role model.UserOrganizationRole) *User {
+func UserFromModel(user *user.User, org *organization.Organization, role user.UserOrganizationRole) *User {
 	if user == nil {
 		return nil
 	}
@@ -47,7 +48,7 @@ type UserInvitation struct {
 }
 
 // UserInvitationFromModel converts from model.UserInvitation to dto.UserInvitation.
-func UserInvitationFromModel(invitation *model.UserInvitation) *UserInvitation {
+func UserInvitationFromModel(invitation *user.UserInvitation) *UserInvitation {
 	if invitation == nil {
 		return nil
 	}
@@ -69,7 +70,7 @@ type UserGroup struct {
 }
 
 // UserGroupFromModel converts from model.UserGroup to dto.UserGroup.
-func UserGroupFromModel(group *model.UserGroup) *UserGroup {
+func UserGroupFromModel(group *user.UserGroup) *UserGroup {
 	if group == nil {
 		return nil
 	}
