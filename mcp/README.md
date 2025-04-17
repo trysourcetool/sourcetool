@@ -1,4 +1,4 @@
-# mcp Directory
+# Sourcetool MCP
 
 This directory contains modules related to the Model Context Protocol (MCP) integration for the Sourcetool project. Each subdirectory is intended to provide a specific MCP server or tool, making it easy to extend and add new MCP-related features in the future.
 
