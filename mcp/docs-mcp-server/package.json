@@ -1,0 +1,27 @@
+{
+  "name": "docs-mcp-server",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "bin": {
+    "sourcetool-docs-mcp": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsup ./src/index.ts --format esm --treeshake=smallest",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.8.0",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "tsup": "^8.4.0",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
