@@ -1,12 +1,25 @@
-# docs-mcp-server
+# Sourcetool Documentation MCP Server
 
-This module provides an MCP (Model Context Protocol) server for Sourcetool documentation. It exposes a `getDocs` tool that returns a list of document paths and their contents from the Sourcetool documentation site.
+Model Context Protocol (MCP) server for Sourcetool Documentation
+
+This MCP server provides tools to access Sourcetool documentation content.
 
 ## Features
-- Implements an MCP server using `@modelcontextprotocol/sdk`.
-- Provides the `getDocs` tool to fetch and return documentation data from https://docs.trysourcetool.com/json/docs.json.
 
-## Setup
+- **Documentation Access**: Fetch Sourcetool documentation content through MCP
+- **Integrated Search**: Access documentation content directly from your AI assistant
+
+## Usage
+
+You can run this MCP server in two ways:
+
+### 1. Using Docker
+
+```sh
+docker run -i --rm ghcr.io/trysourcetool/sourcetool-docs-mcp-server
+```
+
+### 2. Running Locally
 
 1. Install dependencies:
    ```sh
@@ -18,31 +31,30 @@ This module provides an MCP (Model Context Protocol) server for Sourcetool docum
    pnpm build
    ```
 
-## Usage
+3. Run the server:
+   ```sh
+   node dist/index.js
+   ```
 
-You can run the server as a binary after building:
+## Tools
 
-```sh
-pnpm build
-node build/index.js
-```
+### getDocs
 
-Or use the provided binary:
+Retrieves a list of Sourcetool documentation paths and their contents.
 
-```sh
-pnpm build
-./build/index.js
-```
-
-## Testing
-
-Run tests using Vitest:
-
-```sh
-pnpm test
+```typescript
+getDocs() -> {
+  content: Array<{
+    type: 'text',
+    path: string,
+    title: string,
+    text: string
+  }>
+}
 ```
 
 ## Development
-- Source code is in the `src/` directory.
-- TypeScript configuration is in `tsconfig.json`.
-- Tests are located in `src/index.test.ts`.
+
+- Source code is in the `src/` directory
+- Tests are written using Vitest
+- Run tests with `pnpm test`
