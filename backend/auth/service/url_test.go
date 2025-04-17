@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/trysourcetool/sourcetool/backend/auth"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 func TestBuildSaveAuthURL(t *testing.T) {
@@ -27,12 +27,12 @@ func TestBuildSaveAuthURL(t *testing.T) {
 		{
 			name:      "valid subdomain",
 			subdomain: "test",
-			expected:  "https://example.com" + user.SaveAuthPath,
+			expected:  "https://example.com" + auth.SaveAuthPath,
 		},
 		{
 			name:      "empty subdomain",
 			subdomain: "",
-			expected:  "https://example.com" + user.SaveAuthPath,
+			expected:  "https://example.com" + auth.SaveAuthPath,
 		},
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
+	"github.com/trysourcetool/sourcetool/backend/auth"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/dto"
 	"github.com/trysourcetool/sourcetool/backend/environment"
@@ -274,7 +275,7 @@ func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Au
 
 	// Create token, refresh token, etc.
 	token, xsrfToken, plainRefreshToken, hashedRefreshToken, _, err := s.createTokens(
-		u.ID, user.TmpTokenExpiration)
+		u.ID, auth.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
@@ -345,13 +346,13 @@ func (s *AuthServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.Regist
 			return err
 		}
 
-		expiration = user.TmpTokenExpiration
+		expiration = auth.TmpTokenExpiration
 		if !config.Config.IsCloudEdition {
 			// For self-hosted, create initial organization
 			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
 				return err
 			}
-			expiration = user.TokenExpiration()
+			expiration = auth.TokenExpiration()
 			hasOrganization = true
 		}
 
@@ -522,7 +523,7 @@ func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context,
 
 	// Generate token and refresh token
 	now := time.Now()
-	expiresAt := now.Add(user.TmpTokenExpiration)
+	expiresAt := now.Add(auth.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
@@ -549,7 +550,7 @@ func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context,
 	}
 
 	return &dto.AuthenticateWithInvitationMagicLinkOutput{
-		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + user.SaveAuthPath,
+		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + auth.SaveAuthPath,
 		Token:     token,
 		Domain:    config.Config.OrgDomain(orgSubdomain),
 		IsNewUser: false,
@@ -604,7 +605,7 @@ func (s *AuthServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in 
 
 	// Create new user
 	now := time.Now()
-	expiresAt := now.Add(user.TokenExpiration())
+	expiresAt := now.Add(auth.TokenExpiration())
 	u := &user.User{
 		ID:               uuid.Must(uuid.NewV4()),
 		FirstName:        in.FirstName,
@@ -877,7 +878,7 @@ func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authe
 	}
 
 	// Generate temporary auth tokens
-	token, xsrfToken, plainRefreshToken, hashedRefreshToken, _, err := s.createTokens(u.ID, user.TmpTokenExpiration)
+	token, xsrfToken, plainRefreshToken, hashedRefreshToken, _, err := s.createTokens(u.ID, auth.TmpTokenExpiration)
 	if err != nil {
 		return nil, err
 	}
@@ -954,7 +955,7 @@ func (s *AuthServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterW
 	}
 
 	now := time.Now()
-	tokenExpiration := user.TokenExpiration()
+	tokenExpiration := auth.TokenExpiration()
 	expiresAt := now.Add(tokenExpiration)
 	u := &user.User{
 		ID:               uuid.Must(uuid.NewV4()),
@@ -1141,7 +1142,7 @@ func (s *AuthServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInp
 
 	// Generate token and set expiration
 	now := time.Now()
-	expiresAt := now.Add(user.TokenExpiration())
+	expiresAt := now.Add(auth.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
@@ -1217,7 +1218,7 @@ func (s *AuthServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 
 	// Generate token and refresh token
 	now := time.Now()
-	expiresAt := now.Add(user.TokenExpiration())
+	expiresAt := now.Add(auth.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
@@ -1264,7 +1265,7 @@ func (s *AuthServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTok
 
 	// Generate temporary token
 	now := time.Now()
-	expiresAt := now.Add(user.TmpTokenExpiration)
+	expiresAt := now.Add(auth.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
 	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
