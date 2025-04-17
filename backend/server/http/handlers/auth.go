@@ -6,21 +6,21 @@ import (
 	"net/http"
 
 	"github.com/trysourcetool/sourcetool/backend/auth"
+	"github.com/trysourcetool/sourcetool/backend/auth/service"
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/model"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type AuthHandler struct {
-	service      auth.Service
+	service      service.AuthService
 	cookieConfig *CookieConfig
 }
 
-func NewAuthHandler(service auth.Service) *AuthHandler {
+func NewAuthHandler(service service.AuthService) *AuthHandler {
 	return &AuthHandler{
 		service:      service,
 		cookieConfig: NewCookieConfig(),
@@ -50,7 +50,7 @@ func (h *AuthHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.service.RequestMagicLink(r.Context(), adapters.RequestMagicLinkRequestToDTOInput(req))
+	res, err := h.service.RequestMagicLink(r.Context(), adapters.RequestMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -83,7 +83,7 @@ func (h *AuthHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	out, err := h.service.AuthenticateWithMagicLink(r.Context(), adapters.AuthenticateWithMagicLinkRequestToDTOInput(req))
+	out, err := h.service.AuthenticateWithMagicLink(r.Context(), adapters.AuthenticateWithMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -117,7 +117,7 @@ func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	out, err := h.service.RegisterWithMagicLink(r.Context(), adapters.RegisterWithMagicLinkRequestToDTOInput(req))
+	out, err := h.service.RegisterWithMagicLink(r.Context(), adapters.RegisterWithMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -127,9 +127,9 @@ func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	} else {
 		h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-			int(model.TokenExpiration().Seconds()),
-			int(model.RefreshTokenExpiration.Seconds()),
-			int(model.XSRFTokenExpiration.Seconds()),
+			int(auth.TokenExpiration().Seconds()),
+			int(auth.RefreshTokenExpiration.Seconds()),
+			int(auth.XSRFTokenExpiration.Seconds()),
 			config.Config.BaseDomain)
 	}
 
@@ -159,7 +159,7 @@ func (h *AuthHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.
 		return
 	}
 
-	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToDTOInput(req))
+	out, err := h.service.RequestInvitationMagicLink(r.Context(), adapters.RequestInvitationMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -192,7 +192,7 @@ func (h *AuthHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter,
 		return
 	}
 
-	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), adapters.AuthenticateWithInvitationMagicLinkRequestToDTOInput(req))
+	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), adapters.AuthenticateWithInvitationMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -225,16 +225,16 @@ func (h *AuthHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 		return
 	}
 
-	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), adapters.RegisterWithInvitationMagicLinkRequestToDTOInput(req))
+	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), adapters.RegisterWithInvitationMagicLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(auth.TokenExpiration().Seconds()),
+		int(auth.RefreshTokenExpiration.Seconds()),
+		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
@@ -284,7 +284,7 @@ func (h *AuthHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	out, err := h.service.AuthenticateWithGoogle(r.Context(), adapters.AuthenticateWithGoogleRequestToDTOInput(req))
+	out, err := h.service.AuthenticateWithGoogle(r.Context(), adapters.AuthenticateWithGoogleRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -320,7 +320,7 @@ func (h *AuthHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	out, err := h.service.RegisterWithGoogle(r.Context(), adapters.RegisterWithGoogleRequestToDTOInput(req))
+	out, err := h.service.RegisterWithGoogle(r.Context(), adapters.RegisterWithGoogleRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -354,7 +354,7 @@ func (h *AuthHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *
 		return
 	}
 
-	out, err := h.service.RequestInvitationGoogleAuthLink(r.Context(), adapters.RequestInvitationGoogleAuthLinkRequestToDTOInput(req))
+	out, err := h.service.RequestInvitationGoogleAuthLink(r.Context(), adapters.RequestInvitationGoogleAuthLinkRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -403,16 +403,16 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.RefreshToken(r.Context(), adapters.RefreshTokenRequestToDTOInput(req))
+	out, err := h.service.RefreshToken(r.Context(), adapters.RefreshTokenRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(auth.TokenExpiration().Seconds()),
+		int(auth.RefreshTokenExpiration.Seconds()),
+		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.RefreshTokenOutputToResponse(out)); err != nil {
@@ -442,16 +442,16 @@ func (h *AuthHandler) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Save(r.Context(), adapters.SaveAuthRequestToDTOInput(req))
+	out, err := h.service.Save(r.Context(), adapters.SaveAuthRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.SetAuthCookie(w, out.Token, out.RefreshToken, out.XSRFToken,
-		int(model.TokenExpiration().Seconds()),
-		int(model.RefreshTokenExpiration.Seconds()),
-		int(model.XSRFTokenExpiration.Seconds()),
+		int(auth.TokenExpiration().Seconds()),
+		int(auth.RefreshTokenExpiration.Seconds()),
+		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
 	if err := httputil.WriteJSON(w, http.StatusOK, adapters.SaveAuthOutputToResponse(out)); err != nil {

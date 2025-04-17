@@ -2,122 +2,77 @@ package hostinstance
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/gofrs/uuid/v5"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.HostInstanceOption) (*model.HostInstance, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.HostInstance{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrHostInstanceNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.HostInstanceOption) ([]*model.HostInstance, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byIDOption) isStoreOption() {}
 
-	m := make([]*model.HostInstance, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."id"`: o.id})
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.HostInstanceOption) (string, []any, error) {
-	q := s.builder.Select(
-		`hi."id"`,
-		`hi."organization_id"`,
-		`hi."api_key_id"`,
-		`hi."sdk_name"`,
-		`hi."sdk_version"`,
-		`hi."status"`,
-		`hi."created_at"`,
-		`hi."updated_at"`,
-	).
-		From(`"host_instance" hi`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func ByOrganizationID(id uuid.UUID) StoreOption {
+	return byOrganizationIDOption{id: id}
 }
 
-func (s *StoreCE) Create(ctx context.Context, m *model.HostInstance) error {
-	if _, err := s.builder.
-		Insert(`"host_instance"`).
-		Columns(
-			`"id"`,
-			`"organization_id"`,
-			`"api_key_id"`,
-			`"sdk_name"`,
-			`"sdk_version"`,
-			`"status"`,
-		).
-		Values(
-			m.ID,
-			m.OrganizationID,
-			m.APIKeyID,
-			m.SDKName,
-			m.SDKVersion,
-			m.Status,
-		).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type byOrganizationIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) Update(ctx context.Context, m *model.HostInstance) error {
-	if _, err := s.builder.
-		Update(`"host_instance"`).
-		Set(`"sdk_name"`, m.SDKName).
-		Set(`"sdk_version"`, m.SDKVersion).
-		Set(`"status"`, m.Status).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
+func (o byOrganizationIDOption) isStoreOption() {}
 
-	return nil
+func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."organization_id"`: o.id})
+}
+
+func ByAPIKeyID(id uuid.UUID) StoreOption {
+	return byAPIKeyIDOption{id: id}
+}
+
+type byAPIKeyIDOption struct {
+	id uuid.UUID
+}
+
+func (o byAPIKeyIDOption) isStoreOption() {}
+
+func (o byAPIKeyIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."api_key_id"`: o.id})
+}
+
+func ByAPIKey(key string) StoreOption {
+	return byAPIKeyOption{key: key}
+}
+
+type byAPIKeyOption struct {
+	key string
+}
+
+func (o byAPIKeyOption) isStoreOption() {}
+
+func (o byAPIKeyOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
+		Where(sq.Eq{`ak."key"`: o.key})
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*HostInstance, error)
+	List(context.Context, ...StoreOption) ([]*HostInstance, error)
+	Create(context.Context, *HostInstance) error
+	Update(context.Context, *HostInstance) error
 }

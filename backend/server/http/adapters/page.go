@@ -3,13 +3,14 @@ package adapters
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// PageDTOToResponse converts from dto.Page to responses.PageResponse.
-func PageDTOToResponse(page *dto.Page) *responses.PageResponse {
+// PageOutputToResponse converts from output.Page to responses.PageResponse.
+func PageOutputToResponse(page *output.Page) *responses.PageResponse {
 	if page == nil {
 		return nil
 	}
@@ -23,38 +24,38 @@ func PageDTOToResponse(page *dto.Page) *responses.PageResponse {
 	}
 }
 
-// ListPagesRequestToDTOInput converts from requests.ListPagesRequest to dto.ListPagesInput.
-func ListPagesRequestToDTOInput(in *requests.ListPagesRequest) *dto.ListPagesInput {
-	return &dto.ListPagesInput{
+// ListPagesRequestToInput converts from requests.ListPagesRequest to input.ListPagesInput.
+func ListPagesRequestToInput(in requests.ListPagesRequest) input.ListPagesInput {
+	return input.ListPagesInput{
 		EnvironmentID: in.EnvironmentID,
 	}
 }
 
-// ListPagesOutputToResponse converts from dto.ListPagesOutput to responses.ListPagesResponse.
-func ListPagesOutputToResponse(out *dto.ListPagesOutput) *responses.ListPagesResponse {
+// ListPagesOutputToResponse converts from output.ListPagesOutput to responses.ListPagesResponse.
+func ListPagesOutputToResponse(out *output.ListPagesOutput) *responses.ListPagesResponse {
 	pages := make([]*responses.PageResponse, 0, len(out.Pages))
 	for _, page := range out.Pages {
-		pages = append(pages, PageDTOToResponse(page))
+		pages = append(pages, PageOutputToResponse(page))
 	}
 
 	groups := make([]*responses.GroupResponse, 0, len(out.Groups))
 	for _, group := range out.Groups {
-		groups = append(groups, GroupDTOToResponse(group))
+		groups = append(groups, GroupOutputToResponse(group))
 	}
 
 	groupPages := make([]*responses.GroupPageResponse, 0, len(out.GroupPages))
 	for _, groupPage := range out.GroupPages {
-		groupPages = append(groupPages, GroupPageDTOToResponse(groupPage))
+		groupPages = append(groupPages, GroupPageOutputToResponse(groupPage))
 	}
 
 	users := make([]*responses.UserResponse, 0, len(out.Users))
 	for _, user := range out.Users {
-		users = append(users, UserDTOToResponse(user))
+		users = append(users, UserOutputToResponse(user))
 	}
 
 	userGroups := make([]*responses.UserGroupResponse, 0, len(out.UserGroups))
 	for _, userGroup := range out.UserGroups {
-		userGroups = append(userGroups, UserGroupDTOToResponse(userGroup))
+		userGroups = append(userGroups, UserGroupOutputToResponse(userGroup))
 	}
 
 	return &responses.ListPagesResponse{

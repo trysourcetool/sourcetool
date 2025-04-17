@@ -1,29 +1,30 @@
 package adapters
 
 import (
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// RequestMagicLinkRequestToDTOInput converts from requests.RequestMagicLinkRequest to dto.RequestMagicLinkInput.
-func RequestMagicLinkRequestToDTOInput(in requests.RequestMagicLinkRequest) dto.RequestMagicLinkInput {
-	return dto.RequestMagicLinkInput{
+// RequestMagicLinkRequestToInput converts from requests.RequestMagicLinkRequest to input.RequestMagicLinkInput.
+func RequestMagicLinkRequestToInput(in requests.RequestMagicLinkRequest) input.RequestMagicLinkInput {
+	return input.RequestMagicLinkInput{
 		Email: in.Email,
 	}
 }
 
-// AuthenticateWithMagicLinkRequestToDTOInput converts from requests.AuthenticateWithMagicLinkRequest to dto.AuthenticateWithMagicLinkInput.
-func AuthenticateWithMagicLinkRequestToDTOInput(in requests.AuthenticateWithMagicLinkRequest) dto.AuthenticateWithMagicLinkInput {
-	return dto.AuthenticateWithMagicLinkInput{
+// AuthenticateWithMagicLinkRequestToInput converts from requests.AuthenticateWithMagicLinkRequest to input.AuthenticateWithMagicLinkInput.
+func AuthenticateWithMagicLinkRequestToInput(in requests.AuthenticateWithMagicLinkRequest) input.AuthenticateWithMagicLinkInput {
+	return input.AuthenticateWithMagicLinkInput{
 		Token:     in.Token,
 		FirstName: in.FirstName,
 		LastName:  in.LastName,
 	}
 }
 
-// AuthenticateWithMagicLinkOutputToResponse converts from dto.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
-func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
+// AuthenticateWithMagicLinkOutputToResponse converts from output.AuthenticateWithMagicLinkOutput to responses.AuthenticateWithMagicLinkResponse.
+func AuthenticateWithMagicLinkOutputToResponse(out *output.AuthenticateWithMagicLinkOutput) *responses.AuthenticateWithMagicLinkResponse {
 	return &responses.AuthenticateWithMagicLinkResponse{
 		AuthURL:         out.AuthURL,
 		Token:           out.Token,
@@ -32,54 +33,54 @@ func AuthenticateWithMagicLinkOutputToResponse(out *dto.AuthenticateWithMagicLin
 	}
 }
 
-// RequestMagicLinkOutputToResponse converts from dto.RequestMagicLinkOutput to responses.RequestMagicLinkResponse.
-func RequestMagicLinkOutputToResponse(out *dto.RequestMagicLinkOutput) responses.RequestMagicLinkResponse {
+// RequestMagicLinkOutputToResponse converts from output.RequestMagicLinkOutput to responses.RequestMagicLinkResponse.
+func RequestMagicLinkOutputToResponse(out *output.RequestMagicLinkOutput) responses.RequestMagicLinkResponse {
 	return responses.RequestMagicLinkResponse{
 		Email: out.Email,
 		IsNew: out.IsNew,
 	}
 }
 
-// RegisterWithMagicLinkRequestToDTOInput converts from requests.RegisterWithMagicLinkRequest to dto.RegisterWithMagicLinkInput.
-func RegisterWithMagicLinkRequestToDTOInput(in requests.RegisterWithMagicLinkRequest) dto.RegisterWithMagicLinkInput {
-	return dto.RegisterWithMagicLinkInput{
+// RegisterWithMagicLinkRequestToInput converts from requests.RegisterWithMagicLinkRequest to input.RegisterWithMagicLinkInput.
+func RegisterWithMagicLinkRequestToInput(in requests.RegisterWithMagicLinkRequest) input.RegisterWithMagicLinkInput {
+	return input.RegisterWithMagicLinkInput{
 		Token:     in.Token,
 		FirstName: in.FirstName,
 		LastName:  in.LastName,
 	}
 }
 
-// RegisterWithMagicLinkOutputToResponse converts from dto.RegisterWithMagicLinkOutput to responses.RegisterWithMagicLinkResponse.
-func RegisterWithMagicLinkOutputToResponse(out *dto.RegisterWithMagicLinkOutput) *responses.RegisterWithMagicLinkResponse {
+// RegisterWithMagicLinkOutputToResponse converts from output.RegisterWithMagicLinkOutput to responses.RegisterWithMagicLinkResponse.
+func RegisterWithMagicLinkOutputToResponse(out *output.RegisterWithMagicLinkOutput) *responses.RegisterWithMagicLinkResponse {
 	return &responses.RegisterWithMagicLinkResponse{
 		ExpiresAt:       out.ExpiresAt,
 		HasOrganization: out.HasOrganization,
 	}
 }
 
-// RequestInvitationMagicLinkRequestToDTOInput converts from requests.RequestInvitationMagicLinkRequest to dto.RequestInvitationMagicLinkInput.
-func RequestInvitationMagicLinkRequestToDTOInput(in requests.RequestInvitationMagicLinkRequest) dto.RequestInvitationMagicLinkInput {
-	return dto.RequestInvitationMagicLinkInput{
+// RequestInvitationMagicLinkRequestToInput converts from requests.RequestInvitationMagicLinkRequest to input.RequestInvitationMagicLinkInput.
+func RequestInvitationMagicLinkRequestToInput(in requests.RequestInvitationMagicLinkRequest) input.RequestInvitationMagicLinkInput {
+	return input.RequestInvitationMagicLinkInput{
 		InvitationToken: in.InvitationToken,
 	}
 }
 
-// RequestInvitationMagicLinkOutputToResponse converts from dto.RequestInvitationMagicLinkOutput to responses.RequestInvitationMagicLinkResponse.
-func RequestInvitationMagicLinkOutputToResponse(out *dto.RequestInvitationMagicLinkOutput) *responses.RequestInvitationMagicLinkResponse {
+// RequestInvitationMagicLinkOutputToResponse converts from output.RequestInvitationMagicLinkOutput to responses.RequestInvitationMagicLinkResponse.
+func RequestInvitationMagicLinkOutputToResponse(out *output.RequestInvitationMagicLinkOutput) *responses.RequestInvitationMagicLinkResponse {
 	return &responses.RequestInvitationMagicLinkResponse{
 		Email: out.Email,
 	}
 }
 
-// AuthenticateWithInvitationMagicLinkRequestToDTOInput converts from requests.AuthenticateWithInvitationMagicLinkRequest to dto.AuthenticateWithInvitationMagicLinkInput.
-func AuthenticateWithInvitationMagicLinkRequestToDTOInput(in requests.AuthenticateWithInvitationMagicLinkRequest) dto.AuthenticateWithInvitationMagicLinkInput {
-	return dto.AuthenticateWithInvitationMagicLinkInput{
+// AuthenticateWithInvitationMagicLinkRequestToInput converts from requests.AuthenticateWithInvitationMagicLinkRequest to input.AuthenticateWithInvitationMagicLinkInput.
+func AuthenticateWithInvitationMagicLinkRequestToInput(in requests.AuthenticateWithInvitationMagicLinkRequest) input.AuthenticateWithInvitationMagicLinkInput {
+	return input.AuthenticateWithInvitationMagicLinkInput{
 		Token: in.Token,
 	}
 }
 
-// AuthenticateWithInvitationMagicLinkOutputToResponse converts from dto.AuthenticateWithInvitationMagicLinkOutput to responses.AuthenticateWithInvitationMagicLinkResponse.
-func AuthenticateWithInvitationMagicLinkOutputToResponse(out *dto.AuthenticateWithInvitationMagicLinkOutput) *responses.AuthenticateWithInvitationMagicLinkResponse {
+// AuthenticateWithInvitationMagicLinkOutputToResponse converts from output.AuthenticateWithInvitationMagicLinkOutput to responses.AuthenticateWithInvitationMagicLinkResponse.
+func AuthenticateWithInvitationMagicLinkOutputToResponse(out *output.AuthenticateWithInvitationMagicLinkOutput) *responses.AuthenticateWithInvitationMagicLinkResponse {
 	return &responses.AuthenticateWithInvitationMagicLinkResponse{
 		AuthURL:   out.AuthURL,
 		Token:     out.Token,
@@ -87,39 +88,39 @@ func AuthenticateWithInvitationMagicLinkOutputToResponse(out *dto.AuthenticateWi
 	}
 }
 
-// RegisterWithInvitationMagicLinkRequestToDTOInput converts from requests.RegisterWithInvitationMagicLinkRequest to dto.RegisterWithInvitationMagicLinkInput.
-func RegisterWithInvitationMagicLinkRequestToDTOInput(in requests.RegisterWithInvitationMagicLinkRequest) dto.RegisterWithInvitationMagicLinkInput {
-	return dto.RegisterWithInvitationMagicLinkInput{
+// RegisterWithInvitationMagicLinkRequestToInput converts from requests.RegisterWithInvitationMagicLinkRequest to input.RegisterWithInvitationMagicLinkInput.
+func RegisterWithInvitationMagicLinkRequestToInput(in requests.RegisterWithInvitationMagicLinkRequest) input.RegisterWithInvitationMagicLinkInput {
+	return input.RegisterWithInvitationMagicLinkInput{
 		Token:     in.Token,
 		FirstName: in.FirstName,
 		LastName:  in.LastName,
 	}
 }
 
-// RegisterWithInvitationMagicLinkOutputToResponse converts from dto.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
-func RegisterWithInvitationMagicLinkOutputToResponse(out *dto.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
+// RegisterWithInvitationMagicLinkOutputToResponse converts from output.RegisterWithInvitationMagicLinkOutput to responses.RegisterWithInvitationMagicLinkResponse.
+func RegisterWithInvitationMagicLinkOutputToResponse(out *output.RegisterWithInvitationMagicLinkOutput) *responses.RegisterWithInvitationMagicLinkResponse {
 	return &responses.RegisterWithInvitationMagicLinkResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// RequestGoogleAuthLinkOutputToResponse converts from dto.RequestGoogleAuthLinkOutput to responses.RequestGoogleAuthLinkResponse.
-func RequestGoogleAuthLinkOutputToResponse(out *dto.RequestGoogleAuthLinkOutput) *responses.RequestGoogleAuthLinkResponse {
+// RequestGoogleAuthLinkOutputToResponse converts from output.RequestGoogleAuthLinkOutput to responses.RequestGoogleAuthLinkResponse.
+func RequestGoogleAuthLinkOutputToResponse(out *output.RequestGoogleAuthLinkOutput) *responses.RequestGoogleAuthLinkResponse {
 	return &responses.RequestGoogleAuthLinkResponse{
 		AuthURL: out.AuthURL,
 	}
 }
 
-// AuthenticateWithGoogleRequestToDTOInput converts requests.AuthenticateWithGoogleRequest to dto.AuthenticateWithGoogleInput.
-func AuthenticateWithGoogleRequestToDTOInput(req requests.AuthenticateWithGoogleRequest) dto.AuthenticateWithGoogleInput {
-	return dto.AuthenticateWithGoogleInput{
+// AuthenticateWithGoogleRequestToInput converts requests.AuthenticateWithGoogleRequest to input.AuthenticateWithGoogleInput.
+func AuthenticateWithGoogleRequestToInput(req requests.AuthenticateWithGoogleRequest) input.AuthenticateWithGoogleInput {
+	return input.AuthenticateWithGoogleInput{
 		Code:  req.Code,
 		State: req.State,
 	}
 }
 
-// AuthenticateWithGoogleOutputToResponse converts dto.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
-func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
+// AuthenticateWithGoogleOutputToResponse converts output.AuthenticateWithGoogleOutput to responses.AuthenticateWithGoogleResponse.
+func AuthenticateWithGoogleOutputToResponse(out *output.AuthenticateWithGoogleOutput) *responses.AuthenticateWithGoogleResponse {
 	return &responses.AuthenticateWithGoogleResponse{
 		FirstName:                out.FirstName,
 		LastName:                 out.LastName,
@@ -131,15 +132,15 @@ func AuthenticateWithGoogleOutputToResponse(out *dto.AuthenticateWithGoogleOutpu
 	}
 }
 
-// RegisterWithGoogleRequestToDTOInput converts from requests.RegisterWithGoogleRequest to dto.RegisterWithGoogleInput.
-func RegisterWithGoogleRequestToDTOInput(in requests.RegisterWithGoogleRequest) dto.RegisterWithGoogleInput {
-	return dto.RegisterWithGoogleInput{
+// RegisterWithGoogleRequestToInput converts from requests.RegisterWithGoogleRequest to input.RegisterWithGoogleInput.
+func RegisterWithGoogleRequestToInput(in requests.RegisterWithGoogleRequest) input.RegisterWithGoogleInput {
+	return input.RegisterWithGoogleInput{
 		Token: in.Token,
 	}
 }
 
-// RegisterWithGoogleOutputToResponse converts from dto.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
-func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
+// RegisterWithGoogleOutputToResponse converts from output.RegisterWithGoogleOutput to responses.RegisterWithGoogleResponse.
+func RegisterWithGoogleOutputToResponse(out *output.RegisterWithGoogleOutput) *responses.RegisterWithGoogleResponse {
 	return &responses.RegisterWithGoogleResponse{
 		AuthURL:         out.AuthURL,
 		Token:           out.Token,
@@ -147,61 +148,61 @@ func RegisterWithGoogleOutputToResponse(out *dto.RegisterWithGoogleOutput) *resp
 	}
 }
 
-// RequestInvitationGoogleAuthLinkRequestToDTOInput converts request to DTO input.
-func RequestInvitationGoogleAuthLinkRequestToDTOInput(in requests.RequestInvitationGoogleAuthLinkRequest) dto.RequestInvitationGoogleAuthLinkInput {
-	return dto.RequestInvitationGoogleAuthLinkInput{
+// RequestInvitationGoogleAuthLinkRequestToInput converts request to input.
+func RequestInvitationGoogleAuthLinkRequestToInput(in requests.RequestInvitationGoogleAuthLinkRequest) input.RequestInvitationGoogleAuthLinkInput {
+	return input.RequestInvitationGoogleAuthLinkInput{
 		InvitationToken: in.InvitationToken,
 	}
 }
 
-// RequestInvitationGoogleAuthLinkOutputToResponse converts DTO output to response.
-func RequestInvitationGoogleAuthLinkOutputToResponse(out *dto.RequestInvitationGoogleAuthLinkOutput) *responses.RequestInvitationGoogleAuthLinkResponse {
+// RequestInvitationGoogleAuthLinkOutputToResponse converts output.RequestInvitationGoogleAuthLinkOutput to responses.RequestInvitationGoogleAuthLinkResponse.
+func RequestInvitationGoogleAuthLinkOutputToResponse(out *output.RequestInvitationGoogleAuthLinkOutput) *responses.RequestInvitationGoogleAuthLinkResponse {
 	return &responses.RequestInvitationGoogleAuthLinkResponse{
 		AuthURL: out.AuthURL,
 	}
 }
 
-// RefreshTokenRequestToDTOInput converts from requests.RefreshTokenRequest to dto.RefreshTokenInput.
-func RefreshTokenRequestToDTOInput(in requests.RefreshTokenRequest) dto.RefreshTokenInput {
-	return dto.RefreshTokenInput{
+// RefreshTokenRequestToInput converts from requests.RefreshTokenRequest to input.RefreshTokenInput.
+func RefreshTokenRequestToInput(in requests.RefreshTokenRequest) input.RefreshTokenInput {
+	return input.RefreshTokenInput{
 		RefreshToken:    in.RefreshToken,
 		XSRFTokenHeader: in.XSRFTokenHeader,
 		XSRFTokenCookie: in.XSRFTokenCookie,
 	}
 }
 
-// RefreshTokenOutputToResponse converts from dto.RefreshTokenOutput to responses.RefreshTokenResponse.
-func RefreshTokenOutputToResponse(out *dto.RefreshTokenOutput) *responses.RefreshTokenResponse {
+// RefreshTokenOutputToResponse converts from output.RefreshTokenOutput to responses.RefreshTokenResponse.
+func RefreshTokenOutputToResponse(out *output.RefreshTokenOutput) *responses.RefreshTokenResponse {
 	return &responses.RefreshTokenResponse{
 		ExpiresAt: out.ExpiresAt,
 	}
 }
 
-// SaveAuthRequestToDTOInput converts from requests.SaveAuthRequest to dto.SaveAuthInput.
-func SaveAuthRequestToDTOInput(in requests.SaveAuthRequest) dto.SaveAuthInput {
-	return dto.SaveAuthInput{
+// SaveAuthRequestToInput converts from requests.SaveAuthRequest to input.SaveAuthInput.
+func SaveAuthRequestToInput(in requests.SaveAuthRequest) input.SaveAuthInput {
+	return input.SaveAuthInput{
 		Token: in.Token,
 	}
 }
 
-// SaveAuthOutputToResponse converts from dto.SaveAuthOutput to responses.SaveAuthResponse.
-func SaveAuthOutputToResponse(out *dto.SaveAuthOutput) *responses.SaveAuthResponse {
+// SaveAuthOutputToResponse converts from output.SaveAuthOutput to responses.SaveAuthResponse.
+func SaveAuthOutputToResponse(out *output.SaveAuthOutput) *responses.SaveAuthResponse {
 	return &responses.SaveAuthResponse{
 		ExpiresAt:   out.ExpiresAt,
 		RedirectURL: out.RedirectURL,
 	}
 }
 
-// ObtainAuthTokenOutputToResponse converts from dto.ObtainAuthTokenOutput to responses.ObtainAuthTokenResponse.
-func ObtainAuthTokenOutputToResponse(out *dto.ObtainAuthTokenOutput) *responses.ObtainAuthTokenResponse {
+// ObtainAuthTokenOutputToResponse converts from output.ObtainAuthTokenOutput to responses.ObtainAuthTokenResponse.
+func ObtainAuthTokenOutputToResponse(out *output.ObtainAuthTokenOutput) *responses.ObtainAuthTokenResponse {
 	return &responses.ObtainAuthTokenResponse{
 		AuthURL: out.AuthURL,
 		Token:   out.Token,
 	}
 }
 
-// LogoutOutputToResponse converts from dto.LogoutOutput to responses.LogoutResponse.
-func LogoutOutputToResponse(out *dto.LogoutOutput) *responses.LogoutResponse {
+// LogoutOutputToResponse converts from output.LogoutOutput to responses.LogoutResponse.
+func LogoutOutputToResponse(out *output.LogoutOutput) *responses.LogoutResponse {
 	return &responses.LogoutResponse{
 		Domain: out.Domain,
 	}

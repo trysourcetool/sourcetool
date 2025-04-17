@@ -9,12 +9,14 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/model"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/ws"
+	"github.com/trysourcetool/sourcetool/backend/utils/wsutil"
+	wsconn "github.com/trysourcetool/sourcetool/backend/ws/conn"
+	"github.com/trysourcetool/sourcetool/backend/ws/service"
 )
 
 const (
@@ -36,10 +38,10 @@ const (
 
 type WebSocketHandler struct {
 	upgrader websocket.Upgrader
-	service  ws.Service
+	service  service.WebSocketService
 }
 
-func NewWebSocketHandler(upgrader websocket.Upgrader, service ws.Service) *WebSocketHandler {
+func NewWebSocketHandler(upgrader websocket.Upgrader, service service.WebSocketService) *WebSocketHandler {
 	return &WebSocketHandler{
 		upgrader: upgrader,
 		service:  service,
@@ -85,46 +87,46 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			instanceID := r.Header.Get("X-Instance-Id")
 			hostInstance, err := h.service.InitializeHost(ctx, conn, instanceID, &msg)
 			if err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 
 			defer func() {
-				if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, model.HostInstanceStatusOffline); err != nil {
+				if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, hostinstance.HostInstanceStatusOffline); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host instance status offline: %v", err)
 				}
-				ws.GetConnManager().DisconnectHost(hostInstance.ID)
+				wsconn.GetConnManager().DisconnectHost(hostInstance.ID)
 			}()
 
 			go h.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)
 		case *websocketv1.Message_InitializeClient:
 			if err := h.service.InitializeClient(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RenderWidget:
 			if err := h.service.RenderWidget(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RerunPage:
 			if err := h.service.RerunPage(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_CloseSession:
 			if err := h.service.CloseSession(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_ScriptFinished:
 			if err := h.service.ScriptFinished(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_Exception:
 			if err := h.service.Exception(ctx, conn, &msg); err != nil {
-				ws.SendErrResponse(ctx, conn, msg.Id, err)
+				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		default:
@@ -134,8 +136,8 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WebSocketHandler) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status model.HostInstanceStatus) error {
-	if _, err := h.service.UpdateStatus(ctx, dto.UpdateHostInstanceStatusInput{
+func (h *WebSocketHandler) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status hostinstance.HostInstanceStatus) error {
+	if _, err := h.service.UpdateStatus(ctx, input.UpdateHostInstanceStatusInput{
 		ID:     hostInstanceID.String(),
 		Status: status,
 	}); err != nil {
@@ -145,7 +147,7 @@ func (h *WebSocketHandler) updateHostInstanceStatus(ctx context.Context, hostIns
 	return nil
 }
 
-func (h *WebSocketHandler) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.Conn, done chan struct{}, hostInstance *model.HostInstance) {
+func (h *WebSocketHandler) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.Conn, done chan struct{}, hostInstance *hostinstance.HostInstance) {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		logger.Logger.Info("Stopped ping ticker")
@@ -172,8 +174,8 @@ func (h *WebSocketHandler) pingPongHostInstanceLoop(ctx context.Context, conn *w
 					logger.Logger.Sugar().Infof("Connection unrecoverable after %v", maxRecoveryWait)
 					return
 				}
-				if hostInstance.Status != model.HostInstanceStatusUnreachable {
-					if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, model.HostInstanceStatusUnreachable); err != nil {
+				if hostInstance.Status != hostinstance.HostInstanceStatusUnreachable {
+					if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, hostinstance.HostInstanceStatusUnreachable); err != nil {
 						logger.Logger.Sugar().Errorf("Failed to update host instance status unreachable: %v", err)
 					}
 				}
@@ -184,8 +186,8 @@ func (h *WebSocketHandler) pingPongHostInstanceLoop(ctx context.Context, conn *w
 				logger.Logger.Info("Connection recovered, resetting failure time")
 				firstFailureTime = nil
 			}
-			if hostInstance.Status != model.HostInstanceStatusOnline {
-				if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, model.HostInstanceStatusOnline); err != nil {
+			if hostInstance.Status != hostinstance.HostInstanceStatusOnline {
+				if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, hostinstance.HostInstanceStatusOnline); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host instance status online: %v", err)
 				}
 			}

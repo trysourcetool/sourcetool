@@ -2,162 +2,135 @@ package page
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-	"github.com/samber/lo"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.PageOption) (*model.Page, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.Page{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrPageNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.PageOption) ([]*model.Page, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byIDOption) isStoreOption() {}
 
-	m := make([]*model.Page, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`p."id"`: o.id})
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.PageOption) (string, []any, error) {
-	q := s.builder.Select(
-		`p."id"`,
-		`p."organization_id"`,
-		`p."environment_id"`,
-		`p."api_key_id"`,
-		`p."name"`,
-		`p."route"`,
-		`p."path"`,
-		`p."created_at"`,
-		`p."updated_at"`,
-	).
-		From(`"page" p`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func ByOrganizationID(id uuid.UUID) StoreOption {
+	return byOrganizationIDOption{id: id}
 }
 
-func (s *StoreCE) BulkInsert(ctx context.Context, m []*model.Page) error {
-	if len(m) == 0 {
-		return nil
-	}
-
-	q := s.builder.
-		Insert(`"page"`).
-		Columns(
-			`"id"`,
-			`"organization_id"`,
-			`"environment_id"`,
-			`"api_key_id"`,
-			`"name"`,
-			`"route"`,
-			`"path"`,
-		)
-
-	for _, v := range m {
-		q = q.Values(
-			v.ID,
-			v.OrganizationID,
-			v.EnvironmentID,
-			v.APIKeyID,
-			v.Name,
-			v.Route,
-			v.Path,
-		)
-	}
-
-	if _, err := q.
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type byOrganizationIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) BulkUpdate(ctx context.Context, m []*model.Page) error {
-	if len(m) == 0 {
-		return nil
-	}
+func (o byOrganizationIDOption) isStoreOption() {}
 
-	for _, v := range m {
-		if _, err := s.builder.
-			Update(`"page"`).
-			Set(`"name"`, v.Name).
-			Set(`"route"`, v.Route).
-			Set(`"path"`, v.Path).
-			Where(sq.Eq{`"id"`: v.ID}).
-			RunWith(s.db).
-			ExecContext(ctx); err != nil {
-			return errdefs.ErrDatabase(err)
-		}
-	}
-
-	return nil
+func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`p."organization_id"`: o.id})
 }
 
-func (s *StoreCE) BulkDelete(ctx context.Context, m []*model.Page) error {
-	if len(m) == 0 {
-		return nil
-	}
+func ByAPIKeyID(id uuid.UUID) StoreOption {
+	return byAPIKeyIDOption{id: id}
+}
 
-	ids := lo.Map(m, func(x *model.Page, _ int) uuid.UUID {
-		return x.ID
-	})
+type byAPIKeyIDOption struct {
+	id uuid.UUID
+}
 
-	if _, err := s.builder.
-		Delete(`"page"`).
-		Where(sq.Eq{`"id"`: ids}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
+func (o byAPIKeyIDOption) isStoreOption() {}
 
-	return nil
+func (o byAPIKeyIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`p."api_key_id"`: o.id})
+}
+
+func BySessionID(id uuid.UUID) StoreOption {
+	return bySessionIDOption{id: id}
+}
+
+type bySessionIDOption struct {
+	id uuid.UUID
+}
+
+func (o bySessionIDOption) isStoreOption() {}
+
+func (o bySessionIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
+		InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
+		Where(sq.Eq{`s."id"`: o.id})
+}
+
+func ByEnvironmentID(id uuid.UUID) StoreOption {
+	return byEnvironmentIDOption{id: id}
+}
+
+type byEnvironmentIDOption struct {
+	id uuid.UUID
+}
+
+func (o byEnvironmentIDOption) isStoreOption() {}
+
+func (o byEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`p."environment_id"`: o.id})
+}
+
+func Limit(limit uint64) StoreOption {
+	return limitOption{limit: limit}
+}
+
+type limitOption struct {
+	limit uint64
+}
+
+func (o limitOption) isStoreOption() {}
+
+func (o limitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Limit(o.limit)
+}
+
+func Offset(offset uint64) StoreOption {
+	return offsetOption{offset: offset}
+}
+
+type offsetOption struct {
+	offset uint64
+}
+
+func (o offsetOption) isStoreOption() {}
+
+func (o offsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Offset(o.offset)
+}
+
+func OrderBy(orderBy string) StoreOption {
+	return orderByOption{orderBy: orderBy}
+}
+
+type orderByOption struct {
+	orderBy string
+}
+
+func (o orderByOption) isStoreOption() {}
+
+func (o orderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(o.orderBy)
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*Page, error)
+	List(context.Context, ...StoreOption) ([]*Page, error)
+	BulkInsert(context.Context, []*Page) error
+	BulkUpdate(context.Context, []*Page) error
+	BulkDelete(context.Context, []*Page) error
 }

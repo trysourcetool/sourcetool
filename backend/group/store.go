@@ -2,64 +2,133 @@ package group
 
 import (
 	"context"
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.GroupOption) (*model.Group, error) {
-	return nil, errors.New("group functionality is not available in CE version")
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.GroupOption) ([]*model.Group, error) {
-	return nil, errors.New("group functionality is not available in CE version")
+func (o byIDOption) isStoreOption() {}
+
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."id"`: o.id})
 }
 
-func (s *StoreCE) Create(ctx context.Context, m *model.Group) error {
-	return errors.New("group functionality is not available in CE version")
+func ByOrganizationID(id uuid.UUID) StoreOption {
+	return byOrganizationIDOption{id: id}
 }
 
-func (s *StoreCE) Update(ctx context.Context, m *model.Group) error {
-	return errors.New("group functionality is not available in CE version")
+type byOrganizationIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) Delete(ctx context.Context, m *model.Group) error {
-	return errors.New("group functionality is not available in CE version")
+func (o byOrganizationIDOption) isStoreOption() {}
+
+func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."organization_id"`: o.id})
 }
 
-func (s *StoreCE) IsSlugExistsInOrganization(ctx context.Context, orgID uuid.UUID, slug string) (bool, error) {
-	return false, errors.New("group functionality is not available in CE version")
+func BySlug(slug string) StoreOption {
+	return bySlugOption{slug: slug}
 }
 
-func (s *StoreCE) ListPages(ctx context.Context, opts ...storeopts.GroupPageOption) ([]*model.GroupPage, error) {
-	return nil, errors.New("group functionality is not available in CE version")
+type bySlugOption struct {
+	slug string
 }
 
-func (s *StoreCE) BulkInsertPages(ctx context.Context, pages []*model.GroupPage) error {
-	return errors.New("group functionality is not available in CE version")
+func (o bySlugOption) isStoreOption() {}
+
+func (o bySlugOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."slug"`: o.slug})
 }
 
-func (s *StoreCE) BulkUpdatePages(ctx context.Context, pages []*model.GroupPage) error {
-	return errors.New("group functionality is not available in CE version")
+func BySlugs(slugs []string) StoreOption {
+	return bySlugsOption{slugs: slugs}
 }
 
-func (s *StoreCE) BulkDeletePages(ctx context.Context, pages []*model.GroupPage) error {
-	return errors.New("group functionality is not available in CE version")
+type bySlugsOption struct {
+	slugs []string
+}
+
+func (o bySlugsOption) isStoreOption() {}
+
+func (o bySlugsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."slug"`: o.slugs})
+}
+
+type PageStoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isPageStoreOption()
+}
+
+func PageByOrganizationID(id uuid.UUID) PageStoreOption {
+	return pageByOrganizationIDOption{id: id}
+}
+
+type pageByOrganizationIDOption struct {
+	id uuid.UUID
+}
+
+func (o pageByOrganizationIDOption) isPageStoreOption() {}
+
+func (o pageByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"group" g ON g."id" = gp."group_id"`).
+		Where(sq.Eq{`g."organization_id"`: o.id})
+}
+
+func PageByPageIDs(ids []uuid.UUID) PageStoreOption {
+	return pageByPageIDsOption{ids: ids}
+}
+
+type pageByPageIDsOption struct {
+	ids []uuid.UUID
+}
+
+func (o pageByPageIDsOption) isPageStoreOption() {}
+
+func (o pageByPageIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`gp."page_id"`: o.ids})
+}
+
+func PageByEnvironmentID(id uuid.UUID) PageStoreOption {
+	return pageByEnvironmentIDOption{id: id}
+}
+
+type pageByEnvironmentIDOption struct {
+	id uuid.UUID
+}
+
+func (o pageByEnvironmentIDOption) isPageStoreOption() {}
+
+func (o pageByEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"page" p ON p."id" = gp."page_id"`).
+		Where(sq.Eq{`p."environment_id"`: o.id})
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*Group, error)
+	List(context.Context, ...StoreOption) ([]*Group, error)
+	Create(context.Context, *Group) error
+	Update(context.Context, *Group) error
+	Delete(context.Context, *Group) error
+	IsSlugExistsInOrganization(context.Context, uuid.UUID, string) (bool, error)
+
+	ListPages(context.Context, ...PageStoreOption) ([]*GroupPage, error)
+	BulkInsertPages(context.Context, []*GroupPage) error
+	BulkUpdatePages(context.Context, []*GroupPage) error
+	BulkDeletePages(context.Context, []*GroupPage) error
 }

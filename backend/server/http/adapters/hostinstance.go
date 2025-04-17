@@ -3,13 +3,14 @@ package adapters
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// HostInstanceDTOToResponse converts from dto.HostInstance to responses.HostInstanceResponse.
-func HostInstanceDTOToResponse(instance *dto.HostInstance) *responses.HostInstanceResponse {
+// HostInstanceOutputToResponse converts from output.HostInstance to responses.HostInstanceResponse.
+func HostInstanceOutputToResponse(instance *output.HostInstance) *responses.HostInstanceResponse {
 	if instance == nil {
 		return nil
 	}
@@ -24,16 +25,16 @@ func HostInstanceDTOToResponse(instance *dto.HostInstance) *responses.HostInstan
 	}
 }
 
-// PingHostInstanceRequestToDTOInput converts from requests.PingHostInstanceRequest to dto.PingHostInstanceInput.
-func PingHostInstanceRequestToDTOInput(in requests.PingHostInstanceRequest) dto.PingHostInstanceInput {
-	return dto.PingHostInstanceInput{
+// PingHostInstanceRequestToInput converts from requests.PingHostInstanceRequest to input.PingHostInstanceInput.
+func PingHostInstanceRequestToInput(in requests.PingHostInstanceRequest) input.PingHostInstanceInput {
+	return input.PingHostInstanceInput{
 		PageID: in.PageID,
 	}
 }
 
-// PingHostInstanceOutputToResponse converts from dto.PingHostInstanceOutput to responses.PingHostInstanceResponse.
-func PingHostInstanceOutputToResponse(out *dto.PingHostInstanceOutput) *responses.PingHostInstanceResponse {
+// PingHostInstanceOutputToResponse converts from output.PingHostInstanceOutput to responses.PingHostInstanceResponse.
+func PingHostInstanceOutputToResponse(out *output.PingHostInstanceOutput) *responses.PingHostInstanceResponse {
 	return &responses.PingHostInstanceResponse{
-		HostInstance: HostInstanceDTOToResponse(out.HostInstance),
+		HostInstance: HostInstanceOutputToResponse(out.HostInstance),
 	}
 }

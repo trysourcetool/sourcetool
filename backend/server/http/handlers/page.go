@@ -3,17 +3,17 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/page"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/page/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type PageHandler struct {
-	service page.Service
+	service service.PageService
 }
 
-func NewPageHandler(service page.Service) *PageHandler {
+func NewPageHandler(service service.PageService) *PageHandler {
 	return &PageHandler{service}
 }
 
@@ -27,7 +27,7 @@ func NewPageHandler(service page.Service) *PageHandler {
 // @Failure default {object} errdefs.Error
 // @Router /pages [get].
 func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
-	in := &requests.ListPagesRequest{
+	in := requests.ListPagesRequest{
 		EnvironmentID: r.URL.Query().Get("environmentId"),
 	}
 	if err := httputil.ValidateRequest(in); err != nil {
@@ -35,7 +35,7 @@ func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.List(r.Context(), adapters.ListPagesRequestToDTOInput(in))
+	out, err := h.service.List(r.Context(), adapters.ListPagesRequestToInput(in))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

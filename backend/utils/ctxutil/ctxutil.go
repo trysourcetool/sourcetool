@@ -3,7 +3,8 @@ package ctxutil
 import (
 	"context"
 
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/user"
 )
 
 type ctxKey string
@@ -14,16 +15,16 @@ const (
 	SubdomainCtxKey           ctxKey = "subdomain"
 )
 
-func CurrentUser(ctx context.Context) *model.User {
-	v, ok := ctx.Value(CurrentUserCtxKey).(*model.User)
+func CurrentUser(ctx context.Context) *user.User {
+	v, ok := ctx.Value(CurrentUserCtxKey).(*user.User)
 	if !ok {
 		return nil
 	}
 	return v
 }
 
-func CurrentOrganization(ctx context.Context) *model.Organization {
-	v, ok := ctx.Value(CurrentOrganizationCtxKey).(*model.Organization)
+func CurrentOrganization(ctx context.Context) *organization.Organization {
+	v, ok := ctx.Value(CurrentOrganizationCtxKey).(*organization.Organization)
 	if !ok {
 		return nil
 	}
@@ -38,11 +39,11 @@ func Subdomain(ctx context.Context) string {
 	return v
 }
 
-func withUser(ctx context.Context, user *model.User) context.Context {
+func withUser(ctx context.Context, user *user.User) context.Context {
 	return context.WithValue(ctx, CurrentUserCtxKey, user)
 }
 
-func withOrganization(ctx context.Context, org *model.Organization) context.Context {
+func withOrganization(ctx context.Context, org *organization.Organization) context.Context {
 	return context.WithValue(ctx, CurrentOrganizationCtxKey, org)
 }
 

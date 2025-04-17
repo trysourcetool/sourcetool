@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/organization/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type OrganizationHandler struct {
-	service organization.Service
+	service service.OrganizationService
 }
 
-func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
+func NewOrganizationHandler(service service.OrganizationService) *OrganizationHandler {
 	return &OrganizationHandler{service}
 }
 
@@ -40,7 +40,7 @@ func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), adapters.CreateOrganizationRequestToDTOInput(req))
+	out, err := h.service.Create(r.Context(), adapters.CreateOrganizationRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -72,7 +72,7 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 		return
 	}
 
-	err := h.service.CheckSubdomainAvailability(r.Context(), adapters.CheckSubdomainAvailabilityRequestToDTOInput(req))
+	err := h.service.CheckSubdomainAvailability(r.Context(), adapters.CheckSubdomainAvailabilityRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

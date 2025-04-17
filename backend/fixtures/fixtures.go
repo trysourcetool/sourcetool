@@ -9,9 +9,12 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/conv"
 )
 
@@ -35,7 +38,7 @@ func Load(ctx context.Context, store infra.Store) error {
 	}
 
 	return store.RunTransaction(func(tx infra.Transaction) error {
-		u := &model.User{
+		u := &user.User{
 			ID:               uuid.Must(uuid.NewV4()),
 			FirstName:        "John",
 			LastName:         "Doe",
@@ -46,7 +49,7 @@ func Load(ctx context.Context, store infra.Store) error {
 			return err
 		}
 
-		o := &model.Organization{
+		o := &organization.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
 			Subdomain: conv.NilValue("acme"),
 		}
@@ -54,29 +57,29 @@ func Load(ctx context.Context, store infra.Store) error {
 			return err
 		}
 
-		if err := tx.User().CreateOrganizationAccess(ctx, &model.UserOrganizationAccess{
+		if err := tx.User().CreateOrganizationAccess(ctx, &user.UserOrganizationAccess{
 			ID:             uuid.Must(uuid.NewV4()),
 			UserID:         u.ID,
 			OrganizationID: o.ID,
-			Role:           model.UserOrganizationRoleAdmin,
+			Role:           user.UserOrganizationRoleAdmin,
 		}); err != nil {
 			return err
 		}
 
-		devEnv := &model.Environment{
+		devEnv := &environment.Environment{
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: o.ID,
-			Name:           model.EnvironmentNameDevelopment,
-			Slug:           model.EnvironmentSlugDevelopment,
-			Color:          model.EnvironmentColorDevelopment,
+			Name:           environment.EnvironmentNameDevelopment,
+			Slug:           environment.EnvironmentSlugDevelopment,
+			Color:          environment.EnvironmentColorDevelopment,
 		}
-		envs := []*model.Environment{
+		envs := []*environment.Environment{
 			{
 				ID:             uuid.Must(uuid.NewV4()),
 				OrganizationID: o.ID,
-				Name:           model.EnvironmentNameProduction,
-				Slug:           model.EnvironmentSlugProduction,
-				Color:          model.EnvironmentColorProduction,
+				Name:           environment.EnvironmentNameProduction,
+				Slug:           environment.EnvironmentSlugProduction,
+				Color:          environment.EnvironmentColorProduction,
 			},
 			devEnv,
 		}
@@ -89,7 +92,7 @@ func Load(ctx context.Context, store infra.Store) error {
 		if err != nil {
 			return err
 		}
-		apiKey := &model.APIKey{
+		apiKey := &apikey.APIKey{
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: o.ID,
 			EnvironmentID:  devEnv.ID,

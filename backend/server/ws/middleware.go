@@ -9,12 +9,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
@@ -67,7 +68,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 				return
 			}
 
-			apikey, err := m.Store.APIKey().Get(ctx, storeopts.APIKeyByKey(apikeyVal))
+			apikey, err := m.Store.APIKey().Get(ctx, apikey.ByKey(apikeyVal))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
@@ -87,7 +88,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 	})
 }
 
-func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, token string) (*model.User, error) {
+func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, token string) (*user.User, error) {
 	c, err := m.validateUserToken(token)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	u, err := m.Store.User().Get(ctx, storeopts.UserByID(userID))
+	u, err := m.Store.User().Get(ctx, user.ByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +107,10 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 	return u, nil
 }
 
-func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	opts := []storeopts.OrganizationOption{}
+func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*organization.Organization, error) {
+	opts := []organization.StoreOption{}
 	if subdomain != "" && subdomain != "auth" {
-		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
+		opts = append(opts, organization.BySubdomain(subdomain))
 	}
 
 	return m.Store.Organization().Get(ctx, opts...)

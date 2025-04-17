@@ -13,21 +13,21 @@ import (
 	"github.com/gorilla/websocket"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/trysourcetool/sourcetool/backend/apikey"
-	"github.com/trysourcetool/sourcetool/backend/auth"
+	apikeySvc "github.com/trysourcetool/sourcetool/backend/apikey/service"
+	authSvc "github.com/trysourcetool/sourcetool/backend/auth/service"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/environment"
-	"github.com/trysourcetool/sourcetool/backend/group"
-	"github.com/trysourcetool/sourcetool/backend/hostinstance"
+	environmentSvc "github.com/trysourcetool/sourcetool/backend/environment/service"
+	groupSvc "github.com/trysourcetool/sourcetool/backend/group/service"
+	hostinstanceSvc "github.com/trysourcetool/sourcetool/backend/hostinstance/service"
 	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/organization"
-	"github.com/trysourcetool/sourcetool/backend/page"
+	organizationSvc "github.com/trysourcetool/sourcetool/backend/organization/service"
+	pageSvc "github.com/trysourcetool/sourcetool/backend/page/service"
 	httpserver "github.com/trysourcetool/sourcetool/backend/server/http"
 	httphandlers "github.com/trysourcetool/sourcetool/backend/server/http/handlers"
 	wsserver "github.com/trysourcetool/sourcetool/backend/server/ws"
 	wshandlers "github.com/trysourcetool/sourcetool/backend/server/ws/handlers"
-	"github.com/trysourcetool/sourcetool/backend/user"
-	"github.com/trysourcetool/sourcetool/backend/ws"
+	userSvc "github.com/trysourcetool/sourcetool/backend/user/service"
+	wsSvc "github.com/trysourcetool/sourcetool/backend/ws/service"
 )
 
 type Server struct {
@@ -37,14 +37,14 @@ type Server struct {
 
 func New(d *infra.Dependency) *Server {
 	httpMiddle := httpserver.NewMiddlewareCE(d.Store)
-	apiKeyHandler := httphandlers.NewAPIKeyHandler(apikey.NewServiceCE(d))
-	authHandler := httphandlers.NewAuthHandler(auth.NewServiceCE(d))
-	environmentHandler := httphandlers.NewEnvironmentHandler(environment.NewServiceCE(d))
-	groupHandler := httphandlers.NewGroupHandler(group.NewServiceCE(d))
-	hostInstanceHandler := httphandlers.NewHostInstanceHandler(hostinstance.NewServiceCE(d))
-	organizationHandler := httphandlers.NewOrganizationHandler(organization.NewServiceCE(d))
-	pageHandler := httphandlers.NewPageHandler(page.NewServiceCE(d))
-	userHandler := httphandlers.NewUserHandler(user.NewServiceCE(d))
+	apiKeyHandler := httphandlers.NewAPIKeyHandler(apikeySvc.NewAPIKeyServiceCE(d))
+	authHandler := httphandlers.NewAuthHandler(authSvc.NewAuthServiceCE(d))
+	environmentHandler := httphandlers.NewEnvironmentHandler(environmentSvc.NewEnvironmentServiceCE(d))
+	groupHandler := httphandlers.NewGroupHandler(groupSvc.NewGroupServiceCE(d))
+	hostInstanceHandler := httphandlers.NewHostInstanceHandler(hostinstanceSvc.NewHostInstanceServiceCE(d))
+	organizationHandler := httphandlers.NewOrganizationHandler(organizationSvc.NewOrganizationServiceCE(d))
+	pageHandler := httphandlers.NewPageHandler(pageSvc.NewPageServiceCE(d))
+	userHandler := httphandlers.NewUserHandler(userSvc.NewUserServiceCE(d))
 
 	wsMiddle := wsserver.NewMiddlewareCE(d.Store)
 	wsHandler := wshandlers.NewWebSocketHandler(
@@ -55,7 +55,7 @@ func New(d *infra.Dependency) *Server {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
-		ws.NewServiceCE(d),
+		wsSvc.NewWebSocketServiceCE(d),
 	)
 	return &Server{
 		wsRouter: wsserver.NewRouter(wsMiddle, wsHandler),

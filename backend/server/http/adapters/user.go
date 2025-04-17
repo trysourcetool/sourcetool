@@ -3,13 +3,14 @@ package adapters
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// UserDTOToResponse converts from dto.User to responses.UserResponse.
-func UserDTOToResponse(user *dto.User) *responses.UserResponse {
+// UserOutputToResponse converts from output.User to responses.UserResponse.
+func UserOutputToResponse(user *output.User) *responses.UserResponse {
 	if user == nil {
 		return nil
 	}
@@ -25,14 +26,14 @@ func UserDTOToResponse(user *dto.User) *responses.UserResponse {
 	}
 
 	if user.Organization != nil {
-		result.Organization = OrganizationDTOToResponse(user.Organization)
+		result.Organization = OrganizationOutputToResponse(user.Organization)
 	}
 
 	return result
 }
 
-// UserInvitationDTOToResponse converts from dto.UserInvitation to responses.UserInvitationResponse.
-func UserInvitationDTOToResponse(invitation *dto.UserInvitation) *responses.UserInvitationResponse {
+// UserInvitationOutputToResponse converts from output.UserInvitation to responses.UserInvitationResponse.
+func UserInvitationOutputToResponse(invitation *output.UserInvitation) *responses.UserInvitationResponse {
 	if invitation == nil {
 		return nil
 	}
@@ -44,8 +45,8 @@ func UserInvitationDTOToResponse(invitation *dto.UserInvitation) *responses.User
 	}
 }
 
-// UserGroupDTOToResponse converts from dto.UserGroup to responses.UserGroupResponse.
-func UserGroupDTOToResponse(group *dto.UserGroup) *responses.UserGroupResponse {
+// UserGroupOutputToResponse converts from output.UserGroup to responses.UserGroupResponse.
+func UserGroupOutputToResponse(group *output.UserGroup) *responses.UserGroupResponse {
 	if group == nil {
 		return nil
 	}
@@ -59,23 +60,23 @@ func UserGroupDTOToResponse(group *dto.UserGroup) *responses.UserGroupResponse {
 	}
 }
 
-// GetMeOutputToResponse converts from dto.GetMeOutput to responses.GetMeResponse.
-func GetMeOutputToResponse(out *dto.GetMeOutput) *responses.GetMeResponse {
+// GetMeOutputToResponse converts from output.GetMeOutput to responses.GetMeResponse.
+func GetMeOutputToResponse(out *output.GetMeOutput) *responses.GetMeResponse {
 	return &responses.GetMeResponse{
-		User: UserDTOToResponse(out.User),
+		User: UserOutputToResponse(out.User),
 	}
 }
 
-// ListUsersOutputToResponse converts from dto.ListUsersOutput to responses.ListUsersResponse.
-func ListUsersOutputToResponse(out *dto.ListUsersOutput) *responses.ListUsersResponse {
+// ListUsersOutputToResponse converts from output.ListUsersOutput to responses.ListUsersResponse.
+func ListUsersOutputToResponse(out *output.ListUsersOutput) *responses.ListUsersResponse {
 	users := make([]*responses.UserResponse, 0, len(out.Users))
 	for _, user := range out.Users {
-		users = append(users, UserDTOToResponse(user))
+		users = append(users, UserOutputToResponse(user))
 	}
 
 	invitations := make([]*responses.UserInvitationResponse, 0, len(out.UserInvitations))
 	for _, invitation := range out.UserInvitations {
-		invitations = append(invitations, UserInvitationDTOToResponse(invitation))
+		invitations = append(invitations, UserInvitationOutputToResponse(invitation))
 	}
 
 	return &responses.ListUsersResponse{
@@ -84,79 +85,79 @@ func ListUsersOutputToResponse(out *dto.ListUsersOutput) *responses.ListUsersRes
 	}
 }
 
-// UpdateMeRequestToDTOInput converts from requests.UpdateMeRequest to dto.UpdateMeInput.
-func UpdateMeRequestToDTOInput(in requests.UpdateMeRequest) dto.UpdateMeInput {
-	return dto.UpdateMeInput{
+// UpdateMeRequestToInput converts from requests.UpdateMeRequest to input.UpdateMeInput.
+func UpdateMeRequestToInput(in requests.UpdateMeRequest) input.UpdateMeInput {
+	return input.UpdateMeInput{
 		FirstName: in.FirstName,
 		LastName:  in.LastName,
 	}
 }
 
-// UpdateMeOutputToResponse converts from dto.UpdateMeOutput to responses.UpdateMeResponse.
-func UpdateMeOutputToResponse(out *dto.UpdateMeOutput) *responses.UpdateMeResponse {
+// UpdateMeOutputToResponse converts from output.UpdateMeOutput to responses.UpdateMeResponse.
+func UpdateMeOutputToResponse(out *output.UpdateMeOutput) *responses.UpdateMeResponse {
 	return &responses.UpdateMeResponse{
-		User: UserDTOToResponse(out.User),
+		User: UserOutputToResponse(out.User),
 	}
 }
 
-// SendUpdateMeEmailInstructionsRequestToDTOInput converts from requests.SendUpdateMeEmailInstructionsRequest to dto.SendUpdateMeEmailInstructionsInput.
-func SendUpdateMeEmailInstructionsRequestToDTOInput(in requests.SendUpdateMeEmailInstructionsRequest) dto.SendUpdateMeEmailInstructionsInput {
-	return dto.SendUpdateMeEmailInstructionsInput{
+// SendUpdateMeEmailInstructionsRequestToInput converts from requests.SendUpdateMeEmailInstructionsRequest to input.SendUpdateMeEmailInstructionsInput.
+func SendUpdateMeEmailInstructionsRequestToInput(in requests.SendUpdateMeEmailInstructionsRequest) input.SendUpdateMeEmailInstructionsInput {
+	return input.SendUpdateMeEmailInstructionsInput{
 		Email:             in.Email,
 		EmailConfirmation: in.EmailConfirmation,
 	}
 }
 
-// UpdateUserEmailRequestToDTOInput converts from requests.UpdateUserEmailRequest to dto.UpdateUserEmailInput.
-func UpdateMeEmailRequestToDTOInput(in requests.UpdateMeEmailRequest) dto.UpdateMeEmailInput {
-	return dto.UpdateMeEmailInput{
+// UpdateMeEmailRequestToInput converts from requests.UpdateMeEmailRequest to input.UpdateMeEmailInput.
+func UpdateMeEmailRequestToInput(in requests.UpdateMeEmailRequest) input.UpdateMeEmailInput {
+	return input.UpdateMeEmailInput{
 		Token: in.Token,
 	}
 }
 
-// UpdateMeEmailOutputToResponse converts from dto.UpdateMeEmailOutput to responses.UpdateMeEmailResponse.
-func UpdateMeEmailOutputToResponse(out *dto.UpdateMeEmailOutput) *responses.UpdateMeEmailResponse {
+// UpdateUserEmailOutputToResponse converts from output.UpdateUserEmailOutput to responses.UpdateUserEmailResponse.
+func UpdateMeEmailOutputToResponse(out *output.UpdateMeEmailOutput) *responses.UpdateMeEmailResponse {
 	return &responses.UpdateMeEmailResponse{
-		User: UserDTOToResponse(out.User),
+		User: UserOutputToResponse(out.User),
 	}
 }
 
-// UpdateUserRequestToDTOInput converts from requests.UpdateUserRequest to dto.UpdateUserInput.
-func UpdateUserRequestToDTOInput(in requests.UpdateUserRequest) dto.UpdateUserInput {
-	return dto.UpdateUserInput{
+// UpdateUserRequestToInput converts from requests.UpdateUserRequest to input.UpdateUserInput.
+func UpdateUserRequestToInput(in requests.UpdateUserRequest) input.UpdateUserInput {
+	return input.UpdateUserInput{
 		UserID:   in.UserID,
 		Role:     in.Role,
 		GroupIDs: in.GroupIDs,
 	}
 }
 
-// UpdateUserOutputToResponse converts from dto.UpdateUserOutput to responses.UpdateUserResponse.
-func UpdateUserOutputToResponse(out *dto.UpdateUserOutput) *responses.UpdateUserResponse {
+// UpdateUserOutputToResponse converts from output.UpdateUserOutput to responses.UpdateUserResponse.
+func UpdateUserOutputToResponse(out *output.UpdateUserOutput) *responses.UpdateUserResponse {
 	return &responses.UpdateUserResponse{
-		User: UserDTOToResponse(out.User),
+		User: UserOutputToResponse(out.User),
 	}
 }
 
-// DeleteOrganizationUserRequestToDTOInput converts from requests.DeleteOrganizationUserRequest to dto.DeleteOrganizationUserInput.
-func DeleteUserRequestToDTOInput(in requests.DeleteUserRequest) dto.DeleteUserInput {
-	return dto.DeleteUserInput{
+// DeleteUserRequestToInput converts from requests.DeleteUserRequest to input.DeleteUserInput.
+func DeleteUserRequestToInput(in requests.DeleteUserRequest) input.DeleteUserInput {
+	return input.DeleteUserInput{
 		UserID: in.UserID,
 	}
 }
 
-// CreateUserInvitationsRequestToDTOInput converts from requests.CreateUserInvitationsRequest to dto.CreateUserInvitationsInput.
-func CreateUserInvitationsRequestToDTOInput(in requests.CreateUserInvitationsRequest) dto.CreateUserInvitationsInput {
-	return dto.CreateUserInvitationsInput{
+// CreateUserInvitationsRequestToInput converts from requests.CreateUserInvitationsRequest to input.CreateUserInvitationsInput.
+func CreateUserInvitationsRequestToInput(in requests.CreateUserInvitationsRequest) input.CreateUserInvitationsInput {
+	return input.CreateUserInvitationsInput{
 		Emails: in.Emails,
 		Role:   in.Role,
 	}
 }
 
-// CreateUserInvitationsOutputToResponse converts from dto.CreateUserInvitationsOutput to responses.CreateUserInvitationsResponse.
-func CreateUserInvitationsOutputToResponse(out *dto.CreateUserInvitationsOutput) *responses.CreateUserInvitationsResponse {
+// CreateUserInvitationsOutputToResponse converts from output.CreateUserInvitationsOutput to responses.CreateUserInvitationsResponse.
+func CreateUserInvitationsOutputToResponse(out *output.CreateUserInvitationsOutput) *responses.CreateUserInvitationsResponse {
 	invitations := make([]*responses.UserInvitationResponse, 0, len(out.UserInvitations))
 	for _, invitation := range out.UserInvitations {
-		invitations = append(invitations, UserInvitationDTOToResponse(invitation))
+		invitations = append(invitations, UserInvitationOutputToResponse(invitation))
 	}
 
 	return &responses.CreateUserInvitationsResponse{
@@ -164,16 +165,16 @@ func CreateUserInvitationsOutputToResponse(out *dto.CreateUserInvitationsOutput)
 	}
 }
 
-// ResendInvitationRequestToDTOInput converts from requests.ResendInvitationRequest to dto.ResendInvitationInput.
-func ResendUserInvitationRequestToDTOInput(in requests.ResendUserInvitationRequest) dto.ResendUserInvitationInput {
-	return dto.ResendUserInvitationInput{
+// ResendInvitationRequestToInput converts from requests.ResendInvitationRequest to input.ResendInvitationInput.
+func ResendUserInvitationRequestToInput(in requests.ResendUserInvitationRequest) input.ResendUserInvitationInput {
+	return input.ResendUserInvitationInput{
 		InvitationID: in.InvitationID,
 	}
 }
 
-// ResendInvitationOutputToResponse converts from dto.ResendInvitationOutput to responses.ResendInvitationResponse.
-func ResendUserInvitationOutputToResponse(out *dto.ResendUserInvitationOutput) *responses.ResendUserInvitationResponse {
+// ResendInvitationOutputToResponse converts from output.ResendUserInvitationOutput to responses.ResendUserInvitationResponse.
+func ResendUserInvitationOutputToResponse(out *output.ResendUserInvitationOutput) *responses.ResendUserInvitationResponse {
 	return &responses.ResendUserInvitationResponse{
-		UserInvitation: UserInvitationDTOToResponse(out.UserInvitation),
+		UserInvitation: UserInvitationOutputToResponse(out.UserInvitation),
 	}
 }

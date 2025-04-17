@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/group"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/group/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
 type GroupHandler struct {
-	service group.Service
+	service service.GroupService
 }
 
-func NewGroupHandler(service group.Service) *GroupHandler {
+func NewGroupHandler(service service.GroupService) *GroupHandler {
 	return &GroupHandler{service}
 }
 
@@ -39,7 +39,7 @@ func (h *GroupHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Get(r.Context(), adapters.GetGroupRequestToDTOInput(req))
+	out, err := h.service.Get(r.Context(), adapters.GetGroupRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -95,7 +95,7 @@ func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), adapters.CreateGroupRequestToDTOInput(req))
+	out, err := h.service.Create(r.Context(), adapters.CreateGroupRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -134,7 +134,7 @@ func (h *GroupHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), adapters.UpdateGroupRequestToDTOInput(req))
+	out, err := h.service.Update(r.Context(), adapters.UpdateGroupRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -165,7 +165,7 @@ func (h *GroupHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Delete(r.Context(), adapters.DeleteGroupRequestToDTOInput(req))
+	out, err := h.service.Delete(r.Context(), adapters.DeleteGroupRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

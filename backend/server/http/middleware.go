@@ -11,8 +11,8 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/trysourcetool/sourcetool/backend/organization"
+	"github.com/trysourcetool/sourcetool/backend/user"
 	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
@@ -34,7 +34,7 @@ func NewMiddlewareCE(s infra.Store) *MiddlewareCE {
 }
 
 // authenticateUser handles common user authentication logic and returns the authenticated user.
-func (m *MiddlewareCE) authenticateUser(w http.ResponseWriter, r *http.Request) (*model.User, error) {
+func (m *MiddlewareCE) authenticateUser(w http.ResponseWriter, r *http.Request) (*user.User, error) {
 	ctx := r.Context()
 
 	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
@@ -66,7 +66,7 @@ func (m *MiddlewareCE) authenticateUser(w http.ResponseWriter, r *http.Request) 
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	u, err := m.Store.User().Get(ctx, storeopts.UserByID(userID))
+	u, err := m.Store.User().Get(ctx, user.ByID(userID))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -82,20 +82,20 @@ func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, erro
 }
 
 func (m *MiddlewareCE) validateOrganizationAccess(ctx context.Context, userID uuid.UUID, subdomain string) error {
-	orgAccessOpts := []storeopts.UserOrganizationAccessOption{
-		storeopts.UserOrganizationAccessByUserID(userID),
+	orgAccessOpts := []user.OrganizationAccessStoreOption{
+		user.OrganizationAccessByUserID(userID),
 	}
 	if config.Config.IsCloudEdition {
-		orgAccessOpts = append(orgAccessOpts, storeopts.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessOpts = append(orgAccessOpts, user.OrganizationAccessByOrganizationSubdomain(subdomain))
 	}
 	_, err := m.Store.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	return err
 }
 
-func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*model.Organization, error) {
-	opts := []storeopts.OrganizationOption{}
+func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*organization.Organization, error) {
+	opts := []organization.StoreOption{}
 	if subdomain != "" && subdomain != "auth" {
-		opts = append(opts, storeopts.OrganizationBySubdomain(subdomain))
+		opts = append(opts, organization.BySubdomain(subdomain))
 	}
 
 	return m.Store.Organization().Get(ctx, opts...)

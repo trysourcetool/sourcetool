@@ -2,441 +2,345 @@ package user
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-	"github.com/lib/pq"
-	"github.com/samber/lo"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.UserOption) (*model.User, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.User{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrUserNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.UserOption) ([]*model.User, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byIDOption) isStoreOption() {}
 
-	m := make([]*model.User, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."id"`: o.id})
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.UserOption) (string, []any, error) {
-	q := s.builder.Select(
-		`u."id"`,
-		`u."created_at"`,
-		`u."email"`,
-		`u."first_name"`,
-		`u."last_name"`,
-		`u."updated_at"`,
-		`u."refresh_token_hash"`,
-		`u."google_id"`,
-	).
-		From(`"user" u`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func ByEmail(email string) StoreOption {
+	return byEmailOption{email: email}
 }
 
-func (s *StoreCE) Create(ctx context.Context, m *model.User) error {
-	if _, err := s.builder.
-		Insert(`"user"`).
-		Columns(
-			`"id"`,
-			`"email"`,
-			`"first_name"`,
-			`"last_name"`,
-			`"refresh_token_hash"`,
-			`"google_id"`,
-		).
-		Values(
-			m.ID,
-			m.Email,
-			m.FirstName,
-			m.LastName,
-			m.RefreshTokenHash,
-			m.GoogleID,
-		).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return errdefs.ErrAlreadyExists(err)
-		}
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type byEmailOption struct {
+	email string
 }
 
-func (s *StoreCE) Update(ctx context.Context, m *model.User) error {
-	if _, err := s.builder.
-		Update(`"user"`).
-		Set(`"email"`, m.Email).
-		Set(`"first_name"`, m.FirstName).
-		Set(`"last_name"`, m.LastName).
-		Set(`"refresh_token_hash"`, m.RefreshTokenHash).
-		Set(`"google_id"`, m.GoogleID).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return errdefs.ErrAlreadyExists(err)
-		}
-		return errdefs.ErrDatabase(err)
-	}
+func (o byEmailOption) isStoreOption() {}
 
-	return nil
+func (o byEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."email"`: o.email})
 }
 
-func (s *StoreCE) IsEmailExists(ctx context.Context, email string) (bool, error) {
-	if _, err := s.Get(ctx, storeopts.UserByEmail(email)); err != nil {
-		if errdefs.IsUserNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+func ByRefreshTokenHash(refreshTokenHash string) StoreOption {
+	return byRefreshTokenHashOption{refreshTokenHash: refreshTokenHash}
 }
 
-func (s *StoreCE) GetOrganizationAccess(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (*model.UserOrganizationAccess, error) {
-	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.UserOrganizationAccess{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrUserOrganizationAccessNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byRefreshTokenHashOption struct {
+	refreshTokenHash string
 }
 
-func (s *StoreCE) ListOrganizationAccesses(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) ([]*model.UserOrganizationAccess, error) {
-	query, args, err := s.buildOrganizationAccessQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byRefreshTokenHashOption) isStoreOption() {}
 
-	m := make([]*model.UserOrganizationAccess, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o byRefreshTokenHashOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."refresh_token_hash"`: o.refreshTokenHash})
 }
 
-func (s *StoreCE) buildOrganizationAccessQuery(ctx context.Context, opts ...storeopts.UserOrganizationAccessOption) (string, []any, error) {
-	q := s.builder.Select(
-		`uoa."id"`,
-		`uoa."user_id"`,
-		`uoa."organization_id"`,
-		`uoa."role"`,
-		`uoa."created_at"`,
-		`uoa."updated_at"`,
-	).
-		From(`"user_organization_access" uoa`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func ByOrganizationID(id uuid.UUID) StoreOption {
+	return byOrganizationIDOption{id: id}
 }
 
-func (s *StoreCE) CreateOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
-	if _, err := s.builder.
-		Insert(`"user_organization_access"`).
-		Columns(
-			`"id"`,
-			`"user_id"`,
-			`"organization_id"`,
-			`"role"`,
-		).
-		Values(
-			m.ID,
-			m.UserID,
-			m.OrganizationID,
-			m.Role,
-		).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type byOrganizationIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) UpdateOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
-	if _, err := s.builder.
-		Update(`"user_organization_access"`).
-		Set(`"role"`, m.Role).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
+func (o byOrganizationIDOption) isStoreOption() {}
 
-	return nil
+func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
+		Where(sq.Eq{`uoa."organization_id"`: o.id})
 }
 
-func (s *StoreCE) DeleteOrganizationAccess(ctx context.Context, m *model.UserOrganizationAccess) error {
-	if _, err := s.builder.
-		Delete(`"user_organization_access"`).
-		Where(sq.Eq{`"user_id"`: m.UserID, `"organization_id"`: m.OrganizationID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		if err == sql.ErrNoRows {
-			return errdefs.ErrUserOrganizationAccessNotFound(err)
-		}
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+func Limit(limit uint64) StoreOption {
+	return limitOption{limit: limit}
 }
 
-func (s *StoreCE) GetGroup(ctx context.Context, opts ...storeopts.UserGroupOption) (*model.UserGroup, error) {
-	query, args, err := s.buildGroupQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.UserGroup{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrUserGroupNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type limitOption struct {
+	limit uint64
 }
 
-func (s *StoreCE) ListGroups(ctx context.Context, opts ...storeopts.UserGroupOption) ([]*model.UserGroup, error) {
-	query, args, err := s.buildGroupQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o limitOption) isStoreOption() {}
 
-	m := make([]*model.UserGroup, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o limitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Limit(o.limit)
 }
 
-func (s *StoreCE) buildGroupQuery(ctx context.Context, opts ...storeopts.UserGroupOption) (string, []any, error) {
-	q := s.builder.Select(
-		`ug."id"`,
-		`ug."user_id"`,
-		`ug."group_id"`,
-		`ug."created_at"`,
-		`ug."updated_at"`,
-	).
-		From(`"user_group" ug`)
-
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func Offset(offset uint64) StoreOption {
+	return offsetOption{offset: offset}
 }
 
-func (s *StoreCE) BulkInsertGroups(ctx context.Context, m []*model.UserGroup) error {
-	if len(m) == 0 {
-		return nil
-	}
-
-	q := s.builder.
-		Insert(`"user_group"`).
-		Columns(`"id"`, `"user_id"`, `"group_id"`)
-
-	for _, v := range m {
-		q = q.Values(v.ID, v.UserID, v.GroupID)
-	}
-
-	if _, err := q.
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type offsetOption struct {
+	offset uint64
 }
 
-func (s *StoreCE) BulkDeleteGroups(ctx context.Context, m []*model.UserGroup) error {
-	if len(m) == 0 {
-		return nil
-	}
+func (o offsetOption) isStoreOption() {}
 
-	ids := lo.Map(m, func(x *model.UserGroup, _ int) uuid.UUID {
-		return x.ID
-	})
-
-	if _, err := s.builder.
-		Delete(`"user_group"`).
-		Where(sq.Eq{`"id"`: ids}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+func (o offsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Offset(o.offset)
 }
 
-func (s *StoreCE) GetInvitation(ctx context.Context, opts ...storeopts.UserInvitationOption) (*model.UserInvitation, error) {
-	query, args, err := s.buildInvitationQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.UserInvitation{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrUserInvitationNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+func OrderBy(orderBy string) StoreOption {
+	return orderByOption{orderBy: orderBy}
 }
 
-func (s *StoreCE) ListInvitations(ctx context.Context, opts ...storeopts.UserInvitationOption) ([]*model.UserInvitation, error) {
-	query, args, err := s.buildInvitationQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make([]*model.UserInvitation, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+type orderByOption struct {
+	orderBy string
 }
 
-func (s *StoreCE) buildInvitationQuery(ctx context.Context, opts ...storeopts.UserInvitationOption) (string, []any, error) {
-	q := s.builder.Select(
-		`ui."id"`,
-		`ui."organization_id"`,
-		`ui."email"`,
-		`ui."role"`,
-		`ui."created_at"`,
-		`ui."updated_at"`,
-	).
-		From(`"user_invitation" ui`)
+func (o orderByOption) isStoreOption() {}
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func (o orderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(o.orderBy)
 }
 
-func (s *StoreCE) DeleteInvitation(ctx context.Context, m *model.UserInvitation) error {
-	if _, err := s.builder.
-		Delete(`"user_invitation"`).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type RegistrationRequestOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isRegistrationRequestOption()
 }
 
-func (s *StoreCE) BulkInsertInvitations(ctx context.Context, m []*model.UserInvitation) error {
-	if len(m) == 0 {
-		return nil
-	}
-
-	q := s.builder.
-		Insert(`"user_invitation"`).
-		Columns(`"id"`, `"organization_id"`, `"email"`, `"role"`)
-
-	for _, v := range m {
-		q = q.Values(v.ID, v.OrganizationID, v.Email, v.Role)
-	}
-
-	if _, err := q.
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+func RegistrationRequestByEmail(email string) RegistrationRequestOption {
+	return registrationRequestByEmailOption{email: email}
 }
 
-func (s *StoreCE) IsInvitationEmailExists(ctx context.Context, orgID uuid.UUID, email string) (bool, error) {
-	if _, err := s.GetInvitation(ctx, storeopts.UserInvitationByOrganizationID(orgID), storeopts.UserInvitationByEmail(email)); err != nil {
-		if errdefs.IsUserInvitationNotFound(err) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+type registrationRequestByEmailOption struct {
+	email string
+}
+
+func (o registrationRequestByEmailOption) isRegistrationRequestOption() {}
+
+func (o registrationRequestByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`urr."email"`: o.email})
+}
+
+type OrganizationAccessStoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isOrganizationAccessStoreOption()
+}
+
+func OrganizationAccessByUserID(id uuid.UUID) OrganizationAccessStoreOption {
+	return organizationAccessByUserIDOption{id: id}
+}
+
+type organizationAccessByUserIDOption struct {
+	id uuid.UUID
+}
+
+func (o organizationAccessByUserIDOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."user_id"`: o.id})
+}
+
+func OrganizationAccessByUserIDs(ids []uuid.UUID) OrganizationAccessStoreOption {
+	return organizationAccessByUserIDsOption{ids: ids}
+}
+
+type organizationAccessByUserIDsOption struct {
+	ids []uuid.UUID
+}
+
+func (o organizationAccessByUserIDsOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessByUserIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."user_id"`: o.ids})
+}
+
+func OrganizationAccessByOrganizationID(id uuid.UUID) OrganizationAccessStoreOption {
+	return organizationAccessByOrganizationIDOption{id: id}
+}
+
+type organizationAccessByOrganizationIDOption struct {
+	id uuid.UUID
+}
+
+func (o organizationAccessByOrganizationIDOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
+		Where(sq.Eq{`o."id"`: o.id})
+}
+
+func OrganizationAccessByOrganizationSubdomain(subdomain string) OrganizationAccessStoreOption {
+	return organizationAccessByOrganizationSubdomainOption{subdomain: subdomain}
+}
+
+type organizationAccessByOrganizationSubdomainOption struct {
+	subdomain string
+}
+
+func (o organizationAccessByOrganizationSubdomainOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessByOrganizationSubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
+		Where(sq.Eq{`o."subdomain"`: o.subdomain})
+}
+
+func OrganizationAccessOrderBy(orderBy string) OrganizationAccessStoreOption {
+	return organizationAccessOrderByOption{orderBy: orderBy}
+}
+
+type organizationAccessOrderByOption struct {
+	orderBy string
+}
+
+func (o organizationAccessOrderByOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessOrderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(o.orderBy)
+}
+
+func OrganizationAccessByRole(role UserOrganizationRole) OrganizationAccessStoreOption {
+	return organizationAccessByRoleOption{role: role}
+}
+
+type organizationAccessByRoleOption struct {
+	role UserOrganizationRole
+}
+
+func (o organizationAccessByRoleOption) isOrganizationAccessStoreOption() {}
+
+func (o organizationAccessByRoleOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."role"`: o.role})
+}
+
+type GroupStoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isGroupStoreOption()
+}
+
+func GroupByUserID(id uuid.UUID) GroupStoreOption {
+	return groupByUserIDOption{id: id}
+}
+
+type groupByUserIDOption struct {
+	id uuid.UUID
+}
+
+func (o groupByUserIDOption) isGroupStoreOption() {}
+
+func (o groupByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ug."user_id"`: o.id})
+}
+
+func GroupByGroupID(id uuid.UUID) GroupStoreOption {
+	return groupByGroupIDOption{id: id}
+}
+
+type groupByGroupIDOption struct {
+	id uuid.UUID
+}
+
+func (o groupByGroupIDOption) isGroupStoreOption() {}
+
+func (o groupByGroupIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ug."group_id"`: o.id})
+}
+
+func GroupByOrganizationID(id uuid.UUID) GroupStoreOption {
+	return groupByOrganizationIDOption{id: id}
+}
+
+type groupByOrganizationIDOption struct {
+	id uuid.UUID
+}
+
+func (o groupByOrganizationIDOption) isGroupStoreOption() {}
+
+func (o groupByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"group" g ON g."id" = ug."group_id"`).
+		Where(sq.Eq{`g."organization_id"`: o.id})
+}
+
+type InvitationStoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isInvitationStoreOption()
+}
+
+func InvitationByOrganizationID(id uuid.UUID) InvitationStoreOption {
+	return invitationByOrganizationIDOption{id: id}
+}
+
+type invitationByOrganizationIDOption struct {
+	id uuid.UUID
+}
+
+func (o invitationByOrganizationIDOption) isInvitationStoreOption() {}
+
+func (o invitationByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."organization_id"`: o.id})
+}
+
+func InvitationByID(id uuid.UUID) InvitationStoreOption {
+	return invitationByIDOption{id: id}
+}
+
+type invitationByIDOption struct {
+	id uuid.UUID
+}
+
+func (o invitationByIDOption) isInvitationStoreOption() {}
+
+func (o invitationByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."id"`: o.id})
+}
+
+func InvitationByEmail(email string) InvitationStoreOption {
+	return invitationByEmailOption{email: email}
+}
+
+type invitationByEmailOption struct {
+	email string
+}
+
+func (o invitationByEmailOption) isInvitationStoreOption() {}
+
+func (o invitationByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."email"`: o.email})
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*User, error)
+	List(context.Context, ...StoreOption) ([]*User, error)
+	Create(context.Context, *User) error
+	Update(context.Context, *User) error
+	IsEmailExists(context.Context, string) (bool, error)
+
+	GetOrganizationAccess(context.Context, ...OrganizationAccessStoreOption) (*UserOrganizationAccess, error)
+	ListOrganizationAccesses(context.Context, ...OrganizationAccessStoreOption) ([]*UserOrganizationAccess, error)
+	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
+	UpdateOrganizationAccess(context.Context, *UserOrganizationAccess) error
+	DeleteOrganizationAccess(context.Context, *UserOrganizationAccess) error
+
+	GetGroup(context.Context, ...GroupStoreOption) (*UserGroup, error)
+	ListGroups(context.Context, ...GroupStoreOption) ([]*UserGroup, error)
+	BulkInsertGroups(context.Context, []*UserGroup) error
+	BulkDeleteGroups(context.Context, []*UserGroup) error
+
+	GetInvitation(context.Context, ...InvitationStoreOption) (*UserInvitation, error)
+	ListInvitations(context.Context, ...InvitationStoreOption) ([]*UserInvitation, error)
+	DeleteInvitation(context.Context, *UserInvitation) error
+	BulkInsertInvitations(context.Context, []*UserInvitation) error
+	IsInvitationEmailExists(context.Context, uuid.UUID, string) (bool, error)
 }

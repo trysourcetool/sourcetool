@@ -3,13 +3,14 @@ package adapters
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// EnvironmentDTOToResponse converts from dto.Environment to responses.EnvironmentResponse.
-func EnvironmentDTOToResponse(env *dto.Environment) *responses.EnvironmentResponse {
+// EnvironmentOutputToResponse converts from output.Environment to responses.EnvironmentResponse.
+func EnvironmentOutputToResponse(env *output.Environment) *responses.EnvironmentResponse {
 	if env == nil {
 		return nil
 	}
@@ -24,25 +25,25 @@ func EnvironmentDTOToResponse(env *dto.Environment) *responses.EnvironmentRespon
 	}
 }
 
-// GetEnvironmentRequestToDTOInput converts from requests.GetEnvironmentRequest to dto.GetEnvironmentInput.
-func GetEnvironmentRequestToDTOInput(in requests.GetEnvironmentRequest) dto.GetEnvironmentInput {
-	return dto.GetEnvironmentInput{
+// GetEnvironmentRequestToInput converts from requests.GetEnvironmentRequest to input.GetEnvironmentInput.
+func GetEnvironmentRequestToInput(in requests.GetEnvironmentRequest) input.GetEnvironmentInput {
+	return input.GetEnvironmentInput{
 		EnvironmentID: in.EnvironmentID,
 	}
 }
 
-// GetEnvironmentOutputToResponse converts from dto.GetEnvironmentOutput to responses.GetEnvironmentResponse.
-func GetEnvironmentOutputToResponse(out *dto.GetEnvironmentOutput) *responses.GetEnvironmentResponse {
+// GetEnvironmentOutputToResponse converts from output.GetEnvironmentOutput to responses.GetEnvironmentResponse.
+func GetEnvironmentOutputToResponse(out *output.GetEnvironmentOutput) *responses.GetEnvironmentResponse {
 	return &responses.GetEnvironmentResponse{
-		Environment: EnvironmentDTOToResponse(out.Environment),
+		Environment: EnvironmentOutputToResponse(out.Environment),
 	}
 }
 
-// ListEnvironmentsOutputToResponse converts from dto.ListEnvironmentsOutput to responses.ListEnvironmentsResponse.
-func ListEnvironmentsOutputToResponse(out *dto.ListEnvironmentsOutput) *responses.ListEnvironmentsResponse {
+// ListEnvironmentsOutputToResponse converts from output.ListEnvironmentsOutput to responses.ListEnvironmentsResponse.
+func ListEnvironmentsOutputToResponse(out *output.ListEnvironmentsOutput) *responses.ListEnvironmentsResponse {
 	envs := make([]*responses.EnvironmentResponse, 0, len(out.Environments))
 	for _, env := range out.Environments {
-		envs = append(envs, EnvironmentDTOToResponse(env))
+		envs = append(envs, EnvironmentOutputToResponse(env))
 	}
 
 	return &responses.ListEnvironmentsResponse{
@@ -50,48 +51,48 @@ func ListEnvironmentsOutputToResponse(out *dto.ListEnvironmentsOutput) *response
 	}
 }
 
-// CreateEnvironmentRequestToDTOInput converts from requests.CreateEnvironmentRequest to dto.CreateEnvironmentInput.
-func CreateEnvironmentRequestToDTOInput(in requests.CreateEnvironmentRequest) dto.CreateEnvironmentInput {
-	return dto.CreateEnvironmentInput{
+// CreateEnvironmentRequestToInput converts from requests.CreateEnvironmentRequest to input.CreateEnvironmentInput.
+func CreateEnvironmentRequestToInput(in requests.CreateEnvironmentRequest) input.CreateEnvironmentInput {
+	return input.CreateEnvironmentInput{
 		Name:  in.Name,
 		Slug:  in.Slug,
 		Color: in.Color,
 	}
 }
 
-// CreateEnvironmentOutputToResponse converts from dto.CreateEnvironmentOutput to responses.CreateEnvironmentResponse.
-func CreateEnvironmentOutputToResponse(out *dto.CreateEnvironmentOutput) *responses.CreateEnvironmentResponse {
+// CreateEnvironmentOutputToResponse converts from output.CreateEnvironmentOutput to responses.CreateEnvironmentResponse.
+func CreateEnvironmentOutputToResponse(out *output.CreateEnvironmentOutput) *responses.CreateEnvironmentResponse {
 	return &responses.CreateEnvironmentResponse{
-		Environment: EnvironmentDTOToResponse(out.Environment),
+		Environment: EnvironmentOutputToResponse(out.Environment),
 	}
 }
 
-// UpdateEnvironmentRequestToDTOInput converts from requests.UpdateEnvironmentRequest to dto.UpdateEnvironmentInput.
-func UpdateEnvironmentRequestToDTOInput(in requests.UpdateEnvironmentRequest) dto.UpdateEnvironmentInput {
-	return dto.UpdateEnvironmentInput{
+// UpdateEnvironmentRequestToInput converts from requests.UpdateEnvironmentRequest to input.UpdateEnvironmentInput.
+func UpdateEnvironmentRequestToInput(in requests.UpdateEnvironmentRequest) input.UpdateEnvironmentInput {
+	return input.UpdateEnvironmentInput{
 		EnvironmentID: in.EnvironmentID,
 		Name:          in.Name,
 		Color:         in.Color,
 	}
 }
 
-// UpdateEnvironmentOutputToResponse converts from dto.UpdateEnvironmentOutput to responses.UpdateEnvironmentResponse.
-func UpdateEnvironmentOutputToResponse(out *dto.UpdateEnvironmentOutput) *responses.UpdateEnvironmentResponse {
+// UpdateEnvironmentOutputToResponse converts from output.UpdateEnvironmentOutput to responses.UpdateEnvironmentResponse.
+func UpdateEnvironmentOutputToResponse(out *output.UpdateEnvironmentOutput) *responses.UpdateEnvironmentResponse {
 	return &responses.UpdateEnvironmentResponse{
-		Environment: EnvironmentDTOToResponse(out.Environment),
+		Environment: EnvironmentOutputToResponse(out.Environment),
 	}
 }
 
-// DeleteEnvironmentRequestToDTOInput converts from requests.DeleteEnvironmentRequest to dto.DeleteEnvironmentInput.
-func DeleteEnvironmentRequestToDTOInput(in requests.DeleteEnvironmentRequest) dto.DeleteEnvironmentInput {
-	return dto.DeleteEnvironmentInput{
+// DeleteEnvironmentRequestToInput converts from requests.DeleteEnvironmentRequest to input.DeleteEnvironmentInput.
+func DeleteEnvironmentRequestToInput(in requests.DeleteEnvironmentRequest) input.DeleteEnvironmentInput {
+	return input.DeleteEnvironmentInput{
 		EnvironmentID: in.EnvironmentID,
 	}
 }
 
-// DeleteEnvironmentOutputToResponse converts from dto.DeleteEnvironmentOutput to responses.DeleteEnvironmentResponse.
-func DeleteEnvironmentOutputToResponse(out *dto.DeleteEnvironmentOutput) *responses.DeleteEnvironmentResponse {
+// DeleteEnvironmentOutputToResponse converts from output.DeleteEnvironmentOutput to responses.DeleteEnvironmentResponse.
+func DeleteEnvironmentOutputToResponse(out *output.DeleteEnvironmentOutput) *responses.DeleteEnvironmentResponse {
 	return &responses.DeleteEnvironmentResponse{
-		Environment: EnvironmentDTOToResponse(out.Environment),
+		Environment: EnvironmentOutputToResponse(out.Environment),
 	}
 }

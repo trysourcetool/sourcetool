@@ -21,7 +21,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/postgres"
-	"github.com/trysourcetool/sourcetool/backend/ws"
+	wsconn "github.com/trysourcetool/sourcetool/backend/ws/conn"
 )
 
 func init() {
@@ -61,7 +61,7 @@ func main() {
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	ws.InitWebSocketConns(ctx, dep.Store)
+	wsconn.InitWebSocketConns(ctx, dep.Store)
 
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
@@ -78,7 +78,7 @@ func main() {
 		defer shutdownCancel()
 
 		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
+		wsconn.GetConnManager().Close()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("server shutdown: %v", err)

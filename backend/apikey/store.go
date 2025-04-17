@@ -2,138 +2,104 @@ package apikey
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/lib/pq"
-
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/model"
-	"github.com/trysourcetool/sourcetool/backend/storeopts"
+	"github.com/gofrs/uuid/v5"
 )
 
-type StoreCE struct {
-	db      infra.DB
-	builder sq.StatementBuilderType
+type StoreOption interface {
+	Apply(sq.SelectBuilder) sq.SelectBuilder
+	isStoreOption()
 }
 
-func NewStoreCE(db infra.DB) *StoreCE {
-	return &StoreCE{
-		db:      db,
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
+func ByID(id uuid.UUID) StoreOption {
+	return byIDOption{id: id}
 }
 
-func (s *StoreCE) Get(ctx context.Context, opts ...storeopts.APIKeyOption) (*model.APIKey, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	m := model.APIKey{}
-	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errdefs.ErrAPIKeyNotFound(err)
-		}
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return &m, nil
+type byIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) List(ctx context.Context, opts ...storeopts.APIKeyOption) ([]*model.APIKey, error) {
-	query, args, err := s.buildQuery(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
+func (o byIDOption) isStoreOption() {}
 
-	m := make([]*model.APIKey, 0)
-	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
-		return nil, errdefs.ErrDatabase(err)
-	}
-
-	return m, nil
+func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."id"`: o.id})
 }
 
-func (s *StoreCE) buildQuery(ctx context.Context, opts ...storeopts.APIKeyOption) (string, []any, error) {
-	q := s.builder.Select(
-		`ak."id"`,
-		`ak."organization_id"`,
-		`ak."environment_id"`,
-		`ak."user_id"`,
-		`ak."name"`,
-		`ak."key"`,
-		`ak."created_at"`,
-		`ak."updated_at"`,
-	).
-		From(`"api_key" ak`)
-
-	for _, opt := range opts {
-		q = opt.Apply(q)
-	}
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return "", nil, errdefs.ErrDatabase(err)
-	}
-
-	return query, args, err
+func ByOrganizationID(id uuid.UUID) StoreOption {
+	return byOrganizationIDOption{id: id}
 }
 
-func (s *StoreCE) Create(ctx context.Context, m *model.APIKey) error {
-	if _, err := s.builder.
-		Insert(`"api_key"`).
-		Columns(
-			`"id"`,
-			`"organization_id"`,
-			`"environment_id"`,
-			`"user_id"`,
-			`"name"`,
-			`"key"`,
-		).
-		Values(
-			m.ID,
-			m.OrganizationID,
-			m.EnvironmentID,
-			m.UserID,
-			m.Name,
-			m.Key,
-		).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return errdefs.ErrAlreadyExists(err)
-		}
-		return errdefs.ErrDatabase(err)
-	}
-
-	return nil
+type byOrganizationIDOption struct {
+	id uuid.UUID
 }
 
-func (s *StoreCE) Update(ctx context.Context, m *model.APIKey) error {
-	if _, err := s.builder.
-		Update(`"api_key"`).
-		Set(`"user_id"`, m.UserID).
-		Set(`"name"`, m.Name).
-		Set(`"key"`, m.Key).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
+func (o byOrganizationIDOption) isStoreOption() {}
 
-	return nil
+func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."organization_id"`: o.id})
 }
 
-func (s *StoreCE) Delete(ctx context.Context, m *model.APIKey) error {
-	if _, err := s.builder.
-		Delete(`"api_key"`).
-		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(s.db).
-		ExecContext(ctx); err != nil {
-		return errdefs.ErrDatabase(err)
-	}
+func ByEnvironmentID(id uuid.UUID) StoreOption {
+	return byEnvironmentIDOption{id: id}
+}
 
-	return nil
+type byEnvironmentIDOption struct {
+	id uuid.UUID
+}
+
+func (o byEnvironmentIDOption) isStoreOption() {}
+
+func (o byEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."environment_id"`: o.id})
+}
+
+func ByEnvironmentIDs(ids []uuid.UUID) StoreOption {
+	return byEnvironmentIDsOption{ids: ids}
+}
+
+type byEnvironmentIDsOption struct {
+	ids []uuid.UUID
+}
+
+func (o byEnvironmentIDsOption) isStoreOption() {}
+
+func (o byEnvironmentIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."environment_id"`: o.ids})
+}
+
+func ByUserID(id uuid.UUID) StoreOption {
+	return byUserIDOption{id: id}
+}
+
+type byUserIDOption struct {
+	id uuid.UUID
+}
+
+func (o byUserIDOption) isStoreOption() {}
+
+func (o byUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."user_id"`: o.id})
+}
+
+func ByKey(key string) StoreOption {
+	return byKeyOption{key: key}
+}
+
+type byKeyOption struct {
+	key string
+}
+
+func (o byKeyOption) isStoreOption() {}
+
+func (o byKeyOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ak."key"`: o.key})
+}
+
+type Store interface {
+	Get(context.Context, ...StoreOption) (*APIKey, error)
+	List(context.Context, ...StoreOption) ([]*APIKey, error)
+	Create(context.Context, *APIKey) error
+	Update(context.Context, *APIKey) error
+	Delete(context.Context, *APIKey) error
 }
