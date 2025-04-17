@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/apikey"
@@ -36,11 +36,6 @@ func APIKeyFromModel(apiKey *apikey.APIKey, env *environment.Environment) *APIKe
 	return result
 }
 
-// GetAPIKeyInput is the input for Get operation.
-type GetAPIKeyInput struct {
-	APIKeyID string
-}
-
 // GetAPIKeyOutput is the output for Get operation.
 type GetAPIKeyOutput struct {
 	APIKey *APIKey
@@ -52,31 +47,14 @@ type ListAPIKeysOutput struct {
 	LiveKeys []*APIKey
 }
 
-// CreateAPIKeyInput is the input for Create operation.
-type CreateAPIKeyInput struct {
-	EnvironmentID string
-	Name          string
-}
-
 // CreateAPIKeyOutput is the output for Create operation.
 type CreateAPIKeyOutput struct {
 	APIKey *APIKey
 }
 
-// UpdateAPIKeyInput is the input for Update operation.
-type UpdateAPIKeyInput struct {
-	APIKeyID string
-	Name     *string
-}
-
 // UpdateAPIKeyOutput is the output for Update operation.
 type UpdateAPIKeyOutput struct {
 	APIKey *APIKey
-}
-
-// DeleteAPIKeyInput is the input for Delete operation.
-type DeleteAPIKeyInput struct {
-	APIKeyID string
 }
 
 // DeleteAPIKeyOutput is the output for Delete operation.

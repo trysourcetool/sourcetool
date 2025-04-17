@@ -7,7 +7,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -17,11 +18,11 @@ import (
 )
 
 type EnvironmentService interface {
-	Get(context.Context, dto.GetEnvironmentInput) (*dto.GetEnvironmentOutput, error)
-	List(context.Context) (*dto.ListEnvironmentsOutput, error)
-	Create(context.Context, dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error)
-	Update(context.Context, dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error)
-	Delete(context.Context, dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error)
+	Get(context.Context, input.GetEnvironmentInput) (*output.GetEnvironmentOutput, error)
+	List(context.Context) (*output.ListEnvironmentsOutput, error)
+	Create(context.Context, input.CreateEnvironmentInput) (*output.CreateEnvironmentOutput, error)
+	Update(context.Context, input.UpdateEnvironmentInput) (*output.UpdateEnvironmentOutput, error)
+	Delete(context.Context, input.DeleteEnvironmentInput) (*output.DeleteEnvironmentOutput, error)
 }
 
 type EnvironmentServiceCE struct {
@@ -32,7 +33,7 @@ func NewEnvironmentServiceCE(d *infra.Dependency) *EnvironmentServiceCE {
 	return &EnvironmentServiceCE{Dependency: d}
 }
 
-func (s *EnvironmentServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInput) (*dto.GetEnvironmentOutput, error) {
+func (s *EnvironmentServiceCE) Get(ctx context.Context, in input.GetEnvironmentInput) (*output.GetEnvironmentOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
@@ -44,29 +45,29 @@ func (s *EnvironmentServiceCE) Get(ctx context.Context, in dto.GetEnvironmentInp
 		return nil, err
 	}
 
-	return &dto.GetEnvironmentOutput{
-		Environment: dto.EnvironmentFromModel(env),
+	return &output.GetEnvironmentOutput{
+		Environment: output.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *EnvironmentServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, error) {
+func (s *EnvironmentServiceCE) List(ctx context.Context) (*output.ListEnvironmentsOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	envs, err := s.Store.Environment().List(ctx, environment.ByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return nil, err
 	}
 
-	envsOut := make([]*dto.Environment, 0, len(envs))
+	envsOut := make([]*output.Environment, 0, len(envs))
 	for _, env := range envs {
-		envsOut = append(envsOut, dto.EnvironmentFromModel(env))
+		envsOut = append(envsOut, output.EnvironmentFromModel(env))
 	}
 
-	return &dto.ListEnvironmentsOutput{
+	return &output.ListEnvironmentsOutput{
 		Environments: envsOut,
 	}, nil
 }
 
-func (s *EnvironmentServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error) {
+func (s *EnvironmentServiceCE) Create(ctx context.Context, in input.CreateEnvironmentInput) (*output.CreateEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -109,12 +110,12 @@ func (s *EnvironmentServiceCE) Create(ctx context.Context, in dto.CreateEnvironm
 		return nil, err
 	}
 
-	return &dto.CreateEnvironmentOutput{
-		Environment: dto.EnvironmentFromModel(env),
+	return &output.CreateEnvironmentOutput{
+		Environment: output.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *EnvironmentServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error) {
+func (s *EnvironmentServiceCE) Update(ctx context.Context, in input.UpdateEnvironmentInput) (*output.UpdateEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -153,12 +154,12 @@ func (s *EnvironmentServiceCE) Update(ctx context.Context, in dto.UpdateEnvironm
 		return nil, err
 	}
 
-	return &dto.UpdateEnvironmentOutput{
-		Environment: dto.EnvironmentFromModel(env),
+	return &output.UpdateEnvironmentOutput{
+		Environment: output.EnvironmentFromModel(env),
 	}, nil
 }
 
-func (s *EnvironmentServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error) {
+func (s *EnvironmentServiceCE) Delete(ctx context.Context, in input.DeleteEnvironmentInput) (*output.DeleteEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
 		return nil, err
@@ -198,7 +199,7 @@ func (s *EnvironmentServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironm
 		return nil, err
 	}
 
-	return &dto.DeleteEnvironmentOutput{
-		Environment: dto.EnvironmentFromModel(env),
+	return &output.DeleteEnvironmentOutput{
+		Environment: output.EnvironmentFromModel(env),
 	}, nil
 }

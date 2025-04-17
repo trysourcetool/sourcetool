@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey/service"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
@@ -39,7 +39,7 @@ func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Get(r.Context(), adapters.GetAPIKeyRequestToDTOInput(req))
+	out, err := h.service.Get(r.Context(), adapters.GetAPIKeyRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -95,7 +95,7 @@ func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), adapters.CreateAPIKeyRequestToDTOInput(req))
+	out, err := h.service.Create(r.Context(), adapters.CreateAPIKeyRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -134,7 +134,7 @@ func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), adapters.UpdateAPIKeyRequestToDTOInput(req))
+	out, err := h.service.Update(r.Context(), adapters.UpdateAPIKeyRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -165,7 +165,7 @@ func (h *APIKeyHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Delete(r.Context(), adapters.DeleteAPIKeyRequestToDTOInput(req))
+	out, err := h.service.Delete(r.Context(), adapters.DeleteAPIKeyRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

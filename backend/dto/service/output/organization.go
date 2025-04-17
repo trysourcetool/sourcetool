@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/organization"
@@ -27,17 +27,7 @@ func OrganizationFromModel(org *organization.Organization) *Organization {
 	}
 }
 
-// CreateOrganizationInput is the input for Create operation.
-type CreateOrganizationInput struct {
-	Subdomain string
-}
-
 // CreateOrganizationOutput is the output for Create operation.
 type CreateOrganizationOutput struct {
 	Organization *Organization
-}
-
-// CheckSubdomainAvailabilityInput is the input for checking subdomain availability.
-type CheckSubdomainAvailabilityInput struct {
-	Subdomain string
 }

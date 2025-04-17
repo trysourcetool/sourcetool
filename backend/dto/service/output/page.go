@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/page"
@@ -34,11 +34,6 @@ func PageFromModel(page *page.Page) *Page {
 		CreatedAt:      page.CreatedAt.Unix(),
 		UpdatedAt:      page.UpdatedAt.Unix(),
 	}
-}
-
-// ListPagesInput is the input for List operation.
-type ListPagesInput struct {
-	EnvironmentID string
 }
 
 // ListPagesOutput is the output for List operation.

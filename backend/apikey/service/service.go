@@ -7,7 +7,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -17,11 +18,11 @@ import (
 )
 
 type APIKeyService interface {
-	Get(context.Context, dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error)
-	List(context.Context) (*dto.ListAPIKeysOutput, error)
-	Create(context.Context, dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error)
-	Update(context.Context, dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error)
-	Delete(context.Context, dto.DeleteAPIKeyInput) (*dto.DeleteAPIKeyOutput, error)
+	Get(context.Context, input.GetAPIKeyInput) (*output.GetAPIKeyOutput, error)
+	List(context.Context) (*output.ListAPIKeysOutput, error)
+	Create(context.Context, input.CreateAPIKeyInput) (*output.CreateAPIKeyOutput, error)
+	Update(context.Context, input.UpdateAPIKeyInput) (*output.UpdateAPIKeyOutput, error)
+	Delete(context.Context, input.DeleteAPIKeyInput) (*output.DeleteAPIKeyOutput, error)
 }
 
 type APIKeyServiceCE struct {
@@ -32,7 +33,7 @@ func NewAPIKeyServiceCE(d *infra.Dependency) *APIKeyServiceCE {
 	return &APIKeyServiceCE{Dependency: d}
 }
 
-func (s *APIKeyServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error) {
+func (s *APIKeyServiceCE) Get(ctx context.Context, in input.GetAPIKeyInput) (*output.GetAPIKeyOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
@@ -48,12 +49,12 @@ func (s *APIKeyServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.
 		return nil, err
 	}
 
-	return &dto.GetAPIKeyOutput{
-		APIKey: dto.APIKeyFromModel(apiKey, env),
+	return &output.GetAPIKeyOutput{
+		APIKey: output.APIKeyFromModel(apiKey, env),
 	}, nil
 }
 
-func (s *APIKeyServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
+func (s *APIKeyServiceCE) List(ctx context.Context) (*output.ListAPIKeysOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	currentUser := ctxutil.CurrentUser(ctx)
 
@@ -96,23 +97,23 @@ func (s *APIKeyServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, err
 		return nil, err
 	}
 
-	liveKeysOut := make([]*dto.APIKey, 0, len(liveKeys))
+	liveKeysOut := make([]*output.APIKey, 0, len(liveKeys))
 	for _, apiKey := range liveKeys {
 		env, ok := environments[apiKey.ID]
 		if !ok {
 			return nil, errdefs.ErrEnvironmentNotFound(errors.New("environment not found"))
 		}
 
-		liveKeysOut = append(liveKeysOut, dto.APIKeyFromModel(apiKey, env))
+		liveKeysOut = append(liveKeysOut, output.APIKeyFromModel(apiKey, env))
 	}
 
-	return &dto.ListAPIKeysOutput{
-		DevKey:   dto.APIKeyFromModel(devKey, devEnv),
+	return &output.ListAPIKeysOutput{
+		DevKey:   output.APIKeyFromModel(devKey, devEnv),
 		LiveKeys: liveKeysOut,
 	}, nil
 }
 
-func (s *APIKeyServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error) {
+func (s *APIKeyServiceCE) Create(ctx context.Context, in input.CreateAPIKeyInput) (*output.CreateAPIKeyOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
@@ -165,12 +166,12 @@ func (s *APIKeyServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) 
 		return nil, err
 	}
 
-	return &dto.CreateAPIKeyOutput{
-		APIKey: dto.APIKeyFromModel(apiKey, nil),
+	return &output.CreateAPIKeyOutput{
+		APIKey: output.APIKeyFromModel(apiKey, nil),
 	}, nil
 }
 
-func (s *APIKeyServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error) {
+func (s *APIKeyServiceCE) Update(ctx context.Context, in input.UpdateAPIKeyInput) (*output.UpdateAPIKeyOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
@@ -212,12 +213,12 @@ func (s *APIKeyServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) 
 		return nil, err
 	}
 
-	return &dto.UpdateAPIKeyOutput{
-		APIKey: dto.APIKeyFromModel(apiKey, nil),
+	return &output.UpdateAPIKeyOutput{
+		APIKey: output.APIKeyFromModel(apiKey, nil),
 	}, nil
 }
 
-func (s *APIKeyServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.DeleteAPIKeyOutput, error) {
+func (s *APIKeyServiceCE) Delete(ctx context.Context, in input.DeleteAPIKeyInput) (*output.DeleteAPIKeyOutput, error) {
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -253,7 +254,7 @@ func (s *APIKeyServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) 
 		return nil, err
 	}
 
-	return &dto.DeleteAPIKeyOutput{
-		APIKey: dto.APIKeyFromModel(apiKey, nil),
+	return &output.DeleteAPIKeyOutput{
+		APIKey: output.APIKeyFromModel(apiKey, nil),
 	}, nil
 }

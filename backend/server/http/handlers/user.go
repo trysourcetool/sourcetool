@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
 	"github.com/trysourcetool/sourcetool/backend/user/service"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
@@ -65,7 +65,7 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.UpdateMe(r.Context(), adapters.UpdateMeRequestToDTOInput(req))
+	out, err := h.service.UpdateMe(r.Context(), adapters.UpdateMeRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -98,7 +98,7 @@ func (h *UserHandler) SendUpdateMeEmailInstructions(w http.ResponseWriter, r *ht
 		return
 	}
 
-	if err := h.service.SendUpdateMeEmailInstructions(r.Context(), adapters.SendUpdateMeEmailInstructionsRequestToDTOInput(req)); err != nil {
+	if err := h.service.SendUpdateMeEmailInstructions(r.Context(), adapters.SendUpdateMeEmailInstructionsRequestToInput(req)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -133,7 +133,7 @@ func (h *UserHandler) UpdateMeEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.UpdateMeEmail(r.Context(), adapters.UpdateMeEmailRequestToDTOInput(req))
+	out, err := h.service.UpdateMeEmail(r.Context(), adapters.UpdateMeEmailRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -190,7 +190,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), adapters.UpdateUserRequestToDTOInput(req))
+	out, err := h.service.Update(r.Context(), adapters.UpdateUserRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -220,7 +220,7 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Delete(r.Context(), adapters.DeleteUserRequestToDTOInput(req)); err != nil {
+	if err := h.service.Delete(r.Context(), adapters.DeleteUserRequestToInput(req)); err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
 	}
@@ -257,7 +257,7 @@ func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	out, err := h.service.ResendUserInvitation(r.Context(), adapters.ResendUserInvitationRequestToDTOInput(req))
+	out, err := h.service.ResendUserInvitation(r.Context(), adapters.ResendUserInvitationRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -290,7 +290,7 @@ func (h *UserHandler) CreateUserInvitations(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	out, err := h.service.CreateUserInvitations(r.Context(), adapters.CreateUserInvitationsRequestToDTOInput(req))
+	out, err := h.service.CreateUserInvitations(r.Context(), adapters.CreateUserInvitationsRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

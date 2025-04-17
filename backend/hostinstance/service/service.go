@@ -7,7 +7,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -18,7 +19,7 @@ import (
 )
 
 type HostInstanceService interface {
-	Ping(context.Context, dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error)
+	Ping(context.Context, input.PingHostInstanceInput) (*output.PingHostInstanceOutput, error)
 }
 
 type HostInstanceServiceCE struct {
@@ -29,7 +30,7 @@ func NewHostInstanceServiceCE(d *infra.Dependency) *HostInstanceServiceCE {
 	return &HostInstanceServiceCE{Dependency: d}
 }
 
-func (s *HostInstanceServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
+func (s *HostInstanceServiceCE) Ping(ctx context.Context, in input.PingHostInstanceInput) (*output.PingHostInstanceOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
@@ -83,7 +84,7 @@ func (s *HostInstanceServiceCE) Ping(ctx context.Context, in dto.PingHostInstanc
 		return nil, errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
 	}
 
-	return &dto.PingHostInstanceOutput{
-		HostInstance: dto.HostInstanceFromModel(onlineHostInstance),
+	return &output.PingHostInstanceOutput{
+		HostInstance: output.HostInstanceFromModel(onlineHostInstance),
 	}, nil
 }

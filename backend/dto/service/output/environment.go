@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/environment"
@@ -30,11 +30,6 @@ func EnvironmentFromModel(env *environment.Environment) *Environment {
 	}
 }
 
-// GetEnvironmentInput is the input for Get operation.
-type GetEnvironmentInput struct {
-	EnvironmentID string
-}
-
 // GetEnvironmentOutput is the output for Get operation.
 type GetEnvironmentOutput struct {
 	Environment *Environment
@@ -45,33 +40,14 @@ type ListEnvironmentsOutput struct {
 	Environments []*Environment
 }
 
-// CreateEnvironmentInput is the input for Create operation.
-type CreateEnvironmentInput struct {
-	Name  string
-	Slug  string
-	Color string
-}
-
 // CreateEnvironmentOutput is the output for Create operation.
 type CreateEnvironmentOutput struct {
 	Environment *Environment
 }
 
-// UpdateEnvironmentInput is the input for Update operation.
-type UpdateEnvironmentInput struct {
-	EnvironmentID string
-	Name          *string
-	Color         *string
-}
-
 // UpdateEnvironmentOutput is the output for Update operation.
 type UpdateEnvironmentOutput struct {
 	Environment *Environment
-}
-
-// DeleteEnvironmentInput is the input for Delete operation.
-type DeleteEnvironmentInput struct {
-	EnvironmentID string
 }
 
 // DeleteEnvironmentOutput is the output for Delete operation.

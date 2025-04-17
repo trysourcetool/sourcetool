@@ -5,7 +5,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/page"
@@ -14,7 +15,7 @@ import (
 )
 
 type PageService interface {
-	List(context.Context, *dto.ListPagesInput) (*dto.ListPagesOutput, error)
+	List(context.Context, input.ListPagesInput) (*output.ListPagesOutput, error)
 }
 
 type PageServiceCE struct {
@@ -25,7 +26,7 @@ func NewPageServiceCE(d *infra.Dependency) *PageServiceCE {
 	return &PageServiceCE{Dependency: d}
 }
 
-func (s *PageServiceCE) List(ctx context.Context, in *dto.ListPagesInput) (*dto.ListPagesOutput, error) {
+func (s *PageServiceCE) List(ctx context.Context, in input.ListPagesInput) (*output.ListPagesOutput, error) {
 	o := ctxutil.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
@@ -53,25 +54,25 @@ func (s *PageServiceCE) List(ctx context.Context, in *dto.ListPagesInput) (*dto.
 		return nil, err
 	}
 
-	pagesOut := make([]*dto.Page, 0, len(pages))
+	pagesOut := make([]*output.Page, 0, len(pages))
 	for _, page := range pages {
-		pagesOut = append(pagesOut, dto.PageFromModel(page))
+		pagesOut = append(pagesOut, output.PageFromModel(page))
 	}
 
-	usersOut := make([]*dto.User, 0, len(users))
+	usersOut := make([]*output.User, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, dto.UserFromModel(u, nil, user.UserOrganizationRoleUnknown))
+		usersOut = append(usersOut, output.UserFromModel(u, nil, user.UserOrganizationRoleUnknown))
 	}
 
-	userGroupsOut := make([]*dto.UserGroup, 0, len(userGroups))
+	userGroupsOut := make([]*output.UserGroup, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, dto.UserGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, output.UserGroupFromModel(userGroup))
 	}
 
-	return &dto.ListPagesOutput{
+	return &output.ListPagesOutput{
 		Pages:      pagesOut,
-		Groups:     make([]*dto.Group, 0),
-		GroupPages: make([]*dto.GroupPage, 0),
+		Groups:     make([]*output.Group, 0),
+		GroupPages: make([]*output.GroupPage, 0),
 		Users:      usersOut,
 		UserGroups: userGroupsOut,
 	}, nil

@@ -9,7 +9,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -20,8 +21,8 @@ import (
 )
 
 type OrganizationService interface {
-	Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error)
-	CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error
+	Create(ctx context.Context, in input.CreateOrganizationInput) (*output.CreateOrganizationOutput, error)
+	CheckSubdomainAvailability(ctx context.Context, in input.CheckSubdomainAvailabilityInput) error
 }
 
 type OrganizationServiceCE struct {
@@ -32,7 +33,7 @@ func NewOrganizationServiceCE(d *infra.Dependency) *OrganizationServiceCE {
 	return &OrganizationServiceCE{Dependency: d}
 }
 
-func (s *OrganizationServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error) {
+func (s *OrganizationServiceCE) Create(ctx context.Context, in input.CreateOrganizationInput) (*output.CreateOrganizationOutput, error) {
 	var subdomain *string
 	if config.Config.IsCloudEdition {
 		subdomain = conv.NilValue(in.Subdomain)
@@ -121,12 +122,12 @@ func (s *OrganizationServiceCE) Create(ctx context.Context, in dto.CreateOrganiz
 		return nil, err
 	}
 
-	return &dto.CreateOrganizationOutput{
-		Organization: dto.OrganizationFromModel(o),
+	return &output.CreateOrganizationOutput{
+		Organization: output.OrganizationFromModel(o),
 	}, nil
 }
 
-func (s *OrganizationServiceCE) CheckSubdomainAvailability(ctx context.Context, in dto.CheckSubdomainAvailabilityInput) error {
+func (s *OrganizationServiceCE) CheckSubdomainAvailability(ctx context.Context, in input.CheckSubdomainAvailabilityInput) error {
 	exists, err := s.Store.Organization().IsSubdomainExists(ctx, in.Subdomain)
 	if err != nil {
 		return err

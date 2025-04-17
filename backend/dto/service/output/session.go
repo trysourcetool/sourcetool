@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/session"

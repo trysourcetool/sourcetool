@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/group"
@@ -54,11 +54,6 @@ func GroupPageFromModel(groupPage *group.GroupPage) *GroupPage {
 	}
 }
 
-// GetGroupInput is the input for Get operation.
-type GetGroupInput struct {
-	GroupID string
-}
-
 // GetGroupOutput is the output for Get operation.
 type GetGroupOutput struct {
 	Group *Group
@@ -71,33 +66,14 @@ type ListGroupsOutput struct {
 	UserGroups []*UserGroup
 }
 
-// CreateGroupInput is the input for Create operation.
-type CreateGroupInput struct {
-	Name    string
-	Slug    string
-	UserIDs []string
-}
-
 // CreateGroupOutput is the output for Create operation.
 type CreateGroupOutput struct {
 	Group *Group
 }
 
-// UpdateGroupInput is the input for Update operation.
-type UpdateGroupInput struct {
-	GroupID string
-	Name    *string
-	UserIDs []string
-}
-
 // UpdateGroupOutput is the output for Update operation.
 type UpdateGroupOutput struct {
 	Group *Group
-}
-
-// DeleteGroupInput is the input for Delete operation.
-type DeleteGroupInput struct {
-	GroupID string
 }
 
 // DeleteGroupOutput is the output for Delete operation.

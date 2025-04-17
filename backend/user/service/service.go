@@ -8,7 +8,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
 	"github.com/trysourcetool/sourcetool/backend/jwt"
@@ -22,19 +23,19 @@ import (
 // UserService defines the interface for user-related operations.
 type UserService interface {
 	// User management methods
-	GetMe(context.Context) (*dto.GetMeOutput, error)
-	UpdateMe(context.Context, dto.UpdateMeInput) (*dto.UpdateMeOutput, error)
-	SendUpdateMeEmailInstructions(context.Context, dto.SendUpdateMeEmailInstructionsInput) error
-	UpdateMeEmail(context.Context, dto.UpdateMeEmailInput) (*dto.UpdateMeEmailOutput, error)
+	GetMe(context.Context) (*output.GetMeOutput, error)
+	UpdateMe(context.Context, input.UpdateMeInput) (*output.UpdateMeOutput, error)
+	SendUpdateMeEmailInstructions(context.Context, input.SendUpdateMeEmailInstructionsInput) error
+	UpdateMeEmail(context.Context, input.UpdateMeEmailInput) (*output.UpdateMeEmailOutput, error)
 
 	// Organization methods
-	List(context.Context) (*dto.ListUsersOutput, error)
-	Update(ctx context.Context, in dto.UpdateUserInput) (*dto.UpdateUserOutput, error)
-	Delete(ctx context.Context, in dto.DeleteUserInput) error
+	List(context.Context) (*output.ListUsersOutput, error)
+	Update(ctx context.Context, in input.UpdateUserInput) (*output.UpdateUserOutput, error)
+	Delete(ctx context.Context, in input.DeleteUserInput) error
 
 	// Invitation methods
-	CreateUserInvitations(context.Context, dto.CreateUserInvitationsInput) (*dto.CreateUserInvitationsOutput, error)
-	ResendUserInvitation(context.Context, dto.ResendUserInvitationInput) (*dto.ResendUserInvitationOutput, error)
+	CreateUserInvitations(context.Context, input.CreateUserInvitationsInput) (*output.CreateUserInvitationsOutput, error)
+	ResendUserInvitation(context.Context, input.ResendUserInvitationInput) (*output.ResendUserInvitationOutput, error)
 }
 
 // UserServiceCE implements the UserService interface for the Community Edition.
@@ -47,7 +48,7 @@ func NewUserServiceCE(d *infra.Dependency) *UserServiceCE {
 	return &UserServiceCE{Dependency: d}
 }
 
-func (s *UserServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
+func (s *UserServiceCE) GetMe(ctx context.Context) (*output.GetMeOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	orgAccess, err := s.Store.User().GetOrganizationAccess(ctx,
@@ -58,12 +59,12 @@ func (s *UserServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 	}
 	role := orgAccess.Role
 
-	return &dto.GetMeOutput{
-		User: dto.UserFromModel(currentUser, currentOrg, role),
+	return &output.GetMeOutput{
+		User: output.UserFromModel(currentUser, currentOrg, role),
 	}, nil
 }
 
-func (s *UserServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dto.UpdateMeOutput, error) {
+func (s *UserServiceCE) UpdateMe(ctx context.Context, in input.UpdateMeInput) (*output.UpdateMeOutput, error) {
 	currentUser := ctxutil.CurrentUser(ctx)
 
 	if in.FirstName != nil {
@@ -89,13 +90,13 @@ func (s *UserServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dt
 		role = orgAccess.Role
 	}
 
-	return &dto.UpdateMeOutput{
-		User: dto.UserFromModel(currentUser, org, role),
+	return &output.UpdateMeOutput{
+		User: output.UserFromModel(currentUser, org, role),
 	}, nil
 }
 
 // SendUpdateMeEmailInstructions sends instructions for updating a user's email address.
-func (s *UserServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.SendUpdateMeEmailInstructionsInput) error {
+func (s *UserServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in input.SendUpdateMeEmailInstructionsInput) error {
 	// Validate email and confirmation match
 	if in.Email != in.EmailConfirmation {
 		return errdefs.ErrInvalidArgument(errors.New("email and email confirmation do not match"))
@@ -133,7 +134,7 @@ func (s *UserServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dt
 	})
 }
 
-func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput) (*dto.UpdateMeEmailOutput, error) {
+func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in input.UpdateMeEmailInput) (*output.UpdateMeEmailOutput, error) {
 	c, err := jwt.ParseToken[*jwt.UserClaims](in.Token)
 	if err != nil {
 		return nil, err
@@ -175,12 +176,12 @@ func (s *UserServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailI
 		role = orgAccess.Role
 	}
 
-	return &dto.UpdateMeEmailOutput{
-		User: dto.UserFromModel(currentUser, org, role),
+	return &output.UpdateMeEmailOutput{
+		User: output.UserFromModel(currentUser, org, role),
 	}, nil
 }
 
-func (s *UserServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) {
+func (s *UserServiceCE) List(ctx context.Context) (*output.ListUsersOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 
 	users, err := s.Store.User().List(ctx, user.ByOrganizationID(currentOrg.ID))
@@ -202,23 +203,23 @@ func (s *UserServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) 
 		roleMap[oa.UserID] = oa.Role
 	}
 
-	usersOut := make([]*dto.User, 0, len(users))
+	usersOut := make([]*output.User, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, dto.UserFromModel(u, nil, roleMap[u.ID]))
+		usersOut = append(usersOut, output.UserFromModel(u, nil, roleMap[u.ID]))
 	}
 
-	userInvitationsOut := make([]*dto.UserInvitation, 0, len(userInvitations))
+	userInvitationsOut := make([]*output.UserInvitation, 0, len(userInvitations))
 	for _, ui := range userInvitations {
-		userInvitationsOut = append(userInvitationsOut, dto.UserInvitationFromModel(ui))
+		userInvitationsOut = append(userInvitationsOut, output.UserInvitationFromModel(ui))
 	}
 
-	return &dto.ListUsersOutput{
+	return &output.ListUsersOutput{
 		Users:           usersOut,
 		UserInvitations: userInvitationsOut,
 	}, nil
 }
 
-func (s *UserServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
+func (s *UserServiceCE) Update(ctx context.Context, in input.UpdateUserInput) (*output.UpdateUserOutput, error) {
 	userID, err := uuid.FromString(in.UserID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -280,12 +281,12 @@ func (s *UserServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dt
 		return nil, err
 	}
 
-	return &dto.UpdateUserOutput{
-		User: dto.UserFromModel(u, currentOrg, orgAccess.Role),
+	return &output.UpdateUserOutput{
+		User: output.UserFromModel(u, currentOrg, orgAccess.Role),
 	}, nil
 }
 
-func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
+func (s *UserServiceCE) Delete(ctx context.Context, in input.DeleteUserInput) error {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return err
@@ -367,7 +368,7 @@ func (s *UserServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) erro
 	return nil
 }
 
-func (s *UserServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUserInvitationsInput) (*dto.CreateUserInvitationsOutput, error) {
+func (s *UserServiceCE) CreateUserInvitations(ctx context.Context, in input.CreateUserInvitationsInput) (*output.CreateUserInvitationsOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return nil, err
@@ -424,17 +425,17 @@ func (s *UserServiceCE) CreateUserInvitations(ctx context.Context, in dto.Create
 		return nil, err
 	}
 
-	usersInvitationsOut := make([]*dto.UserInvitation, 0, len(invitations))
+	usersInvitationsOut := make([]*output.UserInvitation, 0, len(invitations))
 	for _, ui := range invitations {
-		usersInvitationsOut = append(usersInvitationsOut, dto.UserInvitationFromModel(ui))
+		usersInvitationsOut = append(usersInvitationsOut, output.UserInvitationFromModel(ui))
 	}
 
-	return &dto.CreateUserInvitationsOutput{
+	return &output.CreateUserInvitationsOutput{
 		UserInvitations: usersInvitationsOut,
 	}, nil
 }
 
-func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserInvitationInput) (*dto.ResendUserInvitationOutput, error) {
+func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in input.ResendUserInvitationInput) (*output.ResendUserInvitationOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
 		return nil, err
@@ -476,8 +477,8 @@ func (s *UserServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendU
 		return nil, err
 	}
 
-	return &dto.ResendUserInvitationOutput{
-		UserInvitation: dto.UserInvitationFromModel(userInvitation),
+	return &output.ResendUserInvitationOutput{
+		UserInvitation: output.UserInvitationFromModel(userInvitation),
 	}, nil
 }
 

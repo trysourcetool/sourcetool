@@ -6,7 +6,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/group"
 	"github.com/trysourcetool/sourcetool/backend/group/service"
@@ -31,7 +32,7 @@ func NewGroupServiceEE(d *infra.Dependency) *groupServiceEE {
 	}
 }
 
-func (s *groupServiceEE) Get(ctx context.Context, in dto.GetGroupInput) (*dto.GetGroupOutput, error) {
+func (s *groupServiceEE) Get(ctx context.Context, in input.GetGroupInput) (*output.GetGroupOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groupID, err := uuid.FromString(in.GroupID)
 	if err != nil {
@@ -43,12 +44,12 @@ func (s *groupServiceEE) Get(ctx context.Context, in dto.GetGroupInput) (*dto.Ge
 		return nil, err
 	}
 
-	return &dto.GetGroupOutput{
-		Group: dto.GroupFromModel(group),
+	return &output.GetGroupOutput{
+		Group: output.GroupFromModel(group),
 	}, nil
 }
 
-func (s *groupServiceEE) List(ctx context.Context) (*dto.ListGroupsOutput, error) {
+func (s *groupServiceEE) List(ctx context.Context) (*output.ListGroupsOutput, error) {
 	currentOrg := ctxutil.CurrentOrganization(ctx)
 	groups, err := s.Store.Group().List(ctx, group.ByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -80,34 +81,34 @@ func (s *groupServiceEE) List(ctx context.Context) (*dto.ListGroupsOutput, error
 		orgAccessesMap[orgAccess.UserID] = orgAccess
 	}
 
-	groupsOut := make([]*dto.Group, 0, len(groups))
+	groupsOut := make([]*output.Group, 0, len(groups))
 	for _, group := range groups {
-		groupsOut = append(groupsOut, dto.GroupFromModel(group))
+		groupsOut = append(groupsOut, output.GroupFromModel(group))
 	}
 
-	usersOut := make([]*dto.User, 0, len(users))
+	usersOut := make([]*output.User, 0, len(users))
 	for _, u := range users {
 		var role user.UserOrganizationRole
 		orgAccess, ok := orgAccessesMap[u.ID]
 		if ok {
 			role = orgAccess.Role
 		}
-		usersOut = append(usersOut, dto.UserFromModel(u, nil, role))
+		usersOut = append(usersOut, output.UserFromModel(u, nil, role))
 	}
 
-	userGroupsOut := make([]*dto.UserGroup, 0, len(userGroups))
+	userGroupsOut := make([]*output.UserGroup, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, dto.UserGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, output.UserGroupFromModel(userGroup))
 	}
 
-	return &dto.ListGroupsOutput{
+	return &output.ListGroupsOutput{
 		Groups:     groupsOut,
 		Users:      usersOut,
 		UserGroups: userGroupsOut,
 	}, nil
 }
 
-func (s *groupServiceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
+func (s *groupServiceEE) Create(ctx context.Context, in input.CreateGroupInput) (*output.CreateGroupOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
@@ -171,12 +172,12 @@ func (s *groupServiceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*
 		return nil, err
 	}
 
-	return &dto.CreateGroupOutput{
-		Group: dto.GroupFromModel(g),
+	return &output.CreateGroupOutput{
+		Group: output.GroupFromModel(g),
 	}, nil
 }
 
-func (s *groupServiceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
+func (s *groupServiceEE) Update(ctx context.Context, in input.UpdateGroupInput) (*output.UpdateGroupOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
@@ -243,12 +244,12 @@ func (s *groupServiceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*
 		return nil, err
 	}
 
-	return &dto.UpdateGroupOutput{
-		Group: dto.GroupFromModel(g),
+	return &output.UpdateGroupOutput{
+		Group: output.GroupFromModel(g),
 	}, nil
 }
 
-func (s *groupServiceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*dto.DeleteGroupOutput, error) {
+func (s *groupServiceEE) Delete(ctx context.Context, in input.DeleteGroupInput) (*output.DeleteGroupOutput, error) {
 	checker := permission.NewChecker(s.Store)
 	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
 		return nil, err
@@ -275,7 +276,7 @@ func (s *groupServiceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*
 		return nil, err
 	}
 
-	return &dto.DeleteGroupOutput{
-		Group: dto.GroupFromModel(g),
+	return &output.DeleteGroupOutput{
+		Group: output.GroupFromModel(g),
 	}, nil
 }

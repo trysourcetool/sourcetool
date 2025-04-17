@@ -3,13 +3,14 @@ package adapters
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
-	"github.com/trysourcetool/sourcetool/backend/server/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
+	"github.com/trysourcetool/sourcetool/backend/dto/http/responses"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 )
 
-// APIKeyDTOToResponse converts from dto.APIKey to responses.APIKeyResponse.
-func APIKeyDTOToResponse(apiKey *dto.APIKey) *responses.APIKeyResponse {
+// APIKeyOutputToResponse converts from output.APIKey to responses.APIKeyResponse.
+func APIKeyOutputToResponse(apiKey *output.APIKey) *responses.APIKeyResponse {
 	if apiKey == nil {
 		return nil
 	}
@@ -23,79 +24,79 @@ func APIKeyDTOToResponse(apiKey *dto.APIKey) *responses.APIKeyResponse {
 	}
 
 	if apiKey.Environment != nil {
-		result.Environment = EnvironmentDTOToResponse(apiKey.Environment)
+		result.Environment = EnvironmentOutputToResponse(apiKey.Environment)
 	}
 
 	return result
 }
 
-// GetAPIKeyRequestToDTOInput converts from requests.GetAPIKeyRequest to dto.GetAPIKeyInput.
-func GetAPIKeyRequestToDTOInput(in requests.GetAPIKeyRequest) dto.GetAPIKeyInput {
-	return dto.GetAPIKeyInput{
+// GetAPIKeyRequestToInput converts from requests.GetAPIKeyRequest to input.GetAPIKeyInput.
+func GetAPIKeyRequestToInput(in requests.GetAPIKeyRequest) input.GetAPIKeyInput {
+	return input.GetAPIKeyInput{
 		APIKeyID: in.APIKeyID,
 	}
 }
 
-// GetAPIKeyOutputToResponse converts from dto.GetAPIKeyOutput to responses.GetAPIKeyResponse.
-func GetAPIKeyOutputToResponse(out *dto.GetAPIKeyOutput) *responses.GetAPIKeyResponse {
+// GetAPIKeyOutputToResponse converts from output.GetAPIKeyOutput to responses.GetAPIKeyResponse.
+func GetAPIKeyOutputToResponse(out *output.GetAPIKeyOutput) *responses.GetAPIKeyResponse {
 	return &responses.GetAPIKeyResponse{
-		APIKey: APIKeyDTOToResponse(out.APIKey),
+		APIKey: APIKeyOutputToResponse(out.APIKey),
 	}
 }
 
-// ListAPIKeysOutputToResponse converts from dto.ListAPIKeysOutput to responses.ListAPIKeysResponse.
-func ListAPIKeysOutputToResponse(out *dto.ListAPIKeysOutput) *responses.ListAPIKeysResponse {
+// ListAPIKeysOutputToResponse converts from output.ListAPIKeysOutput to responses.ListAPIKeysResponse.
+func ListAPIKeysOutputToResponse(out *output.ListAPIKeysOutput) *responses.ListAPIKeysResponse {
 	liveKeys := make([]*responses.APIKeyResponse, 0, len(out.LiveKeys))
 	for _, key := range out.LiveKeys {
-		liveKeys = append(liveKeys, APIKeyDTOToResponse(key))
+		liveKeys = append(liveKeys, APIKeyOutputToResponse(key))
 	}
 
 	return &responses.ListAPIKeysResponse{
-		DevKey:   APIKeyDTOToResponse(out.DevKey),
+		DevKey:   APIKeyOutputToResponse(out.DevKey),
 		LiveKeys: liveKeys,
 	}
 }
 
-// CreateAPIKeyRequestToDTOInput converts from requests.CreateAPIKeyRequest to dto.CreateAPIKeyInput.
-func CreateAPIKeyRequestToDTOInput(in requests.CreateAPIKeyRequest) dto.CreateAPIKeyInput {
-	return dto.CreateAPIKeyInput{
+// CreateAPIKeyRequestToInput converts from requests.CreateAPIKeyRequest to input.CreateAPIKeyInput.
+func CreateAPIKeyRequestToInput(in requests.CreateAPIKeyRequest) input.CreateAPIKeyInput {
+	return input.CreateAPIKeyInput{
 		EnvironmentID: in.EnvironmentID,
 		Name:          in.Name,
 	}
 }
 
-// CreateAPIKeyOutputToResponse converts from dto.CreateAPIKeyOutput to responses.CreateAPIKeyResponse.
-func CreateAPIKeyOutputToResponse(out *dto.CreateAPIKeyOutput) *responses.CreateAPIKeyResponse {
+// CreateAPIKeyOutputToResponse converts from output.CreateAPIKeyOutput to responses.CreateAPIKeyResponse.
+func CreateAPIKeyOutputToResponse(out *output.CreateAPIKeyOutput) *responses.CreateAPIKeyResponse {
 	return &responses.CreateAPIKeyResponse{
-		APIKey: APIKeyDTOToResponse(out.APIKey),
+		APIKey: APIKeyOutputToResponse(out.APIKey),
 	}
 }
 
-// UpdateAPIKeyRequestToDTOInput converts from requests.UpdateAPIKeyRequest to dto.UpdateAPIKeyInput.
-func UpdateAPIKeyRequestToDTOInput(in requests.UpdateAPIKeyRequest) dto.UpdateAPIKeyInput {
-	return dto.UpdateAPIKeyInput{
+// UpdateAPIKeyRequestToInput converts from requests.UpdateAPIKeyRequest to input.UpdateAPIKeyInput.
+func UpdateAPIKeyRequestToInput(in requests.UpdateAPIKeyRequest) input.UpdateAPIKeyInput {
+	return input.UpdateAPIKeyInput{
 		APIKeyID: in.APIKeyID,
 		Name:     in.Name,
 	}
 }
 
-// UpdateAPIKeyOutputToResponse converts from dto.UpdateAPIKeyOutput to responses.UpdateAPIKeyResponse.
-func UpdateAPIKeyOutputToResponse(out *dto.UpdateAPIKeyOutput) *responses.UpdateAPIKeyResponse {
+// UpdateAPIKeyOutputToResponse converts from output.UpdateAPIKeyOutput to responses.UpdateAPIKeyResponse.
+func UpdateAPIKeyOutputToResponse(out *output.UpdateAPIKeyOutput) *responses.UpdateAPIKeyResponse {
 	return &responses.UpdateAPIKeyResponse{
-		APIKey: APIKeyDTOToResponse(out.APIKey),
+		APIKey: APIKeyOutputToResponse(out.APIKey),
 	}
 }
 
-// DeleteAPIKeyRequestToDTOInput converts from requests.DeleteAPIKeyRequest to dto.DeleteAPIKeyInput.
-func DeleteAPIKeyRequestToDTOInput(in requests.DeleteAPIKeyRequest) dto.DeleteAPIKeyInput {
-	return dto.DeleteAPIKeyInput{
+// DeleteAPIKeyRequestToInput converts from requests.DeleteAPIKeyRequest to input.DeleteAPIKeyInput.
+func DeleteAPIKeyRequestToInput(in requests.DeleteAPIKeyRequest) input.DeleteAPIKeyInput {
+	return input.DeleteAPIKeyInput{
 		APIKeyID: in.APIKeyID,
 	}
 }
 
-// DeleteAPIKeyOutputToResponse converts from dto.DeleteAPIKeyOutput to responses.DeleteAPIKeyResponse.
-func DeleteAPIKeyOutputToResponse(out *dto.DeleteAPIKeyOutput) *responses.DeleteAPIKeyResponse {
+// DeleteAPIKeyOutputToResponse converts from output.DeleteAPIKeyOutput to responses.DeleteAPIKeyResponse.
+func DeleteAPIKeyOutputToResponse(out *output.DeleteAPIKeyOutput) *responses.DeleteAPIKeyResponse {
 	return &responses.DeleteAPIKeyResponse{
-		APIKey: APIKeyDTOToResponse(out.APIKey),
+		APIKey: APIKeyOutputToResponse(out.APIKey),
 	}
 }

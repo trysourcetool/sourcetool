@@ -13,7 +13,8 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/apikey"
 	"github.com/trysourcetool/sourcetool/backend/auth"
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/environment"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -26,24 +27,24 @@ import (
 
 type AuthService interface {
 	// Passwordless Authentication methods
-	RequestMagicLink(context.Context, dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error)
-	AuthenticateWithMagicLink(context.Context, dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error)
-	RegisterWithMagicLink(context.Context, dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error)
-	RequestInvitationMagicLink(context.Context, dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error)
-	AuthenticateWithInvitationMagicLink(context.Context, dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error)
-	RegisterWithInvitationMagicLink(context.Context, dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error)
+	RequestMagicLink(context.Context, input.RequestMagicLinkInput) (*output.RequestMagicLinkOutput, error)
+	AuthenticateWithMagicLink(context.Context, input.AuthenticateWithMagicLinkInput) (*output.AuthenticateWithMagicLinkOutput, error)
+	RegisterWithMagicLink(context.Context, input.RegisterWithMagicLinkInput) (*output.RegisterWithMagicLinkOutput, error)
+	RequestInvitationMagicLink(context.Context, input.RequestInvitationMagicLinkInput) (*output.RequestInvitationMagicLinkOutput, error)
+	AuthenticateWithInvitationMagicLink(context.Context, input.AuthenticateWithInvitationMagicLinkInput) (*output.AuthenticateWithInvitationMagicLinkOutput, error)
+	RegisterWithInvitationMagicLink(context.Context, input.RegisterWithInvitationMagicLinkInput) (*output.RegisterWithInvitationMagicLinkOutput, error)
 
 	// Google Authentication methods
-	RequestGoogleAuthLink(context.Context) (*dto.RequestGoogleAuthLinkOutput, error)
-	AuthenticateWithGoogle(context.Context, dto.AuthenticateWithGoogleInput) (*dto.AuthenticateWithGoogleOutput, error)
-	RegisterWithGoogle(context.Context, dto.RegisterWithGoogleInput) (*dto.RegisterWithGoogleOutput, error)
-	RequestInvitationGoogleAuthLink(context.Context, dto.RequestInvitationGoogleAuthLinkInput) (*dto.RequestInvitationGoogleAuthLinkOutput, error)
+	RequestGoogleAuthLink(context.Context) (*output.RequestGoogleAuthLinkOutput, error)
+	AuthenticateWithGoogle(context.Context, input.AuthenticateWithGoogleInput) (*output.AuthenticateWithGoogleOutput, error)
+	RegisterWithGoogle(context.Context, input.RegisterWithGoogleInput) (*output.RegisterWithGoogleOutput, error)
+	RequestInvitationGoogleAuthLink(context.Context, input.RequestInvitationGoogleAuthLinkInput) (*output.RequestInvitationGoogleAuthLinkOutput, error)
 
 	// Authentication methods
-	Logout(context.Context) (*dto.LogoutOutput, error)
-	Save(context.Context, dto.SaveAuthInput) (*dto.SaveAuthOutput, error)
-	RefreshToken(context.Context, dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error)
-	ObtainAuthToken(context.Context) (*dto.ObtainAuthTokenOutput, error)
+	Logout(context.Context) (*output.LogoutOutput, error)
+	Save(context.Context, input.SaveAuthInput) (*output.SaveAuthOutput, error)
+	RefreshToken(context.Context, input.RefreshTokenInput) (*output.RefreshTokenOutput, error)
+	ObtainAuthToken(context.Context) (*output.ObtainAuthTokenOutput, error)
 }
 
 type AuthServiceCE struct {
@@ -54,7 +55,7 @@ func NewAuthServiceCE(d *infra.Dependency) *AuthServiceCE {
 	return &AuthServiceCE{Dependency: d}
 }
 
-func (s *AuthServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error) {
+func (s *AuthServiceCE) RequestMagicLink(ctx context.Context, in input.RequestMagicLinkInput) (*output.RequestMagicLinkOutput, error) {
 	// Check if email exists
 	exists, err := s.Store.User().IsEmailExists(ctx, in.Email)
 	if err != nil {
@@ -141,7 +142,7 @@ func (s *AuthServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagi
 				return nil, err
 			}
 
-			return &dto.RequestMagicLinkOutput{
+			return &output.RequestMagicLinkOutput{
 				Email: in.Email,
 				IsNew: false,
 			}, nil
@@ -186,13 +187,13 @@ func (s *AuthServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagi
 		return nil, err
 	}
 
-	return &dto.RequestMagicLinkOutput{
+	return &output.RequestMagicLinkOutput{
 		Email: in.Email,
 		IsNew: isNewUser,
 	}, nil
 }
 
-func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.AuthenticateWithMagicLinkInput) (*dto.AuthenticateWithMagicLinkOutput, error) {
+func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in input.AuthenticateWithMagicLinkInput) (*output.AuthenticateWithMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
@@ -216,7 +217,7 @@ func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Au
 			return nil, fmt.Errorf("failed to generate registration token: %w", err)
 		}
 
-		return &dto.AuthenticateWithMagicLinkOutput{
+		return &output.AuthenticateWithMagicLinkOutput{
 			Token:           registrationToken,
 			IsNewUser:       true,
 			HasOrganization: false,
@@ -294,7 +295,7 @@ func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Au
 		return nil, err
 	}
 
-	return &dto.AuthenticateWithMagicLinkOutput{
+	return &output.AuthenticateWithMagicLinkOutput{
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: orgAccess != nil,
@@ -305,7 +306,7 @@ func (s *AuthServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Au
 	}, nil
 }
 
-func (s *AuthServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWithMagicLinkInput) (*dto.RegisterWithMagicLinkOutput, error) {
+func (s *AuthServiceCE) RegisterWithMagicLink(ctx context.Context, in input.RegisterWithMagicLinkInput) (*output.RegisterWithMagicLinkOutput, error) {
 	// Parse and validate the registration token
 	claims, err := jwt.ParseToken[*jwt.UserMagicLinkRegistrationClaims](in.Token)
 	if err != nil {
@@ -369,7 +370,7 @@ func (s *AuthServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.Regist
 		return nil, err
 	}
 
-	return &dto.RegisterWithMagicLinkOutput{
+	return &output.RegisterWithMagicLinkOutput{
 		Token:           token,
 		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
@@ -379,7 +380,7 @@ func (s *AuthServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.Regist
 }
 
 // RequestInvitationMagicLink sends a magic link for invitation authentication.
-func (s *AuthServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.RequestInvitationMagicLinkInput) (*dto.RequestInvitationMagicLinkOutput, error) {
+func (s *AuthServiceCE) RequestInvitationMagicLink(ctx context.Context, in input.RequestInvitationMagicLinkInput) (*output.RequestInvitationMagicLinkOutput, error) {
 	// Parse and validate invitation token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
 	if err != nil {
@@ -442,14 +443,14 @@ func (s *AuthServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.R
 		return nil, err
 	}
 
-	return &dto.RequestInvitationMagicLinkOutput{
+	return &output.RequestInvitationMagicLinkOutput{
 		Email: c.Email,
 		IsNew: !exists,
 	}, nil
 }
 
 // AuthenticateWithInvitationMagicLink authenticates a user with an invitation magic link.
-func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in dto.AuthenticateWithInvitationMagicLinkInput) (*dto.AuthenticateWithInvitationMagicLinkOutput, error) {
+func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in input.AuthenticateWithInvitationMagicLinkInput) (*output.AuthenticateWithInvitationMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
@@ -501,7 +502,7 @@ func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context,
 			return nil, fmt.Errorf("failed to generate registration token: %w", err)
 		}
 
-		return &dto.AuthenticateWithInvitationMagicLinkOutput{
+		return &output.AuthenticateWithInvitationMagicLinkOutput{
 			Token:     registrationToken,
 			IsNewUser: true,
 		}, nil
@@ -549,7 +550,7 @@ func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context,
 		return nil, err
 	}
 
-	return &dto.AuthenticateWithInvitationMagicLinkOutput{
+	return &output.AuthenticateWithInvitationMagicLinkOutput{
 		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + auth.SaveAuthPath,
 		Token:     token,
 		Domain:    config.Config.OrgDomain(orgSubdomain),
@@ -558,7 +559,7 @@ func (s *AuthServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context,
 }
 
 // RegisterWithInvitationMagicLink registers a new user with an invitation magic link.
-func (s *AuthServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.RegisterWithInvitationMagicLinkInput) (*dto.RegisterWithInvitationMagicLinkOutput, error) {
+func (s *AuthServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in input.RegisterWithInvitationMagicLinkInput) (*output.RegisterWithInvitationMagicLinkOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.Token)
 	if err != nil {
@@ -652,7 +653,7 @@ func (s *AuthServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in 
 		return nil, err
 	}
 
-	return &dto.RegisterWithInvitationMagicLinkOutput{
+	return &output.RegisterWithInvitationMagicLinkOutput{
 		Token:        token,
 		RefreshToken: plainRefreshToken,
 		XSRFToken:    xsrfToken,
@@ -662,7 +663,7 @@ func (s *AuthServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in 
 }
 
 // RequestGoogleAuthLink sends a Google Auth link for invitation authentication.
-func (s *AuthServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
+func (s *AuthServiceCE) RequestGoogleAuthLink(ctx context.Context) (*output.RequestGoogleAuthLinkOutput, error) {
 	var hostSubdomain string
 	if config.Config.IsCloudEdition {
 		subdomain := ctxutil.Subdomain(ctx)
@@ -686,12 +687,12 @@ func (s *AuthServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.Request
 		return nil, err
 	}
 
-	return &dto.RequestGoogleAuthLinkOutput{
+	return &output.RequestGoogleAuthLinkOutput{
 		AuthURL: url,
 	}, nil
 }
 
-func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.AuthenticateWithGoogleInput) (*dto.AuthenticateWithGoogleOutput, error) {
+func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in input.AuthenticateWithGoogleInput) (*output.AuthenticateWithGoogleOutput, error) {
 	// Parse and validate state token
 	stateClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthLinkClaims](in.State)
 	if err != nil {
@@ -756,7 +757,7 @@ func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authe
 			return nil, fmt.Errorf("failed to create registration token: %w", err)
 		}
 
-		return &dto.AuthenticateWithGoogleOutput{
+		return &output.AuthenticateWithGoogleOutput{
 			Token:           registrationToken,
 			IsNewUser:       true,
 			HasOrganization: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
@@ -837,7 +838,7 @@ func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authe
 						return nil, err
 					}
 
-					return &dto.AuthenticateWithGoogleOutput{
+					return &output.AuthenticateWithGoogleOutput{
 						IsNewUser:                false,
 						HasOrganization:          true,
 						HasMultipleOrganizations: true,
@@ -917,7 +918,7 @@ func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authe
 		return nil, err
 	}
 
-	return &dto.AuthenticateWithGoogleOutput{
+	return &output.AuthenticateWithGoogleOutput{
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: orgAccess != nil,
@@ -930,7 +931,7 @@ func (s *AuthServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authe
 }
 
 // RegisterWithGoogle registers a new user based on the token received after Google OAuth confirmation.
-func (s *AuthServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithGoogleInput) (*dto.RegisterWithGoogleOutput, error) {
+func (s *AuthServiceCE) RegisterWithGoogle(ctx context.Context, in input.RegisterWithGoogleInput) (*output.RegisterWithGoogleOutput, error) {
 	// Parse and validate registration token
 	claims, err := jwt.ParseToken[*jwt.UserGoogleRegistrationClaims](in.Token)
 	if err != nil {
@@ -1037,7 +1038,7 @@ func (s *AuthServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterW
 		return nil, err
 	}
 
-	return &dto.RegisterWithGoogleOutput{
+	return &output.RegisterWithGoogleOutput{
 		Token:           token,
 		RefreshToken:    plainRefreshToken,
 		XSRFToken:       xsrfToken,
@@ -1048,7 +1049,7 @@ func (s *AuthServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterW
 }
 
 // RequestInvitationGoogleAuthLink prepares the Google OAuth URL for an invited user.
-func (s *AuthServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in dto.RequestInvitationGoogleAuthLinkInput) (*dto.RequestInvitationGoogleAuthLinkOutput, error) {
+func (s *AuthServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in input.RequestInvitationGoogleAuthLinkInput) (*output.RequestInvitationGoogleAuthLinkOutput, error) {
 	c, err := jwt.ParseToken[*jwt.UserEmailClaims](in.InvitationToken)
 	if err != nil {
 		return nil, fmt.Errorf("invalid invitation token: %w", err)
@@ -1101,12 +1102,12 @@ func (s *AuthServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in 
 		return nil, fmt.Errorf("failed to get google auth code url: %w", err)
 	}
 
-	return &dto.RequestInvitationGoogleAuthLinkOutput{
+	return &output.RequestInvitationGoogleAuthLinkOutput{
 		AuthURL: url,
 	}, nil
 }
 
-func (s *AuthServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) (*dto.RefreshTokenOutput, error) {
+func (s *AuthServiceCE) RefreshToken(ctx context.Context, in input.RefreshTokenInput) (*output.RefreshTokenOutput, error) {
 	// Validate XSRF token consistency
 	if in.XSRFTokenCookie != in.XSRFTokenHeader {
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid xsrf token"))
@@ -1149,7 +1150,7 @@ func (s *AuthServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInp
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	return &dto.RefreshTokenOutput{
+	return &output.RefreshTokenOutput{
 		Token:        token,
 		RefreshToken: in.RefreshToken,
 		XSRFToken:    xsrfToken,
@@ -1158,7 +1159,7 @@ func (s *AuthServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInp
 	}, nil
 }
 
-func (s *AuthServiceCE) Logout(ctx context.Context) (*dto.LogoutOutput, error) {
+func (s *AuthServiceCE) Logout(ctx context.Context) (*output.LogoutOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
 	orgAccessOpts := []user.OrganizationAccessStoreOption{
@@ -1175,12 +1176,12 @@ func (s *AuthServiceCE) Logout(ctx context.Context) (*dto.LogoutOutput, error) {
 		return nil, err
 	}
 
-	return &dto.LogoutOutput{
+	return &output.LogoutOutput{
 		Domain: config.Config.OrgDomain(subdomain),
 	}, nil
 }
 
-func (s *AuthServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAuthOutput, error) {
+func (s *AuthServiceCE) Save(ctx context.Context, in input.SaveAuthInput) (*output.SaveAuthOutput, error) {
 	// Parse and validate token
 	c, err := jwt.ParseToken[*jwt.UserAuthClaims](in.Token)
 	if err != nil {
@@ -1240,7 +1241,7 @@ func (s *AuthServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 		return nil, err
 	}
 
-	return &dto.SaveAuthOutput{
+	return &output.SaveAuthOutput{
 		Token:        token,
 		RefreshToken: plainRefreshToken,
 		XSRFToken:    xsrfToken,
@@ -1250,7 +1251,7 @@ func (s *AuthServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.Sa
 	}, nil
 }
 
-func (s *AuthServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
+func (s *AuthServiceCE) ObtainAuthToken(ctx context.Context) (*output.ObtainAuthTokenOutput, error) {
 	// Get current user from context
 	u := ctxutil.CurrentUser(ctx)
 	if u == nil {
@@ -1285,7 +1286,7 @@ func (s *AuthServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTok
 		return nil, err
 	}
 
-	return &dto.ObtainAuthTokenOutput{
+	return &output.ObtainAuthTokenOutput{
 		AuthURL: authURL,
 		Token:   token,
 	}, nil

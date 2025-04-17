@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
@@ -137,7 +137,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WebSocketHandler) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status hostinstance.HostInstanceStatus) error {
-	if _, err := h.service.UpdateStatus(ctx, dto.UpdateHostInstanceStatusInput{
+	if _, err := h.service.UpdateStatus(ctx, input.UpdateHostInstanceStatusInput{
 		ID:     hostInstanceID.String(),
 		Status: status,
 	}); err != nil {

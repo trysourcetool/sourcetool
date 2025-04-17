@@ -8,7 +8,8 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
-	"github.com/trysourcetool/sourcetool/backend/dto"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/input"
+	"github.com/trysourcetool/sourcetool/backend/dto/service/output"
 	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/infra"
@@ -30,7 +31,7 @@ type WebSocketService interface {
 	CloseSession(context.Context, *websocket.Conn, *websocketv1.Message) error
 	ScriptFinished(context.Context, *websocket.Conn, *websocketv1.Message) error
 	Exception(context.Context, *websocket.Conn, *websocketv1.Message) error
-	UpdateStatus(context.Context, dto.UpdateHostInstanceStatusInput) (*dto.UpdateHostInstanceStatusOutput, error)
+	UpdateStatus(context.Context, input.UpdateHostInstanceStatusInput) (*output.UpdateHostInstanceStatusOutput, error)
 }
 
 type WebSocketServiceCE struct {
@@ -480,7 +481,7 @@ func (s *WebSocketServiceCE) Exception(ctx context.Context, conn *websocket.Conn
 	return nil
 }
 
-func (s *WebSocketServiceCE) UpdateStatus(ctx context.Context, in dto.UpdateHostInstanceStatusInput) (*dto.UpdateHostInstanceStatusOutput, error) {
+func (s *WebSocketServiceCE) UpdateStatus(ctx context.Context, in input.UpdateHostInstanceStatusInput) (*output.UpdateHostInstanceStatusOutput, error) {
 	hostInstanceID, err := uuid.FromString(in.ID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -502,7 +503,7 @@ func (s *WebSocketServiceCE) UpdateStatus(ctx context.Context, in dto.UpdateHost
 		return nil, err
 	}
 
-	return &dto.UpdateHostInstanceStatusOutput{
-		HostInstance: dto.HostInstanceFromModel(host),
+	return &output.UpdateHostInstanceStatusOutput{
+		HostInstance: output.HostInstanceFromModel(host),
 	}, nil
 }

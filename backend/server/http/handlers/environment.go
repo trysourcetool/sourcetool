@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/dto/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/environment/service"
 	"github.com/trysourcetool/sourcetool/backend/server/http/adapters"
-	"github.com/trysourcetool/sourcetool/backend/server/http/requests"
 	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
 )
 
@@ -39,7 +39,7 @@ func (h *EnvironmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Get(r.Context(), adapters.GetEnvironmentRequestToDTOInput(req))
+	out, err := h.service.Get(r.Context(), adapters.GetEnvironmentRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -95,7 +95,7 @@ func (h *EnvironmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Create(r.Context(), adapters.CreateEnvironmentRequestToDTOInput(req))
+	out, err := h.service.Create(r.Context(), adapters.CreateEnvironmentRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -134,7 +134,7 @@ func (h *EnvironmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Update(r.Context(), adapters.UpdateEnvironmentRequestToDTOInput(req))
+	out, err := h.service.Update(r.Context(), adapters.UpdateEnvironmentRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return
@@ -165,7 +165,7 @@ func (h *EnvironmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	out, err := h.service.Delete(r.Context(), adapters.DeleteEnvironmentRequestToDTOInput(req))
+	out, err := h.service.Delete(r.Context(), adapters.DeleteEnvironmentRequestToInput(req))
 	if err != nil {
 		httputil.WriteErrJSON(r.Context(), w, err)
 		return

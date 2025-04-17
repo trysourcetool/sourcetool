@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/hostinstance"
@@ -32,11 +32,6 @@ func HostInstanceFromModel(instance *hostinstance.HostInstance) *HostInstance {
 		CreatedAt:      instance.CreatedAt.Unix(),
 		UpdatedAt:      instance.UpdatedAt.Unix(),
 	}
-}
-
-// PingHostInstanceInput is the input for Ping operation.
-type PingHostInstanceInput struct {
-	PageID *string
 }
 
 // PingHostInstanceOutput is the output for Ping operation.

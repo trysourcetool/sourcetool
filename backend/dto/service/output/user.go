@@ -1,4 +1,4 @@
-package dto
+package output
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/organization"
@@ -89,26 +89,9 @@ type GetMeOutput struct {
 	User *User
 }
 
-// UpdateMeInput is the input for Update Me operation.
-type UpdateMeInput struct {
-	FirstName *string
-	LastName  *string
-}
-
 // UpdateMeOutput is the output for Update Me operation.
 type UpdateMeOutput struct {
 	User *User
-}
-
-// SendUpdateMeEmailInstructionsInput is the input for Send Update Me Email Instructions operation.
-type SendUpdateMeEmailInstructionsInput struct {
-	Email             string
-	EmailConfirmation string
-}
-
-// UpdateMeEmailInput is the input for Update Me Email operation.
-type UpdateMeEmailInput struct {
-	Token string
 }
 
 // UpdateMeEmailOutput is the output for Update Me Email operation.
@@ -122,37 +105,14 @@ type ListUsersOutput struct {
 	UserInvitations []*UserInvitation
 }
 
-// UpdateUserInput is the input for Update User operation.
-type UpdateUserInput struct {
-	UserID   string
-	Role     *string
-	GroupIDs []string
-}
-
 // UpdateUserOutput is the output for Update User operation.
 type UpdateUserOutput struct {
 	User *User
 }
 
-// DeleteUserInput defines the input for deleting a user.
-type DeleteUserInput struct {
-	UserID string
-}
-
-// CreateUserInvitationsInput is the input for Create User Invitations operation.
-type CreateUserInvitationsInput struct {
-	Emails []string
-	Role   string
-}
-
 // CreateUserInvitationsOutput is the output for Create User Invitations operation.
 type CreateUserInvitationsOutput struct {
 	UserInvitations []*UserInvitation
-}
-
-// ResendUserInvitationInput is the input for Resend User Invitation operation.
-type ResendUserInvitationInput struct {
-	InvitationID string
 }
 
 // ResendUserInvitationOutput is the output for Resend User Invitation operation.
