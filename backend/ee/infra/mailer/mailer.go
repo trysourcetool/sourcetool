@@ -7,7 +7,7 @@ import (
 
 type mailerEE struct{}
 
-func NewEE() *mailerEE {
+func NewMailerEE() *mailerEE {
 	return &mailerEE{}
 }
 
