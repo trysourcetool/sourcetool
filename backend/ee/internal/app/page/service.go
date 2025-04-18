@@ -24,7 +24,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
 		ServiceCE: pageSvc.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer),
+			infra.NewDependency(d.Repository, d.Mailer, d.PubSub),
 		),
 	}
 }

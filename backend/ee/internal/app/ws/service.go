@@ -28,7 +28,7 @@ type serviceEE struct {
 func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
-		ServiceCE:  wsSvc.NewServiceCE(infra.NewDependency(d.Repository, d.Mailer)),
+		ServiceCE:  wsSvc.NewServiceCE(infra.NewDependency(d.Repository, d.Mailer, d.PubSub)),
 	}
 }
 

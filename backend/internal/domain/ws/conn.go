@@ -9,13 +9,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub"
 	redisv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/redis/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
@@ -68,19 +68,19 @@ type connManager struct {
 	connectedClients map[uuid.UUID]*connectedClient
 	hostsMutex       sync.RWMutex
 	clientsMutex     sync.RWMutex
-	redisClient      *redisClient
+	pubsubClient     pubsub.PubSub
 	repo             db.Repository
 	ctx              context.Context    // Context for managing goroutine lifecycle
 	cancel           context.CancelFunc // Function to cancel the context
 	wg               sync.WaitGroup     // WaitGroup to wait for goroutines to finish
 }
 
-func newConnManager(redisClient *redisClient, repo db.Repository) *connManager {
+func newConnManager(pubsubClient pubsub.PubSub, repo db.Repository) *connManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &connManager{
 		connectedHosts:   make(map[uuid.UUID]*connectedHost),
 		connectedClients: make(map[uuid.UUID]*connectedClient),
-		redisClient:      redisClient,
+		pubsubClient:     pubsubClient,
 		repo:             repo,
 		ctx:              ctx,
 		cancel:           cancel,
@@ -157,15 +157,10 @@ func (c *connManager) startClientPingLoop(client *connectedClient) {
 	}
 }
 
-func InitWebSocketConns(ctx context.Context, repo db.Repository) error {
+func InitWebSocketConns(ctx context.Context, repo db.Repository, pubsubClient pubsub.PubSub) error {
 	var initErr error
 	once.Do(func() {
-		redisClient, err := newRedisClient()
-		if err != nil {
-			initErr = err
-			return
-		}
-		connManagerInstance = newConnManager(redisClient, repo)
+		connManagerInstance = newConnManager(pubsubClient, repo)
 
 		connManagerInstance.wg.Add(2) // Add count for the two subscriber goroutines
 		go connManagerInstance.subscribeToHostMessages()
@@ -195,7 +190,7 @@ func (c *connManager) subscribeToHostMessages() {
 }
 
 func (c *connManager) subscribeToHostMessagesWithRetry() error {
-	ch, err := c.redisClient.Subscribe(c.ctx, "host_messages")
+	ch, err := c.pubsubClient.Subscribe(c.ctx, "host_messages")
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to host messages: %w", err)
 	}
@@ -220,9 +215,9 @@ func (c *connManager) subscribeToHostMessagesWithRetry() error {
 	}
 }
 
-func (c *connManager) processHostMessage(msg *redis.Message) error {
+func (c *connManager) processHostMessage(msg *pubsub.Message) error {
 	var redisMsg redisv1.RedisMessage
-	if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
+	if err := proto.Unmarshal(msg.Payload, &redisMsg); err != nil {
 		return fmt.Errorf("failed to unmarshal redis message: %w", err)
 	}
 
@@ -286,7 +281,7 @@ func (c *connManager) subscribeToClientMessages() {
 }
 
 func (c *connManager) subscribeToClientMessagesWithRetry() error {
-	ch, err := c.redisClient.Subscribe(c.ctx, "client_messages")
+	ch, err := c.pubsubClient.Subscribe(c.ctx, "client_messages")
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to client messages: %w", err)
 	}
@@ -311,9 +306,9 @@ func (c *connManager) subscribeToClientMessagesWithRetry() error {
 	}
 }
 
-func (c *connManager) processClientMessage(msg *redis.Message) error {
+func (c *connManager) processClientMessage(msg *pubsub.Message) error {
 	var redisMsg redisv1.RedisMessage
-	if err := proto.Unmarshal([]byte(msg.Payload), &redisMsg); err != nil {
+	if err := proto.Unmarshal(msg.Payload, &redisMsg); err != nil {
 		return fmt.Errorf("failed to unmarshal redis message: %w", err)
 	}
 
@@ -373,7 +368,7 @@ func (c *connManager) SendToHost(ctx context.Context, hostInstanceID uuid.UUID, 
 		return fmt.Errorf("failed to marshal protobuf message: %w", err)
 	}
 
-	return c.redisClient.Publish(ctx, "host_messages", hostInstanceID.String(), data)
+	return c.pubsubClient.Publish(ctx, "host_messages", hostInstanceID.String(), data)
 }
 
 func (c *connManager) SendToClient(ctx context.Context, sessionID uuid.UUID, msg *websocketv1.Message) error {
@@ -382,7 +377,7 @@ func (c *connManager) SendToClient(ctx context.Context, sessionID uuid.UUID, msg
 		return fmt.Errorf("failed to marshal protobuf message: %w", err)
 	}
 
-	return c.redisClient.Publish(ctx, "client_messages", sessionID.String(), data)
+	return c.pubsubClient.Publish(ctx, "client_messages", sessionID.String(), data)
 }
 
 func (c *connManager) SetConnectedHost(hostInstance *hostinstance.HostInstance, apiKey *apikey.APIKey, conn *websocket.Conn) {
@@ -504,7 +499,7 @@ func (c *connManager) Close() {
 
 	// 5. Close the Redis client connection
 	logger.Logger.Sugar().Info("Closing Redis client connection...")
-	if err := c.redisClient.Close(); err != nil {
+	if err := c.pubsubClient.Close(); err != nil {
 		logger.Logger.Sugar().Errorf("Failed to close Redis client: %v", err)
 	}
 

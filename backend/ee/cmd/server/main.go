@@ -21,6 +21,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
@@ -38,8 +39,13 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
+	redisClient, err := redis.NewClientCE()
+	if err != nil {
+		logger.Logger.Fatal("failed to open redis", zap.Error(err))
+	}
+
 	// Use the EE version only for the Repository.
-	dep := infra.NewDependency(eepostgres.NewRepositoryEE(db), smtp.NewMailerCE())
+	dep := infra.NewDependency(eepostgres.NewRepositoryEE(db), smtp.NewMailerCE(), redisClient)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -64,7 +70,7 @@ func main() {
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	ws.InitWebSocketConns(ctx, dep.Repository)
+	ws.InitWebSocketConns(ctx, dep.Repository, dep.PubSub)
 
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
