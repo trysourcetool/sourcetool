@@ -88,15 +88,16 @@ Sourcetool provides UI components you can use directly from Go code:
        ui.Markdown("## Users")
 
        // Search form
-       name := ui.TextInput("Name", textinput.Placeholder("Enter name to search"))
+       name := ui.TextInput("Name", textinput.WithPlaceholder("Enter name to search"))
        
-       // Display users table
+       // Fetch users from the database
        users, err := listUsers(name)
        if err != nil {
            return err
        }
-       
-       ui.Table(users, table.Header("Users List"))
+
+       // Display users in a table
+       ui.Table(users, table.WithHeader("Users List"))
        
        return nil
    }
