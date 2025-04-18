@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/apikey"
@@ -91,12 +90,3 @@ func (l *queryLogger) SelectContext(ctx context.Context, dest any, query string,
 	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
 	return l.db.SelectContext(ctx, dest, query, args...)
 }
-
-type (
-	SelectOption      func(b sq.SelectBuilder) sq.SelectBuilder
-	LoadOption[T any] func(ctx context.Context, e ...T) error
-	Limit             uint64
-	Offset            uint64
-	OrderBy           string
-	GroupBy           string
-)
