@@ -97,6 +97,13 @@ var reservedSubdomains = []string{
 	"teams",
 	"user",
 	"users",
+	"customer",
+	"customers",
+	"welcome",
+	"workspace",
+	"workspaces",
+	"project",
+	"projects",
 
 	// Business & Enterprise
 	"billing",
