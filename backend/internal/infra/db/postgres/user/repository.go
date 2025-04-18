@@ -9,9 +9,9 @@ import (
 	"github.com/lib/pq"
 	"github.com/samber/lo"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type RepositoryCE struct {

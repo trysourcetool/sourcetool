@@ -11,12 +11,12 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/utils/wsutil"
 )
 
 const (
@@ -87,7 +87,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			instanceID := r.Header.Get("X-Instance-Id")
 			hostInstance, err := h.service.InitializeHost(ctx, conn, instanceID, &msg)
 			if err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 
@@ -101,32 +101,32 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			go h.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)
 		case *websocketv1.Message_InitializeClient:
 			if err := h.service.InitializeClient(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RenderWidget:
 			if err := h.service.RenderWidget(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RerunPage:
 			if err := h.service.RerunPage(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_CloseSession:
 			if err := h.service.CloseSession(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_ScriptFinished:
 			if err := h.service.ScriptFinished(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_Exception:
 			if err := h.service.Exception(ctx, conn, &msg); err != nil {
-				wsutil.SendErrResponse(ctx, conn, msg.Id, err)
+				message.SendErrResponse(ctx, conn, msg.Id, err)
 				continue
 			}
 		default:

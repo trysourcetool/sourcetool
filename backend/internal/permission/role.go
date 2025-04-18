@@ -7,9 +7,9 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type operation string

@@ -15,7 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 func Load(ctx context.Context, repo db.Repository) error {
@@ -51,7 +51,7 @@ func Load(ctx context.Context, repo db.Repository) error {
 
 		o := &organization.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
-			Subdomain: conv.NilValue("acme"),
+			Subdomain: ptrconv.NilValue("acme"),
 		}
 		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err

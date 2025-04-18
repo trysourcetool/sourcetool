@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/trysourcetool/sourcetool/backend/auth"
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
 )
 
 func TestBuildSaveAuthURL(t *testing.T) {

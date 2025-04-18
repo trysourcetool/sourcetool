@@ -16,9 +16,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	redisv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/redis/v1"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	redisv1 "github.com/trysourcetool/sourcetool/backend/pb/go/redis/v1"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
 )
 
 const (

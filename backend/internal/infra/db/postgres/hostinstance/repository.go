@@ -6,9 +6,9 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type RepositoryCE struct {

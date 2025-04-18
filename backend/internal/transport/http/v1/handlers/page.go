@@ -6,7 +6,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
-	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type PageHandler struct {
@@ -30,19 +30,19 @@ func (h *PageHandler) List(w http.ResponseWriter, r *http.Request) {
 	in := requests.ListPagesRequest{
 		EnvironmentID: r.URL.Query().Get("environmentId"),
 	}
-	if err := httputil.ValidateRequest(in); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+	if err := httpx.ValidateRequest(in); err != nil {
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.List(r.Context(), mapper.ListPagesRequestToInput(in))
 	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, mapper.ListPagesOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+	if err := httpx.WriteJSON(w, http.StatusOK, mapper.ListPagesOutputToResponse(out)); err != nil {
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

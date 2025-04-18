@@ -6,16 +6,16 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	groupSvc "github.com/trysourcetool/sourcetool/backend/internal/app/group"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type serviceEE struct {
@@ -195,7 +195,7 @@ func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.U
 	}
 
 	if in.Name != nil {
-		g.Name = conv.SafeValue(in.Name)
+		g.Name = ptrconv.SafeValue(in.Name)
 	}
 
 	userIDs := make([]uuid.UUID, 0, len(in.UserIDs))

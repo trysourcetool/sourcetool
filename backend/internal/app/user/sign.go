@@ -5,8 +5,8 @@ import (
 
 	gojwt "github.com/golang-jwt/jwt/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/auth"
-	"github.com/trysourcetool/sourcetool/backend/jwt"
+	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
+	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 )
 
 func createUpdateEmailToken(userID, email string) (string, error) {

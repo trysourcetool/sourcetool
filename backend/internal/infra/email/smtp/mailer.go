@@ -37,6 +37,22 @@ func NewMailerCE() *mailerCE {
 }
 
 func (c *mailerCE) Send(ctx context.Context, to []string, from, subject, body string) error {
+	msg := fmt.Sprintf("From: %s <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", from, c.fromEmail, strings.Join(to, ","), subject, body)
+
+	if config.Config.Env == config.EnvLocal {
+		// In local environment, just log the email content
+		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
+		logger.Logger.Sugar().Debug(msg)
+		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
+
+		// Don't actually send in local environment
+		return nil
+	}
+
 	conn, err := tls.Dial("tcp", c.addr, c.tlsConf)
 	if err != nil {
 		return fmt.Errorf("failed to create TLS connection: %w", err)
@@ -68,12 +84,6 @@ func (c *mailerCE) Send(ctx context.Context, to []string, from, subject, body st
 		return fmt.Errorf("failed to create message writer: %w", err)
 	}
 
-	msg := fmt.Sprintf("From: %s <%s>\r\n"+
-		"To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"\r\n"+
-		"%s\r\n", from, c.fromEmail, strings.Join(to, ","), subject, body)
-
 	if _, err = w.Write([]byte(msg)); err != nil {
 		return fmt.Errorf("failed to write message: %w", err)
 	}
@@ -82,37 +92,5 @@ func (c *mailerCE) Send(ctx context.Context, to []string, from, subject, body st
 		return fmt.Errorf("failed to close message writer: %w", err)
 	}
 
-	return sendWithLogging(ctx, msg, func() error {
-		return client.Quit()
-	})
-}
-
-// SendWithLogging sends an email in production environments and logs the content
-// in local development environment. Useful for debugging emails without actually
-// sending them in the local environment.
-//
-// Parameters:
-//   - ctx: The context
-//   - content: The email content as string, used for local environment display
-//   - sendFunc: A function that performs the actual email sending
-//
-// Returns:
-//   - error: Any error that occurred during the process
-func sendWithLogging(ctx context.Context, content string, sendFunc func() error) error {
-	if config.Config.Env == config.EnvLocal {
-		// In local environment, just log the email content
-		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
-		logger.Logger.Sugar().Debug(content)
-		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
-
-		// Don't actually send in local environment
-		return nil
-	}
-
-	// In non-local environments, perform the email sending
-	if err := sendFunc(); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	return nil
+	return client.Quit()
 }

@@ -11,8 +11,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
@@ -20,9 +20,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
+	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -125,7 +125,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 					return nil, err
 				}
 
-				url, err := buildMagicLinkURL(conv.SafeValue(org.Subdomain), tok)
+				url, err := buildMagicLinkURL(ptrconv.SafeValue(org.Subdomain), tok)
 				if err != nil {
 					return nil, err
 				}
@@ -250,7 +250,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = conv.SafeValue(org.Subdomain)
+				orgSubdomain = ptrconv.SafeValue(org.Subdomain)
 			} else {
 				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
 			}
@@ -419,7 +419,7 @@ func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.Reque
 	}
 
 	// Build magic link URL
-	url, err := buildInvitationMagicLinkURL(conv.SafeValue(invitedOrg.Subdomain), tok)
+	url, err := buildInvitationMagicLinkURL(ptrconv.SafeValue(invitedOrg.Subdomain), tok)
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +472,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = ptrconv.SafeValue(hostOrg.Subdomain)
 	}
 
 	// Check if user exists
@@ -581,7 +581,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = conv.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = ptrconv.SafeValue(hostOrg.Subdomain)
 	}
 
 	// Generate refresh token
@@ -786,7 +786,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 			Role:           userInvitation.Role,
 		}
 		org = invitedOrg
-		orgSubdomain = conv.SafeValue(invitedOrg.Subdomain)
+		orgSubdomain = ptrconv.SafeValue(invitedOrg.Subdomain)
 	} else {
 		// Standard flow - get user's organization info
 		// Get all organization accesses for the user
@@ -807,7 +807,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 							return nil, err
 						}
 
-						url, err := buildLoginURL(conv.SafeValue(org.Subdomain))
+						url, err := buildLoginURL(ptrconv.SafeValue(org.Subdomain))
 						if err != nil {
 							return nil, err
 						}
@@ -837,7 +837,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 					if err != nil {
 						return nil, err
 					}
-					orgSubdomain = conv.SafeValue(org.Subdomain)
+					orgSubdomain = ptrconv.SafeValue(org.Subdomain)
 				}
 			} else {
 				// Single organization case
@@ -847,7 +847,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = conv.SafeValue(org.Subdomain)
+				orgSubdomain = ptrconv.SafeValue(org.Subdomain)
 			}
 		} else {
 			// Self-hosted mode
@@ -989,7 +989,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 				return fmt.Errorf("failed to create personal API key: %w", err)
 			}
 
-			orgSubdomain = conv.SafeValue(invitedOrg.Subdomain)
+			orgSubdomain = ptrconv.SafeValue(invitedOrg.Subdomain)
 			hasOrganization = true
 		} else {
 			if !config.Config.IsCloudEdition {
@@ -1255,7 +1255,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	}
 
 	// Build auth URL with organization subdomain
-	authURL, err := buildSaveAuthURL(conv.SafeValue(org.Subdomain))
+	authURL, err := buildSaveAuthURL(ptrconv.SafeValue(org.Subdomain))
 	if err != nil {
 		return nil, err
 	}

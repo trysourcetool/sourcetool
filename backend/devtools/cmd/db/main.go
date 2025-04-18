@@ -10,8 +10,8 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/postgres"
 )
 
 func init() {

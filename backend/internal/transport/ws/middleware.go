@@ -10,14 +10,14 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
+	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type Middleware interface {
@@ -41,13 +41,13 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httputil.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
@@ -140,5 +140,5 @@ func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, erro
 	if !config.Config.IsCloudEdition {
 		return "", nil
 	}
-	return httputil.GetSubdomainFromHost(r.Host)
+	return httpx.GetSubdomainFromHost(r.Host)
 }

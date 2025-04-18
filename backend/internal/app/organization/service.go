@@ -8,16 +8,16 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
-	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -36,7 +36,7 @@ func NewServiceCE(d *infra.Dependency) *ServiceCE {
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error) {
 	var subdomain *string
 	if config.Config.IsCloudEdition {
-		subdomain = conv.NilValue(in.Subdomain)
+		subdomain = ptrconv.NilValue(in.Subdomain)
 
 		if lo.Contains(reservedSubdomains, in.Subdomain) {
 			return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))

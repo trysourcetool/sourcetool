@@ -2,11 +2,10 @@ package config
 
 import (
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/env/v11"
-
-	"github.com/trysourcetool/sourcetool/backend/utils/urlutil"
 )
 
 var Config *Cfg
@@ -65,7 +64,7 @@ func Init() {
 
 	cfg.BaseURL = strings.TrimRight(cfg.BaseURL, "/")
 
-	cfg.IsCloudEdition = urlutil.IsCloudEdition(cfg.BaseURL)
+	cfg.IsCloudEdition = isCloudEdition(cfg.BaseURL)
 
 	baseURLParts := strings.Split(cfg.BaseURL, "://")
 	if len(baseURLParts) != 2 {
@@ -130,4 +129,10 @@ func (c *Cfg) WebSocketOrgBaseURL(subdomain string) string {
 		return "wss://" + c.OrgHostname(subdomain)
 	}
 	return "ws://" + c.OrgHostname(subdomain)
+}
+
+func isCloudEdition(baseURL string) bool {
+	cloudDomainRegex := regexp.MustCompile(`^https?://(?:([^.]+)\.)?trysourcetool\.com(?::\d+)?$`)
+	matches := cloudDomainRegex.FindStringSubmatch(baseURL)
+	return len(matches) > 1
 }

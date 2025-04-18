@@ -6,15 +6,15 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
-	"github.com/trysourcetool/sourcetool/backend/utils/conv"
-	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -133,10 +133,10 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 	}
 
 	if in.Name != nil {
-		env.Name = conv.SafeValue(in.Name)
+		env.Name = ptrconv.SafeValue(in.Name)
 	}
 	if in.Color != nil {
-		env.Color = conv.SafeValue(in.Color)
+		env.Color = ptrconv.SafeValue(in.Color)
 	}
 
 	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {

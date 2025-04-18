@@ -7,7 +7,6 @@ import (
 	"github.com/gofrs/uuid/v5"
 	gorillaws "github.com/gorilla/websocket"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
@@ -16,8 +15,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/utils/wsutil"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type serviceEE struct {
@@ -205,7 +205,7 @@ func (s *serviceEE) InitializeHost(ctx context.Context, conn *gorillaws.Conn, in
 
 	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
 
-	if err := wsutil.SendResponse(conn, &websocketv1.Message{
+	if err := message.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeHostCompleted{
 			InitializeHostCompleted: &websocketv1.InitializeHostCompleted{

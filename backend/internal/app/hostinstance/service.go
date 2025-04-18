@@ -6,15 +6,15 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
+	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
-	"github.com/trysourcetool/sourcetool/backend/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/ws/conn"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -39,7 +39,7 @@ func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dt
 		hostinstance.ByOrganizationID(currentOrg.ID),
 	}
 	if in.PageID != nil {
-		pageID, err := uuid.FromString(conv.SafeValue(in.PageID))
+		pageID, err := uuid.FromString(ptrconv.SafeValue(in.PageID))
 		if err != nil {
 			return nil, errdefs.ErrInvalidArgument(err)
 		}
@@ -65,7 +65,7 @@ func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dt
 	var onlineHostInstance *hostinstance.HostInstance
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == hostinstance.HostInstanceStatusOnline {
-			connManager := conn.GetConnManager()
+			connManager := ws.GetConnManager()
 			if err := connManager.PingHost(hostInstance.ID); err != nil {
 				hostInstance.Status = hostinstance.HostInstanceStatusOffline
 				if err := s.Repository.HostInstance().Update(ctx, hostInstance); err != nil {

@@ -19,9 +19,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/postgres"
 )
 
 func init() {

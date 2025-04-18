@@ -8,9 +8,9 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/samber/lo"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type RepositoryCE struct {

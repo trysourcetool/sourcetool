@@ -7,17 +7,17 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -65,10 +65,10 @@ func (s *ServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dto.Up
 	currentUser := ctxutil.CurrentUser(ctx)
 
 	if in.FirstName != nil {
-		currentUser.FirstName = conv.SafeValue(in.FirstName)
+		currentUser.FirstName = ptrconv.SafeValue(in.FirstName)
 	}
 	if in.LastName != nil {
-		currentUser.LastName = conv.SafeValue(in.LastName)
+		currentUser.LastName = ptrconv.SafeValue(in.LastName)
 	}
 
 	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
@@ -119,7 +119,7 @@ func (s *ServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.Se
 	}
 
 	// Build update URL
-	url, err := buildUpdateEmailURL(conv.SafeValue(currentOrg.Subdomain), tok)
+	url, err := buildUpdateEmailURL(ptrconv.SafeValue(currentOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 
 	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
 		if in.Role != nil {
-			orgAccess.Role = user.UserOrganizationRoleFromString(conv.SafeValue(in.Role))
+			orgAccess.Role = user.UserOrganizationRoleFromString(ptrconv.SafeValue(in.Role))
 
 			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
@@ -386,7 +386,7 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 			return nil, err
 		}
 
-		url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, email)
+		url, err := buildInvitationURL(ptrconv.SafeValue(o.Subdomain), tok, email)
 		if err != nil {
 			return nil, err
 		}
@@ -453,7 +453,7 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 		return nil, err
 	}
 
-	url, err := buildInvitationURL(conv.SafeValue(o.Subdomain), tok, userInvitation.Email)
+	url, err := buildInvitationURL(ptrconv.SafeValue(o.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}

@@ -7,8 +7,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 
-	"github.com/trysourcetool/sourcetool/backend/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
@@ -16,11 +16,11 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/utils/ctxutil"
+	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	websocketv1 "github.com/trysourcetool/sourcetool/backend/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/pkg/conv"
-	"github.com/trysourcetool/sourcetool/backend/utils/wsutil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -120,8 +120,8 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 
 	var sess *session.Session
 	var sessionExists bool
-	if conv.SafeValue(in.SessionId) != "" {
-		sessionID, err := uuid.FromString(conv.SafeValue(in.SessionId))
+	if ptrconv.SafeValue(in.SessionId) != "" {
+		sessionID, err := uuid.FromString(ptrconv.SafeValue(in.SessionId))
 		if err != nil {
 			return errdefs.ErrSessionNotFound(err)
 		}
@@ -158,7 +158,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return err
 	}
 
-	if err := wsutil.SendResponse(conn, &websocketv1.Message{
+	if err := message.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeClientCompleted{
 			InitializeClientCompleted: &websocketv1.InitializeClientCompleted{
@@ -175,7 +175,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
-				SessionId: conv.NilValue(sess.ID.String()),
+				SessionId: ptrconv.NilValue(sess.ID.String()),
 				PageId:    page.ID.String(),
 			},
 		},
@@ -306,7 +306,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, conn *websocket.Conn, in
 
 	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
 
-	if err := wsutil.SendResponse(conn, &websocketv1.Message{
+	if err := message.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_InitializeHostCompleted{
 			InitializeHostCompleted: &websocketv1.InitializeHostCompleted{

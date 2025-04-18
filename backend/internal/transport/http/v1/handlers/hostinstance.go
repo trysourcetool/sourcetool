@@ -6,8 +6,8 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
-	"github.com/trysourcetool/sourcetool/backend/utils/conv"
-	"github.com/trysourcetool/sourcetool/backend/utils/httputil"
+	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
+	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type HostInstanceHandler struct {
@@ -29,22 +29,22 @@ func NewHostInstanceHandler(service hostinstance.Service) *HostInstanceHandler {
 // @Router /hostInstances/ping [get].
 func (h *HostInstanceHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	req := requests.PingHostInstanceRequest{
-		PageID: conv.NilValue(r.URL.Query().Get("pageId")),
+		PageID: ptrconv.NilValue(r.URL.Query().Get("pageId")),
 	}
 
-	if err := httputil.ValidateRequest(req); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+	if err := httpx.ValidateRequest(req); err != nil {
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Ping(r.Context(), mapper.PingHostInstanceRequestToInput(req))
 	if err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httputil.WriteJSON(w, http.StatusOK, mapper.PingHostInstanceOutputToResponse(out)); err != nil {
-		httputil.WriteErrJSON(r.Context(), w, err)
+	if err := httpx.WriteJSON(w, http.StatusOK, mapper.PingHostInstanceOutputToResponse(out)); err != nil {
+		httpx.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
