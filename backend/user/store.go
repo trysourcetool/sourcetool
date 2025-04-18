@@ -112,25 +112,6 @@ func (o orderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
 	return b.OrderBy(o.orderBy)
 }
 
-type RegistrationRequestOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRegistrationRequestOption()
-}
-
-func RegistrationRequestByEmail(email string) RegistrationRequestOption {
-	return registrationRequestByEmailOption{email: email}
-}
-
-type registrationRequestByEmailOption struct {
-	email string
-}
-
-func (o registrationRequestByEmailOption) isRegistrationRequestOption() {}
-
-func (o registrationRequestByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`urr."email"`: o.email})
-}
-
 type OrganizationAccessStoreOption interface {
 	Apply(sq.SelectBuilder) sq.SelectBuilder
 	isOrganizationAccessStoreOption()
