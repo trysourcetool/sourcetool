@@ -25,21 +25,13 @@ The backend provides the API for the Sourcetool application, handling:
 
 ## Directory Structure
 
-- `/apikey` - API key management
-- `/authz` - Authorization logic
 - `/cmd` - Application entry points
 - `/config` - Configuration handling
 - `/devtools` - Development tools
 - `/docs` - API documentation (Swagger)
-- `/dto` - Data transfer objects
-- `/environment` - Environment management
-- `/group` - Group management
-- `/hostinstance` - Host instance management
-- `/infra` - Infrastructure components
+- `/ee` - Enterprise features (if applicable)
+- `/fixtures` - Test fixtures and data
+- `/internal` - Internal application logic and packages
+- `/logger` - Logging utilities
 - `/migrations` - Database migrations
-- `/organization` - Organization management
-- `/page` - Page management
-- `/server` - HTTP server implementation
-- `/session` - Session management
-- `/user` - User management
-- `/ws` - WebSocket implementation
+- `/pkg` - Public library code usable by external applications
