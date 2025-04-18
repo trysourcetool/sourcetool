@@ -14,14 +14,14 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	"github.com/trysourcetool/sourcetool/backend/ee/infra/mailer"
-	"github.com/trysourcetool/sourcetool/backend/ee/infra/store"
-	"github.com/trysourcetool/sourcetool/backend/ee/server"
+	eepostgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres"
+	"github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
 	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/postgres"
-	wsconn "github.com/trysourcetool/sourcetool/backend/ws/conn"
 )
 
 func init() {
@@ -38,10 +38,11 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
-	dep := infra.NewDependency(store.NewEE(db), mailer.NewEE())
+	// Use the EE version only for the Repository.
+	dep := infra.NewDependency(eepostgres.NewRepositoryEE(db), smtp.NewMailerCE())
 
 	if config.Config.Env == config.EnvLocal {
-		if err := fixtures.Load(ctx, dep.Store); err != nil {
+		if err := fixtures.Load(ctx, dep.Repository); err != nil {
 			logger.Logger.Fatal(err.Error())
 		}
 	}
@@ -52,16 +53,18 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
+	router := transport.NewRouter(dep)
+
 	eg, egCtx := errgroup.WithContext(ctx)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           server.New(dep),
+		Handler:           router.Build(),
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	wsconn.InitWebSocketConns(ctx, dep.Store)
+	ws.InitWebSocketConns(ctx, dep.Repository)
 
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
@@ -78,7 +81,7 @@ func main() {
 		defer shutdownCancel()
 
 		logger.Logger.Info("Closing WebSocket connections...")
-		wsconn.GetConnManager().Close()
+		ws.GetConnManager().Close()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("server shutdown: %v", err)
