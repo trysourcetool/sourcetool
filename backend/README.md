@@ -32,6 +32,14 @@ The backend provides the API for the Sourcetool application, handling:
 - `/ee` - Enterprise features (if applicable)
 - `/fixtures` - Test fixtures and data
 - `/internal` - Internal application logic and packages
+  - `/app` - Application layer services and use cases
+  - `/domain` - Core domain models and business logic
+  - `/infra` - Infrastructure components (database, external services)
+  - `/pb` - Protocol Buffer definitions and generated code
+  - `/permission` - Permission checking logic
+  - `/transport` - API transport layer (HTTP and WebSocket handlers)
+  - `/jwt` - JWT handling utilities
+  - `/ctxutil` - Context utility functions
 - `/logger` - Logging utilities
 - `/migrations` - Database migrations
 - `/pkg` - Public library code usable by external applications
