@@ -203,11 +203,9 @@ func (m *manager) DisconnectClient(sessionID uuid.UUID) {
 func (m *manager) Close() error {
 	logger.Logger.Sugar().Info("Closing WebSocket connection manager...")
 
-	// 1. Signal all goroutines managed by this manager to stop
 	logger.Logger.Sugar().Info("Canceling connection manager context...")
 	m.cancel() // This signals subscribers to stop
 
-	// 2. Stop ping loops for existing connections by closing 'done' channels
 	logger.Logger.Sugar().Info("Signaling ping loops to stop...")
 	m.hostsMutex.Lock()
 	for id, host := range m.connectedHosts {
@@ -223,7 +221,6 @@ func (m *manager) Close() error {
 	}
 	m.clientsMutex.Unlock()
 
-	// 3. Wait for all started goroutines (subscribers and ping loops) to finish
 	logger.Logger.Sugar().Info("Waiting for background goroutines to stop...")
 	done := make(chan struct{})
 	go func() {
@@ -239,16 +236,6 @@ func (m *manager) Close() error {
 		return errors.New("timeout closing connection manager goroutines")
 	}
 
-	// 4. Close the PubSub client connection (assuming Close is idempotent or safe to call after context cancel)
-	// Note: The pubsub client (e.g., Redis) might be shared, consider if closing here is appropriate
-	// or should be handled at a higher level where the client was created.
-	// logger.Logger.Sugar().Info("Closing PubSub client connection...")
-	// if err := m.pubsubClient.Close(); err != nil {
-	// 	 logger.Logger.Sugar().Errorf("Failed to close PubSub client: %v", err)
-	// 	 // Decide if this should be a critical error
-	// }
-
-	// 5. Clear the maps (optional, helps GC)
 	m.hostsMutex.Lock()
 	m.connectedHosts = make(map[uuid.UUID]*connectedHost)
 	m.hostsMutex.Unlock()
