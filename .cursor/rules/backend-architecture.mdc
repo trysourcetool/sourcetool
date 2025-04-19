@@ -1,0 +1,89 @@
+---
+description: 
+globs: **/*.go
+alwaysApply: false
+---
+---
+description: Sourcetool backend architecture
+globs:
+  - "**/*.go"
+alwaysApply: false
+---
+
+# Layer map & allowed imports
+
+| Layer & path                       | Role (what lives here)                              | May **import**                                         |
+|------------------------------------|-----------------------------------------------------|--------------------------------------------------------|
+| **domain** `internal/domain/**`    | Entities, value objects, **repository ports**       | **std lib**, minimal 3rd‑party (uuid, errors)          |
+| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, `ctxutil`, `pkg/**`, std lib, 3rd‑party    |
+| **infra** `internal/infra/**`      | DB/email/pubsub/ws **adapters** implementing ports  | **app**, **domain**, std lib, 3rd‑party                |
+| **transport** `internal/transport/**` | HTTP & WebSocket routers/handlers/middleware     | **app**, **domain**, **infra**, std lib, 3rd‑party     |
+| **enterprise edition** `ee/internal/**` | Same 4 layers, same rules                      | follow same import rules                               |
+| **support** `config`, `logger`, `ctxutil`, `jwt`, `pkg/**`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
+
+### Dependency direction
+
+transport → app → domain ↘ infra ──→ app/domain (implements ports)
+
+* `app` **must not** import `infra`  
+  ‑ right now `ServiceCE` does (`internal/app/**/service.go`).  
+  Move the `Dependency` type out of `infra` into `internal/app/port` (or delete it and pass explicit ports) so services depend only on ports. :contentReference[oaicite:0]{index=0}
+
+* `infra` implements the ports declared in **domain** (repositories) and **app** (mailer/pubsub/wsmanager).  
+  It may therefore depend *downward* on those layers, but never upward.
+
+* `transport` is allowed to wire everything together at program start, so it may import `infra` to build adapters, but the core business flow never goes back “up”.
+
+# Directory conventions
+
+* **Domain packages** (`apikey`, `user`, …) contain  
+  `model.go` + `repository.go` (port).  
+* **App packages** mirror the domain and contain  
+  `service.go` (use‑case logic) and `validate.go`, optionally `email.go`, `url.go`, etc.  
+  Ports for external services live in `internal/app/port/` (e.g. `mailer.go`, `pubsub.go`, `wsmanager.go`).  
+* **DTOs** live in `internal/app/dto/**`; they **never** appear in `domain` or `infra`.  
+* **Infra adapters** live under `internal/infra/**/<tech>/…` (db/postgres, email/smtp, pubsub/redis, ws/manager).  
+  Each adapter implements one port interface.  
+* **Transport** is split by protocol:  
+  * `internal/transport/http/v1/**`  (handlers/requests/responses/mapper)  
+  * `internal/transport/ws/**`        (handlers/message/router)  
+* `cmd/server/main.go` is the only place that constructs concrete infra adapters and injects them into transport.  
+* Tests live next to code (`*_test.go`) and may reach across layers only via public APIs.
+
+# Data flow (runtime)
+
+1. **transport** parses HTTP/WS payload → **DTO**
+2. **app** → executes use‑case on **domain** entities via repository port + external ports (Mailer, PubSub, WSManager)
+3. **infra** → concrete adapters fulfil the ports (DB, Redis, SMTP, …)
+4. Result bubbles back: entities → DTO → HTTP/WS response
+
+# Import linter rules
+
+* `internal/domain/**` **must not** import `internal/app`, `internal/infra`, or `internal/transport`.
+* `internal/app/**` **must not** import `internal/transport/**` **nor** `internal/infra/**`.
+* generated protobuf `pb/go/**` is allowed anywhere, but only value‑object messages may be used in `domain`.
+* Circular imports are forbidden (`go vet ./...`).
+* Enforce with `golangci‑lint` + `revive` import‑graph rule.
+
+# Migration plan (breaking changes highlighted ★)
+
+| Step | Action |
+|------|--------|
+| 1    | **★ Extract `infra.Dependency`** into `internal/app/port/dep.go` as pure interface‑aggregate; update every `NewServiceCE`/`EE` constructor to accept that interface instead of the concrete struct. |
+| 2    | Each service now depends only on ports; delete `infra` import from `app`. |
+| 3    | Infra packages implement the port set: `NewDependencyCE` returns a struct in `infra` that satisfies the interface. |
+| 4    | Add `Makefile` target `lint-arch` running `go list` + `grep` to ensure the import rules above. |
+| 5    | Update docs and CI to fail on architectural violations. |
+
+After step 3 the compile‑time graph obeys the arrows, completing the hexagonal separation.
+
+# Enterprise edition
+
+`ee/internal/**` mirrors **exactly** the same structure.  
+Keep all CE/EE splits either **at the adapter level** (`infra/db/postgres/foo/repository_ce.go` vs `repository_ee.go`) or **inside service constructors** (`NewServiceCE`, `NewServiceEE`).
+
+# Appendix
+
+* **Fixtures** (`fixtures/**`) and **migrations** (`migrations/**`) live at repo root; callable only from `cmd/server` during dev/test.
+* **pkg/** contains generic helpers (`errdefs`, `ptrconv`, `urlx`, `httpx`) – importable anywhere.
+* Prefer `ctxutil` helpers to access scoped data instead of passing primitives.
