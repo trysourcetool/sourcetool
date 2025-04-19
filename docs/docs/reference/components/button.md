@@ -11,7 +11,6 @@ sidebar_position: 3
 ```go
 pressed := ui.Button(label string, opts ...button.Option) bool
 ```
-​citeturn2file1
 
 ## Return value
 
@@ -24,7 +23,6 @@ pressed := ui.Button(label string, opts ...button.Option) bool
 | Helper | Description |
 |--------|-------------|
 | `button.WithDisabled(true)` | Renders the button in a disabled (non‑clickable) state. |
-​citeturn2file4
 
 ## Examples
 
