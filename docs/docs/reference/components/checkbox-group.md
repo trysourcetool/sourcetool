@@ -2,71 +2,91 @@
 sidebar_position: 13
 ---
 
-# Checkbox Group
+# Checkbox Group
 
-The Checkbox Group widget provides a collection of related checkboxes that allow users to select multiple options from a predefined set.
+`CheckboxGroup` renders a list of checkboxes that share a single label. Users can tick **any number** of options; the selection is sent back on every **RerunPage** and stored in session state.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `[]int32` | `[]` | Array of selected option indices |
+```go
+val := ui.CheckboxGroup(label string, opts ...checkboxgroup.Option) *checkboxgroup.Value
+```
 
+### Return value
 
-## Properties
+If the user has selected at least one option, `val` is a pointer to:
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the checkbox group |
-| `options` | `[]string` | `[]` | Array of option labels for each checkbox |
-| `default_value` | `[]int32` | `[]` | Initial selected option indices |
-| `required` | `bool` | `False` | Whether at least one option must be selected |
-| `disabled` | `bool` | `False` | Whether the entire checkbox group is disabled |
-| `format_func` | `func(string, int) string` | `nil` | Function to format the option label |
+```go
+type Value struct {
+    Values  []string // selected option labels (original, not formatted)
+    Indexes []int    // corresponding indexes in the options slice
+}
+```
+Otherwise it is `nil`.
+
+## Option helpers
+
+| Helper | Purpose |
+|--------|---------|
+| `checkboxgroup.WithOptions("A", "B", "C")` | Provide the list of choices. **Required.** |
+| `checkboxgroup.WithDefaultValue("B", "C")` | Pre‑select items on first render. |
+| `checkboxgroup.WithRequired(true)` | Prevent form submission unless at least one item is checked. |
+| `checkboxgroup.WithDisabled(true)` | Grey out the whole group. |
+| `checkboxgroup.WithFormatFunc(func(v string, i int) string { return strings.ToUpper(v) })` | Customize the *rendered* label without altering the underlying value. |
+
+## Behaviour notes
+
+* **State type** – the backend keeps an `[]int32` of indexes, so changing the order of `WithOptions` between deployments will break existing sessions.
+* **Formatting** – `WithFormatFunc` is applied only to what the user sees; the `Values` returned remain the original strings.
+* **Default vs. current** – after the first run, any user change overrides the default; subsequent reruns keep the user’s selection.
 
 ## Examples
 
-### Basic Checkbox Group
+### Basic group
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/checkboxgroup"
+choice := ui.CheckboxGroup("Interests",
+    checkboxgroup.WithOptions("Tech", "Science", "Art"),
 )
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic checkbox group
-        checkboxGroup := ui.CheckboxGroup("Select your interests", checkboxgroup.Options("Technology", "Science", "Art", "Sports", "Music"))
-    }
+if choice != nil {
+    log.Printf("selected: %v", choice.Values)
 }
 ```
 
-### Checkbox Group with Default Selections
+### Default selection & required
 
 ```go
-// Create a checkbox group with default selections
-checkboxGroup := ui.CheckboxGroup("Select your interests", checkboxgroup.Options("Technology", "Science", "Art", "Sports", "Music"), checkboxgroup.DefaultValue("Technology", "Sports"))
+_ = ui.CheckboxGroup("Pick at least one pet",
+    checkboxgroup.WithOptions("Dog", "Cat", "Bird"),
+    checkboxgroup.WithDefaultValue("Dog"),
+    checkboxgroup.WithRequired(true),
+)
 ```
 
-### Required Checkbox Group
+### Disabled group
 
 ```go
-// Create a required checkbox group
-checkboxGroup := ui.CheckboxGroup("Select your interests", checkboxgroup.Options("Technology", "Science", "Art", "Sports", "Music"), checkboxgroup.Required(true))
+ui.CheckboxGroup("Archived list",
+    checkboxgroup.WithOptions("A", "B"),
+    checkboxgroup.WithDisabled(true),
+)
 ```
 
-### Disabled Checkbox Group
+### Custom label formatting
 
 ```go
-// Create a disabled checkbox group
-checkboxGroup := ui.CheckboxGroup("Select your interests", checkboxgroup.Options("Technology", "Science", "Art", "Sports", "Music"), checkboxgroup.DefaultValue("Technology", "Sports"), checkboxgroup.Disabled(true))
+format := func(v string, i int) string { return fmt.Sprintf("%d. %s", i+1, v) }
+ui.CheckboxGroup("Steps",
+    checkboxgroup.WithOptions("Build", "Test", "Deploy"),
+    checkboxgroup.WithFormatFunc(format),
+)
 ```
 
-## Related Components
+---
 
-- [Checkbox](./checkbox) - For a single checkbox option
-- [Radio](./radio) - For selecting a single option from a group (mutually exclusive)
-- [MultiSelect](./multi-select) - Alternative for selecting multiple options from a dropdown
+### Related widgets
+
+* [`Checkbox`](./checkbox) – a single true/false toggle.
+* [`Radio`](./radio) – choose exactly one option.
+* [`MultiSelect`](./multi-select) – dropdown‑based multi‑choice.
+
