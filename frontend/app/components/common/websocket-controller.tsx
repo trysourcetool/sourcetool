@@ -224,9 +224,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         dispatch(pagesStore.actions.clearException());
         handleCloseSession();
         currentPageId.current = '';
-        setTimeout(() => {
-          onDisable();
-        }, 1000);
+        onDisable();
       }
       isInitialLoading.current = false;
     })();

@@ -25,21 +25,42 @@ The backend provides the API for the Sourcetool application, handling:
 
 ## Directory Structure
 
-- `/apikey` - API key management
-- `/authz` - Authorization logic
 - `/cmd` - Application entry points
 - `/config` - Configuration handling
 - `/devtools` - Development tools
 - `/docs` - API documentation (Swagger)
-- `/dto` - Data transfer objects
-- `/environment` - Environment management
-- `/group` - Group management
-- `/hostinstance` - Host instance management
-- `/infra` - Infrastructure components
+- `/ee` - Enterprise features (if applicable)
+- `/fixtures` - Test fixtures and data
+- `/internal` - Internal application logic and packages
+  - `/app` - Application layer services and use cases
+  - `/domain` - Core domain models and business logic
+  - `/infra` - Infrastructure components (database, external services)
+    - `/db` - Database related code and repositories
+      - `/postgres` - PostgreSQL specific implementations
+    - `/email` - Email service implementations
+      - `/smtp` - SMTP based email service
+    - `/pubsub` - Publish/Subscribe implementations
+      - `/redis` - Redis based pub/sub service
+    - `/ws` - WebSocket related implementations
+      - `/manager` - WebSocket connection management
+  - `/pb` - Protocol Buffer definitions and generated code
+  - `/permission` - Permission checking logic
+  - `/transport` - API transport layer (HTTP and WebSocket handlers)
+    - `/http` - HTTP API handlers and routing
+      - `/v1` - Version 1 of the HTTP API
+        - `/handlers` - HTTP request handlers
+        - `/requests` - Request models and validation
+        - `/responses` - Response models
+        - `/mapper` - Data mapping utilities
+        - `/middleware` - HTTP middleware components
+    - `/ws` - WebSocket handlers and routing
+      - `/handlers` - WebSocket message handlers
+      - `/message` - WebSocket message utilities
+      - `/middleware` - WebSocket middleware components
+    - `router.go` - Main router configuration
+    - `static.go` - Static file serving configuration
+  - `/jwt` - JWT handling utilities
+  - `/ctxutil` - Context utility functions
+- `/logger` - Logging utilities
 - `/migrations` - Database migrations
-- `/organization` - Organization management
-- `/page` - Page management
-- `/server` - HTTP server implementation
-- `/session` - Session management
-- `/user` - User management
-- `/ws` - WebSocket implementation
+- `/pkg` - Public library code usable by external applications

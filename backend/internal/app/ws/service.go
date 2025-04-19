@@ -13,7 +13,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
@@ -75,12 +74,9 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 
 	// Try to find an online host that responds to ping
 	var onlineHostInstance *hostinstance.HostInstance
-	connManager := ws.GetConnManager()
-
-	// First, try hosts that are already marked as online
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == hostinstance.HostInstanceStatusOnline {
-			if err := connManager.PingHost(hostInstance.ID); err != nil {
+			if err := s.WSManager.PingConnectedHost(hostInstance.ID); err != nil {
 				// Update host status to offline if ping fails
 				hostInstance.Status = hostinstance.HostInstanceStatusOffline
 				if err := s.Repository.HostInstance().Update(ctx, hostInstance); err != nil {
@@ -98,7 +94,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 	if onlineHostInstance == nil {
 		for _, hostInstance := range hostInstances {
 			if hostInstance.Status == hostinstance.HostInstanceStatusUnreachable {
-				if err := connManager.PingHost(hostInstance.ID); err == nil {
+				if err := s.WSManager.PingConnectedHost(hostInstance.ID); err == nil {
 					// Host is actually reachable, update its status
 					hostInstance.Status = hostinstance.HostInstanceStatusOnline
 					if err := s.Repository.HostInstance().Update(ctx, hostInstance); err != nil {
@@ -169,9 +165,9 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return err
 	}
 
-	ws.GetConnManager().SetConnectedClient(sess, conn)
+	s.WSManager.SetConnectedClient(sess, conn)
 
-	if err := ws.GetConnManager().SendToHost(ctx, onlineHostInstance.ID, &websocketv1.Message{
+	if err := s.WSManager.SendToHost(ctx, onlineHostInstance.ID, &websocketv1.Message{
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
@@ -181,7 +177,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		},
 	}); err != nil {
 		s.Repository.Session().Delete(ctx, sess)
-		ws.GetConnManager().DisconnectClient(sess.ID)
+		s.WSManager.DisconnectClient(sess.ID)
 		logger.Logger.Sugar().Errorf("Failed to send initialize client message to host: %v", err)
 		return err
 	}
@@ -304,7 +300,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, conn *websocket.Conn, in
 		return nil, err
 	}
 
-	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
+	s.WSManager.SetConnectedHost(hostInstance, apikey, conn)
 
 	if err := message.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,
@@ -346,7 +342,7 @@ func (s *ServiceCE) RerunPage(ctx context.Context, conn *websocket.Conn, msg *we
 		return err
 	}
 
-	if err := ws.GetConnManager().SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
+	if err := s.WSManager.SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_RerunPage{
 			RerunPage: &websocketv1.RerunPage{
@@ -378,7 +374,8 @@ func (s *ServiceCE) RenderWidget(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	if err := ws.GetConnManager().SendToClient(ctx, sessionID, msg); err != nil {
+	if err := s.WSManager.SendToClient(ctx, sessionID, msg); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to send render widget message to client: %v", err)
 		return err
 	}
 
@@ -416,19 +413,18 @@ func (s *ServiceCE) CloseSession(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	if err := ws.GetConnManager().SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
-		Id: msg.Id,
+	if err := s.WSManager.SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
+		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_CloseSession{
 			CloseSession: &websocketv1.CloseSession{
 				SessionId: sess.ID.String(),
 			},
 		},
 	}); err != nil {
-		logger.Logger.Sugar().Errorf("Failed to send close session message to host: %v", err)
-		return err
+		logger.Logger.Sugar().Warnf("Failed to send close session message to host %s for session %s: %v", sess.HostInstanceID, sess.ID, err)
 	}
 
-	ws.GetConnManager().DisconnectClient(sess.ID)
+	s.WSManager.DisconnectClient(sess.ID)
 
 	return nil
 }
@@ -443,7 +439,7 @@ func (s *ServiceCE) ScriptFinished(ctx context.Context, conn *websocket.Conn, ms
 
 	sessionID, err := uuid.FromString(in.SessionId)
 	if err != nil {
-		return err
+		return errdefs.ErrInvalidArgument(err)
 	}
 
 	_, err = s.Repository.Session().Get(ctx, session.ByID(sessionID))
@@ -451,8 +447,8 @@ func (s *ServiceCE) ScriptFinished(ctx context.Context, conn *websocket.Conn, ms
 		return err
 	}
 
-	if err := ws.GetConnManager().SendToClient(ctx, sessionID, msg); err != nil {
-		return err
+	if err := s.WSManager.SendToClient(ctx, sessionID, msg); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to send script finished message to client: %v", err)
 	}
 
 	return nil
@@ -466,7 +462,7 @@ func (s *ServiceCE) Exception(ctx context.Context, conn *websocket.Conn, msg *we
 
 	sessionID, err := uuid.FromString(in.SessionId)
 	if err != nil {
-		return err
+		return errdefs.ErrInvalidArgument(err)
 	}
 
 	_, err = s.Repository.Session().Get(ctx, session.ByID(sessionID))
@@ -474,8 +470,8 @@ func (s *ServiceCE) Exception(ctx context.Context, conn *websocket.Conn, msg *we
 		return err
 	}
 
-	if err := ws.GetConnManager().SendToClient(ctx, sessionID, msg); err != nil {
-		return err
+	if err := s.WSManager.SendToClient(ctx, sessionID, msg); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to send exception message to client: %v", err)
 	}
 
 	return nil

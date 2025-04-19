@@ -55,6 +55,7 @@ func NewRouter(d *infra.Dependency) *Router {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		d.WSManager,
 		wsSvc.NewServiceCE(d),
 	)
 	return &Router{

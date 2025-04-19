@@ -12,7 +12,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
@@ -28,7 +27,7 @@ type serviceEE struct {
 func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
-		ServiceCE:  wsSvc.NewServiceCE(infra.NewDependency(d.Repository, d.Mailer)),
+		ServiceCE:  wsSvc.NewServiceCE(infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager)),
 	}
 }
 
@@ -203,7 +202,7 @@ func (s *serviceEE) InitializeHost(ctx context.Context, conn *gorillaws.Conn, in
 		return nil, err
 	}
 
-	ws.GetConnManager().SetConnectedHost(hostInstance, apikey, conn)
+	s.WSManager.SetConnectedHost(hostInstance, apikey, conn)
 
 	if err := message.SendResponse(conn, &websocketv1.Message{
 		Id: msg.Id,

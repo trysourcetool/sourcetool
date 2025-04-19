@@ -9,18 +9,20 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	eepostgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres"
-	"github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
+	ee_postgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres"
+	ee_transport "github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
@@ -38,8 +40,22 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
+	logger.Logger.Sugar().Infof("Connected to Postgres at %s:%s", config.Config.Postgres.Host, config.Config.Postgres.Port)
+
+	redisClient, err := redis.NewClientCE()
+	if err != nil {
+		logger.Logger.Fatal("failed to open redis", zap.Error(err))
+	}
+
+	logger.Logger.Sugar().Infof("Connected to Redis at %s:%s", config.Config.Redis.Host, config.Config.Redis.Port)
+
 	// Use the EE version only for the Repository.
-	dep := infra.NewDependency(eepostgres.NewRepositoryEE(db), smtp.NewMailerCE())
+	repo := ee_postgres.NewRepositoryEE(db)
+	smtpMailer := smtp.NewMailerCE()
+	wsManager := manager.NewManager(ctx, repo, redisClient)
+
+	// Initialize infra dependency container
+	dep := infra.NewDependency(repo, smtpMailer, redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -53,19 +69,15 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
-	router := transport.NewRouter(dep)
-
-	eg, egCtx := errgroup.WithContext(ctx)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           router.Build(),
+		Handler:           ee_transport.NewRouter(dep).Build(),
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	ws.InitWebSocketConns(ctx, dep.Repository)
-
+	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -80,15 +92,33 @@ func main() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
 
-		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
-
+		var shutdownErr error
 		if err := srv.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("server shutdown: %v", err)
+			logger.Logger.Error("Server shutdown error", zap.Error(err))
+			shutdownErr = fmt.Errorf("server shutdown: %v", err)
+		}
+
+		if err := wsManager.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("WebSocket Manager graceful shutdown failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
+		}
+
+		if err := redisClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Redis client close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("Redis client gracefully stopped")
+		}
+
+		if err := db.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("DB connection close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("DB connection gracefully stopped")
 		}
 
 		logger.Logger.Info("Server shutdown complete")
-		return nil
+		// Return the server shutdown error if it happened.
+		return shutdownErr
 	})
 
 	if err := eg.Wait(); err != nil && err != http.ErrServerClosed {

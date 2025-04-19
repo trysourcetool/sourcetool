@@ -16,10 +16,11 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
@@ -44,7 +45,21 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
-	dep := infra.NewDependency(postgres.NewRepositoryCE(db), smtp.NewMailerCE())
+	logger.Logger.Sugar().Infof("Connected to Postgres at %s:%s", config.Config.Postgres.Host, config.Config.Postgres.Port)
+
+	redisClient, err := redis.NewClientCE()
+	if err != nil {
+		logger.Logger.Fatal("failed to open redis", zap.Error(err))
+	}
+
+	logger.Logger.Sugar().Infof("Connected to Redis at %s:%s", config.Config.Redis.Host, config.Config.Redis.Port)
+
+	repo := postgres.NewRepositoryCE(db)
+	smtpMailer := smtp.NewMailerCE()
+	wsManager := manager.NewManager(ctx, repo, redisClient)
+
+	// Initialize infra dependency container
+	dep := infra.NewDependency(repo, smtpMailer, redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -58,19 +73,15 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
-	router := transport.NewRouter(dep)
-
-	eg, egCtx := errgroup.WithContext(ctx)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           router.Build(),
+		Handler:           transport.NewRouter(dep).Build(),
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	ws.InitWebSocketConns(ctx, dep.Repository)
-
+	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -92,16 +103,22 @@ func main() {
 			shutdownErr = fmt.Errorf("server shutdown: %v", err)
 		}
 
-		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
+		if err := wsManager.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("WebSocket Manager graceful shutdown failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
+		}
 
-		// Close the database connection regardless of server shutdown result.
-		logger.Logger.Info("Closing database connection...")
-		if db != nil {
-			if err := db.Close(); err != nil {
-				// Log DB closing error, but prioritize returning the server shutdown error if it occurred.
-				logger.Logger.Error("Failed to close database connection", zap.Error(err))
-			}
+		if err := redisClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Redis client close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("Redis client gracefully stopped")
+		}
+
+		if err := db.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("DB connection close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("DB connection gracefully stopped")
 		}
 
 		logger.Logger.Info("Server shutdown complete")
