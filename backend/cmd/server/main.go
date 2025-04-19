@@ -45,6 +45,8 @@ func main() {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
+	logger.Logger.Sugar().Infof("Connected to Postgres at %s:%s", config.Config.Postgres.Host, config.Config.Postgres.Port)
+
 	redisClient, err := redis.NewClientCE()
 	if err != nil {
 		logger.Logger.Fatal("failed to open redis", zap.Error(err))
@@ -53,12 +55,11 @@ func main() {
 	logger.Logger.Sugar().Infof("Connected to Redis at %s:%s", config.Config.Redis.Host, config.Config.Redis.Port)
 
 	repo := postgres.NewRepositoryCE(db)
-
-	// Initialize WebSocket Connection Manager
+	smtpMailer := smtp.NewMailerCE()
 	wsManager := manager.NewManager(ctx, repo, redisClient)
 
 	// Initialize infra dependency container
-	dep := infra.NewDependency(repo, smtp.NewMailerCE(), redisClient, wsManager)
+	dep := infra.NewDependency(repo, smtpMailer, redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -72,18 +73,15 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
-	// Initialize Router (which sets up handlers and middleware internally)
-	r := transport.NewRouter(dep)
-
-	eg, egCtx := errgroup.WithContext(ctx)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           r.Build(),
+		Handler:           transport.NewRouter(dep).Build(),
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
+	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -111,10 +109,10 @@ func main() {
 			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
 		}
 
-		if err := dep.PubSub.Close(); err != nil {
-			logger.Logger.Sugar().Errorf("PubSub client close failed: %v", err)
+		if err := redisClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Redis client close failed: %v", err)
 		} else {
-			logger.Logger.Sugar().Info("PubSub client gracefully stopped")
+			logger.Logger.Sugar().Info("Redis client gracefully stopped")
 		}
 
 		if err := db.Close(); err != nil {

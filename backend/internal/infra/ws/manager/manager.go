@@ -63,7 +63,6 @@ func NewManager(ctx context.Context, repo db.Repository, pubsubClient pubsub.Pub
 	go m.subscribeToHostMessages()
 	go m.subscribeToClientMessages()
 
-	logger.Logger.Sugar().Info("WebSocket Connection Manager initialized")
 	return m
 }
 

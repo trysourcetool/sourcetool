@@ -76,7 +76,6 @@ func Init() {
 
 	hostnameParts := strings.Split(cfg.BaseHostname, ":")
 	cfg.BaseDomain = hostnameParts[0]
-	log.Printf("env: %s, isCloudEdition: %t", cfg.Env, cfg.IsCloudEdition)
 
 	Config = cfg
 }
