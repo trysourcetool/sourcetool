@@ -4,44 +4,52 @@ sidebar_position: 3
 
 # Button
 
-The Button widget provides a clickable button element that can trigger actions when clicked.
+`Button` renders a clickable button. When the user presses it the client sends a **RerunPage** message, the page is re‑executed, and the call returns `true` for that single run. On the next run the value automatically resets to `false`.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `bool` | `False` | Current state of the button |
+```go
+pressed := ui.Button(label string, opts ...button.Option) bool
+```
+​citeturn2file1
 
-## Properties
+## Return value
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Text displayed on the button |
-| `disabled` | `bool` | `False` | Whether the button is disabled |
+| Type | Meaning |
+|------|---------|
+| `bool` | `true` if the button was clicked since the previous execution of the page; otherwise `false`. |
+
+## Options
+
+| Helper | Description |
+|--------|-------------|
+| `button.WithDisabled(true)` | Renders the button in a disabled (non‑clickable) state. |
+​citeturn2file4
 
 ## Examples
 
-### Basic Button
+### Basic button
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/button"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic button
-        button := ui.Button("Click Me")
-    }
+if ui.Button("Refresh") {
+    // refresh data
 }
 ```
 
-### Disabled Button
+### Disabled button
 
 ```go
-// Create a disabled button
-button := ui.Button("Cannot Click", button.Disabled(true))
+ui.Button("Cannot Click", button.WithDisabled(true))
+```
+
+### Using the returned value
+
+```go
+clicked := ui.Button("Create")
+if clicked {
+    if err := createResource(); err != nil {
+        ui.Markdown("⚠️ failed to create resource")
+        return err
+    }
+}
 ```
