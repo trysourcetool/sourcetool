@@ -1,15 +1,8 @@
 ---
 description: 
-globs: **/*.go
+globs: backend/**
 alwaysApply: false
 ---
----
-description: Sourcetool backend architecture
-globs:
-  - "**/*.go"
-alwaysApply: false
----
-
 # Layer map & allowed imports
 
 | Layer & path                       | Role (what lives here)                              | May **import**                                         |
