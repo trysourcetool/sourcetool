@@ -1,0 +1,93 @@
+---
+description: 
+globs: frontend/**
+alwaysApply: false
+---
+# Layer map (import contract)
+
+| Layer & path                                             | Responsibility                                           | **May import** (✓ only)                 |
+|----------------------------------------------------------|----------------------------------------------------------|-----------------------------------------|
+| **pb** `app/pb/**`                                       | Auto‑generated gRPC / Protobuf code (read‑only)          | std lib ✓                               |
+| **types** `app/types/**`, `app/constants.ts`             | Global type aliases, enums, constants                    | std lib ✓, pb ✓                         |
+| **lib** `app/lib/**`, `app/i18n.ts`, `app/locales/**`    | Pure helpers & i18n utilities                            | std lib ✓, pb ✓, types ✓                |
+| **api** `app/api/**`                                     | REST / WS clients & helpers                              | std lib ✓, pb ✓, types ✓, lib ✓         |
+| **store** `app/store/**`                                 | Redux Toolkit slices & selectors                         | std lib ✓, pb ✓, types ✓, lib ✓, api ✓  |
+| **hooks** `app/hooks/**`                                 | Reusable React hooks                                     | std lib ✓, pb ✓, types ✓, lib ✓, api ✓, store ✓ |
+| **ui‑base** `app/components/ui/**`, `app/components/icon/**` | Design‑system primitives (shadcn / lucide)               | std lib ✓, types ✓, lib ✓               |
+| **components** `app/components/common/**`                | Compound widgets / generic UI                            | std lib ✓, ui‑base ✓, hooks ✓, store ✓, api ✓ |
+| **layout** `app/components/layout/**`                    | Screen shells / frames                                   | All upper layers except pb ✓            |
+| **routes** `app/routes/**`                               | URL‑mapped pages                                         | All upper layers ✓                      |
+| **entry** `app/root.tsx`, `app/entry.client.tsx`, …      | App bootstrap                                           | Everything ✓                            |
+
+**Import rules**
+
+1. A layer may import from itself or any layer **to the right**; leftward imports are forbidden.
+2. `pb` and `types` expose symbols but never import lower layers.
+3. Storybook / test files (`*.stories.tsx`, `*.test.tsx`) may import anything.
+4. Temporary exceptions: add `// cursor-ignore` at the top of the file.
+
+---
+
+# Operational rules
+
+### i18n
+* All user‑visible text must come from `common.json` via `useTranslation`; undefined keys cause a type error.
+* Keep key names meaningful and follow existing naming conventions.
+
+### Routing
+* Add or modify URLs only in `routes.ts`; remove unused pages promptly.
+* Domain‑ / auth‑based redirects live exclusively in `domainProvider.tsx`.
+
+### Page layout
+* Simple pages stay inside `routes/**.tsx`.
+* If logic grows or becomes reusable, extract to `components/` or `hooks/`.
+
+### API & state
+* Define endpoints and types under `app/api/modules/**.ts` per domain.
+* API‑driven state belongs in Redux (asyncAction + selector).
+* Local component concerns: `useState`/`useEffect` as needed.
+* Unless there’s a special reason, trigger async calls via Redux asyncActions.
+
+### Styling
+* Extend Tailwind utilities in `tailwind.css`; large blocks can be split into a separate file.
+* Library style overrides also go to `tailwind.css`; if overrides grow, extract.
+* Avoid excessive overrides of shadcn components; wrap and re‑export if customization is heavy.
+
+### Forms
+* Use `react-hook-form` + `zod`; share types with `z.infer<typeof schema>`.
+
+### Code quality
+* Follow ESLint & Prettier; run `pnpm format`.
+* Remove unused imports and variables.
+* Always use the typed hooks from `store/index.ts` (`useSelector`, `useDispatch`).
+
+---
+
+# Sample workflows
+
+### 1. Adding an API property or endpoint
+
+1. Update `app/api/modules/**` and `app/api/index.ts`.
+2. Update the relevant `app/store/modules/**` (asyncAction, selector, slice state).
+3. Implement or adjust the page in `routes/**.tsx`.
+4. Wire up UI → logic → debug (mobile view included).
+
+### 2. Updating proto files (preview / widget)
+
+1. Run `make proto-generate-all` to regenerate `app/pb/`.
+2. Adapt `app/lib/widgetState.ts` (and others) to new types.
+3. Adjust widget state handling under `routes/pages/pageId/components/render-widgets/**`.
+4. Update widget JSX if the UI changes.
+
+### 3. Adding a WebSocket message
+
+* In `app/components/common/websocket-controller.tsx`
+  * **Receive**: extend `onMessage`.
+  * **Send**: generate via `sendMessage`; update Redux if needed.
+
+### 4. Creating a new sign‑in page with a form
+
+1. Create `routes/<new>/index.tsx` with basic JSX.
+2. Define validation with `zod`; share types via `z.infer`.
+3. Build the UI with shadcn’s `Form` components.
+4. Debug including validation messages.
