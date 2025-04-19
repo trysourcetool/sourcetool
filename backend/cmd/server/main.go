@@ -16,11 +16,11 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
@@ -49,7 +49,16 @@ func main() {
 	if err != nil {
 		logger.Logger.Fatal("failed to open redis", zap.Error(err))
 	}
-	dep := infra.NewDependency(postgres.NewRepositoryCE(db), smtp.NewMailerCE(), redisClient)
+
+	logger.Logger.Sugar().Infof("Connected to Redis at %s:%s", config.Config.Redis.Host, config.Config.Redis.Port)
+
+	repo := postgres.NewRepositoryCE(db)
+
+	// Initialize WebSocket Connection Manager
+	wsManager := manager.NewManager(ctx, repo, redisClient)
+
+	// Initialize infra dependency container
+	dep := infra.NewDependency(repo, smtp.NewMailerCE(), redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -63,18 +72,17 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
-	router := transport.NewRouter(dep)
+	// Initialize Router (which sets up handlers and middleware internally)
+	r := transport.NewRouter(dep)
 
 	eg, egCtx := errgroup.WithContext(ctx)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           router.Build(),
+		Handler:           r.Build(),
 		Addr:              fmt.Sprintf(":%s", port),
 	}
-
-	ws.InitWebSocketConns(ctx, dep.Repository, dep.PubSub)
 
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
@@ -97,16 +105,22 @@ func main() {
 			shutdownErr = fmt.Errorf("server shutdown: %v", err)
 		}
 
-		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
+		if err := wsManager.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("WebSocket Manager graceful shutdown failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
+		}
 
-		// Close the database connection regardless of server shutdown result.
-		logger.Logger.Info("Closing database connection...")
-		if db != nil {
-			if err := db.Close(); err != nil {
-				// Log DB closing error, but prioritize returning the server shutdown error if it occurred.
-				logger.Logger.Error("Failed to close database connection", zap.Error(err))
-			}
+		if err := dep.PubSub.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("PubSub client close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("PubSub client gracefully stopped")
+		}
+
+		if err := db.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("DB connection close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("DB connection gracefully stopped")
 		}
 
 		logger.Logger.Info("Server shutdown complete")

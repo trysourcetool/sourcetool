@@ -21,6 +21,7 @@ func NewRouter(d *infra.Dependency) *wsserver.Router {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
+		d.WSManager,
 		wsSvc.NewServiceEE(d),
 	)
 	return wsserver.NewRouter(middleware, wsHandler)

@@ -14,7 +14,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
 		ServiceCE: hostinstance.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer, d.PubSub),
+			infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager),
 		),
 	}
 }

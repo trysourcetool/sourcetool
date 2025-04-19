@@ -13,7 +13,7 @@ import (
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/ws"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/logger"
@@ -37,14 +37,16 @@ const (
 )
 
 type WebSocketHandler struct {
-	upgrader websocket.Upgrader
-	service  wsSvc.Service
+	upgrader  websocket.Upgrader
+	wsManager ws.Manager
+	service   wsSvc.Service
 }
 
-func NewWebSocketHandler(upgrader websocket.Upgrader, service wsSvc.Service) *WebSocketHandler {
+func NewWebSocketHandler(upgrader websocket.Upgrader, wsManager ws.Manager, service wsSvc.Service) *WebSocketHandler {
 	return &WebSocketHandler{
-		upgrader: upgrader,
-		service:  service,
+		upgrader:  upgrader,
+		wsManager: wsManager,
+		service:   service,
 	}
 }
 
@@ -95,7 +97,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				if err := h.updateHostInstanceStatus(ctx, hostInstance.ID, hostinstance.HostInstanceStatusOffline); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host instance status offline: %v", err)
 				}
-				ws.GetConnManager().DisconnectHost(hostInstance.ID)
+				h.wsManager.DisconnectHost(hostInstance.ID)
 			}()
 
 			go h.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)

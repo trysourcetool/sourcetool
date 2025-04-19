@@ -27,7 +27,7 @@ func NewServiceEE(d *infra.Dependency) *serviceEE {
 	return &serviceEE{
 		Dependency: d,
 		ServiceCE: groupSvc.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer, d.PubSub),
+			infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager),
 		),
 	}
 }

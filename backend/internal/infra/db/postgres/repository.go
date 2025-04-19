@@ -22,6 +22,8 @@ import (
 	userRepo "github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/user"
 )
 
+var _ db.Repository = (*repositoryCE)(nil)
+
 type repositoryCE struct {
 	db *sqlx.DB
 }
