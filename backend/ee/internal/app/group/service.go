@@ -8,12 +8,13 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	groupSvc "github.com/trysourcetool/sourcetool/backend/internal/app/group"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
+	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -110,7 +111,7 @@ func (s *serviceEE) List(ctx context.Context) (*dto.ListGroupsOutput, error) {
 
 func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditGroup); err != nil {
 		return nil, err
 	}
 
@@ -179,7 +180,7 @@ func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.C
 
 func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditGroup); err != nil {
 		return nil, err
 	}
 
@@ -251,7 +252,7 @@ func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.U
 
 func (s *serviceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*dto.DeleteGroupOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditGroup); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditGroup); err != nil {
 		return nil, err
 	}
 

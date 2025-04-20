@@ -11,11 +11,12 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
+	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -281,7 +282,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 
 func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -363,7 +364,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 
 func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUserInvitationsInput) (*dto.CreateUserInvitationsOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditUser); err != nil {
 		return nil, err
 	}
 
@@ -427,7 +428,7 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 
 func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserInvitationInput) (*dto.ResendUserInvitationOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditUser); err != nil {
 		return nil, err
 	}
 

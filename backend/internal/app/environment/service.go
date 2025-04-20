@@ -9,10 +9,11 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
+	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -69,7 +70,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListEnvironmentsOutput, erro
 
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (*dto.CreateEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 
@@ -117,7 +118,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateEnvironmentInput) (
 
 func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (*dto.UpdateEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 
@@ -161,7 +162,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateEnvironmentInput) (
 
 func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteEnvironmentInput) (*dto.DeleteEnvironmentOutput, error) {
 	checker := permission.NewChecker(s.Repository)
-	if err := checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditEnvironment); err != nil {
 		return nil, err
 	}
 

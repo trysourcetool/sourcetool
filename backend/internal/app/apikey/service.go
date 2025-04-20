@@ -10,9 +10,10 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
+	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -131,11 +132,11 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 
 	checker := permission.NewChecker(s.Repository)
 	if env.Slug == environment.EnvironmentSlugDevelopment {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}
@@ -194,11 +195,11 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.
 
 	checker := permission.NewChecker(s.Repository)
 	if env.Slug == environment.EnvironmentSlugDevelopment {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}
@@ -239,11 +240,11 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.
 
 	checker := permission.NewChecker(s.Repository)
 	if env.Slug == environment.EnvironmentSlugDevelopment {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditDevModeAPIKey); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := checker.AuthorizeOperation(ctx, domainperm.OperationEditLiveModeAPIKey); err != nil {
 			return nil, err
 		}
 	}
