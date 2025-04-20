@@ -99,9 +99,9 @@ func main() {
 		}
 
 		if err := wsManager.Close(); err != nil {
-			logger.Logger.Sugar().Errorf("WebSocket WSManager graceful shutdown failed: %v", err)
+			logger.Logger.Sugar().Errorf("WebSocket manager graceful shutdown failed: %v", err)
 		} else {
-			logger.Logger.Sugar().Info("WebSocket WSManager gracefully stopped")
+			logger.Logger.Sugar().Info("WebSocket manager gracefully stopped")
 		}
 
 		if err := redisClient.Close(); err != nil {
