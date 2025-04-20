@@ -5,11 +5,11 @@
 | Layer & path                       | Role (what lives here)                              | May **import**                                         |
 |------------------------------------|-----------------------------------------------------|--------------------------------------------------------|
 | **domain** `internal/domain/**`    | Entities, value objects, **repository ports**       | **std lib**, minimal 3rd‑party (uuid, errors)          |
-| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, `ctxutil`, `pkg/**`, std lib, 3rd‑party    |
+| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, `ctxdata`, `pkg/**`, std lib, 3rd‑party    |
 | **infra** `internal/infra/**`      | DB/email/pubsub/ws **adapters** implementing ports  | **app**, **domain**, std lib, 3rd‑party                |
 | **transport** `internal/transport/**` | HTTP & WebSocket routers/handlers/middleware     | **app**, **domain**, **infra**, std lib, 3rd‑party     |
 | **enterprise edition** `ee/internal/**` | Same 4 layers, same rules                      | follow same import rules                               |
-| **support** `config`, `logger`, `ctxutil`, `jwt`, `pkg/**`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
+| **support** `config`, `logger`, `ctxdata`, `jwt`, `pkg/**`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
 
 ### Dependency direction
 

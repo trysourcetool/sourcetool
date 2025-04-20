@@ -32,19 +32,14 @@ The backend provides the API for the Sourcetool application, handling:
 - `/ee` - Enterprise features (if applicable)
 - `/fixtures` - Test fixtures and data
 - `/internal` - Internal application logic and packages
-  - `/app` - Application layer services and use cases
+  - `/app` - Application layer services
   - `/domain` - Core domain models and business logic
   - `/infra` - Infrastructure components (database, external services)
-    - `/db` - Database related code and repositories
-      - `/postgres` - PostgreSQL specific implementations
-    - `/email` - Email service implementations
-      - `/smtp` - SMTP based email service
-    - `/pubsub` - Publish/Subscribe implementations
-      - `/redis` - Redis based pub/sub service
-    - `/ws` - WebSocket related implementations
-      - `/manager` - WebSocket connection management
+    - `/postgres` - PostgreSQL specific implementations
+    - `/smtp` - SMTP based email service
+    - `/redis` - Redis based pub/sub service
+    - `/wsmanager` - WebSocket connection management
   - `/pb` - Protocol Buffer definitions and generated code
-  - `/permission` - Permission checking logic
   - `/transport` - API transport layer (HTTP and WebSocket handlers)
     - `/http` - HTTP API handlers and routing
       - `/v1` - Version 1 of the HTTP API
@@ -60,7 +55,7 @@ The backend provides the API for the Sourcetool application, handling:
     - `router.go` - Main router configuration
     - `static.go` - Static file serving configuration
   - `/jwt` - JWT handling utilities
-  - `/ctxutil` - Context utility functions
+  - `/ctxdata` - Context data utility functions
 - `/logger` - Logging utilities
 - `/migrations` - Database migrations
 - `/pkg` - Public library code usable by external applications
