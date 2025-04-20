@@ -20,7 +20,7 @@ type Value struct {
     Index int    // zero‑based index in the options slice
 }
 ```
-If the user has never chosen an option and no default is set, `choice` is `nil`. citeturn14file19
+If the user has never chosen an option and no default is set, `choice` is `nil`. 
 
 ## Option helpers
 

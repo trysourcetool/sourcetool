@@ -18,12 +18,12 @@ cols := ui.Columns(count int, opts ...columns.Option) []sourcetool.UIBuilder
 
 | Helper | Use | Notes |
 |--------|-----|-------|
-| `columns.WithWeight(3, 1)` | Set relative widths. Must pass exactly *count* positive ints. | If omitted or invalid the SDK falls back to equal widths. citeturn4file12 |
+| `columns.WithWeight(3, 1)` | Set relative widths. Must pass exactly *count* positive ints. | If omitted or invalid the SDK falls back to equal widths.
 
 ## Behaviour
 
 * Weight numbers are normalised to `float64` so `WithWeight(2, 1, 1)` results in column weights `0.5, 0.25, 0.25`.
-* Passing `count ≤ 0` returns `nil` and renders nothing. citeturn4file2
+* Passing `count ≤ 0` returns `nil` and renders nothing.
 * The parent builder’s cursor advances by **one** after the call, so subsequent widgets appear *below* the column row.
 
 ## Examples
