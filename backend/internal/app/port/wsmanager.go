@@ -1,4 +1,4 @@
-package ws
+package port
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 )
 
-// Manager defines the interface for WebSocket connection management operations
+// WSManager defines the interface for WebSocket connection management operations
 // that are relevant to the domain or application layers.
-type Manager interface {
+type WSManager interface {
 	// SendToHost sends a message to a specific connected host instance via the pub/sub system.
 	SendToHost(ctx context.Context, hostID uuid.UUID, msg *websocketv1.Message) error
 	// SendToClient sends a message to a specific connected client session via the pub/sub system.

@@ -7,11 +7,11 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -21,11 +21,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {

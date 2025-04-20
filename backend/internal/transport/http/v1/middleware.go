@@ -8,10 +8,10 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
@@ -26,10 +26,10 @@ type Middleware interface {
 }
 
 type MiddlewareCE struct {
-	db.Repository
+	port.Repository
 }
 
-func NewMiddlewareCE(r db.Repository) *MiddlewareCE {
+func NewMiddlewareCE(r port.Repository) *MiddlewareCE {
 	return &MiddlewareCE{r}
 }
 

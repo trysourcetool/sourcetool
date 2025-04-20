@@ -2,19 +2,19 @@ package environment
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/environment"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 )
 
 type serviceEE struct {
-	*infra.Dependency
+	*port.Dependencies
 	*environment.ServiceCE
 }
 
-func NewServiceEE(d *infra.Dependency) *serviceEE {
+func NewServiceEE(d *port.Dependencies) *serviceEE {
 	return &serviceEE{
-		Dependency: d,
+		Dependencies: d,
 		ServiceCE: environment.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager),
+			port.NewDependencies(d.Repository, d.Mailer, d.PubSub, d.WSManager),
 		),
 	}
 }

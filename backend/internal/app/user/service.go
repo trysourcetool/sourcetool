@@ -8,15 +8,14 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -39,11 +38,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
@@ -72,7 +71,7 @@ func (s *ServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dto.Up
 		currentUser.LastName = ptrconv.SafeValue(in.LastName)
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.User().Update(ctx, currentUser)
 	}); err != nil {
 		return nil, err
@@ -154,7 +153,7 @@ func (s *ServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput
 
 	currentUser.Email = c.Email
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.User().Update(ctx, currentUser)
 	}); err != nil {
 		return nil, err
@@ -233,7 +232,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 		return nil, err
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if in.Role != nil {
 			orgAccess.Role = user.UserOrganizationRoleFromString(ptrconv.SafeValue(in.Role))
 
@@ -328,7 +327,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 		}
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().DeleteOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}
@@ -402,7 +401,7 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 		})
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().BulkInsertInvitations(ctx, invitations); err != nil {
 			return err
 		}

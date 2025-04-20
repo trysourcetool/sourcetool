@@ -7,13 +7,12 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
@@ -27,11 +26,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error) {
@@ -156,7 +155,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 		Key:            key,
 	}
 
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.APIKey().Create(ctx, apiKey)
 	}); err != nil {
 		return nil, err
@@ -208,7 +207,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.
 		apiKey.Name = ptrconv.SafeValue(in.Name)
 	}
 
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.APIKey().Update(ctx, apiKey)
 	}); err != nil {
 		return nil, err
@@ -249,7 +248,7 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteAPIKeyInput) (*dto.
 		}
 	}
 
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.APIKey().Delete(ctx, apiKey)
 	}); err != nil {
 		return nil, err

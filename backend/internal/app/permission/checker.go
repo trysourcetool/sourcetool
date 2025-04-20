@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
@@ -14,11 +14,11 @@ import (
 
 // Checker handles authorization logic in the application layer.
 type Checker struct {
-	repo db.Repository
+	repo port.Repositories
 }
 
 // NewChecker creates a new permission Checker.
-func NewChecker(repo db.Repository) *Checker {
+func NewChecker(repo port.Repositories) *Checker {
 	return &Checker{repo: repo}
 }
 

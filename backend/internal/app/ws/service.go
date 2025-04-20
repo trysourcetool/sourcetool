@@ -8,13 +8,12 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/logger"
@@ -34,11 +33,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
@@ -138,7 +137,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		sessionExists = false
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if !sessionExists {
 			if err := tx.Session().Create(ctx, sess); err != nil {
 				return err
@@ -268,7 +267,7 @@ func (s *ServiceCE) InitializeHost(ctx context.Context, conn *websocket.Conn, in
 		}
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if hostExists {
 			if err := tx.HostInstance().Update(ctx, hostInstance); err != nil {
 				return err
@@ -403,7 +402,7 @@ func (s *ServiceCE) CloseSession(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.Session().Delete(ctx, sess); err != nil {
 			return err
 		}
@@ -490,7 +489,7 @@ func (s *ServiceCE) UpdateStatus(ctx context.Context, in dto.UpdateHostInstanceS
 
 	host.Status = in.Status
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.HostInstance().Update(ctx, host); err != nil {
 			return err
 		}

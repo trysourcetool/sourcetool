@@ -9,26 +9,25 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	groupSvc "github.com/trysourcetool/sourcetool/backend/internal/app/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type serviceEE struct {
-	*infra.Dependency
+	*port.Dependencies
 	*groupSvc.ServiceCE
 }
 
-func NewServiceEE(d *infra.Dependency) *serviceEE {
+func NewServiceEE(d *port.Dependencies) *serviceEE {
 	return &serviceEE{
-		Dependency: d,
+		Dependencies: d,
 		ServiceCE: groupSvc.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager),
+			port.NewDependencies(d.Repository, d.Mailer, d.PubSub, d.WSManager),
 		),
 	}
 }
@@ -154,7 +153,7 @@ func (s *serviceEE) Create(ctx context.Context, in dto.CreateGroupInput) (*dto.C
 		})
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.Group().Create(ctx, g); err != nil {
 			return err
 		}
@@ -217,7 +216,7 @@ func (s *serviceEE) Update(ctx context.Context, in dto.UpdateGroupInput) (*dto.U
 		})
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.Group().Update(ctx, g); err != nil {
 			return err
 		}
@@ -267,7 +266,7 @@ func (s *serviceEE) Delete(ctx context.Context, in dto.DeleteGroupInput) (*dto.D
 		return nil, err
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.Group().Delete(ctx, g); err != nil {
 			return err
 		}

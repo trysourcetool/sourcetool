@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
@@ -81,7 +81,7 @@ func (m *manager) subscribeToHostMessagesWithRetry() error {
 }
 
 // processHostMessage unmarshals a message from pub/sub and forwards it to the appropriate connected host.
-func (m *manager) processHostMessage(msg *pubsub.Message) error {
+func (m *manager) processHostMessage(msg *port.Message) error {
 	// The pubsub layer already unwraps redisv1.RedisMessage and gives us the ID and Payload.
 	hostInstanceID, err := uuid.FromString(msg.ID)
 	if err != nil {
@@ -187,7 +187,7 @@ func (m *manager) subscribeToClientMessagesWithRetry() error {
 }
 
 // processClientMessage unmarshals a message from pub/sub and forwards it to the appropriate connected client.
-func (m *manager) processClientMessage(msg *pubsub.Message) error {
+func (m *manager) processClientMessage(msg *port.Message) error {
 	sessionID, err := uuid.FromString(msg.ID)
 	if err != nil {
 		return fmt.Errorf("invalid session ID: %w", err)

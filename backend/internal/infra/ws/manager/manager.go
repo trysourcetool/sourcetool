@@ -11,12 +11,10 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
@@ -36,19 +34,19 @@ type manager struct {
 	connectedClients map[uuid.UUID]*connectedClient
 	hostsMutex       sync.RWMutex
 	clientsMutex     sync.RWMutex
-	pubsubClient     pubsub.PubSub
-	repo             db.Repository
+	pubsubClient     port.PubSub
+	repo             port.Repository
 	ctx              context.Context    // Context for managing goroutine lifecycle
 	cancel           context.CancelFunc // Function to cancel the context
 	wg               sync.WaitGroup     // WaitGroup to wait for goroutines to finish
 }
 
 // Compile-time check to ensure manager implements ws.Manager.
-var _ ws.Manager = (*manager)(nil)
+var _ port.WSManager = (*manager)(nil)
 
 // NewManager creates and initializes a new WebSocket connection manager.
 // It starts the background goroutines for handling pub/sub messages.
-func NewManager(ctx context.Context, repo db.Repository, pubsubClient pubsub.PubSub) ws.Manager {
+func NewManager(ctx context.Context, repo port.Repository, pubsubClient port.PubSub) port.WSManager {
 	managerCtx, cancel := context.WithCancel(ctx) // Use parent context
 	m := &manager{
 		connectedHosts:   make(map[uuid.UUID]*connectedHost),

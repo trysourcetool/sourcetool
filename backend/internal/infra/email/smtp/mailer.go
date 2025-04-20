@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/email"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
-var _ email.Mailer = (*mailerCE)(nil)
+var _ port.Mailer = (*mailerCE)(nil)
 
 type mailerCE struct {
 	auth      smtp.Auth

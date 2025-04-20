@@ -15,7 +15,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	httpserver "github.com/trysourcetool/sourcetool/backend/ee/internal/transport/http/v1"
 	"github.com/trysourcetool/sourcetool/backend/ee/internal/transport/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport"
 	cehttpserver "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1"
 	cews "github.com/trysourcetool/sourcetool/backend/internal/transport/ws"
@@ -26,7 +26,7 @@ type Router struct {
 	httpRouter *cehttpserver.Router
 }
 
-func NewRouter(d *infra.Dependency) *Router {
+func NewRouter(d *port.Dependencies) *Router {
 	return &Router{
 		wsRouter:   ws.NewRouter(d),
 		httpRouter: httpserver.NewRouter(d),

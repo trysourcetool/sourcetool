@@ -21,9 +21,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/page"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/user"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 	v1 "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1"
 	v1handlers "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/handlers"
 	wstransport "github.com/trysourcetool/sourcetool/backend/internal/transport/ws"
@@ -35,7 +35,7 @@ type Router struct {
 	httpRouter *v1.Router
 }
 
-func NewRouter(d *infra.Dependency) *Router {
+func NewRouter(d *port.Dependencies) *Router {
 	httpMiddle := v1.NewMiddlewareCE(d.Repository)
 	apiKeyHandler := v1handlers.NewAPIKeyHandler(apikey.NewServiceCE(d))
 	authHandler := v1handlers.NewAuthHandler(auth.NewServiceCE(d))

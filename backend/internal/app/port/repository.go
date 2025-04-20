@@ -1,4 +1,4 @@
-package db
+package port
 
 import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"

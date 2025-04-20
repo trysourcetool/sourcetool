@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	redisv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/redis/v1"
 )
 
@@ -17,10 +17,10 @@ type clientCE struct {
 }
 
 // Compile-time check to ensure client implements the PubSub interface.
-var _ pubsub.PubSub = (*clientCE)(nil)
+var _ port.PubSub = (*clientCE)(nil)
 
 // NewClient creates a new Redis client implementing the PubSub interface.
-func NewClientCE() (pubsub.PubSub, error) {
+func NewClientCE() (port.PubSub, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.Config.Redis.Host, config.Config.Redis.Port),
 		Password: config.Config.Redis.Password,
@@ -48,7 +48,7 @@ func (c *clientCE) Publish(ctx context.Context, channel, id string, payload []by
 	return c.redisClient.Publish(ctx, channel, data).Err()
 }
 
-func (c *clientCE) Subscribe(ctx context.Context, channel string) (<-chan *pubsub.Message, error) {
+func (c *clientCE) Subscribe(ctx context.Context, channel string) (<-chan *port.Message, error) {
 	redisPubSub := c.redisClient.Subscribe(ctx, channel)
 	// Wait for confirmation that subscription is created before receiving anything.
 	if _, err := redisPubSub.Receive(ctx); err != nil {
@@ -56,7 +56,7 @@ func (c *clientCE) Subscribe(ctx context.Context, channel string) (<-chan *pubsu
 	}
 
 	// Create a Go channel to forward messages.
-	msgChan := make(chan *pubsub.Message)
+	msgChan := make(chan *port.Message)
 
 	go func() {
 		defer close(msgChan)
@@ -87,7 +87,7 @@ func (c *clientCE) Subscribe(ctx context.Context, channel string) (<-chan *pubsu
 				}
 
 				// Forward the message in the application's format.
-				msgChan <- &pubsub.Message{
+				msgChan <- &port.Message{
 					ID:      message.Id,
 					Payload: message.Payload,
 				}

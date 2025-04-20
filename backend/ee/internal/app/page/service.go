@@ -7,24 +7,24 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	pageSvc "github.com/trysourcetool/sourcetool/backend/internal/app/page"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
 )
 
 type serviceEE struct {
-	*infra.Dependency
+	*port.Dependencies
 	*pageSvc.ServiceCE
 }
 
-func NewServiceEE(d *infra.Dependency) *serviceEE {
+func NewServiceEE(d *port.Dependencies) *serviceEE {
 	return &serviceEE{
-		Dependency: d,
+		Dependencies: d,
 		ServiceCE: pageSvc.NewServiceCE(
-			infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager),
+			port.NewDependencies(d.Repository, d.Mailer, d.PubSub, d.WSManager),
 		),
 	}
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
@@ -59,7 +59,7 @@ func main() {
 	wsManager := manager.NewManager(ctx, repo, redisClient)
 
 	// Initialize infra dependency container
-	dep := infra.NewDependency(repo, smtpMailer, redisClient, wsManager)
+	dep := port.NewDependencies(repo, smtpMailer, redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {

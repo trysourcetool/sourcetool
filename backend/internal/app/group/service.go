@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 )
 
 type Service interface {
@@ -17,11 +17,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) Get(ctx context.Context, in dto.GetGroupInput) (*dto.GetGroupOutput, error) {

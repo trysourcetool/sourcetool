@@ -3,6 +3,7 @@ package postgres
 import (
 	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
@@ -22,7 +23,7 @@ import (
 	userRepo "github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/user"
 )
 
-var _ db.Repository = (*repositoryCE)(nil)
+var _ port.Repository = (*repositoryCE)(nil)
 
 type repositoryCE struct {
 	db *sqlx.DB
@@ -38,7 +39,7 @@ func (r *repositoryCE) Close() error {
 	return r.db.Close()
 }
 
-func (r *repositoryCE) RunTransaction(f func(db.Transaction) error) error {
+func (r *repositoryCE) RunTransaction(f func(port.Transaction) error) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err
