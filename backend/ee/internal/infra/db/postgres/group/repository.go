@@ -9,8 +9,8 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	groupRepo "github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/group"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
+	groupRepo "github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/group"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 

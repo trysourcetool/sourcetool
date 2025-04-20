@@ -7,27 +7,26 @@ import (
 	"github.com/gofrs/uuid/v5"
 	gorillaws "github.com/gorilla/websocket"
 
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type serviceEE struct {
-	*infra.Dependency
+	*port.Dependencies
 	*wsSvc.ServiceCE
 }
 
-func NewServiceEE(d *infra.Dependency) *serviceEE {
+func NewServiceEE(d *port.Dependencies) *serviceEE {
 	return &serviceEE{
-		Dependency: d,
-		ServiceCE:  wsSvc.NewServiceCE(infra.NewDependency(d.Repository, d.Mailer, d.PubSub, d.WSManager)),
+		Dependencies: d,
+		ServiceCE:    wsSvc.NewServiceCE(port.NewDependencies(d.Repository, d.Mailer, d.PubSub, d.WSManager)),
 	}
 }
 
@@ -127,7 +126,7 @@ func (s *serviceEE) InitializeHost(ctx context.Context, conn *gorillaws.Conn, in
 		}
 	}
 
-	if err := s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if hostExists {
 			if err := tx.HostInstance().Update(ctx, hostInstance); err != nil {
 				return err

@@ -11,6 +11,7 @@ import (
 	pageRepo "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres/page"
 	sessionRepo "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres/session"
 	userRepo "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
@@ -19,8 +20,10 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
 )
+
+var _ port.Repository = (*repositoryEE)(nil)
 
 type repositoryEE struct {
 	db *sqlx.DB
@@ -36,7 +39,7 @@ func (r *repositoryEE) Close() error {
 	return r.db.Close()
 }
 
-func (r *repositoryEE) RunTransaction(f func(db.Transaction) error) error {
+func (r *repositoryEE) RunTransaction(f func(port.Transaction) error) error {
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return err

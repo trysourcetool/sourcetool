@@ -6,12 +6,12 @@ import (
 	"github.com/gorilla/websocket"
 
 	wsSvc "github.com/trysourcetool/sourcetool/backend/ee/internal/app/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	wsserver "github.com/trysourcetool/sourcetool/backend/internal/transport/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/handlers"
 )
 
-func NewRouter(d *infra.Dependency) *wsserver.Router {
+func NewRouter(d *port.Dependencies) *wsserver.Router {
 	middleware := NewMiddlewareEE(d.Repository)
 	wsHandler := handlers.NewWebSocketHandler(
 		websocket.Upgrader{

@@ -10,15 +10,15 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
-func Load(ctx context.Context, repo db.Repository) error {
+func Load(ctx context.Context, repo port.Repository) error {
 	if !config.Config.IsCloudEdition {
 		return nil
 	}
@@ -37,7 +37,7 @@ func Load(ctx context.Context, repo db.Repository) error {
 		return err
 	}
 
-	return repo.RunTransaction(func(tx db.Transaction) error {
+	return repo.RunTransaction(func(tx port.Transaction) error {
 		u := &user.User{
 			ID:               uuid.Must(uuid.NewV4()),
 			FirstName:        "John",

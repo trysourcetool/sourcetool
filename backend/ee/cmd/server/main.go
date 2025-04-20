@@ -18,11 +18,11 @@ import (
 	ee_postgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres"
 	ee_transport "github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/smtp"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/wsmanager"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
@@ -52,10 +52,10 @@ func main() {
 	// Use the EE version only for the Repository.
 	repo := ee_postgres.NewRepositoryEE(db)
 	smtpMailer := smtp.NewMailerCE()
-	wsManager := manager.NewManager(ctx, repo, redisClient)
+	wsManager := wsmanager.NewManager(ctx, repo, redisClient)
 
 	// Initialize infra dependency container
-	dep := infra.NewDependency(repo, smtpMailer, redisClient, wsManager)
+	dep := port.NewDependencies(repo, smtpMailer, redisClient, wsManager)
 
 	if config.Config.Env == config.EnvLocal {
 		if err := fixtures.Load(ctx, dep.Repository); err != nil {
@@ -99,9 +99,9 @@ func main() {
 		}
 
 		if err := wsManager.Close(); err != nil {
-			logger.Logger.Sugar().Errorf("WebSocket Manager graceful shutdown failed: %v", err)
+			logger.Logger.Sugar().Errorf("WebSocket manager graceful shutdown failed: %v", err)
 		} else {
-			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
+			logger.Logger.Sugar().Info("WebSocket manager gracefully stopped")
 		}
 
 		if err := redisClient.Close(); err != nil {

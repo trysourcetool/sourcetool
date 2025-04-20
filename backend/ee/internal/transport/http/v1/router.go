@@ -9,12 +9,12 @@ import (
 	organizationSvc "github.com/trysourcetool/sourcetool/backend/ee/internal/app/organization"
 	pageSvc "github.com/trysourcetool/sourcetool/backend/ee/internal/app/page"
 	userSvc "github.com/trysourcetool/sourcetool/backend/ee/internal/app/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	v1 "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/handlers"
 )
 
-func NewRouter(d *infra.Dependency) *v1.Router {
+func NewRouter(d *port.Dependencies) *v1.Router {
 	middleware := NewMiddlewareEE(d)
 	apiKeyHandler := handlers.NewAPIKeyHandler(apikeySvc.NewServiceEE(d))
 	authHandler := handlers.NewAuthHandler(authSvc.NewServiceEE(d))

@@ -10,10 +10,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
 	"github.com/trysourcetool/sourcetool/backend/logger"
@@ -38,11 +38,11 @@ const (
 
 type WebSocketHandler struct {
 	upgrader  websocket.Upgrader
-	wsManager ws.Manager
+	wsManager port.WSManager
 	service   wsSvc.Service
 }
 
-func NewWebSocketHandler(upgrader websocket.Upgrader, wsManager ws.Manager, service wsSvc.Service) *WebSocketHandler {
+func NewWebSocketHandler(upgrader websocket.Upgrader, wsManager port.WSManager, service wsSvc.Service) *WebSocketHandler {
 	return &WebSocketHandler{
 		upgrader:  upgrader,
 		wsManager: wsManager,

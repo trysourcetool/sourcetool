@@ -12,14 +12,13 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
@@ -48,11 +47,11 @@ type Service interface {
 }
 
 type ServiceCE struct {
-	*infra.Dependency
+	*port.Dependencies
 }
 
-func NewServiceCE(d *infra.Dependency) *ServiceCE {
-	return &ServiceCE{Dependency: d}
+func NewServiceCE(d *port.Dependencies) *ServiceCE {
+	return &ServiceCE{Dependencies: d}
 }
 
 func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLinkInput) (*dto.RequestMagicLinkOutput, error) {
@@ -279,7 +278,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 	}
 
 	// Save changes
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
 		return nil, err
@@ -332,7 +331,7 @@ func (s *ServiceCE) RegisterWithMagicLink(ctx context.Context, in dto.RegisterWi
 	var token, xsrfToken string
 	var expiration time.Duration
 	// Create the user in a transaction
-	err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().Create(ctx, u); err != nil {
 			return err
 		}
@@ -518,7 +517,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 	}
 
 	// Save changes
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
@@ -617,7 +616,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 	}
 
 	// Save changes
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
@@ -875,7 +874,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 		return nil, err
 	}
 
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// For invitation flow, create org access and delete invitation
 			userInvitation, err := s.Repository.User().GetInvitation(ctx,
@@ -952,7 +951,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 	var orgSubdomain string
 	var authURL string
 	var hasOrganization bool
-	err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if err := tx.User().Create(ctx, u); err != nil {
 			return fmt.Errorf("failed to create user: %w", err)
 		}
@@ -1216,7 +1215,7 @@ func (s *ServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAu
 	u.RefreshTokenHash = hashedRefreshToken
 
 	// Save changes
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
 		return nil, err
@@ -1261,7 +1260,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	}
 
 	// Update user
-	if err = s.Repository.RunTransaction(func(tx db.Transaction) error {
+	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {
 		return tx.User().Update(ctx, u)
 	}); err != nil {
 		return nil, err
@@ -1273,7 +1272,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	}, nil
 }
 
-func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx db.Transaction, u *user.User, org *organization.Organization) error {
+func (s *ServiceCE) createPersonalAPIKey(ctx context.Context, tx port.Transaction, u *user.User, org *organization.Organization) error {
 	devEnv, err := s.Repository.Environment().Get(ctx, environment.ByOrganizationID(org.ID), environment.BySlug(environment.EnvironmentSlugDevelopment))
 	if err != nil {
 		return err
@@ -1336,7 +1335,7 @@ func (s *ServiceCE) validateSelfHostedOrganization(ctx context.Context) error {
 	return nil
 }
 
-func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, tx db.Transaction, u *user.User) error {
+func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, tx port.Transaction, u *user.User) error {
 	if config.Config.IsCloudEdition {
 		return nil
 	}
