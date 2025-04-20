@@ -210,6 +210,11 @@ func (m *manager) Close() error {
 	for id, host := range m.connectedHosts {
 		logger.Logger.Sugar().Debugf("Closing done channel for host %s", id)
 		close(host.done)
+		if err := host.conn.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Failed to close host WebSocket connection for %s: %v", id, err)
+		} else {
+			logger.Logger.Sugar().Debugf("Closed host WebSocket connection for %s", id)
+		}
 	}
 	m.hostsMutex.Unlock()
 
@@ -217,6 +222,11 @@ func (m *manager) Close() error {
 	for id, client := range m.connectedClients {
 		logger.Logger.Sugar().Debugf("Closing done channel for client %s", id)
 		close(client.done)
+		if err := client.conn.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Failed to close client WebSocket connection for %s: %v", id, err)
+		} else {
+			logger.Logger.Sugar().Debugf("Closed client WebSocket connection for %s", id)
+		}
 	}
 	m.clientsMutex.Unlock()
 
