@@ -1,0 +1,160 @@
+# Backend architecture (/backend)
+
+## Layer map & allowed imports
+
+| Layer & path                       | Role (what lives here)                              | May **import**                                         |
+|------------------------------------|-----------------------------------------------------|--------------------------------------------------------|
+| **domain** `internal/domain/**`    | Entities, value objects, **repository ports**       | **std lib**, minimal 3rd‑party (uuid, errors)          |
+| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, `ctxutil`, `pkg/**`, std lib, 3rd‑party    |
+| **infra** `internal/infra/**`      | DB/email/pubsub/ws **adapters** implementing ports  | **app**, **domain**, std lib, 3rd‑party                |
+| **transport** `internal/transport/**` | HTTP & WebSocket routers/handlers/middleware     | **app**, **domain**, **infra**, std lib, 3rd‑party     |
+| **enterprise edition** `ee/internal/**` | Same 4 layers, same rules                      | follow same import rules                               |
+| **support** `config`, `logger`, `ctxutil`, `jwt`, `pkg/**`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
+
+### Dependency direction
+
+transport → app → domain ↘ infra ──→ app/domain (implements ports)
+
+* `app` **must not** import `infra`  
+  ‑ right now `ServiceCE` does (`internal/app/**/service.go`).  
+  Move the `Dependencies` type out of `infra` into `internal/app/port` (or delete it and pass explicit ports) so services depend only on ports. :contentReference[oaicite:0]{index=0}
+
+* `infra` implements the ports declared in **domain** (repositories) and **app** (mailer/pubsub/wsmanager).  
+  It may therefore depend *downward* on those layers, but never upward.
+
+* `transport` is allowed to wire everything together at program start, so it may import `infra` to build adapters, but the core business flow never goes back “up”.
+
+## Directory conventions
+
+* **Domain packages** (`apikey`, `user`, …) contain
+  `model.go` + `repository.go` (port).
+* **App packages** mirror the domain and contain
+  `service.go` (use‑case logic) and `validate.go`, optionally `email.go`, `url.go`, etc.  
+  Ports for external services live in `internal/app/port/` (e.g. `mailer.go`, `pubsub.go`, `wsmanager.go`).
+* **DTOs** live in `internal/app/dto/**`; they **never** appear in `domain` or `infra`.
+* **Infra adapters** live under `internal/infra/<tech>/…` (/postgres, /smtp, /redis, /wsmanager).
+  Each adapter implements one port interface.
+* **Transport** is split by protocol:
+  * `internal/transport/http/v1/**`  (handlers/requests/responses/mapper)
+  * `internal/transport/ws/**`        (handlers/message/router)
+* `cmd/server/main.go` is the only place that constructs concrete infra adapters and injects them into transport.
+* Tests live next to code (`*_test.go`) and may reach across layers only via public APIs.
+
+## Data flow (runtime)
+
+1. **transport** parses HTTP/WS payload → **DTO**
+2. **app** → executes use‑case on **domain** entities via repository port + external ports (Mailer, PubSub, WSManager)
+3. **infra** → concrete adapters fulfil the ports (DB, Redis, SMTP, …)
+4. Result bubbles back: entities → DTO → HTTP/WS response
+
+## Import linter rules
+
+* `internal/domain/**` **must not** import `internal/app`, `internal/infra`, or `internal/transport`.
+* `internal/app/**` **must not** import `internal/transport/**` **nor** `internal/infra/**`.
+* generated protobuf `pb/go/**` is allowed anywhere, but only value‑object messages may be used in `domain`.
+* Circular imports are forbidden (`go vet ./...`).
+* Enforce with `golangci‑lint` + `revive` import‑graph rule.
+
+## Migration plan (breaking changes highlighted ★)
+
+| Step | Action |
+|------|--------|
+| 1    | **★ Extract `port.Dependencies`** into `internal/app/port/dependencies.go` as pure interface‑aggregate; update every `NewServiceCE`/`EE` constructor to accept that interface instead of the concrete struct. |
+| 2    | Each service now depends only on ports; delete `infra` import from `app`. |
+| 3    | Infra packages implement the port set: `port.NewDependencies` returns a struct in `infra` that satisfies the interface. |
+| 4    | Add `Makefile` target `lint-arch` running `go list` + `grep` to ensure the import rules above. |
+| 5    | Update docs and CI to fail on architectural violations. |
+
+After step 3 the compile‑time graph obeys the arrows, completing the hexagonal separation.
+
+
+# Frontend architecture (/frontend)
+
+## Layer map (import contract)
+
+| Layer & path                                             | Responsibility                                           | **May import** (✓ only)                 |
+|----------------------------------------------------------|----------------------------------------------------------|-----------------------------------------|
+| **pb** `app/pb/**`                                       | Auto‑generated gRPC / Protobuf code (read‑only)          | std lib ✓                               |
+| **types** `app/types/**`, `app/constants.ts`             | Global type aliases, enums, constants                    | std lib ✓, pb ✓                         |
+| **lib** `app/lib/**`, `app/i18n.ts`, `app/locales/**`    | Pure helpers & i18n utilities                            | std lib ✓, pb ✓, types ✓                |
+| **api** `app/api/**`                                     | REST / WS clients & helpers                              | std lib ✓, pb ✓, types ✓, lib ✓         |
+| **store** `app/store/**`                                 | Redux Toolkit slices & selectors                         | std lib ✓, pb ✓, types ✓, lib ✓, api ✓  |
+| **hooks** `app/hooks/**`                                 | Reusable React hooks                                     | std lib ✓, pb ✓, types ✓, lib ✓, api ✓, store ✓ |
+| **ui‑base** `app/components/ui/**`, `app/components/icon/**` | Design‑system primitives (shadcn / lucide)               | std lib ✓, types ✓, lib ✓               |
+| **components** `app/components/common/**`                | Compound widgets / generic UI                            | std lib ✓, ui‑base ✓, hooks ✓, store ✓, api ✓ |
+| **layout** `app/components/layout/**`                    | Screen shells / frames                                   | All upper layers except pb ✓            |
+| **routes** `app/routes/**`                               | URL‑mapped pages                                         | All upper layers ✓                      |
+| **entry** `app/root.tsx`, `app/entry.client.tsx`, …      | App bootstrap                                           | Everything ✓                            |
+
+**Import rules**
+
+1. A layer may import from itself or any layer **to the right**; leftward imports are forbidden.
+2. `pb` and `types` expose symbols but never import lower layers.
+3. Storybook / test files (`*.stories.tsx`, `*.test.tsx`) may import anything.
+4. Temporary exceptions: add `// cursor-ignore` at the top of the file.
+
+---
+
+## Operational rules
+
+### i18n
+* All user‑visible text must come from `common.json` via `useTranslation`; undefined keys cause a type error.
+* Keep key names meaningful and follow existing naming conventions.
+
+### Routing
+* Add or modify URLs only in `routes.ts`; remove unused pages promptly.
+* Domain‑ / auth‑based redirects live exclusively in `domainProvider.tsx`.
+
+### Page layout
+* Simple pages stay inside `routes/**.tsx`.
+* If logic grows or becomes reusable, extract to `components/` or `hooks/`.
+
+### API & state
+* Define endpoints and types under `app/api/modules/**.ts` per domain.
+* API‑driven state belongs in Redux (asyncAction + selector).
+* Local component concerns: `useState`/`useEffect` as needed.
+* Unless there’s a special reason, trigger async calls via Redux asyncActions.
+
+### Styling
+* Extend Tailwind utilities in `tailwind.css`; large blocks can be split into a separate file.
+* Library style overrides also go to `tailwind.css`; if overrides grow, extract.
+* Avoid excessive overrides of shadcn components; wrap and re‑export if customization is heavy.
+
+### Forms
+* Use `react-hook-form` + `zod`; share types with `z.infer<typeof schema>`.
+
+### Code quality
+* Follow ESLint & Prettier; run `pnpm format`.
+* Remove unused imports and variables.
+* Always use the typed hooks from `store/index.ts` (`useSelector`, `useDispatch`).
+
+---
+
+## Sample workflows
+
+### 1. Adding an API property or endpoint
+
+1. Update `app/api/modules/**` and `app/api/index.ts`.
+2. Update the relevant `app/store/modules/**` (asyncAction, selector, slice state).
+3. Implement or adjust the page in `routes/**.tsx`.
+4. Wire up UI → logic → debug (mobile view included).
+
+### 2. Updating proto files (preview / widget)
+
+1. Run `make proto-generate-all` to regenerate `app/pb/`.
+2. Adapt `app/lib/widgetState.ts` (and others) to new types.
+3. Adjust widget state handling under `routes/pages/pageId/components/render-widgets/**`.
+4. Update widget JSX if the UI changes.
+
+### 3. Adding a WebSocket message
+
+* In `app/components/common/websocket-controller.tsx`
+  * **Receive**: extend `onMessage`.
+  * **Send**: generate via `sendMessage`; update Redux if needed.
+
+### 4. Creating a new sign‑in page with a form
+
+1. Create `routes/<new>/index.tsx` with basic JSX.
+2. Define validation with `zod`; share types via `z.infer`.
+3. Build the UI with shadcn’s `Form` components.
+4. Debug including validation messages.
