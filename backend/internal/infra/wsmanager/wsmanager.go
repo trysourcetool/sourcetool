@@ -28,7 +28,7 @@ const (
 )
 
 // manager handles WebSocket connections for hosts and clients.
-// It implements the ws.Manager interface.
+// It implements the port.WSManager interface.
 type manager struct {
 	connectedHosts   map[uuid.UUID]*connectedHost
 	connectedClients map[uuid.UUID]*connectedClient
@@ -41,7 +41,7 @@ type manager struct {
 	wg               sync.WaitGroup     // WaitGroup to wait for goroutines to finish
 }
 
-// Compile-time check to ensure manager implements ws.Manager.
+// Compile-time check to ensure manager implements port.WSManager.
 var _ port.WSManager = (*manager)(nil)
 
 // NewManager creates and initializes a new WebSocket connection manager.
@@ -255,7 +255,7 @@ func (m *manager) Close() error {
 	return nil
 }
 
-// PingHost is an internal method (not part of ws.Manager) for sending a direct ping.
+// PingConnectedHost is an internal method (not part of port.WSManager) for sending a direct ping.
 // It's kept separate as direct pinging might be an infra-specific detail.
 // Renamed to PingConnectedHost to avoid conflict with interface methods if any.
 func (m *manager) PingConnectedHost(hostInstanceID uuid.UUID) error {
