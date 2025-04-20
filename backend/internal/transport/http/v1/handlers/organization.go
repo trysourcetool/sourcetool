@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/organization"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/render"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/responses"
@@ -31,23 +31,23 @@ func NewOrganizationHandler(service organization.Service) *OrganizationHandler {
 func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateOrganizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Create(r.Context(), mapper.CreateOrganizationRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.CreateOrganizationOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.CreateOrganizationOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
@@ -67,14 +67,14 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 	req := requests.CheckSubdomainAvailablityRequest{
 		Subdomain: r.URL.Query().Get("subdomain"),
 	}
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	err := h.service.CheckSubdomainAvailability(r.Context(), mapper.CheckSubdomainAvailabilityRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
@@ -83,8 +83,8 @@ func (h *OrganizationHandler) CheckSubdomainAvailability(w http.ResponseWriter, 
 		Message: "Subdomain is available",
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, response); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, response); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }

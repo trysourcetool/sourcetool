@@ -14,6 +14,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/render"
 )
 
 type Middleware interface {
@@ -129,7 +130,7 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, err)
+			render.Error(ctx, w, err)
 			return
 		}
 
@@ -144,7 +145,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, err)
+			render.Error(ctx, w, err)
 			return
 		}
 
@@ -152,18 +153,18 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if err := m.validateOrganizationAccess(ctx, u.ID, subdomain); err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
@@ -179,7 +180,7 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, err)
+			render.Error(ctx, w, err)
 			return
 		}
 
@@ -187,19 +188,19 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
-				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
 			if err := m.validateOrganizationAccess(ctx, u.ID, subdomain); err != nil {
-				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
@@ -216,14 +217,14 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
-				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				render.Error(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
