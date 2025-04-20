@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type RepositoryCE struct {

@@ -6,8 +6,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
 // JWTClaims is a generic constraint for all JWT claims types.

@@ -9,7 +9,7 @@ import (
 	googleOAuth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 )
 
 var oauthScopes = []string{

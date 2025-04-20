@@ -9,14 +9,14 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
-	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
 const (
@@ -62,7 +62,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 
-	ctx := ctxdata.NewBackgroundContext(r.Context())
+	ctx := internal.NewBackgroundContext(r.Context())
 
 	done := make(chan struct{})
 	defer func() {

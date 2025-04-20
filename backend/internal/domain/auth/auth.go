@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 )
 
 const (

@@ -9,15 +9,14 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type Middleware interface {
@@ -41,17 +40,17 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
 
 		if token, err := r.Cookie("access_token"); err == nil {
 			u, err := m.getCurrentUser(ctx, r, token.Value)
@@ -60,7 +59,7 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
+			ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
 		} else if apiKeyHeader := r.Header.Get("Authorization"); apiKeyHeader != "" {
 			apikeyVal, err := m.extractIncomingToken(apiKeyHeader)
 			if err != nil {
@@ -140,5 +139,5 @@ func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, erro
 	if !config.Config.IsCloudEdition {
 		return "", nil
 	}
-	return httpx.GetSubdomainFromHost(r.Host)
+	return internal.GetSubdomainFromHost(r.Host)
 }

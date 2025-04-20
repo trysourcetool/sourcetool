@@ -1,4 +1,4 @@
-package httpx
+package internal
 
 import (
 	"context"
@@ -15,9 +15,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/html"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
-	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
@@ -48,7 +47,7 @@ func WriteBytes(w http.ResponseWriter, status int, b []byte) error {
 }
 
 func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
 		email = currentUser.Email

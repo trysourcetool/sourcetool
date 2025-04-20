@@ -7,18 +7,17 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
-	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -56,7 +55,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return err
 	}
 
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	if currentOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
@@ -111,12 +110,12 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("no available host instances"))
 	}
 
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := internal.CurrentUser(ctx)
 
 	var sess *session.Session
 	var sessionExists bool
-	if ptrconv.SafeValue(in.SessionId) != "" {
-		sessionID, err := uuid.FromString(ptrconv.SafeValue(in.SessionId))
+	if internal.SafeValue(in.SessionId) != "" {
+		sessionID, err := uuid.FromString(internal.SafeValue(in.SessionId))
 		if err != nil {
 			return errdefs.ErrSessionNotFound(err)
 		}
@@ -170,7 +169,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
-				SessionId: ptrconv.NilValue(sess.ID.String()),
+				SessionId: internal.NilValue(sess.ID.String()),
 				PageId:    page.ID.String(),
 			},
 		},

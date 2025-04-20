@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 type DB interface {

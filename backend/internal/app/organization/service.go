@@ -7,16 +7,15 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/samber/lo"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
 type Service interface {
@@ -35,7 +34,7 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) (*dto.CreateOrganizationOutput, error) {
 	var subdomain *string
 	if config.Config.IsCloudEdition {
-		subdomain = ptrconv.NilValue(in.Subdomain)
+		subdomain = internal.NilValue(in.Subdomain)
 
 		if lo.Contains(reservedSubdomains, in.Subdomain) {
 			return nil, errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
@@ -55,7 +54,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		Subdomain: subdomain,
 	}
 
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := internal.CurrentUser(ctx)
 
 	orgAccess := &user.UserOrganizationAccess{
 		ID:             uuid.Must(uuid.NewV4()),

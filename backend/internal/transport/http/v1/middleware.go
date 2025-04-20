@@ -7,14 +7,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type Middleware interface {
@@ -78,7 +77,7 @@ func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, erro
 	if !config.Config.IsCloudEdition {
 		return "", nil
 	}
-	return httpx.GetSubdomainFromHost(r.Host)
+	return internal.GetSubdomainFromHost(r.Host)
 }
 
 func (m *MiddlewareCE) validateOrganizationAccess(ctx context.Context, userID uuid.UUID, subdomain string) error {
@@ -130,11 +129,11 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, err)
+			internal.WriteErrJSON(ctx, w, err)
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -145,30 +144,30 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, err)
+			internal.WriteErrJSON(ctx, w, err)
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if err := m.validateOrganizationAccess(ctx, u.ID, subdomain); err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -180,31 +179,31 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 
 		u, err := m.authenticateUser(w, r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, err)
+			internal.WriteErrJSON(ctx, w, err)
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
-				httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
 			if err := m.validateOrganizationAccess(ctx, u.ID, subdomain); err != nil {
-				httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -217,18 +216,18 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 			return
 		}
 
 		if subdomain != "" && subdomain != "auth" {
 			o, err := m.getCurrentOrganization(ctx, subdomain)
 			if err != nil {
-				httpx.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+				internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -237,8 +236,8 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 
 func (m *MiddlewareCE) SetSubdomain(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		subdomain, _ := httpx.GetSubdomainFromHost(r.Host)
-		ctx := context.WithValue(r.Context(), ctxdata.SubdomainCtxKey, subdomain)
+		subdomain, _ := internal.GetSubdomainFromHost(r.Host)
+		ctx := context.WithValue(r.Context(), internal.SubdomainCtxKey, subdomain)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

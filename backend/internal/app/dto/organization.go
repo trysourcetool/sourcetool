@@ -1,8 +1,8 @@
 package dto
 
 import (
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type CreateOrganizationInput struct {
@@ -27,7 +27,7 @@ func OrganizationFromModel(org *organization.Organization) *Organization {
 
 	return &Organization{
 		ID:        org.ID.String(),
-		Subdomain: ptrconv.SafeValue(org.Subdomain),
+		Subdomain: internal.SafeValue(org.Subdomain),
 		CreatedAt: org.CreatedAt.Unix(),
 		UpdatedAt: org.UpdatedAt.Unix(),
 	}

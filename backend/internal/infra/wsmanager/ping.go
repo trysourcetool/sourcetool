@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
-	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 const (

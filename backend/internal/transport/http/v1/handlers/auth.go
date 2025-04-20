@@ -5,14 +5,14 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	authSvc "github.com/trysourcetool/sourcetool/backend/internal/app/auth"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/responses"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type AuthHandler struct {
@@ -41,23 +41,23 @@ func NewAuthHandler(service authSvc.Service) *AuthHandler {
 func (h *AuthHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	res, err := h.service.RequestMagicLink(r.Context(), mapper.RequestMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RequestMagicLinkOutputToResponse(res)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RequestMagicLinkOutputToResponse(res)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -74,18 +74,18 @@ func (h *AuthHandler) RequestMagicLink(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.AuthenticateWithMagicLink(r.Context(), mapper.AuthenticateWithMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -93,8 +93,8 @@ func (h *AuthHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithMagicLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithMagicLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -113,13 +113,13 @@ func (h *AuthHandler) AuthenticateWithMagicLink(w http.ResponseWriter, r *http.R
 func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
 	out, err := h.service.RegisterWithMagicLink(r.Context(), mapper.RegisterWithMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -133,8 +133,8 @@ func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 			config.Config.BaseDomain)
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RegisterWithMagicLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RegisterWithMagicLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -150,23 +150,23 @@ func (h *AuthHandler) RegisterWithMagicLink(w http.ResponseWriter, r *http.Reque
 func (h *AuthHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RequestInvitationMagicLink(r.Context(), mapper.RequestInvitationMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RequestInvitationMagicLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -183,23 +183,23 @@ func (h *AuthHandler) RequestInvitationMagicLink(w http.ResponseWriter, r *http.
 func (h *AuthHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.AuthenticateWithInvitationMagicLink(r.Context(), mapper.AuthenticateWithInvitationMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithInvitationMagicLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -216,18 +216,18 @@ func (h *AuthHandler) AuthenticateWithInvitationMagicLink(w http.ResponseWriter,
 func (h *AuthHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RegisterWithInvitationMagicLink(r.Context(), mapper.RegisterWithInvitationMagicLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -237,8 +237,8 @@ func (h *AuthHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RegisterWithInvitationMagicLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -254,12 +254,12 @@ func (h *AuthHandler) RegisterWithInvitationMagicLink(w http.ResponseWriter, r *
 func (h *AuthHandler) RequestGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.RequestGoogleAuthLink(r.Context())
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RequestGoogleAuthLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RequestGoogleAuthLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -275,18 +275,18 @@ func (h *AuthHandler) RequestGoogleAuthLink(w http.ResponseWriter, r *http.Reque
 func (h *AuthHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.AuthenticateWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.AuthenticateWithGoogle(r.Context(), mapper.AuthenticateWithGoogleRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -294,8 +294,8 @@ func (h *AuthHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 		h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithGoogleOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.AuthenticateWithGoogleOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -311,25 +311,25 @@ func (h *AuthHandler) AuthenticateWithGoogle(w http.ResponseWriter, r *http.Requ
 func (h *AuthHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request) {
 	var req requests.RegisterWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RegisterWithGoogle(r.Context(), mapper.RegisterWithGoogleRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.SetTmpAuthCookie(w, out.Token, out.XSRFToken, config.Config.AuthDomain())
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RegisterWithGoogleOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RegisterWithGoogleOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -345,23 +345,23 @@ func (h *AuthHandler) RegisterWithGoogle(w http.ResponseWriter, r *http.Request)
 func (h *AuthHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) {
 	var req requests.RequestInvitationGoogleAuthLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrInvalidArgument(err))
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RequestInvitationGoogleAuthLink(r.Context(), mapper.RequestInvitationGoogleAuthLinkRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RequestInvitationGoogleAuthLinkOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RequestInvitationGoogleAuthLinkOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -377,19 +377,19 @@ func (h *AuthHandler) RequestInvitationGoogleAuthLink(w http.ResponseWriter, r *
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
 	if xsrfTokenHeader == "" {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(errors.New("failed to get XSRF token")))
 		return
 	}
 
 	xsrfTokenCookie, err := r.Cookie("xsrf_token_same_site")
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
 		return
 	}
 
 	refreshTokenCookie, err := r.Cookie("refresh_token")
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
+		internal.WriteErrJSON(r.Context(), w, errdefs.ErrUnauthenticated(err))
 		return
 	}
 
@@ -398,14 +398,14 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		XSRFTokenHeader: xsrfTokenHeader,
 		XSRFTokenCookie: xsrfTokenCookie.Value,
 	}
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.RefreshToken(r.Context(), mapper.RefreshTokenRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -415,8 +415,8 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.RefreshTokenOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.RefreshTokenOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -433,18 +433,18 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Save(w http.ResponseWriter, r *http.Request) {
 	var req requests.SaveAuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Save(r.Context(), mapper.SaveAuthRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -454,8 +454,8 @@ func (h *AuthHandler) Save(w http.ResponseWriter, r *http.Request) {
 		int(auth.XSRFTokenExpiration.Seconds()),
 		out.Domain)
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.SaveAuthOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.SaveAuthOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -471,14 +471,14 @@ func (h *AuthHandler) Save(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.ObtainAuthToken(r.Context())
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.DeleteTmpAuthCookie(w, r)
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.ObtainAuthTokenOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.ObtainAuthTokenOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -494,17 +494,17 @@ func (h *AuthHandler) ObtainAuthToken(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.Logout(r.Context())
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	h.cookieConfig.DeleteAuthCookie(w, r, out.Domain)
 
-	if err := httpx.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := internal.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully logged out",
 	}); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

@@ -10,18 +10,17 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -66,7 +65,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 
 	// Handle Cloud Edition with subdomain
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		if subdomain != "" && subdomain != "auth" {
 			// Get organization by subdomain
 			org, err := s.Repository.Organization().Get(ctx, organization.BySubdomain(subdomain))
@@ -124,7 +123,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 					return nil, err
 				}
 
-				url, err := buildMagicLinkURL(ptrconv.SafeValue(org.Subdomain), tok)
+				url, err := buildMagicLinkURL(internal.SafeValue(org.Subdomain), tok)
 				if err != nil {
 					return nil, err
 				}
@@ -156,7 +155,7 @@ func (s *ServiceCE) RequestMagicLink(ctx context.Context, in dto.RequestMagicLin
 	// Determine subdomain context based on edition
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain = ctxdata.Subdomain(ctx)
+		subdomain = internal.Subdomain(ctx)
 	}
 
 	// Create token for magic link authentication
@@ -226,7 +225,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 	}
 
 	// Handle organization subdomain logic
-	subdomain := ctxdata.Subdomain(ctx)
+	subdomain := internal.Subdomain(ctx)
 	var orgAccess *user.UserOrganizationAccess
 	var orgSubdomain string
 
@@ -249,7 +248,7 @@ func (s *ServiceCE) AuthenticateWithMagicLink(ctx context.Context, in dto.Authen
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = ptrconv.SafeValue(org.Subdomain)
+				orgSubdomain = internal.SafeValue(org.Subdomain)
 			} else {
 				return nil, errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
 			}
@@ -394,7 +393,7 @@ func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.Reque
 
 	// Verify organization access in cloud edition
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		hostOrg, err := s.Repository.Organization().Get(ctx, organization.BySubdomain(subdomain))
 		if err != nil {
 			return nil, err
@@ -418,7 +417,7 @@ func (s *ServiceCE) RequestInvitationMagicLink(ctx context.Context, in dto.Reque
 	}
 
 	// Build magic link URL
-	url, err := buildInvitationMagicLinkURL(ptrconv.SafeValue(invitedOrg.Subdomain), tok)
+	url, err := buildInvitationMagicLinkURL(internal.SafeValue(invitedOrg.Subdomain), tok)
 	if err != nil {
 		return nil, err
 	}
@@ -461,7 +460,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 	// Verify organization access in cloud edition
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		hostOrg, err := s.Repository.Organization().Get(ctx, organization.BySubdomain(subdomain))
 		if err != nil {
 			return nil, err
@@ -471,7 +470,7 @@ func (s *ServiceCE) AuthenticateWithInvitationMagicLink(ctx context.Context, in 
 			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = ptrconv.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = internal.SafeValue(hostOrg.Subdomain)
 	}
 
 	// Check if user exists
@@ -570,7 +569,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 	// Verify organization access in cloud edition
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		hostOrg, err := s.Repository.Organization().Get(ctx, organization.BySubdomain(subdomain))
 		if err != nil {
 			return nil, err
@@ -580,7 +579,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 			return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = ptrconv.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = internal.SafeValue(hostOrg.Subdomain)
 	}
 
 	// Generate refresh token
@@ -651,7 +650,7 @@ func (s *ServiceCE) RegisterWithInvitationMagicLink(ctx context.Context, in dto.
 func (s *ServiceCE) RequestGoogleAuthLink(ctx context.Context) (*dto.RequestGoogleAuthLinkOutput, error) {
 	var hostSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		if subdomain != "auth" {
 			hostSubdomain = subdomain
 		}
@@ -785,7 +784,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 			Role:           userInvitation.Role,
 		}
 		org = invitedOrg
-		orgSubdomain = ptrconv.SafeValue(invitedOrg.Subdomain)
+		orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
 	} else {
 		// Standard flow - get user's organization info
 		// Get all organization accesses for the user
@@ -806,7 +805,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 							return nil, err
 						}
 
-						url, err := buildLoginURL(ptrconv.SafeValue(org.Subdomain))
+						url, err := buildLoginURL(internal.SafeValue(org.Subdomain))
 						if err != nil {
 							return nil, err
 						}
@@ -836,7 +835,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 					if err != nil {
 						return nil, err
 					}
-					orgSubdomain = ptrconv.SafeValue(org.Subdomain)
+					orgSubdomain = internal.SafeValue(org.Subdomain)
 				}
 			} else {
 				// Single organization case
@@ -846,7 +845,7 @@ func (s *ServiceCE) AuthenticateWithGoogle(ctx context.Context, in dto.Authentic
 				if err != nil {
 					return nil, err
 				}
-				orgSubdomain = ptrconv.SafeValue(org.Subdomain)
+				orgSubdomain = internal.SafeValue(org.Subdomain)
 			}
 		} else {
 			// Self-hosted mode
@@ -988,7 +987,7 @@ func (s *ServiceCE) RegisterWithGoogle(ctx context.Context, in dto.RegisterWithG
 				return fmt.Errorf("failed to create personal API key: %w", err)
 			}
 
-			orgSubdomain = ptrconv.SafeValue(invitedOrg.Subdomain)
+			orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
 			hasOrganization = true
 		} else {
 			if !config.Config.IsCloudEdition {
@@ -1049,7 +1048,7 @@ func (s *ServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in dto.
 	}
 
 	if config.Config.IsCloudEdition {
-		subdomain := ctxdata.Subdomain(ctx)
+		subdomain := internal.Subdomain(ctx)
 		if subdomain == "" || subdomain == "auth" {
 			return nil, errdefs.ErrInvalidArgument(errors.New("invitation must be accessed via organization subdomain"))
 		}
@@ -1064,7 +1063,7 @@ func (s *ServiceCE) RequestInvitationGoogleAuthLink(ctx context.Context, in dto.
 
 	var hostSubdomain string
 	if config.Config.IsCloudEdition {
-		hostSubdomain = ctxdata.Subdomain(ctx)
+		hostSubdomain = internal.Subdomain(ctx)
 	}
 
 	stateToken, err := createGoogleAuthLinkToken(
@@ -1101,7 +1100,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 	}
 
 	// Get current subdomain and resolve organization
-	subdomain := ctxdata.Subdomain(ctx)
+	subdomain := internal.Subdomain(ctx)
 	var orgSubdomain string
 
 	if config.Config.IsCloudEdition {
@@ -1140,7 +1139,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 }
 
 func (s *ServiceCE) Logout(ctx context.Context) (*dto.LogoutOutput, error) {
-	u := ctxdata.CurrentUser(ctx)
+	u := internal.CurrentUser(ctx)
 
 	orgAccessOpts := []user.OrganizationAccessQuery{
 		user.OrganizationAccessByUserID(u.ID),
@@ -1148,7 +1147,7 @@ func (s *ServiceCE) Logout(ctx context.Context) (*dto.LogoutOutput, error) {
 
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain = ctxdata.Subdomain(ctx)
+		subdomain = internal.Subdomain(ctx)
 		orgAccessOpts = append(orgAccessOpts, user.OrganizationAccessByOrganizationSubdomain(subdomain))
 	}
 	_, err := s.Repository.User().GetOrganizationAccess(ctx, orgAccessOpts...)
@@ -1180,7 +1179,7 @@ func (s *ServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAu
 	}
 
 	// Get current subdomain and verify organization access
-	subdomain := ctxdata.Subdomain(ctx)
+	subdomain := internal.Subdomain(ctx)
 	var orgSubdomain string
 
 	if config.Config.IsCloudEdition {
@@ -1233,7 +1232,7 @@ func (s *ServiceCE) Save(ctx context.Context, in dto.SaveAuthInput) (*dto.SaveAu
 
 func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOutput, error) {
 	// Get current user from context
-	u := ctxdata.CurrentUser(ctx)
+	u := internal.CurrentUser(ctx)
 	if u == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("no user in context"))
 	}
@@ -1254,7 +1253,7 @@ func (s *ServiceCE) ObtainAuthToken(ctx context.Context) (*dto.ObtainAuthTokenOu
 	}
 
 	// Build auth URL with organization subdomain
-	authURL, err := buildSaveAuthURL(ptrconv.SafeValue(org.Subdomain))
+	authURL, err := buildSaveAuthURL(internal.SafeValue(org.Subdomain))
 	if err != nil {
 		return nil, err
 	}
@@ -1401,7 +1400,7 @@ func (s *ServiceCE) createInitialOrganizationForSelfHosted(ctx context.Context, 
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
 // and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*organization.Organization, *user.UserOrganizationAccess, error) {
-	return s.getOrganizationInfo(ctx, ctxdata.CurrentUser(ctx))
+	return s.getOrganizationInfo(ctx, internal.CurrentUser(ctx))
 }
 
 // getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
@@ -1430,7 +1429,7 @@ func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *user.User) (*org
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	subdomain := ctxdata.Subdomain(ctx)
+	subdomain := internal.Subdomain(ctx)
 	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
 
 	// Different strategies for cloud vs. self-hosted or auth subdomain
