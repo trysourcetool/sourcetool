@@ -6,15 +6,14 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
 type Service interface {
@@ -34,7 +33,7 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 }
 
 func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPIKeyOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -55,8 +54,8 @@ func (s *ServiceCE) Get(ctx context.Context, in dto.GetAPIKeyInput) (*dto.GetAPI
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
+	currentUser := internal.CurrentUser(ctx)
 
 	envs, err := s.Repository.Environment().List(ctx, environment.ByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -114,7 +113,7 @@ func (s *ServiceCE) List(ctx context.Context) (*dto.ListAPIKeysOutput, error) {
 }
 
 func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.CreateAPIKeyOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {
@@ -145,7 +144,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 		return nil, errdefs.ErrInternal(err)
 	}
 
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := internal.CurrentUser(ctx)
 	apiKey := &apikey.APIKey{
 		ID:             uuid.Must(uuid.NewV4()),
 		OrganizationID: currentOrg.ID,
@@ -172,7 +171,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateAPIKeyInput) (*dto.
 }
 
 func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.UpdateAPIKeyOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	apiKeyID, err := uuid.FromString(in.APIKeyID)
 	if err != nil {
 		return nil, errdefs.ErrInvalidArgument(err)
@@ -204,7 +203,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateAPIKeyInput) (*dto.
 	}
 
 	if in.Name != nil {
-		apiKey.Name = ptrconv.SafeValue(in.Name)
+		apiKey.Name = internal.SafeValue(in.Name)
 	}
 
 	if err = s.Repository.RunTransaction(func(tx port.Transaction) error {

@@ -13,9 +13,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type serviceEE struct {

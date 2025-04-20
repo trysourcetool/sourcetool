@@ -13,17 +13,17 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
 	ee_postgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/postgres"
 	ee_transport "github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
-	"github.com/trysourcetool/sourcetool/backend/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/redis"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/smtp"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/wsmanager"
-	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 func init() {

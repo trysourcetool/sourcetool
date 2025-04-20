@@ -1,4 +1,4 @@
-package ctxdata
+package internal
 
 import (
 	"context"

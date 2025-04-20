@@ -12,10 +12,10 @@ import (
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	httpserver "github.com/trysourcetool/sourcetool/backend/ee/internal/transport/http/v1"
 	"github.com/trysourcetool/sourcetool/backend/ee/internal/transport/ws"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport"
 	cehttpserver "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1"
 	cews "github.com/trysourcetool/sourcetool/backend/internal/transport/ws"

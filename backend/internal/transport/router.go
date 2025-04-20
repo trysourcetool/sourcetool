@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/auth"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/environment"
@@ -24,6 +23,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/user"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	v1 "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1"
 	v1handlers "github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/handlers"
 	wstransport "github.com/trysourcetool/sourcetool/backend/internal/transport/ws"

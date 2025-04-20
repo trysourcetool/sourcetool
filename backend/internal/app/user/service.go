@@ -6,18 +6,17 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 type Service interface {
@@ -46,8 +45,8 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 }
 
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
-	currentUser := ctxdata.CurrentUser(ctx)
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentUser := internal.CurrentUser(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	orgAccess, err := s.Repository.User().GetOrganizationAccess(ctx,
 		user.OrganizationAccessByUserID(currentUser.ID),
 		user.OrganizationAccessByOrganizationID(currentOrg.ID))
@@ -62,13 +61,13 @@ func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 }
 
 func (s *ServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dto.UpdateMeOutput, error) {
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := internal.CurrentUser(ctx)
 
 	if in.FirstName != nil {
-		currentUser.FirstName = ptrconv.SafeValue(in.FirstName)
+		currentUser.FirstName = internal.SafeValue(in.FirstName)
 	}
 	if in.LastName != nil {
-		currentUser.LastName = ptrconv.SafeValue(in.LastName)
+		currentUser.LastName = internal.SafeValue(in.LastName)
 	}
 
 	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
@@ -109,8 +108,8 @@ func (s *ServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.Se
 	}
 
 	// Get current user and organization
-	currentUser := ctxdata.CurrentUser(ctx)
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentUser := internal.CurrentUser(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 
 	// Create token for email update
 	tok, err := createUpdateEmailToken(currentUser.ID.String(), in.Email)
@@ -119,7 +118,7 @@ func (s *ServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.Se
 	}
 
 	// Build update URL
-	url, err := buildUpdateEmailURL(ptrconv.SafeValue(currentOrg.Subdomain), tok)
+	url, err := buildUpdateEmailURL(internal.SafeValue(currentOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
@@ -146,7 +145,7 @@ func (s *ServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput
 		return nil, err
 	}
 
-	currentUser := ctxdata.CurrentUser(ctx)
+	currentUser := internal.CurrentUser(ctx)
 	if u.ID != currentUser.ID {
 		return nil, errdefs.ErrUnauthenticated(errors.New("unauthorized"))
 	}
@@ -175,7 +174,7 @@ func (s *ServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 
 	users, err := s.Repository.User().List(ctx, user.ByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -222,7 +221,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 		return nil, err
 	}
 
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
@@ -234,7 +233,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 
 	if err := s.Repository.RunTransaction(func(tx port.Transaction) error {
 		if in.Role != nil {
-			orgAccess.Role = user.UserOrganizationRoleFromString(ptrconv.SafeValue(in.Role))
+			orgAccess.Role = user.UserOrganizationRoleFromString(internal.SafeValue(in.Role))
 
 			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
@@ -285,8 +284,8 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 		return err
 	}
 
-	currentUser := ctxdata.CurrentUser(ctx)
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentUser := internal.CurrentUser(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
@@ -367,8 +366,8 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 		return nil, err
 	}
 
-	o := ctxdata.CurrentOrganization(ctx)
-	u := ctxdata.CurrentUser(ctx)
+	o := internal.CurrentOrganization(ctx)
+	u := internal.CurrentUser(ctx)
 
 	invitations := make([]*user.UserInvitation, 0)
 	emailURLs := make(map[string]string)
@@ -386,7 +385,7 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 			return nil, err
 		}
 
-		url, err := buildInvitationURL(ptrconv.SafeValue(o.Subdomain), tok, email)
+		url, err := buildInvitationURL(internal.SafeValue(o.Subdomain), tok, email)
 		if err != nil {
 			return nil, err
 		}
@@ -441,19 +440,19 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 		return nil, err
 	}
 
-	o := ctxdata.CurrentOrganization(ctx)
+	o := internal.CurrentOrganization(ctx)
 	if userInvitation.OrganizationID != o.ID {
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 	}
 
-	u := ctxdata.CurrentUser(ctx)
+	u := internal.CurrentUser(ctx)
 
 	tok, err := createInvitationToken(userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	url, err := buildInvitationURL(ptrconv.SafeValue(o.Subdomain), tok, userInvitation.Email)
+	url, err := buildInvitationURL(internal.SafeValue(o.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +470,7 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
 // and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*organization.Organization, *user.UserOrganizationAccess, error) {
-	return s.getOrganizationInfo(ctx, ctxdata.CurrentUser(ctx))
+	return s.getOrganizationInfo(ctx, internal.CurrentUser(ctx))
 }
 
 // getOrganizationInfo retrieves organization and access information for the specified user.
@@ -481,7 +480,7 @@ func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *user.User) (*org
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	subdomain := ctxdata.Subdomain(ctx)
+	subdomain := internal.Subdomain(ctx)
 	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
 
 	// Different strategies for cloud vs. self-hosted or auth subdomain

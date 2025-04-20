@@ -7,9 +7,9 @@ import (
 	"net/smtp"
 	"strings"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 var _ port.Mailer = (*mailerCE)(nil)

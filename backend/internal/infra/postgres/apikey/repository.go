@@ -8,8 +8,8 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 
 type RepositoryCE struct {
