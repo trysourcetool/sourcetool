@@ -15,7 +15,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	ee_postgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/db/postgres"
+	ee_postgres "github.com/trysourcetool/sourcetool/backend/ee/internal/infra/postgres"
 	ee_transport "github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
