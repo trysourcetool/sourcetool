@@ -2,54 +2,67 @@
 sidebar_position: 10
 ---
 
-# Time Input
+# Time Input
 
-The Time Input widget provides a specialized input field for selecting time values with a time picker interface.
+`TimeInput` lets users pick a time of day using a clock‑style picker. It returns a `*time.Time` whose **date part is zeroed** (00‑01‑01) and whose location is whatever you pass in `WithLocation` (defaults to `time.Local`).
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `string` | `None` | Current selected time value |
+```go
+t := ui.TimeInput(label string, opts ...timeinput.Option) *time.Time
+```
 
-## Properties
+`t` is `nil` until the user chooses a value.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the input |
-| `placeholder` | `string` | `""` | Placeholder text displayed when no time is selected |
-| `default_value` | `string` | `None` | Initial time value |
-| `required` | `bool` | `False` | Whether a time selection is required |
-| `disabled` | `bool` | `False` | Whether the time input is disabled |
+## Option helpers
+
+| Helper | Purpose | Default |
+|--------|---------|---------|
+| `timeinput.WithPlaceholder("HH:mm")` | Placeholder when empty. | `""` |
+| `timeinput.WithDefaultValue(time.Now())` | Pre‑fill on first render. | *nil* |
+| `timeinput.WithRequired(true)` | Inside a [`Form`](./form) blocks submit until a value is chosen. | `false` |
+| `timeinput.WithDisabled(true)` | Makes the field read‑only. | `false` |
+| `timeinput.WithLocation(time.UTC)` | Time‑zone used for parsing and formatting. | `time.Local` |
+
+## Behaviour notes
+
+* **Storage** – backend saves the value in session; subsequent reruns keep the last input.
+* **Format** – the widget always serialises as `HH:MM:SS` (Go’s `time.TimeOnly`). There is no custom format option.
+* **Time‑zone** – if you care about absolute moments in time, apply the same `Location` when comparing with other timestamps.
 
 ## Examples
 
-### Basic Time Input
+### Basic picker
 
 ```go
-package main
-
-import (
-    "github.com/sourcetool/sourcetool-go"
-    "github.com/sourcetool/sourcetool-go/timeinput"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic time input
-        timeInput := ui.TimeInput("Start Time", timeinput.Placeholder("Select time"))
-    }
+start := ui.TimeInput("Start time")
+if start != nil {
+    fmt.Println("selected:", start.Format(time.TimeOnly))
 }
 ```
 
-### Disabled Time Input with Default Value
+### Pre‑selected, disabled
 
 ```go
-// Create a disabled time input with a default value
-closingTime := ui.TimeInput("Closing Time", timeinput.DefaultValue("18:00:00"), timeinput.Disabled(true))
+ui.TimeInput("Closing time",
+    timeinput.WithDefaultValue(time.Date(0,0,0,18,0,0,0,time.Local)),
+    timeinput.WithDisabled(true),
+)
 ```
 
-## Related Components
+### Required inside a form
 
-- [DateInput](./date-input) - For selecting only a date without time
-- [DateTimeInput](./date-time-input) - For selecting both date and time
+```go
+f, submitted := ui.Form("Save")
+when := f.TimeInput("Reminder", timeinput.WithRequired(true))
+if submitted {
+    scheduleReminder(*when)
+}
+```
+
+---
+
+### Related widgets
+
+* [`DateInput`](./date-input) – pick a calendar date.  
+* [`DateTimeInput`](./date-time-input) – pick date **and** time.

@@ -2,71 +2,83 @@
 sidebar_position: 8
 ---
 
-# Date Input
+# Date Input
 
-The Date Input widget provides a specialized input field for selecting dates with a calendar picker interface.
+`DateInput` shows a calendar picker and returns the selected date.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `string` | `None` | Current selected date value |
+```go
+picked := ui.DateInput(label string, opts ...dateinput.Option) *time.Time
+```
 
-## Properties
+`picked` is `nil` until the user chooses a date.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the input |
-| `placeholder` | `string` | `""` | Placeholder text displayed when no date is selected |
-| `default_value` | `string` | `None` | Initial date value |
-| `required` | `bool` | `False` | Whether a date selection is required |
-| `disabled` | `bool` | `False` | Whether the date input is disabled |
-| `format` | `string` | `"YYYY-MM-DD"` | Format string for date display |
-| `max_value` | `string` | `None` | Maximum selectable date |
-| `min_value` | `string` | `None` | Minimum selectable date |
+## Option helpers
+
+| Helper | Purpose | Default |
+|--------|---------|---------|
+| `dateinput.WithPlaceholder("YYYY‑MM‑DD")` | Placeholder when no value selected | `""` |
+| `dateinput.WithDefaultValue(t)` | Pre‑fill with a date | *nil* |
+| `dateinput.WithRequired(true)` | Mark field as required inside a `Form` | `false` |
+| `dateinput.WithDisabled(true)` | Render read‑only | `false` |
+| `dateinput.WithFormat("MM/DD/YYYY")` | Custom display/layout format | `"YYYY/MM/DD"` |
+| `dateinput.WithMaxValue(t)` | Latest selectable date | *nil* |
+| `dateinput.WithMinValue(t)` | Earliest selectable date | *nil* |
+| `dateinput.WithLocation(loc)` | Time‑zone for parsing/formatting | `time.Local` |
+
+### Format string
+
+The format uses [Moment.js‑style] tokens (e.g. `YYYY`, `MM`, `DD`). It does **not** use Go’s reference date layout.
+
+## Behaviour notes
+
+* State is stored as `time.Time` (date‑only part preserved). Changing the format does not affect stored values.
+* Validation (`Required`, `Min/MaxValue`) happens client‑side before page rerun.
+* `WithLocation` matters if you later compare the value with time‑zoned dates.
 
 ## Examples
 
-### Basic Date Input
+### Basic input
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/dateinput"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic date input
-        dateInput := ui.DateInput("Date", dateinput.Placeholder("Select a date"))
-    }
+birthday := ui.DateInput("Birthday")
+if birthday != nil {
+    log.Println("Selected:", birthday.Format(time.DateOnly))
 }
 ```
 
-### Date Input with Custom Format
+### Custom format & placeholder
 
 ```go
-// Create a date input with custom format
-dateInput := ui.DateInput("Date", dateinput.Placeholder("Select a date"), dateinput.Format("MM/DD/YYYY"))
+ui.DateInput("Start",
+    dateinput.WithPlaceholder("MM/DD/YYYY"),
+    dateinput.WithFormat("MM/DD/YYYY"),
+)
 ```
 
-### Date Input with Range Constraints
+### Date range constraint
 
 ```go
-// Create a date input with range constraints
-dateInput := ui.DateInput("Date", dateinput.Placeholder("Select a date"), dateinput.MinValue(time.Now()), dateinput.MaxValue(time.Now().AddDate(0, 0, 30)))
+now := time.Now()
+ui.DateInput("Deadline",
+    dateinput.WithMinValue(now),
+    dateinput.WithMaxValue(now.AddDate(0, 0, 30)),
+)
 ```
 
-### Disabled Date Input with Default Value
+### Pre‑selected & disabled
 
 ```go
-// Create a disabled date input with a default value
-dateInput := ui.DateInput("Date", dateinput.Placeholder("Select a date"), dateinput.Disabled(true))
+ui.DateInput("Creation date",
+    dateinput.WithDefaultValue(time.Now()),
+    dateinput.WithDisabled(true),
+)
 ```
 
-## Related Components
+---
 
-- [DateTimeInput](./date-time-input) - For selecting both date and time
-- [TimeInput](./time-input) - For selecting only time without a date
+### Related widgets
+
+* [`DateTimeInput`](./date-time-input) – pick date **and** time.  
+* [`TimeInput`](./time-input) – pick time only.

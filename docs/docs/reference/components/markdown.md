@@ -4,46 +4,45 @@ sidebar_position: 12
 
 # Markdown
 
-The Markdown widget provides a way to display formatted text content using Markdown syntax, allowing for rich text presentation without complex HTML.
+`Markdown` renders static content written in GitHub‑flavoured Markdown. Use it for headings, lists, links, call‑outs, or any other rich text that doesn’t require user interaction.
 
-## Properties
+## Signature
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `body` | `string` | `""` | Markdown content to be rendered |
+```go
+ui.Markdown(body string)
+```
+
+There are **no** option helpers and the call does not return a value.
+
+## Behaviour notes
+
+* Markdown is treated as *read‑only*: it never triggers a page rerun by itself.
+* The widget supports the standard CommonMark feature set plus GitHub extensions (tables, task lists, strikethrough, etc.).
+* Each call advances the builder cursor, so subsequent widgets render **below** the markdown block.
 
 ## Examples
 
-### Basic Markdown
+### Basic usage
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/markdown"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic markdown widget
-        ui.Markdown(`# Welcome to Our Application
-## Getting Started
-
-This application helps you manage your tasks efficiently.
-
-### Key Features
-
-- **Task Management**: Create, edit, and organize tasks
-- **Reminders**: Set reminders for important deadlines
-- **Collaboration**: Share tasks with team members
-
-[Learn more about our features](https://example.com/features)`)
-    }
-}
+ui.Markdown(`# Welcome\nThis is **Sourcetool**!`)
 ```
 
-## Related Components
+### Multi‑line content
 
-- [TextArea](./textarea) - For multi-line text input
-- [Form](./form) - Container for organizing form elements
+```go
+ui.Markdown(`
+## Getting Started
+
+- Install the CLI: ` + "`brew install sourcetool`" + `
+- Sign in with your API key
+- Run \\`sourcetool init\\` in your project root
+`)
+```
+
+---
+
+### Related widgets
+
+* [`TextArea`](./textarea) – editable multi‑line text.  
+* [`Form`](./form) – collect user input and submit.

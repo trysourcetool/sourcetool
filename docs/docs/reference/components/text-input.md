@@ -2,61 +2,75 @@
 sidebar_position: 1
 ---
 
-# Text Input
+# Text Input
 
-The Text Input widget provides a single-line text input field that allows users to enter and edit text.
+`TextInput` renders a single‑line edit box and returns the current text.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `string` | `None` | Current text content of the input |
+```go
+val := ui.TextInput(label string, opts ...textinput.Option) string
+```
 
-## Properties
+`val` is an empty string until the user types or a `DefaultValue` is supplied.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the input |
-| `placeholder` | `string` | `""` | Placeholder text displayed when the input is empty |
-| `default_value` | `string` | `None` | Initial value of the input |
-| `required` | `bool` | `False` | Whether the input is required |
-| `disabled` | `bool` | `False` | Whether the input is disabled |
-| `max_length` | `int32` | `None` | Maximum number of characters allowed |
-| `min_length` | `int32` | `None` | Minimum number of characters allowed |
+## Option helpers
+
+| Helper | Use | Default |
+|--------|-----|---------|
+| `textinput.WithPlaceholder("Your name")` | Hint text when empty | `""` |
+| `textinput.WithDefaultValue("Alice")` | Pre‑fill on first render | none |
+| `textinput.WithRequired(true)` | Inside a [`Form`](./form) blocks submit if blank | `false` |
+| `textinput.WithDisabled(true)` | Read‑only field | `false` |
+| `textinput.WithMaxLength(64)` | Upper character limit | unlimited |
+| `textinput.WithMinLength(3)` | Lower character limit (client‑side) | 0 |
+
+## Behaviour notes
+
+* The value is stored in session state, so it persists across page reruns.
+* **Validation** – `MinLength`, `MaxLength`, and `Required` are enforced in the browser; always re‑validate on the backend if critical.
+* Changing the label does not clear or change the stored value.
 
 ## Examples
 
-### Basic Text Input
+### Basic input with placeholder
 
 ```go
-package main
+name := ui.TextInput("Name", textinput.WithPlaceholder("Enter your name"))
+```
 
-import (
-    "github.com/sourcetool/sourcetool-go"
-    "github.com/sourcetool/sourcetool-go/textinput"
-)
+### Required field inside a form
 
-func main() {
-    // Create a basic text input
-    textInput := ui.TextInput("Name", textinput.Placeholder("Enter your name"))
+```go
+f, submitted := ui.Form("Save")
+email := f.TextInput("Email", textinput.WithRequired(true))
+if submitted {
+    log.Printf("email: %s", email)
 }
 ```
 
-### Disabled Text Input
+### Length‑constrained password
 
 ```go
-// Create a disabled text input
-textInput := ui.TextInput("Name", textinput.Placeholder("Enter your name"), textinput.Disabled(true))
+pwd := ui.TextInput("Password",
+    textinput.WithPlaceholder("8–64 chars"),
+    textinput.WithMinLength(8),
+    textinput.WithMaxLength(64),
+)
 ```
 
-### Text Input with Length Constraints
+### Disabled, pre‑filled key
 
 ```go
-// Create a text input with length constraints
-passwordInput := ui.TextInput("Password", textinput.Placeholder("Enter a secure password"), textinput.Required(true), textinput.MinLength(8), textinput.MaxLength(64))
+ui.TextInput("API Key",
+    textinput.WithDefaultValue(os.Getenv("API_KEY")),
+    textinput.WithDisabled(true),
+)
 ```
 
-## Related Components
+---
 
-- [TextArea](./textarea) - For multi-line text input
-- [NumberInput](./number-input) - For numerical input
+### Related widgets
+
+* [`TextArea`](./textarea) – multi‑line text.  
+* [`NumberInput`](./number-input) – numeric entry.
