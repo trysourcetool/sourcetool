@@ -246,10 +246,8 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure default {object} errdefs.Error
 // @Router /users/invitations/{invitationID}/resend [post].
 func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Request) {
-	var req requests.ResendUserInvitationRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
-		return
+	req := requests.ResendUserInvitationRequest{
+		InvitationID: chi.URLParam(r, "invitationID"),
 	}
 
 	if err := httpx.ValidateRequest(req); err != nil {

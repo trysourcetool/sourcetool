@@ -3,62 +3,32 @@ package organization
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
-}
+type Query interface{ isQuery() }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
-}
+type ByIDQuery struct{ ID uuid.UUID }
 
-type byIDOption struct {
-	id uuid.UUID
-}
+func (ByIDQuery) isQuery() {}
 
-func (o byIDOption) isRepositoryOption() {}
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`o."id"`: o.id})
-}
+type BySubdomainQuery struct{ Subdomain string }
 
-func BySubdomain(subdomain string) RepositoryOption {
-	return bySubdomainOption{subdomain: subdomain}
-}
+func (BySubdomainQuery) isQuery() {}
 
-type bySubdomainOption struct {
-	subdomain string
-}
+func BySubdomain(subdomain string) Query { return BySubdomainQuery{Subdomain: subdomain} }
 
-func (o bySubdomainOption) isRepositoryOption() {}
+type ByUserIDQuery struct{ ID uuid.UUID }
 
-func (o bySubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`o."subdomain"`: o.subdomain})
-}
+func (ByUserIDQuery) isQuery() {}
 
-func ByUserID(id uuid.UUID) RepositoryOption {
-	return byUserIDOption{id: id}
-}
-
-type byUserIDOption struct {
-	id uuid.UUID
-}
-
-func (o byUserIDOption) isRepositoryOption() {}
-
-func (o byUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"user_organization_access" uoa ON uoa."organization_id" = o."id"`).
-		Where(sq.Eq{`uoa."user_id"`: o.id})
-}
+func ByUserID(id uuid.UUID) Query { return ByUserIDQuery{ID: id} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*Organization, error)
-	List(context.Context, ...RepositoryOption) ([]*Organization, error)
+	Get(context.Context, ...Query) (*Organization, error)
+	List(context.Context, ...Query) ([]*Organization, error)
 	Create(context.Context, *Organization) error
 	IsSubdomainExists(context.Context, string) (bool, error)
 }

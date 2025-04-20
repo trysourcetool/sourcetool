@@ -3,76 +3,40 @@ package hostinstance
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
+type Query interface{ isQuery() }
+
+type ByIDQuery struct{ ID uuid.UUID }
+
+func (ByIDQuery) isQuery() {}
+
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
+
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (ByOrganizationIDQuery) isQuery() {}
+
+func ByOrganizationID(organizationID uuid.UUID) Query {
+	return ByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
-}
+type ByAPIKeyIDQuery struct{ APIKeyID uuid.UUID }
 
-type byIDOption struct {
-	id uuid.UUID
-}
+func (ByAPIKeyIDQuery) isQuery() {}
 
-func (o byIDOption) isRepositoryOption() {}
+func ByAPIKeyID(apiKeyID uuid.UUID) Query { return ByAPIKeyIDQuery{APIKeyID: apiKeyID} }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`hi."id"`: o.id})
-}
+type ByAPIKeyQuery struct{ APIKey string }
 
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
+func (ByAPIKeyQuery) isQuery() {}
 
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o byOrganizationIDOption) isRepositoryOption() {}
-
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`hi."organization_id"`: o.id})
-}
-
-func ByAPIKeyID(id uuid.UUID) RepositoryOption {
-	return byAPIKeyIDOption{id: id}
-}
-
-type byAPIKeyIDOption struct {
-	id uuid.UUID
-}
-
-func (o byAPIKeyIDOption) isRepositoryOption() {}
-
-func (o byAPIKeyIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`hi."api_key_id"`: o.id})
-}
-
-func ByAPIKey(key string) RepositoryOption {
-	return byAPIKeyOption{key: key}
-}
-
-type byAPIKeyOption struct {
-	key string
-}
-
-func (o byAPIKeyOption) isRepositoryOption() {}
-
-func (o byAPIKeyOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
-		Where(sq.Eq{`ak."key"`: o.key})
-}
+func ByAPIKey(apiKey string) Query { return ByAPIKeyQuery{APIKey: apiKey} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*HostInstance, error)
-	List(context.Context, ...RepositoryOption) ([]*HostInstance, error)
+	Get(context.Context, ...Query) (*HostInstance, error)
+	List(context.Context, ...Query) ([]*HostInstance, error)
 	Create(context.Context, *HostInstance) error
 	Update(context.Context, *HostInstance) error
 }

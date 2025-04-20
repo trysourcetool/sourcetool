@@ -3,324 +3,171 @@ package user
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
+type Query interface{ isQuery() }
+
+type ByIDQuery struct{ ID uuid.UUID }
+
+func (q ByIDQuery) isQuery() {}
+
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
+
+type ByEmailQuery struct{ Email string }
+
+func (q ByEmailQuery) isQuery() {}
+
+func ByEmail(email string) Query { return ByEmailQuery{Email: email} }
+
+type ByRefreshTokenHashQuery struct{ RefreshTokenHash string }
+
+func (q ByRefreshTokenHashQuery) isQuery() {}
+
+func ByRefreshTokenHash(refreshTokenHash string) Query {
+	return ByRefreshTokenHashQuery{RefreshTokenHash: refreshTokenHash}
 }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (q ByOrganizationIDQuery) isQuery() {}
+
+func ByOrganizationID(organizationID uuid.UUID) Query {
+	return ByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-type byIDOption struct {
-	id uuid.UUID
+type LimitQuery struct{ Limit uint64 }
+
+func (q LimitQuery) isQuery() {}
+
+func Limit(limit uint64) Query { return LimitQuery{Limit: limit} }
+
+type OffsetQuery struct{ Offset uint64 }
+
+func (q OffsetQuery) isQuery() {}
+
+func Offset(offset uint64) Query { return OffsetQuery{Offset: offset} }
+
+type OrderByQuery struct{ OrderBy string }
+
+func (q OrderByQuery) isQuery() {}
+
+func OrderBy(orderBy string) Query { return OrderByQuery{OrderBy: orderBy} }
+
+type OrganizationAccessQuery interface{ isOrganizationAccessQuery() }
+
+type OrganizationAccessByUserIDQuery struct{ UserID uuid.UUID }
+
+func (q OrganizationAccessByUserIDQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessByUserID(userID uuid.UUID) OrganizationAccessQuery {
+	return OrganizationAccessByUserIDQuery{UserID: userID}
 }
 
-func (o byIDOption) isRepositoryOption() {}
+type OrganizationAccessByUserIDsQuery struct{ UserIDs []uuid.UUID }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`u."id"`: o.id})
+func (q OrganizationAccessByUserIDsQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessByUserIDs(userIDs []uuid.UUID) OrganizationAccessQuery {
+	return OrganizationAccessByUserIDsQuery{UserIDs: userIDs}
 }
 
-func ByEmail(email string) RepositoryOption {
-	return byEmailOption{email: email}
+type OrganizationAccessByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (q OrganizationAccessByOrganizationIDQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessByOrganizationID(organizationID uuid.UUID) OrganizationAccessQuery {
+	return OrganizationAccessByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-type byEmailOption struct {
-	email string
+type OrganizationAccessByOrganizationSubdomainQuery struct{ OrganizationSubdomain string }
+
+func (q OrganizationAccessByOrganizationSubdomainQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessByOrganizationSubdomain(subdomain string) OrganizationAccessQuery {
+	return OrganizationAccessByOrganizationSubdomainQuery{OrganizationSubdomain: subdomain}
 }
 
-func (o byEmailOption) isRepositoryOption() {}
+type OrganizationAccessOrderByQuery struct{ OrderBy string }
 
-func (o byEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`u."email"`: o.email})
+func (q OrganizationAccessOrderByQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessOrderBy(orderBy string) OrganizationAccessQuery {
+	return OrganizationAccessOrderByQuery{OrderBy: orderBy}
 }
 
-func ByRefreshTokenHash(refreshTokenHash string) RepositoryOption {
-	return byRefreshTokenHashOption{refreshTokenHash: refreshTokenHash}
+type OrganizationAccessByRoleQuery struct{ Role UserOrganizationRole }
+
+func (q OrganizationAccessByRoleQuery) isOrganizationAccessQuery() {}
+
+func OrganizationAccessByRole(role UserOrganizationRole) OrganizationAccessQuery {
+	return OrganizationAccessByRoleQuery{Role: role}
 }
 
-type byRefreshTokenHashOption struct {
-	refreshTokenHash string
+type GroupQuery interface{ isGroupQuery() }
+
+type GroupByUserIDQuery struct{ UserID uuid.UUID }
+
+func (q GroupByUserIDQuery) isGroupQuery() {}
+
+func GroupByUserID(userID uuid.UUID) GroupQuery { return GroupByUserIDQuery{UserID: userID} }
+
+type GroupByGroupIDQuery struct{ GroupID uuid.UUID }
+
+func (q GroupByGroupIDQuery) isGroupQuery() {}
+
+func GroupByGroupID(groupID uuid.UUID) GroupQuery { return GroupByGroupIDQuery{GroupID: groupID} }
+
+type GroupByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (q GroupByOrganizationIDQuery) isGroupQuery() {}
+
+func GroupByOrganizationID(organizationID uuid.UUID) GroupQuery {
+	return GroupByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func (o byRefreshTokenHashOption) isRepositoryOption() {}
+type InvitationQuery interface{ isInvitationQuery() }
 
-func (o byRefreshTokenHashOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`u."refresh_token_hash"`: o.refreshTokenHash})
+type InvitationByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (q InvitationByOrganizationIDQuery) isInvitationQuery() {}
+
+func InvitationByOrganizationID(organizationID uuid.UUID) InvitationQuery {
+	return InvitationByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
+type InvitationByIDQuery struct{ ID uuid.UUID }
 
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
+func (q InvitationByIDQuery) isInvitationQuery() {}
 
-func (o byOrganizationIDOption) isRepositoryOption() {}
+func InvitationByID(id uuid.UUID) InvitationQuery { return InvitationByIDQuery{ID: id} }
 
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
-		Where(sq.Eq{`uoa."organization_id"`: o.id})
-}
+type InvitationByEmailQuery struct{ Email string }
 
-func Limit(limit uint64) RepositoryOption {
-	return limitOption{limit: limit}
-}
+func (q InvitationByEmailQuery) isInvitationQuery() {}
 
-type limitOption struct {
-	limit uint64
-}
-
-func (o limitOption) isRepositoryOption() {}
-
-func (o limitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Limit(o.limit)
-}
-
-func Offset(offset uint64) RepositoryOption {
-	return offsetOption{offset: offset}
-}
-
-type offsetOption struct {
-	offset uint64
-}
-
-func (o offsetOption) isRepositoryOption() {}
-
-func (o offsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Offset(o.offset)
-}
-
-func OrderBy(orderBy string) RepositoryOption {
-	return orderByOption{orderBy: orderBy}
-}
-
-type orderByOption struct {
-	orderBy string
-}
-
-func (o orderByOption) isRepositoryOption() {}
-
-func (o orderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.OrderBy(o.orderBy)
-}
-
-type OrganizationAccessRepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isOrganizationAccessRepositoryOption()
-}
-
-func OrganizationAccessByUserID(id uuid.UUID) OrganizationAccessRepositoryOption {
-	return organizationAccessByUserIDOption{id: id}
-}
-
-type organizationAccessByUserIDOption struct {
-	id uuid.UUID
-}
-
-func (o organizationAccessByUserIDOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`uoa."user_id"`: o.id})
-}
-
-func OrganizationAccessByUserIDs(ids []uuid.UUID) OrganizationAccessRepositoryOption {
-	return organizationAccessByUserIDsOption{ids: ids}
-}
-
-type organizationAccessByUserIDsOption struct {
-	ids []uuid.UUID
-}
-
-func (o organizationAccessByUserIDsOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessByUserIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`uoa."user_id"`: o.ids})
-}
-
-func OrganizationAccessByOrganizationID(id uuid.UUID) OrganizationAccessRepositoryOption {
-	return organizationAccessByOrganizationIDOption{id: id}
-}
-
-type organizationAccessByOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o organizationAccessByOrganizationIDOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-		Where(sq.Eq{`o."id"`: o.id})
-}
-
-func OrganizationAccessByOrganizationSubdomain(subdomain string) OrganizationAccessRepositoryOption {
-	return organizationAccessByOrganizationSubdomainOption{subdomain: subdomain}
-}
-
-type organizationAccessByOrganizationSubdomainOption struct {
-	subdomain string
-}
-
-func (o organizationAccessByOrganizationSubdomainOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessByOrganizationSubdomainOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-		Where(sq.Eq{`o."subdomain"`: o.subdomain})
-}
-
-func OrganizationAccessOrderBy(orderBy string) OrganizationAccessRepositoryOption {
-	return organizationAccessOrderByOption{orderBy: orderBy}
-}
-
-type organizationAccessOrderByOption struct {
-	orderBy string
-}
-
-func (o organizationAccessOrderByOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessOrderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.OrderBy(o.orderBy)
-}
-
-func OrganizationAccessByRole(role UserOrganizationRole) OrganizationAccessRepositoryOption {
-	return organizationAccessByRoleOption{role: role}
-}
-
-type organizationAccessByRoleOption struct {
-	role UserOrganizationRole
-}
-
-func (o organizationAccessByRoleOption) isOrganizationAccessRepositoryOption() {}
-
-func (o organizationAccessByRoleOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`uoa."role"`: o.role})
-}
-
-type GroupRepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isGroupRepositoryOption()
-}
-
-func GroupByUserID(id uuid.UUID) GroupRepositoryOption {
-	return groupByUserIDOption{id: id}
-}
-
-type groupByUserIDOption struct {
-	id uuid.UUID
-}
-
-func (o groupByUserIDOption) isGroupRepositoryOption() {}
-
-func (o groupByUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ug."user_id"`: o.id})
-}
-
-func GroupByGroupID(id uuid.UUID) GroupRepositoryOption {
-	return groupByGroupIDOption{id: id}
-}
-
-type groupByGroupIDOption struct {
-	id uuid.UUID
-}
-
-func (o groupByGroupIDOption) isGroupRepositoryOption() {}
-
-func (o groupByGroupIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ug."group_id"`: o.id})
-}
-
-func GroupByOrganizationID(id uuid.UUID) GroupRepositoryOption {
-	return groupByOrganizationIDOption{id: id}
-}
-
-type groupByOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o groupByOrganizationIDOption) isGroupRepositoryOption() {}
-
-func (o groupByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"group" g ON g."id" = ug."group_id"`).
-		Where(sq.Eq{`g."organization_id"`: o.id})
-}
-
-type InvitationRepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isInvitationRepositoryOption()
-}
-
-func InvitationByOrganizationID(id uuid.UUID) InvitationRepositoryOption {
-	return invitationByOrganizationIDOption{id: id}
-}
-
-type invitationByOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o invitationByOrganizationIDOption) isInvitationRepositoryOption() {}
-
-func (o invitationByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ui."organization_id"`: o.id})
-}
-
-func InvitationByID(id uuid.UUID) InvitationRepositoryOption {
-	return invitationByIDOption{id: id}
-}
-
-type invitationByIDOption struct {
-	id uuid.UUID
-}
-
-func (o invitationByIDOption) isInvitationRepositoryOption() {}
-
-func (o invitationByIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ui."id"`: o.id})
-}
-
-func InvitationByEmail(email string) InvitationRepositoryOption {
-	return invitationByEmailOption{email: email}
-}
-
-type invitationByEmailOption struct {
-	email string
-}
-
-func (o invitationByEmailOption) isInvitationRepositoryOption() {}
-
-func (o invitationByEmailOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ui."email"`: o.email})
-}
+func InvitationByEmail(email string) InvitationQuery { return InvitationByEmailQuery{Email: email} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*User, error)
-	List(context.Context, ...RepositoryOption) ([]*User, error)
+	Get(context.Context, ...Query) (*User, error)
+	List(context.Context, ...Query) ([]*User, error)
 	Create(context.Context, *User) error
 	Update(context.Context, *User) error
 	IsEmailExists(context.Context, string) (bool, error)
 
-	GetOrganizationAccess(context.Context, ...OrganizationAccessRepositoryOption) (*UserOrganizationAccess, error)
-	ListOrganizationAccesses(context.Context, ...OrganizationAccessRepositoryOption) ([]*UserOrganizationAccess, error)
+	GetOrganizationAccess(context.Context, ...OrganizationAccessQuery) (*UserOrganizationAccess, error)
+	ListOrganizationAccesses(context.Context, ...OrganizationAccessQuery) ([]*UserOrganizationAccess, error)
 	CreateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 	UpdateOrganizationAccess(context.Context, *UserOrganizationAccess) error
 	DeleteOrganizationAccess(context.Context, *UserOrganizationAccess) error
 
-	GetGroup(context.Context, ...GroupRepositoryOption) (*UserGroup, error)
-	ListGroups(context.Context, ...GroupRepositoryOption) ([]*UserGroup, error)
+	GetGroup(context.Context, ...GroupQuery) (*UserGroup, error)
+	ListGroups(context.Context, ...GroupQuery) ([]*UserGroup, error)
 	BulkInsertGroups(context.Context, []*UserGroup) error
 	BulkDeleteGroups(context.Context, []*UserGroup) error
 
-	GetInvitation(context.Context, ...InvitationRepositoryOption) (*UserInvitation, error)
-	ListInvitations(context.Context, ...InvitationRepositoryOption) ([]*UserInvitation, error)
+	GetInvitation(context.Context, ...InvitationQuery) (*UserInvitation, error)
+	ListInvitations(context.Context, ...InvitationQuery) ([]*UserInvitation, error)
 	DeleteInvitation(context.Context, *UserInvitation) error
 	BulkInsertInvitations(context.Context, []*UserInvitation) error
 	IsInvitationEmailExists(context.Context, uuid.UUID, string) (bool, error)

@@ -3,133 +3,62 @@ package page
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
-}
+type Query interface{ isQuery() }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
-}
+type ByIDQuery struct{ ID uuid.UUID }
 
-type byIDOption struct {
-	id uuid.UUID
-}
+func (q ByIDQuery) isQuery() {}
 
-func (o byIDOption) isRepositoryOption() {}
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`p."id"`: o.id})
-}
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
 
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
+func (q ByOrganizationIDQuery) isQuery() {}
 
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
+func ByOrganizationID(id uuid.UUID) Query { return ByOrganizationIDQuery{OrganizationID: id} }
 
-func (o byOrganizationIDOption) isRepositoryOption() {}
+type ByAPIKeyIDQuery struct{ APIKeyID uuid.UUID }
 
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`p."organization_id"`: o.id})
-}
+func (q ByAPIKeyIDQuery) isQuery() {}
 
-func ByAPIKeyID(id uuid.UUID) RepositoryOption {
-	return byAPIKeyIDOption{id: id}
-}
+func ByAPIKeyID(id uuid.UUID) Query { return ByAPIKeyIDQuery{APIKeyID: id} }
 
-type byAPIKeyIDOption struct {
-	id uuid.UUID
-}
+type BySessionIDQuery struct{ SessionID uuid.UUID }
 
-func (o byAPIKeyIDOption) isRepositoryOption() {}
+func (q BySessionIDQuery) isQuery() {}
 
-func (o byAPIKeyIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`p."api_key_id"`: o.id})
-}
+func BySessionID(id uuid.UUID) Query { return BySessionIDQuery{SessionID: id} }
 
-func BySessionID(id uuid.UUID) RepositoryOption {
-	return bySessionIDOption{id: id}
-}
+type ByEnvironmentIDQuery struct{ EnvironmentID uuid.UUID }
 
-type bySessionIDOption struct {
-	id uuid.UUID
-}
+func (q ByEnvironmentIDQuery) isQuery() {}
 
-func (o bySessionIDOption) isRepositoryOption() {}
+func ByEnvironmentID(id uuid.UUID) Query { return ByEnvironmentIDQuery{EnvironmentID: id} }
 
-func (o bySessionIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
-		InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
-		Where(sq.Eq{`s."id"`: o.id})
-}
+type LimitQuery struct{ Limit uint64 }
 
-func ByEnvironmentID(id uuid.UUID) RepositoryOption {
-	return byEnvironmentIDOption{id: id}
-}
+func (q LimitQuery) isQuery() {}
 
-type byEnvironmentIDOption struct {
-	id uuid.UUID
-}
+func Limit(limit uint64) Query { return LimitQuery{Limit: limit} }
 
-func (o byEnvironmentIDOption) isRepositoryOption() {}
+type OffsetQuery struct{ Offset uint64 }
 
-func (o byEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`p."environment_id"`: o.id})
-}
+func (q OffsetQuery) isQuery() {}
 
-func Limit(limit uint64) RepositoryOption {
-	return limitOption{limit: limit}
-}
+func Offset(offset uint64) Query { return OffsetQuery{Offset: offset} }
 
-type limitOption struct {
-	limit uint64
-}
+type OrderByQuery struct{ OrderBy string }
 
-func (o limitOption) isRepositoryOption() {}
+func (q OrderByQuery) isQuery() {}
 
-func (o limitOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Limit(o.limit)
-}
-
-func Offset(offset uint64) RepositoryOption {
-	return offsetOption{offset: offset}
-}
-
-type offsetOption struct {
-	offset uint64
-}
-
-func (o offsetOption) isRepositoryOption() {}
-
-func (o offsetOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Offset(o.offset)
-}
-
-func OrderBy(orderBy string) RepositoryOption {
-	return orderByOption{orderBy: orderBy}
-}
-
-type orderByOption struct {
-	orderBy string
-}
-
-func (o orderByOption) isRepositoryOption() {}
-
-func (o orderByOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.OrderBy(o.orderBy)
-}
+func OrderBy(orderBy string) Query { return OrderByQuery{OrderBy: orderBy} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*Page, error)
-	List(context.Context, ...RepositoryOption) ([]*Page, error)
+	Get(context.Context, ...Query) (*Page, error)
+	List(context.Context, ...Query) ([]*Page, error)
 	BulkInsert(context.Context, []*Page) error
 	BulkUpdate(context.Context, []*Page) error
 	BulkDelete(context.Context, []*Page) error

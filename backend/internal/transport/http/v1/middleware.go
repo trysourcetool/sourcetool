@@ -82,7 +82,7 @@ func (m *MiddlewareCE) getSubdomainIfCloudEdition(r *http.Request) (string, erro
 }
 
 func (m *MiddlewareCE) validateOrganizationAccess(ctx context.Context, userID uuid.UUID, subdomain string) error {
-	orgAccessOpts := []user.OrganizationAccessRepositoryOption{
+	orgAccessOpts := []user.OrganizationAccessQuery{
 		user.OrganizationAccessByUserID(userID),
 	}
 	if config.Config.IsCloudEdition {
@@ -93,7 +93,7 @@ func (m *MiddlewareCE) validateOrganizationAccess(ctx context.Context, userID uu
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*organization.Organization, error) {
-	opts := []organization.RepositoryOption{}
+	opts := []organization.Query{}
 	if subdomain != "" && subdomain != "auth" {
 		opts = append(opts, organization.BySubdomain(subdomain))
 	}

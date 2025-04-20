@@ -3,31 +3,19 @@ package session
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
-}
+type Query interface{ isQuery() }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
-}
+type ByIDQuery struct{ ID uuid.UUID }
 
-type byIDOption struct {
-	id uuid.UUID
-}
+func (q ByIDQuery) isQuery() {}
 
-func (o byIDOption) isRepositoryOption() {}
-
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`s."id"`: o.id})
-}
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*Session, error)
+	Get(context.Context, ...Query) (*Session, error)
 	Create(context.Context, *Session) error
 	Delete(context.Context, *Session) error
 }

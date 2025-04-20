@@ -26,8 +26,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...user.RepositoryOption) (*user.User, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...user.Query) (*user.User, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...user.RepositoryOption) (
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...user.RepositoryOption) ([]*user.User, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...user.Query) ([]*user.User, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...user.RepositoryOption) 
 	return m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...user.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...user.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`u."id"`,
 		`u."created_at"`,
@@ -70,9 +70,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...user.RepositoryOp
 	).
 		From(`"user" u`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -80,6 +78,30 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...user.RepositoryOp
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...user.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case user.ByIDQuery:
+			b = b.Where(sq.Eq{`u."id"`: q.ID})
+		case user.ByEmailQuery:
+			b = b.Where(sq.Eq{`u."email"`: q.Email})
+		case user.ByRefreshTokenHashQuery:
+			b = b.Where(sq.Eq{`u."refresh_token_hash"`: q.RefreshTokenHash})
+		case user.ByOrganizationIDQuery:
+			b = b.
+				InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
+				Where(sq.Eq{`uoa."organization_id"`: q.OrganizationID})
+		case user.LimitQuery:
+			b = b.Limit(q.Limit)
+		case user.OffsetQuery:
+			b = b.Offset(q.Offset)
+		case user.OrderByQuery:
+			b = b.OrderBy(q.OrderBy)
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *user.User) error {
@@ -142,8 +164,8 @@ func (r *RepositoryCE) IsEmailExists(ctx context.Context, email string) (bool, e
 	return true, nil
 }
 
-func (r *RepositoryCE) GetOrganizationAccess(ctx context.Context, opts ...user.OrganizationAccessRepositoryOption) (*user.UserOrganizationAccess, error) {
-	query, args, err := r.buildOrganizationAccessQuery(ctx, opts...)
+func (r *RepositoryCE) GetOrganizationAccess(ctx context.Context, queries ...user.OrganizationAccessQuery) (*user.UserOrganizationAccess, error) {
+	query, args, err := r.buildOrganizationAccessQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +181,8 @@ func (r *RepositoryCE) GetOrganizationAccess(ctx context.Context, opts ...user.O
 	return &m, nil
 }
 
-func (r *RepositoryCE) ListOrganizationAccesses(ctx context.Context, opts ...user.OrganizationAccessRepositoryOption) ([]*user.UserOrganizationAccess, error) {
-	query, args, err := r.buildOrganizationAccessQuery(ctx, opts...)
+func (r *RepositoryCE) ListOrganizationAccesses(ctx context.Context, queries ...user.OrganizationAccessQuery) ([]*user.UserOrganizationAccess, error) {
+	query, args, err := r.buildOrganizationAccessQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +195,7 @@ func (r *RepositoryCE) ListOrganizationAccesses(ctx context.Context, opts ...use
 	return m, nil
 }
 
-func (r *RepositoryCE) buildOrganizationAccessQuery(ctx context.Context, opts ...user.OrganizationAccessRepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildOrganizationAccessQuery(ctx context.Context, queries ...user.OrganizationAccessQuery) (string, []any, error) {
 	q := r.builder.Select(
 		`uoa."id"`,
 		`uoa."user_id"`,
@@ -184,9 +206,7 @@ func (r *RepositoryCE) buildOrganizationAccessQuery(ctx context.Context, opts ..
 	).
 		From(`"user_organization_access" uoa`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyOrganizationAccessQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -194,6 +214,28 @@ func (r *RepositoryCE) buildOrganizationAccessQuery(ctx context.Context, opts ..
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyOrganizationAccessQueries(b sq.SelectBuilder, queries ...user.OrganizationAccessQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case user.OrganizationAccessByUserIDQuery:
+			b = b.Where(sq.Eq{`uoa."user_id"`: q.UserID})
+		case user.OrganizationAccessByUserIDsQuery:
+			b = b.Where(sq.Eq{`uoa."user_id"`: q.UserIDs})
+		case user.OrganizationAccessByOrganizationIDQuery:
+			b = b.
+				InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
+				Where(sq.Eq{`o."id"`: q.OrganizationID})
+		case user.OrganizationAccessByOrganizationSubdomainQuery:
+			b = b.
+				InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
+				Where(sq.Eq{`o."subdomain"`: q.OrganizationSubdomain})
+		case user.OrganizationAccessByRoleQuery:
+			b = b.Where(sq.Eq{`uoa."role"`: q.Role})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) CreateOrganizationAccess(ctx context.Context, m *user.UserOrganizationAccess) error {
@@ -247,8 +289,8 @@ func (r *RepositoryCE) DeleteOrganizationAccess(ctx context.Context, m *user.Use
 	return nil
 }
 
-func (r *RepositoryCE) GetGroup(ctx context.Context, opts ...user.GroupRepositoryOption) (*user.UserGroup, error) {
-	query, args, err := r.buildGroupQuery(ctx, opts...)
+func (r *RepositoryCE) GetGroup(ctx context.Context, queries ...user.GroupQuery) (*user.UserGroup, error) {
+	query, args, err := r.buildGroupQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -264,8 +306,8 @@ func (r *RepositoryCE) GetGroup(ctx context.Context, opts ...user.GroupRepositor
 	return &m, nil
 }
 
-func (r *RepositoryCE) ListGroups(ctx context.Context, opts ...user.GroupRepositoryOption) ([]*user.UserGroup, error) {
-	query, args, err := r.buildGroupQuery(ctx, opts...)
+func (r *RepositoryCE) ListGroups(ctx context.Context, queries ...user.GroupQuery) ([]*user.UserGroup, error) {
+	query, args, err := r.buildGroupQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +320,7 @@ func (r *RepositoryCE) ListGroups(ctx context.Context, opts ...user.GroupReposit
 	return m, nil
 }
 
-func (r *RepositoryCE) buildGroupQuery(ctx context.Context, opts ...user.GroupRepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildGroupQuery(ctx context.Context, queries ...user.GroupQuery) (string, []any, error) {
 	q := r.builder.Select(
 		`ug."id"`,
 		`ug."user_id"`,
@@ -288,9 +330,7 @@ func (r *RepositoryCE) buildGroupQuery(ctx context.Context, opts ...user.GroupRe
 	).
 		From(`"user_group" ug`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyGroupQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -298,6 +338,22 @@ func (r *RepositoryCE) buildGroupQuery(ctx context.Context, opts ...user.GroupRe
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyGroupQueries(b sq.SelectBuilder, queries ...user.GroupQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case user.GroupByUserIDQuery:
+			b = b.Where(sq.Eq{`ug."user_id"`: q.UserID})
+		case user.GroupByGroupIDQuery:
+			b = b.Where(sq.Eq{`ug."group_id"`: q.GroupID})
+		case user.GroupByOrganizationIDQuery:
+			b = b.
+				InnerJoin(`"group" g ON g."id" = ug."group_id"`).
+				Where(sq.Eq{`g."organization_id"`: q.OrganizationID})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) BulkInsertGroups(ctx context.Context, m []*user.UserGroup) error {
@@ -342,8 +398,8 @@ func (r *RepositoryCE) BulkDeleteGroups(ctx context.Context, m []*user.UserGroup
 	return nil
 }
 
-func (r *RepositoryCE) GetInvitation(ctx context.Context, opts ...user.InvitationRepositoryOption) (*user.UserInvitation, error) {
-	query, args, err := r.buildInvitationQuery(ctx, opts...)
+func (r *RepositoryCE) GetInvitation(ctx context.Context, queries ...user.InvitationQuery) (*user.UserInvitation, error) {
+	query, args, err := r.buildInvitationQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -359,8 +415,8 @@ func (r *RepositoryCE) GetInvitation(ctx context.Context, opts ...user.Invitatio
 	return &m, nil
 }
 
-func (r *RepositoryCE) ListInvitations(ctx context.Context, opts ...user.InvitationRepositoryOption) ([]*user.UserInvitation, error) {
-	query, args, err := r.buildInvitationQuery(ctx, opts...)
+func (r *RepositoryCE) ListInvitations(ctx context.Context, queries ...user.InvitationQuery) ([]*user.UserInvitation, error) {
+	query, args, err := r.buildInvitationQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -373,7 +429,7 @@ func (r *RepositoryCE) ListInvitations(ctx context.Context, opts ...user.Invitat
 	return m, nil
 }
 
-func (r *RepositoryCE) buildInvitationQuery(ctx context.Context, opts ...user.InvitationRepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildInvitationQuery(ctx context.Context, queries ...user.InvitationQuery) (string, []any, error) {
 	q := r.builder.Select(
 		`ui."id"`,
 		`ui."organization_id"`,
@@ -384,9 +440,7 @@ func (r *RepositoryCE) buildInvitationQuery(ctx context.Context, opts ...user.In
 	).
 		From(`"user_invitation" ui`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyInvitationQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -394,6 +448,20 @@ func (r *RepositoryCE) buildInvitationQuery(ctx context.Context, opts ...user.In
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyInvitationQueries(b sq.SelectBuilder, queries ...user.InvitationQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case user.InvitationByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`ui."organization_id"`: q.OrganizationID})
+		case user.InvitationByIDQuery:
+			b = b.Where(sq.Eq{`ui."id"`: q.ID})
+		case user.InvitationByEmailQuery:
+			b = b.Where(sq.Eq{`ui."email"`: q.Email})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) DeleteInvitation(ctx context.Context, m *user.UserInvitation) error {

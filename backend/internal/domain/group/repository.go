@@ -3,131 +3,72 @@ package group
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
+type Query interface{ isQuery() }
+
+type ByIDQuery struct{ ID uuid.UUID }
+
+func (ByIDQuery) isQuery() {}
+
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
+
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (ByOrganizationIDQuery) isQuery() {}
+
+func ByOrganizationID(organizationID uuid.UUID) Query {
+	return ByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
+type BySlugQuery struct{ Slug string }
+
+func (BySlugQuery) isQuery() {}
+
+func BySlug(slug string) Query { return BySlugQuery{Slug: slug} }
+
+type BySlugsQuery struct{ Slugs []string }
+
+func (BySlugsQuery) isQuery() {}
+
+func BySlugs(slugs []string) Query { return BySlugsQuery{Slugs: slugs} }
+
+type PageQuery interface{ isPageQuery() }
+
+type PageByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (PageByOrganizationIDQuery) isPageQuery() {}
+
+func PageByOrganizationID(organizationID uuid.UUID) PageQuery {
+	return PageByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-type byIDOption struct {
-	id uuid.UUID
+type PageByPageIDsQuery struct{ PageIDs []uuid.UUID }
+
+func (PageByPageIDsQuery) isPageQuery() {}
+
+func PageByPageIDs(pageIDs []uuid.UUID) PageQuery {
+	return PageByPageIDsQuery{PageIDs: pageIDs}
 }
 
-func (o byIDOption) isRepositoryOption() {}
+type PageByEnvironmentIDQuery struct{ EnvironmentID uuid.UUID }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`g."id"`: o.id})
-}
+func (PageByEnvironmentIDQuery) isPageQuery() {}
 
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
-
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o byOrganizationIDOption) isRepositoryOption() {}
-
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`g."organization_id"`: o.id})
-}
-
-func BySlug(slug string) RepositoryOption {
-	return bySlugOption{slug: slug}
-}
-
-type bySlugOption struct {
-	slug string
-}
-
-func (o bySlugOption) isRepositoryOption() {}
-
-func (o bySlugOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`g."slug"`: o.slug})
-}
-
-func BySlugs(slugs []string) RepositoryOption {
-	return bySlugsOption{slugs: slugs}
-}
-
-type bySlugsOption struct {
-	slugs []string
-}
-
-func (o bySlugsOption) isRepositoryOption() {}
-
-func (o bySlugsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`g."slug"`: o.slugs})
-}
-
-type PageRepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isPageRepositoryOption()
-}
-
-func PageByOrganizationID(id uuid.UUID) PageRepositoryOption {
-	return pageByOrganizationIDOption{id: id}
-}
-
-type pageByOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o pageByOrganizationIDOption) isPageRepositoryOption() {}
-
-func (o pageByOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"group" g ON g."id" = gp."group_id"`).
-		Where(sq.Eq{`g."organization_id"`: o.id})
-}
-
-func PageByPageIDs(ids []uuid.UUID) PageRepositoryOption {
-	return pageByPageIDsOption{ids: ids}
-}
-
-type pageByPageIDsOption struct {
-	ids []uuid.UUID
-}
-
-func (o pageByPageIDsOption) isPageRepositoryOption() {}
-
-func (o pageByPageIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`gp."page_id"`: o.ids})
-}
-
-func PageByEnvironmentID(id uuid.UUID) PageRepositoryOption {
-	return pageByEnvironmentIDOption{id: id}
-}
-
-type pageByEnvironmentIDOption struct {
-	id uuid.UUID
-}
-
-func (o pageByEnvironmentIDOption) isPageRepositoryOption() {}
-
-func (o pageByEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.
-		InnerJoin(`"page" p ON p."id" = gp."page_id"`).
-		Where(sq.Eq{`p."environment_id"`: o.id})
+func PageByEnvironmentID(environmentID uuid.UUID) PageQuery {
+	return PageByEnvironmentIDQuery{EnvironmentID: environmentID}
 }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*Group, error)
-	List(context.Context, ...RepositoryOption) ([]*Group, error)
+	Get(context.Context, ...Query) (*Group, error)
+	List(context.Context, ...Query) ([]*Group, error)
 	Create(context.Context, *Group) error
 	Update(context.Context, *Group) error
 	Delete(context.Context, *Group) error
 	IsSlugExistsInOrganization(context.Context, uuid.UUID, string) (bool, error)
 
-	ListPages(context.Context, ...PageRepositoryOption) ([]*GroupPage, error)
+	ListPages(context.Context, ...PageQuery) ([]*GroupPage, error)
 	BulkInsertPages(context.Context, []*GroupPage) error
 	BulkUpdatePages(context.Context, []*GroupPage) error
 	BulkDeletePages(context.Context, []*GroupPage) error

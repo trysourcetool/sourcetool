@@ -28,8 +28,8 @@ func NewRepositoryEE(db db.DB) *repositoryEE {
 	}
 }
 
-func (r *repositoryEE) Get(ctx context.Context, opts ...group.RepositoryOption) (*group.Group, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *repositoryEE) Get(ctx context.Context, queries ...group.Query) (*group.Group, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (r *repositoryEE) Get(ctx context.Context, opts ...group.RepositoryOption) 
 	return &m, nil
 }
 
-func (r *repositoryEE) List(ctx context.Context, opts ...group.RepositoryOption) ([]*group.Group, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *repositoryEE) List(ctx context.Context, queries ...group.Query) ([]*group.Group, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +59,11 @@ func (r *repositoryEE) List(ctx context.Context, opts ...group.RepositoryOption)
 	return m, nil
 }
 
-func (r *repositoryEE) buildQuery(ctx context.Context, opts ...group.RepositoryOption) (string, []any, error) {
+func (r *repositoryEE) buildQuery(ctx context.Context, queries ...group.Query) (string, []any, error) {
 	q := r.builder.Select(r.columns()...).
 		From(`"group" g`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -73,6 +71,23 @@ func (r *repositoryEE) buildQuery(ctx context.Context, opts ...group.RepositoryO
 	}
 
 	return query, args, err
+}
+
+func (r *repositoryEE) applyQueries(b sq.SelectBuilder, queries ...group.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case group.ByIDQuery:
+			b = b.Where(sq.Eq{`g."id"`: q.ID})
+		case group.ByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`g."organization_id"`: q.OrganizationID})
+		case group.BySlugQuery:
+			b = b.Where(sq.Eq{`g."slug"`: q.Slug})
+		case group.BySlugsQuery:
+			b = b.Where(sq.Eq{`g."slug"`: q.Slugs})
+		}
+	}
+
+	return b
 }
 
 func (r *repositoryEE) Create(ctx context.Context, m *group.Group) error {
@@ -145,8 +160,8 @@ func (r *repositoryEE) IsSlugExistsInOrganization(ctx context.Context, orgID uui
 	return true, nil
 }
 
-func (r *repositoryEE) ListPages(ctx context.Context, opts ...group.PageRepositoryOption) ([]*group.GroupPage, error) {
-	query, args, err := r.buildPageQuery(ctx, opts...)
+func (r *repositoryEE) ListPages(ctx context.Context, queries ...group.PageQuery) ([]*group.GroupPage, error) {
+	query, args, err := r.buildPageQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +174,7 @@ func (r *repositoryEE) ListPages(ctx context.Context, opts ...group.PageReposito
 	return m, nil
 }
 
-func (r *repositoryEE) buildPageQuery(ctx context.Context, opts ...group.PageRepositoryOption) (string, []any, error) {
+func (r *repositoryEE) buildPageQuery(ctx context.Context, queries ...group.PageQuery) (string, []any, error) {
 	q := r.builder.Select(
 		`gp."id"`,
 		`gp."group_id"`,
@@ -169,9 +184,7 @@ func (r *repositoryEE) buildPageQuery(ctx context.Context, opts ...group.PageRep
 	).
 		From(`"group_page" gp`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyPageQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -179,6 +192,25 @@ func (r *repositoryEE) buildPageQuery(ctx context.Context, opts ...group.PageRep
 	}
 
 	return query, args, err
+}
+
+func (r *repositoryEE) applyPageQueries(b sq.SelectBuilder, queries ...group.PageQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case group.PageByOrganizationIDQuery:
+			b = b.
+				InnerJoin(`"group" g ON g."id" = gp."group_id"`).
+				Where(sq.Eq{`g."organization_id"`: q.OrganizationID})
+		case group.PageByPageIDsQuery:
+			b = b.Where(sq.Eq{`gp."page_id"`: q.PageIDs})
+		case group.PageByEnvironmentIDQuery:
+			b = b.
+				InnerJoin(`"page" p ON p."id" = gp."page_id"`).
+				Where(sq.Eq{`p."environment_id"`: q.EnvironmentID})
+		}
+	}
+
+	return b
 }
 
 func (r *repositoryEE) BulkInsertPages(ctx context.Context, pages []*group.GroupPage) error {
