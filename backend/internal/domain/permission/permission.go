@@ -1,14 +1,18 @@
 package permission
 
-import "github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+import (
+	"golang.org/x/exp/slices"
+
+	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+)
 
 type Operation string
 
 const (
 	OperationEditOrganization   Operation = "EDIT_ORGANIZATION"
 	OperationEditBilling        Operation = "EDIT_BILLING"
-	OperationEditLiveModeAPIKey Operation = "EDIT_LIVE_MODE_API_KEY"
-	OperationEditDevModeAPIKey  Operation = "EDIT_DEV_MODE_API_KEY"
+	OperationEditLiveModeAPIKey Operation = "EDIT_LIVE_MODE_API_KEY" // #nosec G101
+	OperationEditDevModeAPIKey  Operation = "EDIT_DEV_MODE_API_KEY"  // #nosec G101
 	OperationEditEnvironment    Operation = "EDIT_ENVIRONMENT"
 	OperationEditGroup          Operation = "EDIT_GROUP"
 	OperationEditUser           Operation = "EDIT_USER"
@@ -29,10 +33,5 @@ func CanPerform(role user.UserOrganizationRole, op Operation) bool {
 	if !ok {
 		return false
 	}
-	for _, r := range allowed {
-		if r == role {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(allowed, role)
 }
