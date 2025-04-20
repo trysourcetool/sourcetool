@@ -4,66 +4,86 @@ sidebar_position: 14
 
 # Radio
 
-The Radio widget provides a group of mutually exclusive options where users can select only one option at a time.
+`Radio` renders a mutually‑exclusive choice set. Users can select **exactly one** option.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `int32` | `None` | Current selected option index |
+```go
+choice := ui.Radio(label string, opts ...radio.Option) *radio.Value
+```
 
-## Properties
+### Return value
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the radio group |
-| `options` | `[]string` | `[]` | Array of option labels for each radio button |
-| `default_value` | `int32` | `None` | Initial selected option index |
-| `required` | `bool` | `False` | Whether a selection is required |
-| `disabled` | `bool` | `False` | Whether the entire radio group is disabled |
+```go
+type Value struct {
+    Value string // selected option label
+    Index int    // zero‑based index in the options slice
+}
+```
+If the user has never chosen an option and no default is set, `choice` is `nil`. citeturn14file19
+
+## Option helpers
+
+| Helper | Description | Default |
+|--------|-------------|---------|
+| `radio.WithOptions("A", "B", ...)` | Provide the list of choices. **Required.** | – |
+| `radio.WithDefaultValue("B")` | Pre‑select an option on first render (match by label). | none |
+| `radio.WithRequired(true)` | Inside a [`Form`](./form) the submit button is blocked until a choice is made. | `false` |
+| `radio.WithDisabled(true)` | Greys out the entire group. | `false` |
+| `radio.WithFormatFunc(func(v string,i int)string)` | Transform the *displayed* label (e.g. capitalise) while keeping the underlying value intact. | identity |
+
+## Behaviour notes
+
+* **State type** – backend stores a single `int32` index.
+* `WithDefaultValue` must match one of the option strings; otherwise no default is applied.
+* Changing the order of `WithOptions` between deployments will alter existing state.
+* `FormatFunc` is applied every render; it cannot depend on external mutable state unless the page is rerun.
 
 ## Examples
 
-### Basic Radio Group
+### Basic radio
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/radio"
+color := ui.Radio("Primary colour",
+    radio.WithOptions("Red", "Green", "Blue"),
 )
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic radio group
-        radio := ui.Radio("Gender", radio.Options("male", "female", "Non-binary", "Prefer not to say"))
-    }
+if color != nil {
+    fmt.Println("selected:", color.Value)
 }
 ```
 
-### Radio Group with Default Selection
+### Default & required
 
 ```go
-// Create a radio group with default selection
-radio := ui.Radio("Gender", radio.Options("male", "female", "Non-binary", "Prefer not to say"), radio.DefaultValue("male"))
+ui.Radio("Plan",
+    radio.WithOptions("Free", "Pro", "Enterprise"),
+    radio.WithDefaultValue("Pro"),
+    radio.WithRequired(true),
+)
 ```
 
-### Required Radio Group
+### Custom label formatting
 
 ```go
-// Create a required radio group
-radio := ui.Radio("Gender", radio.Options("male", "female", "Non-binary", "Prefer not to say"), radio.Required(true))
+format := func(v string, _ int) string { return strings.ToUpper(v) }
+ui.Radio("Priority",
+    radio.WithOptions("low", "medium", "high"),
+    radio.WithFormatFunc(format),
+)
 ```
 
-### Disabled Radio Group
+### Disabled group
 
 ```go
-// Create a disabled radio group
-radio := ui.Radio("Gender", radio.Options("male", "female", "Non-binary", "Prefer not to say"), radio.DefaultValue("male"), radio.Disabled(true))
+ui.Radio("Archived",
+    radio.WithOptions("Yes", "No"),
+    radio.WithDisabled(true),
+)
 ```
 
-## Related Components
+---
 
-- [Select](./select) - Alternative for selecting a single option from a dropdown
-- [CheckboxGroup](./checkbox-group) - For selecting multiple options from a group
+### Related widgets
+
+* [`Select`](./select) – dropdown single‑choice.  
+* [`CheckboxGroup`](./checkbox-group) – multi‑choice checklist.

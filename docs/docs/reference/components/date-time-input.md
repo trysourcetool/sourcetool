@@ -2,71 +2,79 @@
 sidebar_position: 9
 ---
 
-# Date Time Input
+# Date Time Input
 
-The Date Time Input widget provides a specialized input field for selecting both date and time with calendar and time picker interfaces.
+`DateTimeInput` combines a calendar and clock picker. It returns the full timestamp the user chose.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `string` | `None` | Current selected date and time value |
+```go
+dt := ui.DateTimeInput(label string, opts ...datetimeinput.Option) *time.Time
+```
 
-## Properties
+`dt` is `nil` until the user selects a value.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Label text displayed above the input |
-| `placeholder` | `string` | `""` | Placeholder text displayed when no date/time is selected |
-| `default_value` | `string` | `None` | Initial date and time value |
-| `required` | `bool` | `False` | Whether a date and time selection is required |
-| `disabled` | `bool` | `False` | Whether the input is disabled |
-| `format` | `string` | `"YYYY-MM-DD HH:mm:ss"` | Format string for date and time display |
-| `max_value` | `string` | `None` | Maximum selectable date and time |
-| `min_value` | `string` | `None` | Minimum selectable date and time |
+## Option helpers
+
+| Helper | Purpose | Default |
+|--------|---------|---------|
+| `datetimeinput.WithPlaceholder("YYYY‑MM‑DD HH:mm")` | Placeholder when empty | `""` |
+| `datetimeinput.WithDefaultValue(time.Now())` | Pre‑fill on first render | *nil* |
+| `datetimeinput.WithRequired(true)` | Require a value inside a [`Form`](./form) | `false` |
+| `datetimeinput.WithDisabled(true)` | Read‑only field | `false` |
+| `datetimeinput.WithFormat("MM/DD/YYYY HH:mm")` | Display / parse format (Moment‑style tokens) | `"YYYY/MM/DD HH:MM:SS"` |
+| `datetimeinput.WithMaxValue(t)` | Latest selectable timestamp | *nil* |
+| `datetimeinput.WithMinValue(t)` | Earliest selectable timestamp | *nil* |
+| `datetimeinput.WithLocation(loc)` | Time‑zone for parsing & formatting | `time.Local` |
+
+## Behaviour
+
+* **State type** – stored as `time.Time`. Changing `WithFormat` only affects rendering, not stored value.
+* **Validation** – `Required`, `Min/MaxValue` enforce constraints client‑side before rerun.
+* **Time‑zone** – all conversions use the provided `Location`; this matters when comparing dates across zones.
 
 ## Examples
 
-### Basic Date Time Input
+### Basic input
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/datetimeinput"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic date time input
-        dateTimeInput := ui.DateTimeInput("Date Time", datetimeinput.Placeholder("Select date and time"))
-    }
+ev := ui.DateTimeInput("Event time")
+if ev != nil {
+    fmt.Println("selected:", ev.Format(time.RFC3339))
 }
 ```
 
-### Date Time Input with Custom Format
+### Custom format + placeholder
 
 ```go
-// Create a date time input with custom format
-dateTimeInput := ui.DateTimeInput("Date Time", datetimeinput.Placeholder("Select date and time"), datetimeinput.Format("YYYY-MM-DD HH:mm"))
+ui.DateTimeInput("Start",
+    datetimeinput.WithPlaceholder("MM/DD/YYYY HH:mm"),
+    datetimeinput.WithFormat("MM/DD/YYYY HH:mm"),
+)
 ```
 
-### Date Time Input with Range Constraints
+### Range‑restricted picker
 
 ```go
-// Create a date time input with range constraints
-dateTimeInput := ui.DateTimeInput("Date Time", datetimeinput.Placeholder("Select date and time"), datetimeinput.MinValue(time.Now()), datetimeinput.MaxValue(time.Now().AddDate(0, 0, 30)))
+now := time.Now()
+ui.DateTimeInput("Deadline",
+    datetimeinput.WithMinValue(now),
+    datetimeinput.WithMaxValue(now.Add(24*time.Hour)),
+)
 ```
 
-### Disabled Date Time Input with Default Value
+### Pre‑selected, disabled
 
 ```go
-// Create a disabled date time input with a default value
-dateTimeInput := ui.DateTimeInput("Date Time", datetimeinput.Placeholder("Select date and time"), datetimeinput.DefaultValue(time.Now()))
+ui.DateTimeInput("Created",
+    datetimeinput.WithDefaultValue(time.Now()),
+    datetimeinput.WithDisabled(true),
+)
 ```
 
-## Related Components
+---
 
-- [DateInput](./date-input) - For selecting only a date without time
-- [TimeInput](./time-input) - For selecting only time without a date
+### Related widgets
+
+* [`DateInput`](./date-input) – date only.  
+* [`TimeInput`](./time-input) – time only.
