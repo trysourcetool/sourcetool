@@ -40,13 +40,13 @@ func (m *MiddlewareCE) Auth(next http.Handler) http.Handler {
 		ctx := r.Context()
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		o, err := m.getCurrentOrganization(ctx, subdomain)
 		if err != nil {
-			internal.WriteErrJSON(ctx, w, errdefs.ErrUnauthenticated(err))
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 

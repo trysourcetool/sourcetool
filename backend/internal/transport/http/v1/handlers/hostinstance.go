@@ -5,6 +5,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/hostinstance"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/render"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 )
@@ -31,19 +32,19 @@ func (h *HostInstanceHandler) Ping(w http.ResponseWriter, r *http.Request) {
 		PageID: internal.NilValue(r.URL.Query().Get("pageId")),
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Ping(r.Context(), mapper.PingHostInstanceRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.PingHostInstanceOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.PingHostInstanceOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }

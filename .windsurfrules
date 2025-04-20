@@ -9,7 +9,7 @@
 | **infra** `internal/infra/**`      | DB/email/pubsub/ws **adapters** implementing ports  | **app**, **domain**, std lib, 3rd‑party                |
 | **transport** `internal/transport/**` | HTTP & WebSocket routers/handlers/middleware     | **app**, **domain**, **infra**, std lib, 3rd‑party     |
 | **enterprise edition** `ee/internal/**` | Same 4 layers, same rules                      | follow same import rules                               |
-| **support** `internal/config`, `internal/logger`, `internal/jwt`, `internal/errdefs`, `internal/context.go`, `internal/url.go`, `internal/http.go`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
+| **support** `internal/config`, `internal/logger`, `internal/jwt`, `internal/errdefs`, `internal/context.go`, `internal/url.go`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
 
 ### Dependency direction
 

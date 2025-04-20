@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/apikey"
+	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/render"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 )
@@ -34,19 +34,19 @@ func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Get(r.Context(), mapper.GetAPIKeyRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.GetAPIKeyOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.GetAPIKeyOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
@@ -62,12 +62,12 @@ func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.ListAPIKeysOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.ListAPIKeysOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
@@ -86,23 +86,23 @@ func (h *APIKeyHandler) List(w http.ResponseWriter, r *http.Request) {
 func (h *APIKeyHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateAPIKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Create(r.Context(), mapper.CreateAPIKeyRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.CreateAPIKeyOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.CreateAPIKeyOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
@@ -125,23 +125,23 @@ func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Update(r.Context(), mapper.UpdateAPIKeyRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.UpdateAPIKeyOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.UpdateAPIKeyOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
@@ -160,19 +160,19 @@ func (h *APIKeyHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		APIKeyID: chi.URLParam(r, "apiKeyID"),
 	}
 
-	if err := internal.ValidateRequest(req); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := validateRequest(req); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Delete(r.Context(), mapper.DeleteAPIKeyRequestToInput(req))
 	if err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+		render.Error(r.Context(), w, err)
 		return
 	}
 
-	if err := internal.WriteJSON(w, http.StatusOK, mapper.DeleteAPIKeyOutputToResponse(out)); err != nil {
-		internal.WriteErrJSON(r.Context(), w, err)
+	if err := render.JSON(w, http.StatusOK, mapper.DeleteAPIKeyOutputToResponse(out)); err != nil {
+		render.Error(r.Context(), w, err)
 		return
 	}
 }
