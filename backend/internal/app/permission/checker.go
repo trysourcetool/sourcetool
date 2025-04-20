@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
@@ -24,8 +24,8 @@ func NewChecker(repo port.Repositories) *Checker {
 
 // AuthorizeOperation checks if the current user can perform the given operation.
 func (c *Checker) AuthorizeOperation(ctx context.Context, op domainperm.Operation) error {
-	currentUser := ctxutil.CurrentUser(ctx)
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	if currentUser == nil || currentOrg == nil {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	wsSvc "github.com/trysourcetool/sourcetool/backend/internal/app/ws"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/ws/message"
@@ -62,7 +62,7 @@ func (h *WebSocketHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 
-	ctx := ctxutil.NewBackgroundContext(r.Context())
+	ctx := ctxdata.NewBackgroundContext(r.Context())
 
 	done := make(chan struct{})
 	defer func() {

@@ -10,7 +10,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	domainperm "github.com/trysourcetool/sourcetool/backend/internal/domain/permission"
@@ -46,8 +46,8 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 }
 
 func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
-	currentUser := ctxutil.CurrentUser(ctx)
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	orgAccess, err := s.Repository.User().GetOrganizationAccess(ctx,
 		user.OrganizationAccessByUserID(currentUser.ID),
 		user.OrganizationAccessByOrganizationID(currentOrg.ID))
@@ -62,7 +62,7 @@ func (s *ServiceCE) GetMe(ctx context.Context) (*dto.GetMeOutput, error) {
 }
 
 func (s *ServiceCE) UpdateMe(ctx context.Context, in dto.UpdateMeInput) (*dto.UpdateMeOutput, error) {
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 
 	if in.FirstName != nil {
 		currentUser.FirstName = ptrconv.SafeValue(in.FirstName)
@@ -109,8 +109,8 @@ func (s *ServiceCE) SendUpdateMeEmailInstructions(ctx context.Context, in dto.Se
 	}
 
 	// Get current user and organization
-	currentUser := ctxutil.CurrentUser(ctx)
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 
 	// Create token for email update
 	tok, err := createUpdateEmailToken(currentUser.ID.String(), in.Email)
@@ -146,7 +146,7 @@ func (s *ServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput
 		return nil, err
 	}
 
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 	if u.ID != currentUser.ID {
 		return nil, errdefs.ErrUnauthenticated(errors.New("unauthorized"))
 	}
@@ -175,7 +175,7 @@ func (s *ServiceCE) UpdateMeEmail(ctx context.Context, in dto.UpdateMeEmailInput
 }
 
 func (s *ServiceCE) List(ctx context.Context) (*dto.ListUsersOutput, error) {
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 
 	users, err := s.Repository.User().List(ctx, user.ByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -222,7 +222,7 @@ func (s *ServiceCE) Update(ctx context.Context, in dto.UpdateUserInput) (*dto.Up
 		return nil, err
 	}
 
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
@@ -285,8 +285,8 @@ func (s *ServiceCE) Delete(ctx context.Context, in dto.DeleteUserInput) error {
 		return err
 	}
 
-	currentUser := ctxutil.CurrentUser(ctx)
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
@@ -367,8 +367,8 @@ func (s *ServiceCE) CreateUserInvitations(ctx context.Context, in dto.CreateUser
 		return nil, err
 	}
 
-	o := ctxutil.CurrentOrganization(ctx)
-	u := ctxutil.CurrentUser(ctx)
+	o := ctxdata.CurrentOrganization(ctx)
+	u := ctxdata.CurrentUser(ctx)
 
 	invitations := make([]*user.UserInvitation, 0)
 	emailURLs := make(map[string]string)
@@ -441,12 +441,12 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 		return nil, err
 	}
 
-	o := ctxutil.CurrentOrganization(ctx)
+	o := ctxdata.CurrentOrganization(ctx)
 	if userInvitation.OrganizationID != o.ID {
 		return nil, errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 	}
 
-	u := ctxutil.CurrentUser(ctx)
+	u := ctxdata.CurrentUser(ctx)
 
 	tok, err := createInvitationToken(userInvitation.Email)
 	if err != nil {
@@ -471,7 +471,7 @@ func (s *ServiceCE) ResendUserInvitation(ctx context.Context, in dto.ResendUserI
 // getUserOrganizationInfo is a convenience wrapper that retrieves organization
 // and access information for the current user from the context.
 func (s *ServiceCE) getUserOrganizationInfo(ctx context.Context) (*organization.Organization, *user.UserOrganizationAccess, error) {
-	return s.getOrganizationInfo(ctx, ctxutil.CurrentUser(ctx))
+	return s.getOrganizationInfo(ctx, ctxdata.CurrentUser(ctx))
 }
 
 // getOrganizationInfo retrieves organization and access information for the specified user.
@@ -481,7 +481,7 @@ func (s *ServiceCE) getOrganizationInfo(ctx context.Context, u *user.User) (*org
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	subdomain := ctxutil.Subdomain(ctx)
+	subdomain := ctxdata.Subdomain(ctx)
 	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
 
 	// Different strategies for cloud vs. self-hosted or auth subdomain

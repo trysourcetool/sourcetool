@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	exceptionv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/exception/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/logger"
@@ -29,7 +29,7 @@ func SendResponse(conn *websocket.Conn, msg *websocketv1.Message) error {
 }
 
 func SendErrResponse(ctx context.Context, conn *websocket.Conn, id string, err error) {
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
 		email = currentUser.Email

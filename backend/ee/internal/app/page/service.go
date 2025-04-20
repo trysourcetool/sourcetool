@@ -8,7 +8,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	pageSvc "github.com/trysourcetool/sourcetool/backend/internal/app/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
@@ -30,7 +30,7 @@ func NewServiceEE(d *port.Dependencies) *serviceEE {
 }
 
 func (s *serviceEE) List(ctx context.Context, in dto.ListPagesInput) (*dto.ListPagesOutput, error) {
-	o := ctxutil.CurrentOrganization(ctx)
+	o := ctxdata.CurrentOrganization(ctx)
 
 	envID, err := uuid.FromString(in.EnvironmentID)
 	if err != nil {

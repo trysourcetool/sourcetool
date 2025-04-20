@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/html"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
@@ -48,7 +48,7 @@ func WriteBytes(w http.ResponseWriter, status int, b []byte) error {
 }
 
 func WriteErrJSON(ctx context.Context, w http.ResponseWriter, err error) {
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
 		email = currentUser.Email

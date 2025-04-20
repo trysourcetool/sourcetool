@@ -10,7 +10,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
@@ -55,7 +55,7 @@ func (s *ServiceCE) Create(ctx context.Context, in dto.CreateOrganizationInput) 
 		Subdomain: subdomain,
 	}
 
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 
 	orgAccess := &user.UserOrganizationAccess{
 		ID:             uuid.Must(uuid.NewV4()),

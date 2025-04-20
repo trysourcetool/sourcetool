@@ -9,7 +9,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
@@ -56,7 +56,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return err
 	}
 
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	if currentOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
@@ -111,7 +111,7 @@ func (s *ServiceCE) InitializeClient(ctx context.Context, conn *websocket.Conn, 
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("no available host instances"))
 	}
 
-	currentUser := ctxutil.CurrentUser(ctx)
+	currentUser := ctxdata.CurrentUser(ctx)
 
 	var sess *session.Session
 	var sessionExists bool

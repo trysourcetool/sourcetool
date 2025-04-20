@@ -9,7 +9,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
@@ -134,7 +134,7 @@ func (m *MiddlewareCE) AuthUser(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -149,7 +149,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
@@ -168,7 +168,7 @@ func (m *MiddlewareCE) AuthUserWithOrganization(next http.Handler) http.Handler 
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -184,7 +184,7 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 			return
 		}
 
-		ctx = context.WithValue(ctx, ctxutil.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, ctxdata.CurrentUserCtxKey, u)
 
 		subdomain, err := m.getSubdomainIfCloudEdition(r)
 		if err != nil {
@@ -204,7 +204,7 @@ func (m *MiddlewareCE) AuthUserWithOrganizationIfSubdomainExists(next http.Handl
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -228,7 +228,7 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 				return
 			}
 
-			ctx = context.WithValue(ctx, ctxutil.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, ctxdata.CurrentOrganizationCtxKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -238,7 +238,7 @@ func (m *MiddlewareCE) AuthOrganizationIfSubdomainExists(next http.Handler) http
 func (m *MiddlewareCE) SetSubdomain(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		subdomain, _ := httpx.GetSubdomainFromHost(r.Host)
-		ctx := context.WithValue(r.Context(), ctxutil.SubdomainCtxKey, subdomain)
+		ctx := context.WithValue(r.Context(), ctxdata.SubdomainCtxKey, subdomain)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -8,7 +8,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxutil"
+	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
@@ -29,7 +29,7 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
-	currentOrg := ctxutil.CurrentOrganization(ctx)
+	currentOrg := ctxdata.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
