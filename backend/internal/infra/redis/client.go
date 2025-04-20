@@ -7,8 +7,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	redisv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/redis/v1"
 )
 

@@ -3,8 +3,8 @@ package mapper
 import (
 	"strconv"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/responses"
 )

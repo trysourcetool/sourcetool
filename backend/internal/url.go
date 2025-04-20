@@ -1,4 +1,4 @@
-package urlx
+package internal
 
 import (
 	"net/url"

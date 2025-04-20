@@ -6,14 +6,14 @@ import (
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/auth"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/pkg/urlx"
 )
 
 func buildSaveAuthURL(subdomain string) (string, error) {
-	return urlx.BuildURL(config.Config.OrgBaseURL(subdomain), auth.SaveAuthPath, nil)
+	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), auth.SaveAuthPath, nil)
 }
 
 func createMagicLinkToken(email string) (string, error) {

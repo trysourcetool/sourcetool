@@ -8,11 +8,11 @@ alwaysApply: false
 | Layer & path                       | Role (what lives here)                              | May **import**                                         |
 |------------------------------------|-----------------------------------------------------|--------------------------------------------------------|
 | **domain** `internal/domain/**`    | Entities, value objects, **repository ports**       | **std lib**, minimal 3rd‑party (uuid, errors)          |
-| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, `ctxdata`, `pkg/**`, std lib, 3rd‑party    |
+| **app** `internal/app/**`          | DTOs, use‑cases, validation, *service ports*        | **domain**, std lib, 3rd‑party                         |
 | **infra** `internal/infra/**`      | DB/email/pubsub/ws **adapters** implementing ports  | **app**, **domain**, std lib, 3rd‑party                |
 | **transport** `internal/transport/**` | HTTP & WebSocket routers/handlers/middleware     | **app**, **domain**, **infra**, std lib, 3rd‑party     |
 | **enterprise edition** `ee/internal/**` | Same 4 layers, same rules                      | follow same import rules                               |
-| **support** `config`, `logger`, `ctxdata`, `jwt`, `pkg/**`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
+| **support** `internal/config`, `internal/logger`, `internal/jwt`, `internal/errdefs`, `internal/context.go`, `internal/url.go`, `internal/http.go`, `pb/go/**` | Cross‑cutting helpers & generated code | usable from any layer (never import *transport*)       |
 
 ### Dependency direction
 
@@ -77,6 +77,5 @@ Keep all CE/EE splits either **at the adapter level** (`infra/postgres/foo/repos
 
 # Appendix
 
-* **Fixtures** (`fixtures/**`) and **migrations** (`migrations/**`) live at repo root; callable only from `cmd/server` during dev/test.
-* **pkg/** contains generic helpers (`errdefs`, `ptrconv`, `urlx`, `httpx`) – importable anywhere.
-* Prefer `ctxdata` helpers to access scoped data instead of passing primitives.
+* **Fixtures** (`internal/fixtures/**`) and **migrations** (`migrations/**`) live at repo root; callable only from `cmd/server` during dev/test.
+* Prefer `internal/context.go` helpers to access scoped data instead of passing primitives.

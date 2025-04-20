@@ -6,14 +6,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/dto"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/ctxdata"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/hostinstance"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
-	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
 type Service interface {
@@ -29,7 +28,7 @@ func NewServiceCE(d *port.Dependencies) *ServiceCE {
 }
 
 func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dto.PingHostInstanceOutput, error) {
-	currentOrg := ctxdata.CurrentOrganization(ctx)
+	currentOrg := internal.CurrentOrganization(ctx)
 	if currentOrg == nil {
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
@@ -38,7 +37,7 @@ func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dt
 		hostinstance.ByOrganizationID(currentOrg.ID),
 	}
 	if in.PageID != nil {
-		pageID, err := uuid.FromString(ptrconv.SafeValue(in.PageID))
+		pageID, err := uuid.FromString(internal.SafeValue(in.PageID))
 		if err != nil {
 			return nil, errdefs.ErrInvalidArgument(err)
 		}

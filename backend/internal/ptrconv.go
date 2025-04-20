@@ -1,4 +1,4 @@
-package ptrconv
+package internal
 
 import "github.com/samber/lo"
 

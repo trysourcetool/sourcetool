@@ -9,13 +9,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/apikey"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/environment"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/pkg/ptrconv"
 )
 
 func Load(ctx context.Context, repo port.Repository) error {
@@ -51,7 +51,7 @@ func Load(ctx context.Context, repo port.Repository) error {
 
 		o := &organization.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
-			Subdomain: ptrconv.NilValue("acme"),
+			Subdomain: internal.NilValue("acme"),
 		}
 		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err

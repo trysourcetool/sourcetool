@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/user"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/mapper"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/transport/http/v1/responses"
-	"github.com/trysourcetool/sourcetool/backend/pkg/httpx"
 )
 
 type UserHandler struct {
@@ -34,12 +34,12 @@ func NewUserHandler(service user.Service) *UserHandler {
 func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.GetMe(r.Context())
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.GetMeOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.GetMeOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -56,23 +56,23 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	var req requests.UpdateMeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.UpdateMe(r.Context(), mapper.UpdateMeRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.UpdateMeOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.UpdateMeOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -89,25 +89,25 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) SendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Request) {
 	var req requests.SendUpdateMeEmailInstructionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	if err := h.service.SendUpdateMeEmailInstructions(r.Context(), mapper.SendUpdateMeEmailInstructionsRequestToInput(req)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
+	if err := internal.WriteJSON(w, http.StatusOK, &responses.StatusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully sent update email instructions",
 	}); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -124,23 +124,23 @@ func (h *UserHandler) SendUpdateMeEmailInstructions(w http.ResponseWriter, r *ht
 func (h *UserHandler) UpdateMeEmail(w http.ResponseWriter, r *http.Request) {
 	var req requests.UpdateMeEmailRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.UpdateMeEmail(r.Context(), mapper.UpdateMeEmailRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.UpdateMeEmailOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.UpdateMeEmailOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -156,12 +156,12 @@ func (h *UserHandler) UpdateMeEmail(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	out, err := h.service.List(r.Context())
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.ListUsersOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.ListUsersOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -181,23 +181,23 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		UserID: chi.URLParam(r, "userID"),
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.Update(r.Context(), mapper.UpdateUserRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.UpdateUserOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.UpdateUserOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -215,13 +215,13 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	req := requests.DeleteUserRequest{
 		UserID: chi.URLParam(r, "userID"),
 	}
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	if err := h.service.Delete(r.Context(), mapper.DeleteUserRequestToInput(req)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
@@ -230,8 +230,8 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		Message: "Successfully deleted user",
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, response); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, response); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -250,19 +250,19 @@ func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Reques
 		InvitationID: chi.URLParam(r, "invitationID"),
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.ResendUserInvitation(r.Context(), mapper.ResendUserInvitationRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.ResendUserInvitationOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.ResendUserInvitationOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }
@@ -279,23 +279,23 @@ func (h *UserHandler) ResendUserInvitation(w http.ResponseWriter, r *http.Reques
 func (h *UserHandler) CreateUserInvitations(w http.ResponseWriter, r *http.Request) {
 	var req requests.CreateUserInvitationsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.ValidateRequest(req); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.ValidateRequest(req); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
 	out, err := h.service.CreateUserInvitations(r.Context(), mapper.CreateUserInvitationsRequestToInput(req))
 	if err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 
-	if err := httpx.WriteJSON(w, http.StatusOK, mapper.CreateUserInvitationsOutputToResponse(out)); err != nil {
-		httpx.WriteErrJSON(r.Context(), w, err)
+	if err := internal.WriteJSON(w, http.StatusOK, mapper.CreateUserInvitationsOutputToResponse(out)); err != nil {
+		internal.WriteErrJSON(r.Context(), w, err)
 		return
 	}
 }

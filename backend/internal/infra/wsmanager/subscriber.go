@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
 const (
