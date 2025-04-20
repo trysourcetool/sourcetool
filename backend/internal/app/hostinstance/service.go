@@ -34,7 +34,7 @@ func (s *ServiceCE) Ping(ctx context.Context, in dto.PingHostInstanceInput) (*dt
 		return nil, errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
-	hostInstanceOpts := []hostinstance.RepositoryOption{
+	hostInstanceOpts := []hostinstance.Query{
 		hostinstance.ByOrganizationID(currentOrg.ID),
 	}
 	if in.PageID != nil {

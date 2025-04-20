@@ -108,7 +108,7 @@ func (m *MiddlewareCE) getCurrentUser(ctx context.Context, r *http.Request, toke
 }
 
 func (m *MiddlewareCE) getCurrentOrganization(ctx context.Context, subdomain string) (*organization.Organization, error) {
-	opts := []organization.RepositoryOption{}
+	opts := []organization.Query{}
 	if subdomain != "" && subdomain != "auth" {
 		opts = append(opts, organization.BySubdomain(subdomain))
 	}

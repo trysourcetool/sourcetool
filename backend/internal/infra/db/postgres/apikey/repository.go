@@ -24,8 +24,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...apikey.RepositoryOption) (*apikey.APIKey, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...apikey.Query) (*apikey.APIKey, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...apikey.RepositoryOption)
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...apikey.RepositoryOption) ([]*apikey.APIKey, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...apikey.Query) ([]*apikey.APIKey, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...apikey.RepositoryOption
 	return m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...apikey.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...apikey.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`ak."id"`,
 		`ak."organization_id"`,
@@ -68,9 +68,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...apikey.Repository
 	).
 		From(`"api_key" ak`)
 
-	for _, opt := range opts {
-		q = opt.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -78,6 +76,26 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...apikey.Repository
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...apikey.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case apikey.ByIDQuery:
+			b = b.Where(sq.Eq{`ak."id"`: q.ID})
+		case apikey.ByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`ak."organization_id"`: q.OrganizationID})
+		case apikey.ByEnvironmentIDQuery:
+			b = b.Where(sq.Eq{`ak."environment_id"`: q.EnvironmentID})
+		case apikey.ByEnvironmentIDsQuery:
+			b = b.Where(sq.Eq{`ak."environment_id"`: q.EnvironmentIDs})
+		case apikey.ByUserIDQuery:
+			b = b.Where(sq.Eq{`ak."user_id"`: q.UserID})
+		case apikey.ByKeyQuery:
+			b = b.Where(sq.Eq{`ak."key"`: q.Key})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *apikey.APIKey) error {

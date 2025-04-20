@@ -24,8 +24,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...environment.RepositoryOption) (*environment.Environment, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...environment.Query) (*environment.Environment, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...environment.RepositoryOp
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...environment.RepositoryOption) ([]*environment.Environment, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...environment.Query) ([]*environment.Environment, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,13 +55,11 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...environment.RepositoryO
 	return m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...environment.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...environment.Query) (string, []any, error) {
 	q := r.builder.Select(r.columns()...).
 		From(`"environment" e`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -69,6 +67,20 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...environment.Repos
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...environment.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case environment.ByIDQuery:
+			b = b.Where(sq.Eq{`e."id"`: q.ID})
+		case environment.ByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`e."organization_id"`: q.OrganizationID})
+		case environment.BySlugQuery:
+			b = b.Where(sq.Eq{`e."slug"`: q.Slug})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *environment.Environment) error {

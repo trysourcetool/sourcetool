@@ -1143,7 +1143,7 @@ func (s *ServiceCE) RefreshToken(ctx context.Context, in dto.RefreshTokenInput) 
 func (s *ServiceCE) Logout(ctx context.Context) (*dto.LogoutOutput, error) {
 	u := ctxutil.CurrentUser(ctx)
 
-	orgAccessOpts := []user.OrganizationAccessRepositoryOption{
+	orgAccessOpts := []user.OrganizationAccessQuery{
 		user.OrganizationAccessByUserID(u.ID),
 	}
 

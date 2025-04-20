@@ -23,8 +23,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...hostinstance.RepositoryOption) (*hostinstance.HostInstance, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...hostinstance.Query) (*hostinstance.HostInstance, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +40,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...hostinstance.RepositoryO
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...hostinstance.RepositoryOption) ([]*hostinstance.HostInstance, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...hostinstance.Query) ([]*hostinstance.HostInstance, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...hostinstance.Repository
 	return m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...hostinstance.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...hostinstance.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`hi."id"`,
 		`hi."organization_id"`,
@@ -67,9 +67,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...hostinstance.Repo
 	).
 		From(`"host_instance" hi`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -77,6 +75,25 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...hostinstance.Repo
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...hostinstance.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case hostinstance.ByIDQuery:
+			b = b.Where(sq.Eq{`hi."id"`: q.ID})
+		case hostinstance.ByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`hi."organization_id"`: q.OrganizationID})
+		case hostinstance.ByAPIKeyIDQuery:
+			b = b.Where(sq.Eq{`hi."api_key_id"`: q.APIKeyID})
+		case hostinstance.ByAPIKeyQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
+				Where(sq.Eq{`ak."key"`: q.APIKey})
+		}
+	}
+
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *hostinstance.HostInstance) error {

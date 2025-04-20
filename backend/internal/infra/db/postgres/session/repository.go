@@ -23,8 +23,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...session.RepositoryOption) (*session.Session, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...session.Query) (*session.Session, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...session.RepositoryOption
 	return &m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...session.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...session.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`s."id"`,
 		`s."organization_id"`,
@@ -52,9 +52,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...session.Repositor
 	).
 		From(`"session" s`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -62,6 +60,17 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...session.Repositor
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...session.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case session.ByIDQuery:
+			b = b.Where(sq.Eq{`s."id"`: q.ID})
+		}
+	}
+
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *session.Session) error {

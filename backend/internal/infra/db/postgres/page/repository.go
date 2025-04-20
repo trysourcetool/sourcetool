@@ -25,8 +25,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...page.RepositoryOption) (*page.Page, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...page.Query) (*page.Page, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +42,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...page.RepositoryOption) (
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...page.RepositoryOption) ([]*page.Page, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...page.Query) ([]*page.Page, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...page.RepositoryOption) 
 	return m, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...page.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...page.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`p."id"`,
 		`p."organization_id"`,
@@ -70,9 +70,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...page.RepositoryOp
 	).
 		From(`"page" p`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -80,6 +78,34 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...page.RepositoryOp
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...page.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case page.ByIDQuery:
+			b = b.Where(sq.Eq{`p."id"`: q.ID})
+		case page.ByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`p."organization_id"`: q.OrganizationID})
+		case page.ByAPIKeyIDQuery:
+			b = b.Where(sq.Eq{`p."api_key_id"`: q.APIKeyID})
+		case page.BySessionIDQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
+				InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
+				Where(sq.Eq{`s."id"`: q.SessionID})
+		case page.ByEnvironmentIDQuery:
+			b = b.Where(sq.Eq{`p."environment_id"`: q.EnvironmentID})
+		case page.LimitQuery:
+			b = b.Limit(q.Limit)
+		case page.OffsetQuery:
+			b = b.Offset(q.Offset)
+		case page.OrderByQuery:
+			b = b.OrderBy(q.OrderBy)
+		}
+	}
+
+	return b
 }
 
 func (r *RepositoryCE) BulkInsert(ctx context.Context, m []*page.Page) error {

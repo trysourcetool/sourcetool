@@ -3,60 +3,34 @@ package environment
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
+type Query interface{ isQuery() }
+
+type ByIDQuery struct{ ID uuid.UUID }
+
+func (ByIDQuery) isQuery() {}
+
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
+
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (ByOrganizationIDQuery) isQuery() {}
+
+func ByOrganizationID(organizationID uuid.UUID) Query {
+	return ByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
-}
+type BySlugQuery struct{ Slug string }
 
-type byIDOption struct {
-	id uuid.UUID
-}
+func (BySlugQuery) isQuery() {}
 
-func (o byIDOption) isRepositoryOption() {}
-
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`e."id"`: o.id})
-}
-
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
-
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
-
-func (o byOrganizationIDOption) isRepositoryOption() {}
-
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`e."organization_id"`: o.id})
-}
-
-func BySlug(slug string) RepositoryOption {
-	return bySlugOption{slug: slug}
-}
-
-type bySlugOption struct {
-	slug string
-}
-
-func (o bySlugOption) isRepositoryOption() {}
-
-func (o bySlugOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`e."slug"`: o.slug})
-}
+func BySlug(slug string) Query { return BySlugQuery{Slug: slug} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*Environment, error)
-	List(context.Context, ...RepositoryOption) ([]*Environment, error)
+	Get(context.Context, ...Query) (*Environment, error)
+	List(context.Context, ...Query) ([]*Environment, error)
 	Create(context.Context, *Environment) error
 	Update(context.Context, *Environment) error
 	Delete(context.Context, *Environment) error

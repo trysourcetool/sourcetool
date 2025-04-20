@@ -3,102 +3,56 @@ package apikey
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type RepositoryOption interface {
-	Apply(sq.SelectBuilder) sq.SelectBuilder
-	isRepositoryOption()
+type Query interface{ isQuery() }
+
+type ByIDQuery struct{ ID uuid.UUID }
+
+func (ByIDQuery) isQuery() {}
+
+func ByID(id uuid.UUID) Query { return ByIDQuery{ID: id} }
+
+type ByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+
+func (ByOrganizationIDQuery) isQuery() {}
+
+func ByOrganizationID(organizationID uuid.UUID) Query {
+	return ByOrganizationIDQuery{OrganizationID: organizationID}
 }
 
-func ByID(id uuid.UUID) RepositoryOption {
-	return byIDOption{id: id}
+type ByEnvironmentIDQuery struct{ EnvironmentID uuid.UUID }
+
+func (ByEnvironmentIDQuery) isQuery() {}
+
+func ByEnvironmentID(environmentID uuid.UUID) Query {
+	return ByEnvironmentIDQuery{EnvironmentID: environmentID}
 }
 
-type byIDOption struct {
-	id uuid.UUID
+type ByEnvironmentIDsQuery struct{ EnvironmentIDs []uuid.UUID }
+
+func (ByEnvironmentIDsQuery) isQuery() {}
+
+func ByEnvironmentIDs(environmentIDs []uuid.UUID) Query {
+	return ByEnvironmentIDsQuery{EnvironmentIDs: environmentIDs}
 }
 
-func (o byIDOption) isRepositoryOption() {}
+type ByUserIDQuery struct{ UserID uuid.UUID }
 
-func (o byIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."id"`: o.id})
-}
+func (ByUserIDQuery) isQuery() {}
 
-func ByOrganizationID(id uuid.UUID) RepositoryOption {
-	return byOrganizationIDOption{id: id}
-}
+func ByUserID(userID uuid.UUID) Query { return ByUserIDQuery{UserID: userID} }
 
-type byOrganizationIDOption struct {
-	id uuid.UUID
-}
+type ByKeyQuery struct{ Key string }
 
-func (o byOrganizationIDOption) isRepositoryOption() {}
+func (ByKeyQuery) isQuery() {}
 
-func (o byOrganizationIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."organization_id"`: o.id})
-}
-
-func ByEnvironmentID(id uuid.UUID) RepositoryOption {
-	return byEnvironmentIDOption{id: id}
-}
-
-type byEnvironmentIDOption struct {
-	id uuid.UUID
-}
-
-func (o byEnvironmentIDOption) isRepositoryOption() {}
-
-func (o byEnvironmentIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."environment_id"`: o.id})
-}
-
-func ByEnvironmentIDs(ids []uuid.UUID) RepositoryOption {
-	return byEnvironmentIDsOption{ids: ids}
-}
-
-type byEnvironmentIDsOption struct {
-	ids []uuid.UUID
-}
-
-func (o byEnvironmentIDsOption) isRepositoryOption() {}
-
-func (o byEnvironmentIDsOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."environment_id"`: o.ids})
-}
-
-func ByUserID(id uuid.UUID) RepositoryOption {
-	return byUserIDOption{id: id}
-}
-
-type byUserIDOption struct {
-	id uuid.UUID
-}
-
-func (o byUserIDOption) isRepositoryOption() {}
-
-func (o byUserIDOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."user_id"`: o.id})
-}
-
-func ByKey(key string) RepositoryOption {
-	return byKeyOption{key: key}
-}
-
-type byKeyOption struct {
-	key string
-}
-
-func (o byKeyOption) isRepositoryOption() {}
-
-func (o byKeyOption) Apply(b sq.SelectBuilder) sq.SelectBuilder {
-	return b.Where(sq.Eq{`ak."key"`: o.key})
-}
+func ByKey(key string) Query { return ByKeyQuery{Key: key} }
 
 type Repository interface {
-	Get(context.Context, ...RepositoryOption) (*APIKey, error)
-	List(context.Context, ...RepositoryOption) ([]*APIKey, error)
+	Get(context.Context, ...Query) (*APIKey, error)
+	List(context.Context, ...Query) ([]*APIKey, error)
 	Create(context.Context, *APIKey) error
 	Update(context.Context, *APIKey) error
 	Delete(context.Context, *APIKey) error

@@ -23,11 +23,11 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...group.RepositoryOption) (*group.Group, error) {
+func (r *RepositoryCE) Get(ctx context.Context, queries ...group.Query) (*group.Group, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...group.RepositoryOption) ([]*group.Group, error) {
+func (r *RepositoryCE) List(ctx context.Context, queries ...group.Query) ([]*group.Group, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 
@@ -47,7 +47,7 @@ func (r *RepositoryCE) IsSlugExistsInOrganization(ctx context.Context, orgID uui
 	return false, errors.New("group functionality is not available in CE version")
 }
 
-func (r *RepositoryCE) ListPages(ctx context.Context, opts ...group.PageRepositoryOption) ([]*group.GroupPage, error) {
+func (r *RepositoryCE) ListPages(ctx context.Context, queries ...group.PageQuery) ([]*group.GroupPage, error) {
 	return nil, errors.New("group functionality is not available in CE version")
 }
 

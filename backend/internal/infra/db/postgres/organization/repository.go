@@ -24,8 +24,8 @@ func NewRepositoryCE(db db.DB) *RepositoryCE {
 	}
 }
 
-func (r *RepositoryCE) Get(ctx context.Context, opts ...organization.RepositoryOption) (*organization.Organization, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) Get(ctx context.Context, queries ...organization.Query) (*organization.Organization, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func (r *RepositoryCE) Get(ctx context.Context, opts ...organization.RepositoryO
 	return &m, nil
 }
 
-func (r *RepositoryCE) List(ctx context.Context, opts ...organization.RepositoryOption) ([]*organization.Organization, error) {
-	query, args, err := r.buildQuery(ctx, opts...)
+func (r *RepositoryCE) List(ctx context.Context, queries ...organization.Query) ([]*organization.Organization, error) {
+	query, args, err := r.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *RepositoryCE) List(ctx context.Context, opts ...organization.Repository
 	return orgs, nil
 }
 
-func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...organization.RepositoryOption) (string, []any, error) {
+func (r *RepositoryCE) buildQuery(ctx context.Context, queries ...organization.Query) (string, []any, error) {
 	q := r.builder.Select(
 		`o."id"`,
 		`o."subdomain"`,
@@ -64,9 +64,7 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...organization.Repo
 	).
 		From(`"organization" o`)
 
-	for _, o := range opts {
-		q = o.Apply(q)
-	}
+	q = r.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -74,6 +72,22 @@ func (r *RepositoryCE) buildQuery(ctx context.Context, opts ...organization.Repo
 	}
 
 	return query, args, err
+}
+
+func (r *RepositoryCE) applyQueries(b sq.SelectBuilder, queries ...organization.Query) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case organization.ByIDQuery:
+			b = b.Where(sq.Eq{`o."id"`: q.ID})
+		case organization.BySubdomainQuery:
+			b = b.Where(sq.Eq{`o."subdomain"`: q.Subdomain})
+		case organization.ByUserIDQuery:
+			b = b.
+				InnerJoin(`"user_organization_access" uoa ON uoa."organization_id" = o."id"`).
+				Where(sq.Eq{`uoa."user_id"`: q.ID})
+		}
+	}
+	return b
 }
 
 func (r *RepositoryCE) Create(ctx context.Context, m *organization.Organization) error {
