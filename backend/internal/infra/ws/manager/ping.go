@@ -16,8 +16,7 @@ const (
 	writeWait = 10 * time.Second
 
 	// Send pings to peer with this period.
-	clientPingPeriod = 30 * time.Second
-	hostPingPeriod   = 5 * time.Second
+	pingPeriod = 30 * time.Second
 )
 
 // pingConnection sends a ping control message to the given websocket connection.
@@ -38,7 +37,7 @@ func (m *manager) pingConnection(conn *websocket.Conn) error {
 // startHostPingLoop starts a goroutine that periodically sends ping messages to a connected host.
 // It stops when the host's done channel is closed.
 func (m *manager) startHostPingLoop(host *connectedHost) {
-	ticker := time.NewTicker(hostPingPeriod)
+	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 
 	for {
@@ -69,7 +68,7 @@ func (m *manager) startHostPingLoop(host *connectedHost) {
 // startClientPingLoop starts a goroutine that periodically sends ping messages to a connected client.
 // It stops when the client's done channel is closed.
 func (m *manager) startClientPingLoop(client *connectedClient) {
-	ticker := time.NewTicker(clientPingPeriod)
+	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 
 	for {
