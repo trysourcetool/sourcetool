@@ -19,9 +19,9 @@ import (
 	ee_transport "github.com/trysourcetool/sourcetool/backend/ee/internal/transport"
 	"github.com/trysourcetool/sourcetool/backend/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/email/smtp"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/pubsub/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/redis"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/smtp"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )

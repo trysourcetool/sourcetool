@@ -20,7 +20,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/page"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/session"
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
 )
 
 var _ port.Repository = (*repositoryEE)(nil)

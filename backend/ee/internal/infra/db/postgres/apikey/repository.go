@@ -3,8 +3,8 @@ package apikey
 import (
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/apikey"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/apikey"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
 )
 
 type repositoryEE struct {

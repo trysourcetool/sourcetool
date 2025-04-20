@@ -3,8 +3,8 @@ package environment
 import (
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/environment"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/environment"
 )
 
 type repositoryEE struct {

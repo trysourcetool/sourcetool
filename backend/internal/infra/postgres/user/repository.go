@@ -10,7 +10,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
 	"github.com/trysourcetool/sourcetool/backend/pkg/errdefs"
 )
 

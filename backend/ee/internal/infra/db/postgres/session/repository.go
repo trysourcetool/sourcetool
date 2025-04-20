@@ -3,8 +3,8 @@ package session
 import (
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/session"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/session"
 )
 
 type repositoryEE struct {

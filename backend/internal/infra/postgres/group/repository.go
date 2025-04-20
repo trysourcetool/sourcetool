@@ -8,7 +8,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/domain/group"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
 )
 
 type RepositoryCE struct {

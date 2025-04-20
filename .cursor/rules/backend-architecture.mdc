@@ -20,7 +20,7 @@ transport → app → domain ↘ infra ──→ app/domain (implements ports)
 
 * `app` **must not** import `infra`  
   ‑ right now `ServiceCE` does (`internal/app/**/service.go`).  
-  Move the `Dependency` type out of `infra` into `internal/app/port` (or delete it and pass explicit ports) so services depend only on ports. :contentReference[oaicite:0]{index=0}
+  Move the `Dependencies` type out of `infra` into `internal/app/port` (or delete it and pass explicit ports) so services depend only on ports. :contentReference[oaicite:0]{index=0}
 
 * `infra` implements the ports declared in **domain** (repositories) and **app** (mailer/pubsub/wsmanager).  
   It may therefore depend *downward* on those layers, but never upward.
@@ -29,18 +29,18 @@ transport → app → domain ↘ infra ──→ app/domain (implements ports)
 
 # Directory conventions
 
-* **Domain packages** (`apikey`, `user`, …) contain  
-  `model.go` + `repository.go` (port).  
-* **App packages** mirror the domain and contain  
+* **Domain packages** (`apikey`, `user`, …) contain
+  `model.go` + `repository.go` (port).
+* **App packages** mirror the domain and contain
   `service.go` (use‑case logic) and `validate.go`, optionally `email.go`, `url.go`, etc.  
-  Ports for external services live in `internal/app/port/` (e.g. `mailer.go`, `pubsub.go`, `wsmanager.go`).  
-* **DTOs** live in `internal/app/dto/**`; they **never** appear in `domain` or `infra`.  
-* **Infra adapters** live under `internal/infra/**/<tech>/…` (db/postgres, email/smtp, pubsub/redis, ws/manager).  
-  Each adapter implements one port interface.  
-* **Transport** is split by protocol:  
-  * `internal/transport/http/v1/**`  (handlers/requests/responses/mapper)  
-  * `internal/transport/ws/**`        (handlers/message/router)  
-* `cmd/server/main.go` is the only place that constructs concrete infra adapters and injects them into transport.  
+  Ports for external services live in `internal/app/port/` (e.g. `mailer.go`, `pubsub.go`, `wsmanager.go`).
+* **DTOs** live in `internal/app/dto/**`; they **never** appear in `domain` or `infra`.
+* **Infra adapters** live under `internal/infra/<tech>/…` (/postgres, /smtp, /redis, /wsmanager).
+  Each adapter implements one port interface.
+* **Transport** is split by protocol:
+  * `internal/transport/http/v1/**`  (handlers/requests/responses/mapper)
+  * `internal/transport/ws/**`        (handlers/message/router)
+* `cmd/server/main.go` is the only place that constructs concrete infra adapters and injects them into transport.
 * Tests live next to code (`*_test.go`) and may reach across layers only via public APIs.
 
 # Data flow (runtime)
@@ -62,9 +62,9 @@ transport → app → domain ↘ infra ──→ app/domain (implements ports)
 
 | Step | Action |
 |------|--------|
-| 1    | **★ Extract `infra.Dependency`** into `internal/app/port/dep.go` as pure interface‑aggregate; update every `NewServiceCE`/`EE` constructor to accept that interface instead of the concrete struct. |
+| 1    | **★ Extract `port.Dependencies`** into `internal/app/port/dependencies.go` as pure interface‑aggregate; update every `NewServiceCE`/`EE` constructor to accept that interface instead of the concrete struct. |
 | 2    | Each service now depends only on ports; delete `infra` import from `app`. |
-| 3    | Infra packages implement the port set: `NewDependencyCE` returns a struct in `infra` that satisfies the interface. |
+| 3    | Infra packages implement the port set: `port.NewDependencies` returns a struct in `infra` that satisfies the interface. |
 | 4    | Add `Makefile` target `lint-arch` running `go list` + `grep` to ensure the import rules above. |
 | 5    | Update docs and CI to fail on architectural violations. |
 
@@ -73,7 +73,7 @@ After step 3 the compile‑time graph obeys the arrows, completing the hexagona
 # Enterprise edition
 
 `ee/internal/**` mirrors **exactly** the same structure.  
-Keep all CE/EE splits either **at the adapter level** (`infra/db/postgres/foo/repository_ce.go` vs `repository_ee.go`) or **inside service constructors** (`NewServiceCE`, `NewServiceEE`).
+Keep all CE/EE splits either **at the adapter level** (`infra/postgres/foo/repository_ce.go` vs `repository_ee.go`) or **inside service constructors** (`NewServiceCE`, `NewServiceEE`).
 
 # Appendix
 

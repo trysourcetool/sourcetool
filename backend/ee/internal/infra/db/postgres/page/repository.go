@@ -3,8 +3,8 @@ package page
 import (
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/db/postgres/page"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/db"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres/page"
 )
 
 type repositoryEE struct {
