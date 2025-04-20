@@ -22,7 +22,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/redis"
 	"github.com/trysourcetool/sourcetool/backend/internal/infra/smtp"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/ws/manager"
+	"github.com/trysourcetool/sourcetool/backend/internal/infra/wsmanager"
 	"github.com/trysourcetool/sourcetool/backend/logger"
 )
 
@@ -52,7 +52,7 @@ func main() {
 	// Use the EE version only for the Repository.
 	repo := ee_postgres.NewRepositoryEE(db)
 	smtpMailer := smtp.NewMailerCE()
-	wsManager := manager.NewManager(ctx, repo, redisClient)
+	wsManager := wsmanager.NewManager(ctx, repo, redisClient)
 
 	// Initialize infra dependency container
 	dep := port.NewDependencies(repo, smtpMailer, redisClient, wsManager)
@@ -99,9 +99,9 @@ func main() {
 		}
 
 		if err := wsManager.Close(); err != nil {
-			logger.Logger.Sugar().Errorf("WebSocket Manager graceful shutdown failed: %v", err)
+			logger.Logger.Sugar().Errorf("WebSocket WSManager graceful shutdown failed: %v", err)
 		} else {
-			logger.Logger.Sugar().Info("WebSocket Manager gracefully stopped")
+			logger.Logger.Sugar().Info("WebSocket WSManager gracefully stopped")
 		}
 
 		if err := redisClient.Close(); err != nil {

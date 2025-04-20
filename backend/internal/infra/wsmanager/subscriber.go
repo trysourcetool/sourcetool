@@ -1,4 +1,4 @@
-package manager
+package wsmanager
 
 import (
 	"fmt"
