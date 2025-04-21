@@ -30,7 +30,7 @@ func newRouter(st *Sourcetool, namespaceDNS string) Router {
 
 func (r *router) generatePageID(fullPath string) uuid.UUID {
 	ns := uuid.NewV5(uuid.NamespaceDNS, r.namespaceDNS)
-	return uuid.NewV5(ns, fullPath)
+	return uuid.NewV5(ns, fullPath+"-"+r.sourcetool.environment)
 }
 
 func (r *router) joinPath(relativePath string) string {

@@ -71,7 +71,8 @@ func (s *pageStore) applyQueries(b sq.SelectBuilder, queries ...database.PageQue
 		case database.PageBySessionIDQuery:
 			b = b.
 				InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
-				InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
+				InnerJoin(`"environment" e ON e."id" = ak."environment_id"`).
+				InnerJoin(`"session" s ON s."environment_id" = e."id"`).
 				Where(sq.Eq{`s."id"`: q.SessionID})
 		case database.PageByEnvironmentIDQuery:
 			b = b.Where(sq.Eq{`p."environment_id"`: q.EnvironmentID})
