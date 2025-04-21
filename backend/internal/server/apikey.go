@@ -1,0 +1,287 @@
+package server
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid/v5"
+	"github.com/jmoiron/sqlx"
+
+	"github.com/trysourcetool/sourcetool/backend/internal"
+	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
+	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
+	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
+)
+
+func (s *Server) getAPIKey(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
+	if apiKeyIDReq == "" {
+		return errdefs.ErrInvalidArgument(errors.New("apiKeyID is required"))
+	}
+
+	apiKeyID, err := uuid.FromString(apiKeyIDReq)
+	if err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID))
+	if err != nil {
+		return err
+	}
+
+	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	if err != nil {
+		return err
+	}
+
+	return s.renderJSON(w, http.StatusOK, responses.GetAPIKeyResponse{
+		APIKey: responses.APIKeyFromModel(apiKey, env),
+	})
+}
+
+func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	currentOrg := internal.CurrentOrganization(ctx)
+	currentUser := internal.CurrentUser(ctx)
+
+	envs, err := s.db.ListEnvironments(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID))
+	if err != nil {
+		return err
+	}
+
+	var devEnv *core.Environment
+	var liveEnvs []*core.Environment
+	for _, env := range envs {
+		if env.Slug == core.EnvironmentSlugDevelopment {
+			devEnv = env
+		} else {
+			liveEnvs = append(liveEnvs, env)
+		}
+	}
+
+	devKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByOrganizationID(currentOrg.ID), postgres.APIKeyByEnvironmentID(devEnv.ID), postgres.APIKeyByUserID(currentUser.ID))
+	if err != nil {
+		return err
+	}
+
+	liveEnvIDs := make([]uuid.UUID, 0, len(liveEnvs))
+	for _, env := range liveEnvs {
+		liveEnvIDs = append(liveEnvIDs, env.ID)
+	}
+	liveKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByOrganizationID(currentOrg.ID), postgres.APIKeyByEnvironmentIDs(liveEnvIDs))
+	if err != nil {
+		return err
+	}
+
+	liveKeyIDs := make([]uuid.UUID, 0, len(liveKeys))
+	for _, key := range liveKeys {
+		liveKeyIDs = append(liveKeyIDs, key.ID)
+	}
+
+	environments, err := s.db.MapEnvironmentsByAPIKeyIDs(ctx, liveKeyIDs)
+	if err != nil {
+		return err
+	}
+
+	liveKeysOut := make([]*responses.APIKeyResponse, 0, len(liveKeys))
+	for _, apiKey := range liveKeys {
+		env, ok := environments[apiKey.ID]
+		if !ok {
+			return errdefs.ErrEnvironmentNotFound(errors.New("environment not found"))
+		}
+
+		liveKeysOut = append(liveKeysOut, responses.APIKeyFromModel(apiKey, env))
+	}
+
+	return s.renderJSON(w, http.StatusOK, responses.ListAPIKeysResponse{
+		DevKey:   responses.APIKeyFromModel(devKey, devEnv),
+		LiveKeys: liveKeysOut,
+	})
+}
+
+func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	var req requests.CreateAPIKeyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	if err := validateRequest(req); err != nil {
+		return err
+	}
+
+	currentOrg := internal.CurrentOrganization(ctx)
+
+	envID, err := uuid.FromString(req.EnvironmentID)
+	if err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(envID))
+	if err != nil {
+		return err
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		return errdefs.ErrInvalidArgument(errors.New("cannot create API key for development environment"))
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+			return err
+		}
+	} else {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+			return err
+		}
+	}
+
+	key, err := env.GenerateAPIKey()
+	if err != nil {
+		return errdefs.ErrInternal(err)
+	}
+
+	currentUser := internal.CurrentUser(ctx)
+	apiKey := &core.APIKey{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: currentOrg.ID,
+		EnvironmentID:  env.ID,
+		UserID:         currentUser.ID,
+		Name:           req.Name,
+		Key:            key,
+	}
+
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	apiKey, _ = s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKey.ID))
+
+	return s.renderJSON(w, http.StatusOK, responses.CreateAPIKeyResponse{
+		APIKey: responses.APIKeyFromModel(apiKey, env),
+	})
+}
+
+func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
+	if apiKeyIDReq == "" {
+		return errdefs.ErrInvalidArgument(errors.New("apiKeyID is required"))
+	}
+
+	var req requests.UpdateAPIKeyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	if err := validateRequest(req); err != nil {
+		return err
+	}
+
+	currentOrg := internal.CurrentOrganization(ctx)
+	apiKeyID, err := uuid.FromString(apiKeyIDReq)
+	if err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID), postgres.APIKeyByOrganizationID(currentOrg.ID))
+	if err != nil {
+		return err
+	}
+
+	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	if err != nil {
+		return err
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		return errdefs.ErrInvalidArgument(errors.New("cannot update API key for development environment"))
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+			return err
+		}
+	} else {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+			return err
+		}
+	}
+
+	if req.Name != nil {
+		apiKey.Name = internal.SafeValue(req.Name)
+	}
+
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return s.renderJSON(w, http.StatusOK, responses.UpdateAPIKeyResponse{
+		APIKey: responses.APIKeyFromModel(apiKey, env),
+	})
+}
+
+func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
+	if apiKeyIDReq == "" {
+		return errdefs.ErrInvalidArgument(errors.New("apiKeyID is required"))
+	}
+
+	apiKeyID, err := uuid.FromString(apiKeyIDReq)
+	if err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID))
+	if err != nil {
+		return err
+	}
+
+	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	if err != nil {
+		return err
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		return errdefs.ErrInvalidArgument(errors.New("cannot delete API key for development environment"))
+	}
+
+	if env.Slug == core.EnvironmentSlugDevelopment {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+			return err
+		}
+	} else {
+		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+			return err
+		}
+	}
+
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return s.renderJSON(w, http.StatusOK, responses.DeleteAPIKeyResponse{
+		APIKey: responses.APIKeyFromModel(apiKey, env),
+	})
+}

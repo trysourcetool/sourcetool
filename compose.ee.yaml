@@ -10,8 +10,8 @@ services:
   backend:
     image: golang:1.23
     command: bash -c "
-        go run ../devtools/cmd/db/main.go migrate ../migrations &&
-        go run ./cmd/server"
+        go run ./devtools/cmd/db/main.go migrate &&
+        go run -tags ee ./cmd/server"
     ports:
       - 8080:8080
     depends_on:
@@ -24,7 +24,7 @@ services:
     volumes:
       - ./backend:/go/src/github.com/trysourcetool/sourcetool/backend
       - gomodcache:/gomodcache
-    working_dir: /go/src/github.com/trysourcetool/sourcetool/backend/ee
+    working_dir: /go/src/github.com/trysourcetool/sourcetool/backend
 
   frontend:
     image: node:20-alpine
