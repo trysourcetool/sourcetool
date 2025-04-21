@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -144,4 +145,150 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		Code:    http.StatusOK,
 		Message: "Subdomain is available",
 	})
+}
+
+// validateSelfHostedOrganization checks if creating a new organization is allowed in self-hosted mode.
+func (s *Server) validateSelfHostedOrganization(ctx context.Context) error {
+	if !config.Config.IsCloudEdition {
+		// In self-hosted mode, check if an organization already exists
+		if _, err := s.db.GetOrganization(ctx); err == nil {
+			return errdefs.ErrPermissionDenied(errors.New("only one organization is allowed in self-hosted edition"))
+		}
+	}
+	return nil
+}
+
+func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx *sqlx.Tx, u *core.User) error {
+	if config.Config.IsCloudEdition {
+		return nil
+	}
+
+	org := &core.Organization{
+		ID:        uuid.Must(uuid.NewV4()),
+		Subdomain: nil, // Empty subdomain for non-cloud edition
+	}
+	if err := s.db.CreateOrganization(ctx, tx, org); err != nil {
+		return err
+	}
+
+	orgAccess := &core.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: org.ID,
+		Role:           core.UserOrganizationRoleAdmin,
+	}
+	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+		return err
+	}
+
+	devEnv := &core.Environment{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		Name:           core.EnvironmentNameDevelopment,
+		Slug:           core.EnvironmentSlugDevelopment,
+		Color:          core.EnvironmentColorDevelopment,
+	}
+	envs := []*core.Environment{
+		{
+			ID:             uuid.Must(uuid.NewV4()),
+			OrganizationID: org.ID,
+			Name:           core.EnvironmentNameProduction,
+			Slug:           core.EnvironmentSlugProduction,
+			Color:          core.EnvironmentColorProduction,
+		},
+		devEnv,
+	}
+	if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+		return err
+	}
+
+	key, err := devEnv.GenerateAPIKey()
+	if err != nil {
+		return err
+	}
+	apiKey := &core.APIKey{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		EnvironmentID:  devEnv.ID,
+		UserID:         u.ID,
+		Name:           "",
+		Key:            key,
+	}
+	if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// resolveOrganizationBySubdomain gets an organization by subdomain and verifies the user has access.
+// Deprecated: Use getOrganizationBySubdomain instead.
+func (s *Server) resolveOrganizationBySubdomain(ctx context.Context, u *core.User, subdomain string) (*core.Organization, *core.UserOrganizationAccess, error) {
+	if subdomain == "" {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("subdomain cannot be empty"))
+	}
+
+	return s.getOrganizationBySubdomain(ctx, u, subdomain)
+}
+
+// getUserOrganizationInfo is a convenience wrapper that retrieves organization
+// and access information for the current user from the context.
+func (s *Server) getUserOrganizationInfo(ctx context.Context) (*core.Organization, *core.UserOrganizationAccess, error) {
+	return s.getOrganizationInfo(ctx, internal.CurrentUser(ctx))
+}
+
+// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
+func (s *Server) getOrganizationBySubdomain(ctx context.Context, u *core.User, subdomain string) (*core.Organization, *core.UserOrganizationAccess, error) {
+	// Get organization by subdomain
+	org, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Verify user has access to this organization
+	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
+		postgres.UserOrganizationAccessByOrganizationID(org.ID),
+		postgres.UserOrganizationAccessByUserID(u.ID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return org, orgAccess, nil
+}
+
+// getOrganizationInfo retrieves organization and access information for the specified user.
+// It handles both cloud and self-hosted editions with appropriate subdomain logic.
+func (s *Server) getOrganizationInfo(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
+	if u == nil {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
+	}
+
+	subdomain := internal.Subdomain(ctx)
+	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
+
+	// Different strategies for cloud vs. self-hosted or auth subdomain
+	if isCloudWithSubdomain {
+		return s.getOrganizationBySubdomain(ctx, u, subdomain)
+	}
+
+	return s.getDefaultOrganizationForUser(ctx, u)
+}
+
+// (typically the most recently created one).
+func (s *Server) getDefaultOrganizationForUser(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
+	// Get user's organization access
+	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
+		postgres.UserOrganizationAccessByUserID(u.ID),
+		postgres.UserOrganizationAccessOrderBy("created_at DESC"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the organization
+	org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return org, orgAccess, nil
 }
