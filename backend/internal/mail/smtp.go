@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 type MailInput struct {
@@ -35,15 +36,15 @@ func Send(ctx context.Context, input MailInput) error {
 		"\r\n"+
 		"%s\r\n", fromHeader, strings.Join(input.To, ","), input.Subject, input.Body)
 
-	// if config.Config.Env == config.EnvLocal {
-	// 	// In local environment, just log the email content
-	// 	logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
-	// 	logger.Logger.Sugar().Debug(msg)
-	// 	logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
+	if config.Config.Env == config.EnvLocal {
+		// In local environment, just log the email content
+		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
+		logger.Logger.Sugar().Debug(msg)
+		logger.Logger.Sugar().Debug("================= EMAIL CONTENT =================")
 
-	// 	// Don't actually send in local environment
-	// 	return nil
-	// }
+		// Don't actually send in local environment
+		return nil
+	}
 
 	cfg := config.Config.SMTP
 	auth := smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
