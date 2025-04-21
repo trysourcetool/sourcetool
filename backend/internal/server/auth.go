@@ -131,10 +131,12 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// Verify user has access to this organization
-			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
-			if err != nil {
+			if _, err := s.db.GetUserOrganizationAccess(ctx,
+				postgres.UserOrganizationAccessByUserID(u.ID),
+				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
 				return err
 			}
+
 			orgSubdomain = subdomain
 		} else {
 			// For auth subdomain, use default
@@ -201,9 +203,10 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
-			// For specific organization subdomain, verify user has access
-			_, _, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
-			if err != nil {
+			// Verify user has access to this organization
+			if _, err := s.db.GetUserOrganizationAccess(ctx,
+				postgres.UserOrganizationAccessByUserID(u.ID),
+				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
 				return err
 			}
 			orgSubdomain = subdomain
@@ -262,7 +265,7 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Get user's organization info
-	org, _, err := s.getUserOrganizationInfo(ctx)
+	org, _, err := s.resolveOrganization(ctx, u)
 	if err != nil {
 		return err
 	}

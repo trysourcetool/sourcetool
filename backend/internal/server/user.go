@@ -174,7 +174,7 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
+	org, orgAccess, err := s.resolveOrganization(ctx, currentUser)
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
+	org, orgAccess, err := s.resolveOrganization(ctx, currentUser)
 	if err != nil {
 		return err
 	}

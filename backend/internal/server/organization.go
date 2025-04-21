@@ -147,7 +147,6 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 	})
 }
 
-// validateSelfHostedOrganization checks if creating a new organization is allowed in self-hosted mode.
 func (s *Server) validateSelfHostedOrganization(ctx context.Context) error {
 	if !config.Config.IsCloudEdition {
 		// In self-hosted mode, check if an organization already exists
@@ -221,44 +220,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 	return nil
 }
 
-// resolveOrganizationBySubdomain gets an organization by subdomain and verifies the user has access.
-// Deprecated: Use getOrganizationBySubdomain instead.
-func (s *Server) resolveOrganizationBySubdomain(ctx context.Context, u *core.User, subdomain string) (*core.Organization, *core.UserOrganizationAccess, error) {
-	if subdomain == "" {
-		return nil, nil, errdefs.ErrInvalidArgument(errors.New("subdomain cannot be empty"))
-	}
-
-	return s.getOrganizationBySubdomain(ctx, u, subdomain)
-}
-
-// getUserOrganizationInfo is a convenience wrapper that retrieves organization
-// and access information for the current user from the context.
-func (s *Server) getUserOrganizationInfo(ctx context.Context) (*core.Organization, *core.UserOrganizationAccess, error) {
-	return s.getOrganizationInfo(ctx, internal.CurrentUser(ctx))
-}
-
-// getOrganizationBySubdomain retrieves an organization by subdomain and verifies user access.
-func (s *Server) getOrganizationBySubdomain(ctx context.Context, u *core.User, subdomain string) (*core.Organization, *core.UserOrganizationAccess, error) {
-	// Get organization by subdomain
-	org, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Verify user has access to this organization
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
-		postgres.UserOrganizationAccessByOrganizationID(org.ID),
-		postgres.UserOrganizationAccessByUserID(u.ID))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return org, orgAccess, nil
-}
-
-// getOrganizationInfo retrieves organization and access information for the specified user.
-// It handles both cloud and self-hosted editions with appropriate subdomain logic.
-func (s *Server) getOrganizationInfo(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
+func (s *Server) resolveOrganization(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
 	if u == nil {
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
@@ -266,20 +228,16 @@ func (s *Server) getOrganizationInfo(ctx context.Context, u *core.User) (*core.O
 	subdomain := internal.Subdomain(ctx)
 	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
 
-	// Different strategies for cloud vs. self-hosted or auth subdomain
-	if isCloudWithSubdomain {
-		return s.getOrganizationBySubdomain(ctx, u, subdomain)
+	orgAccessQueries := []postgres.UserOrganizationAccessQuery{
+		postgres.UserOrganizationAccessByUserID(u.ID),
+		postgres.UserOrganizationAccessOrderBy("created_at DESC"),
 	}
 
-	return s.getDefaultOrganizationForUser(ctx, u)
-}
+	if isCloudWithSubdomain {
+		orgAccessQueries = append(orgAccessQueries, postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	}
 
-// (typically the most recently created one).
-func (s *Server) getDefaultOrganizationForUser(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
-	// Get user's organization access
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
-		postgres.UserOrganizationAccessByUserID(u.ID),
-		postgres.UserOrganizationAccessOrderBy("created_at DESC"))
+	orgAccess, err := s.db.GetUserOrganizationAccess(ctx, orgAccessQueries...)
 	if err != nil {
 		return nil, nil, err
 	}

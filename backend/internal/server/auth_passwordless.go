@@ -359,7 +359,9 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// For specific organization subdomain, resolve org and access
-			_, orgAccess, err = s.resolveOrganizationBySubdomain(ctx, u, subdomain)
+			orgAccess, err = s.db.GetUserOrganizationAccess(ctx,
+				postgres.UserOrganizationAccessByUserID(u.ID),
+				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 			if err != nil {
 				return err
 			}
