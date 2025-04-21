@@ -6,23 +6,29 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	"github.com/trysourcetool/sourcetool/backend/internal/app/port"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/postgres"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/redis"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/smtp"
-	"github.com/trysourcetool/sourcetool/backend/internal/infra/wsmanager"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
-	"github.com/trysourcetool/sourcetool/backend/internal/transport"
+	"github.com/trysourcetool/sourcetool/backend/internal/mail"
+	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
+	"github.com/trysourcetool/sourcetool/backend/internal/server"
+	"github.com/trysourcetool/sourcetool/backend/internal/websocket"
 )
 
 func init() {
@@ -40,29 +46,29 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	db, err := postgres.New()
+	pqClient, err := postgres.Open()
 	if err != nil {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
-	logger.Logger.Sugar().Infof("Connected to Postgres at %s:%s", config.Config.Postgres.Host, config.Config.Postgres.Port)
-
-	redisClient, err := redis.NewClientCE()
+	redisClient, err := internal.OpenRedis()
 	if err != nil {
 		logger.Logger.Fatal("failed to open redis", zap.Error(err))
 	}
 
-	logger.Logger.Sugar().Infof("Connected to Redis at %s:%s", config.Config.Redis.Host, config.Config.Redis.Port)
+	smtpClient, err := internal.OpenSMTP()
+	if err != nil {
+		logger.Logger.Fatal("failed to open smtp", zap.Error(err))
+	}
 
-	repo := postgres.NewRepositoryCE(db)
-	smtpMailer := smtp.NewMailerCE()
-	wsManager := wsmanager.NewManager(ctx, repo, redisClient)
-
-	// Initialize infra dependency container
-	dep := port.NewDependencies(repo, smtpMailer, redisClient, wsManager)
+	db := postgres.New(postgres.NewQueryLogger(pqClient))
+	pubsub := pubsub.New(redisClient)
+	mail := mail.New(smtpClient)
+	wsManager := websocket.NewManager(ctx, db, pubsub)
+	upgrader := internal.NewUpgrader()
 
 	if config.Config.Env == config.EnvLocal {
-		if err := fixtures.Load(ctx, dep.Repository); err != nil {
+		if err := fixtures.Load(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
 		}
 	}
@@ -73,11 +79,46 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
+	handler := chi.NewRouter()
+	handler.Use(middleware.RequestID)
+	handler.Use(middleware.Logger)
+	handler.Use(middleware.Recoverer)
+	handler.Use(middleware.Timeout(time.Duration(600) * time.Second))
+	handler.Use(cors.New(cors.Options{
+		AllowOriginFunc: func(r *http.Request, origin string) bool {
+			// For self-hosted environments, we only need to check against the configured base URL
+			normalizedOrigin := strings.TrimRight(origin, "/")
+			normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
+			return normalizedOrigin == normalizedBaseURL
+		},
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{},
+		AllowCredentials: true,
+		MaxAge:           0,
+		Debug:            !(config.Config.Env == config.EnvProd),
+	}).Handler)
+
+	if config.Config.Env == config.EnvLocal {
+		handler.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", "http://localhost:8080")),
+		))
+	}
+
+	s := server.New(db, pubsub, mail, wsManager, permission.NewChecker(db), upgrader)
+	s.Install(handler)
+
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           transport.NewRouter(dep).Build(),
+		Handler:           handler,
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
@@ -109,13 +150,19 @@ func main() {
 			logger.Logger.Sugar().Info("WebSocket manager gracefully stopped")
 		}
 
+		if err := smtpClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("SMTP client close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("SMTP client gracefully stopped")
+		}
+
 		if err := redisClient.Close(); err != nil {
 			logger.Logger.Sugar().Errorf("Redis client close failed: %v", err)
 		} else {
 			logger.Logger.Sugar().Info("Redis client gracefully stopped")
 		}
 
-		if err := db.Close(); err != nil {
+		if err := pqClient.Close(); err != nil {
 			logger.Logger.Sugar().Errorf("DB connection close failed: %v", err)
 		} else {
 			logger.Logger.Sugar().Info("DB connection gracefully stopped")

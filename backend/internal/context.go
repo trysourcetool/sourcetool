@@ -3,8 +3,7 @@ package internal
 import (
 	"context"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/organization"
-	"github.com/trysourcetool/sourcetool/backend/internal/domain/user"
+	"github.com/trysourcetool/sourcetool/backend/internal/core"
 )
 
 type ctxKey string
@@ -15,16 +14,16 @@ const (
 	SubdomainCtxKey           ctxKey = "subdomain"
 )
 
-func CurrentUser(ctx context.Context) *user.User {
-	v, ok := ctx.Value(CurrentUserCtxKey).(*user.User)
+func CurrentUser(ctx context.Context) *core.User {
+	v, ok := ctx.Value(CurrentUserCtxKey).(*core.User)
 	if !ok {
 		return nil
 	}
 	return v
 }
 
-func CurrentOrganization(ctx context.Context) *organization.Organization {
-	v, ok := ctx.Value(CurrentOrganizationCtxKey).(*organization.Organization)
+func CurrentOrganization(ctx context.Context) *core.Organization {
+	v, ok := ctx.Value(CurrentOrganizationCtxKey).(*core.Organization)
 	if !ok {
 		return nil
 	}
@@ -39,11 +38,11 @@ func Subdomain(ctx context.Context) string {
 	return v
 }
 
-func withUser(ctx context.Context, user *user.User) context.Context {
+func withUser(ctx context.Context, user *core.User) context.Context {
 	return context.WithValue(ctx, CurrentUserCtxKey, user)
 }
 
-func withOrganization(ctx context.Context, org *organization.Organization) context.Context {
+func withOrganization(ctx context.Context, org *core.Organization) context.Context {
 	return context.WithValue(ctx, CurrentOrganizationCtxKey, org)
 }
 
