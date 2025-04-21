@@ -5,20 +5,35 @@ import (
 	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func (db *DB) GetSession(ctx context.Context, queries ...SessionQuery) (*core.Session, error) {
-	query, args, err := db.buildSessionQuery(ctx, queries...)
+var _ database.SessionStore = (*sessionStore)(nil)
+
+type sessionStore struct {
+	db      internal.DB
+	builder sq.StatementBuilderType
+}
+
+func newSessionStore(db internal.DB) *sessionStore {
+	return &sessionStore{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
+}
+
+func (s *sessionStore) Get(ctx context.Context, queries ...database.SessionQuery) (*core.Session, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := core.Session{}
-	if err := db.db.GetContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrSessionNotFound(err)
 		}
@@ -28,8 +43,19 @@ func (db *DB) GetSession(ctx context.Context, queries ...SessionQuery) (*core.Se
 	return &m, nil
 }
 
-func (db *DB) buildSessionQuery(ctx context.Context, queries ...SessionQuery) (string, []any, error) {
-	q := db.builder.Select(
+func (s *sessionStore) applyQueries(b sq.SelectBuilder, queries ...database.SessionQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case database.SessionByIDQuery:
+			b = b.Where(sq.Eq{`s."id"`: q.ID})
+		}
+	}
+
+	return b
+}
+
+func (s *sessionStore) buildQuery(ctx context.Context, queries ...database.SessionQuery) (string, []any, error) {
+	q := s.builder.Select(
 		`s."id"`,
 		`s."organization_id"`,
 		`s."user_id"`,
@@ -40,9 +66,7 @@ func (db *DB) buildSessionQuery(ctx context.Context, queries ...SessionQuery) (s
 	).
 		From(`"session" s`)
 
-	for _, query := range queries {
-		q = query.apply(q)
-	}
+	q = s.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -52,15 +76,8 @@ func (db *DB) buildSessionQuery(ctx context.Context, queries ...SessionQuery) (s
 	return query, args, err
 }
 
-func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *sessionStore) Create(ctx context.Context, m *core.Session) error {
+	if _, err := s.builder.
 		Insert(`"session"`).
 		Columns(
 			`"id"`,
@@ -76,7 +93,7 @@ func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) e
 			m.APIKeyID,
 			m.HostInstanceID,
 		).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -84,18 +101,11 @@ func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) e
 	return nil
 }
 
-func (db *DB) DeleteSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *sessionStore) Delete(ctx context.Context, m *core.Session) error {
+	if _, err := s.builder.
 		Delete(`"session"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

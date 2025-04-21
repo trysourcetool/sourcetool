@@ -6,20 +6,35 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func (db *DB) GetEnvironment(ctx context.Context, queries ...EnvironmentQuery) (*core.Environment, error) {
-	query, args, err := db.buildEnvironmentQuery(ctx, queries...)
+var _ database.EnvironmentStore = (*environmentStore)(nil)
+
+type environmentStore struct {
+	db      internal.DB
+	builder sq.StatementBuilderType
+}
+
+func newEnvironmentStore(db internal.DB) *environmentStore {
+	return &environmentStore{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
+}
+
+func (s *environmentStore) Get(ctx context.Context, queries ...database.EnvironmentQuery) (*core.Environment, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := core.Environment{}
-	if err := db.db.GetContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrEnvironmentNotFound(err)
 		}
@@ -29,27 +44,39 @@ func (db *DB) GetEnvironment(ctx context.Context, queries ...EnvironmentQuery) (
 	return &m, nil
 }
 
-func (db *DB) ListEnvironments(ctx context.Context, queries ...EnvironmentQuery) ([]*core.Environment, error) {
-	query, args, err := db.buildEnvironmentQuery(ctx, queries...)
+func (s *environmentStore) List(ctx context.Context, queries ...database.EnvironmentQuery) ([]*core.Environment, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make([]*core.Environment, 0)
-	if err := db.db.SelectContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
 
 	return m, nil
 }
 
-func (db *DB) buildEnvironmentQuery(ctx context.Context, queries ...EnvironmentQuery) (string, []any, error) {
-	q := db.builder.Select(environmentColumns()...).
+func (s *environmentStore) applyQueries(b sq.SelectBuilder, queries ...database.EnvironmentQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case database.EnvironmentByIDQuery:
+			b = b.Where(sq.Eq{`e."id"`: q.ID})
+		case database.EnvironmentByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`e."organization_id"`: q.OrganizationID})
+		case database.EnvironmentBySlugQuery:
+			b = b.Where(sq.Eq{`e."slug"`: q.Slug})
+		}
+	}
+	return b
+}
+
+func (s *environmentStore) buildQuery(ctx context.Context, queries ...database.EnvironmentQuery) (string, []any, error) {
+	q := s.builder.Select(environmentColumns()...).
 		From(`"environment" e`)
 
-	for _, query := range queries {
-		q = query.apply(q)
-	}
+	q = s.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -59,15 +86,8 @@ func (db *DB) buildEnvironmentQuery(ctx context.Context, queries ...EnvironmentQ
 	return query, args, err
 }
 
-func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *environmentStore) Create(ctx context.Context, m *core.Environment) error {
+	if _, err := s.builder.
 		Insert(`"environment"`).
 		Columns(
 			`"id"`,
@@ -83,7 +103,7 @@ func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 			m.Slug,
 			m.Color,
 		).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -91,21 +111,14 @@ func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 	return nil
 }
 
-func (db *DB) UpdateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *environmentStore) Update(ctx context.Context, m *core.Environment) error {
+	if _, err := s.builder.
 		Update(`"environment"`).
 		Set(`"name"`, m.Name).
 		Set(`"slug"`, m.Slug).
 		Set(`"color"`, m.Color).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -113,18 +126,11 @@ func (db *DB) UpdateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 	return nil
 }
 
-func (db *DB) DeleteEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *environmentStore) Delete(ctx context.Context, m *core.Environment) error {
+	if _, err := s.builder.
 		Delete(`"environment"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -132,19 +138,12 @@ func (db *DB) DeleteEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 	return nil
 }
 
-func (db *DB) BulkInsertEnvironments(ctx context.Context, tx *sqlx.Tx, m []*core.Environment) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
+func (s *environmentStore) BulkInsert(ctx context.Context, m []*core.Environment) error {
 	if len(m) == 0 {
 		return nil
 	}
 
-	q := db.builder.
+	q := s.builder.
 		Insert(`"environment"`).
 		Columns(
 			`"id"`,
@@ -165,7 +164,7 @@ func (db *DB) BulkInsertEnvironments(ctx context.Context, tx *sqlx.Tx, m []*core
 	}
 
 	if _, err := q.
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -173,9 +172,9 @@ func (db *DB) BulkInsertEnvironments(ctx context.Context, tx *sqlx.Tx, m []*core
 	return nil
 }
 
-func (db *DB) MapEnvironmentsByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]*core.Environment, error) {
+func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]*core.Environment, error) {
 	cols := append(environmentColumns(), `ak."id" AS "api_key_id"`)
-	query, args, err := db.builder.Select(cols...).
+	query, args, err := s.builder.Select(cols...).
 		From(`"environment" e`).
 		InnerJoin(`"api_key" ak ON ak."environment_id" = e."id"`).
 		Where(sq.Eq{`ak."id"`: ids}).
@@ -184,7 +183,7 @@ func (db *DB) MapEnvironmentsByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) (
 		return nil, err
 	}
 
-	rows, err := db.db.QueryxContext(ctx, query, args...)
+	rows, err := s.db.QueryxContext(ctx, query, args...)
 	if err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
@@ -219,8 +218,8 @@ func environmentColumns() []string {
 	}
 }
 
-func (db *DB) IsEnvironmentSlugExistsInOrganization(ctx context.Context, orgID uuid.UUID, slug string) (bool, error) {
-	if _, err := db.GetEnvironment(ctx, EnvironmentByOrganizationID(orgID), EnvironmentBySlug(slug)); err != nil {
+func (s *environmentStore) IsSlugExistsInOrganization(ctx context.Context, orgID uuid.UUID, slug string) (bool, error) {
+	if _, err := s.Get(ctx, database.EnvironmentByOrganizationID(orgID), database.EnvironmentBySlug(slug)); err != nil {
 		if errdefs.IsEnvironmentNotFound(err) {
 			return false, nil
 		}

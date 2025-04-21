@@ -12,9 +12,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 )
 
 // authenticateUser handles common user authentication logic and returns the authenticated user.
@@ -50,7 +50,7 @@ func (s *Server) authenticateUser(w http.ResponseWriter, r *http.Request) (*core
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	u, err := s.db.GetUser(ctx, postgres.UserByID(userID))
+	u, err := s.db.User().Get(ctx, database.UserByID(userID))
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -66,23 +66,23 @@ func (s *Server) getSubdomainIfCloudEdition(r *http.Request) (string, error) {
 }
 
 func (s *Server) validateOrganizationAccess(ctx context.Context, userID uuid.UUID, subdomain string) error {
-	orgAccessOpts := []postgres.UserOrganizationAccessQuery{
-		postgres.UserOrganizationAccessByUserID(userID),
+	orgAccessOpts := []database.UserOrganizationAccessQuery{
+		database.UserOrganizationAccessByUserID(userID),
 	}
 	if config.Config.IsCloudEdition {
-		orgAccessOpts = append(orgAccessOpts, postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessOpts = append(orgAccessOpts, database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	}
-	_, err := s.db.GetUserOrganizationAccess(ctx, orgAccessOpts...)
+	_, err := s.db.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	return err
 }
 
 func (s *Server) getCurrentOrganization(ctx context.Context, subdomain string) (*core.Organization, error) {
-	opts := []postgres.OrganizationQuery{}
+	opts := []database.OrganizationQuery{}
 	if subdomain != "" && subdomain != "auth" {
-		opts = append(opts, postgres.OrganizationBySubdomain(subdomain))
+		opts = append(opts, database.OrganizationBySubdomain(subdomain))
 	}
 
-	return s.db.GetOrganization(ctx, opts...)
+	return s.db.Organization().Get(ctx, opts...)
 }
 
 func (s *Server) validateUserToken(token string) (*jwt.UserAuthClaims, error) {
@@ -230,7 +230,7 @@ func (s *Server) getCurrentUser(ctx context.Context, token string) (*core.User, 
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	u, err := s.db.GetUser(ctx, postgres.UserByID(userID))
+	u, err := s.db.User().Get(ctx, database.UserByID(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (s *Server) authWebSocketUser(next http.Handler) http.Handler {
 				return
 			}
 
-			apikey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByKey(apikeyVal))
+			apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKey(apikeyVal))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return

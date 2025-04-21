@@ -5,20 +5,35 @@ import (
 	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func (db *DB) GetHostInstance(ctx context.Context, queries ...HostInstanceQuery) (*core.HostInstance, error) {
-	query, args, err := db.buildHostInstanceQuery(ctx, queries...)
+var _ database.HostInstanceStore = (*hostInstanceStore)(nil)
+
+type hostInstanceStore struct {
+	db      internal.DB
+	builder sq.StatementBuilderType
+}
+
+func newHostInstanceStore(db internal.DB) *hostInstanceStore {
+	return &hostInstanceStore{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
+}
+
+func (s *hostInstanceStore) Get(ctx context.Context, queries ...database.HostInstanceQuery) (*core.HostInstance, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := core.HostInstance{}
-	if err := db.db.GetContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrHostInstanceNotFound(err)
 		}
@@ -28,22 +43,41 @@ func (db *DB) GetHostInstance(ctx context.Context, queries ...HostInstanceQuery)
 	return &m, nil
 }
 
-func (db *DB) ListHostInstances(ctx context.Context, queries ...HostInstanceQuery) ([]*core.HostInstance, error) {
-	query, args, err := db.buildHostInstanceQuery(ctx, queries...)
+func (s *hostInstanceStore) List(ctx context.Context, queries ...database.HostInstanceQuery) ([]*core.HostInstance, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make([]*core.HostInstance, 0)
-	if err := db.db.SelectContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
 
 	return m, nil
 }
 
-func (db *DB) buildHostInstanceQuery(ctx context.Context, queries ...HostInstanceQuery) (string, []any, error) {
-	q := db.builder.Select(
+func (s *hostInstanceStore) applyQueries(b sq.SelectBuilder, queries ...database.HostInstanceQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case database.HostInstanceByIDQuery:
+			b = b.Where(sq.Eq{`hi."id"`: q.ID})
+		case database.HostInstanceByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`hi."organization_id"`: q.OrganizationID})
+		case database.HostInstanceByAPIKeyIDQuery:
+			b = b.Where(sq.Eq{`hi."api_key_id"`: q.APIKeyID})
+		case database.HostInstanceByAPIKeyQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
+				Where(sq.Eq{`ak."key"`: q.APIKey})
+		}
+	}
+
+	return b
+}
+
+func (s *hostInstanceStore) buildQuery(ctx context.Context, queries ...database.HostInstanceQuery) (string, []any, error) {
+	q := s.builder.Select(
 		`hi."id"`,
 		`hi."organization_id"`,
 		`hi."api_key_id"`,
@@ -55,9 +89,7 @@ func (db *DB) buildHostInstanceQuery(ctx context.Context, queries ...HostInstanc
 	).
 		From(`"host_instance" hi`)
 
-	for _, query := range queries {
-		q = query.apply(q)
-	}
+	q = s.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -67,15 +99,8 @@ func (db *DB) buildHostInstanceQuery(ctx context.Context, queries ...HostInstanc
 	return query, args, err
 }
 
-func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostInstance) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *hostInstanceStore) Create(ctx context.Context, m *core.HostInstance) error {
+	if _, err := s.builder.
 		Insert(`"host_instance"`).
 		Columns(
 			`"id"`,
@@ -93,7 +118,7 @@ func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostI
 			m.SDKVersion,
 			m.Status,
 		).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -101,21 +126,14 @@ func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostI
 	return nil
 }
 
-func (db *DB) UpdateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostInstance) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *hostInstanceStore) Update(ctx context.Context, m *core.HostInstance) error {
+	if _, err := s.builder.
 		Update(`"host_instance"`).
 		Set(`"sdk_name"`, m.SDKName).
 		Set(`"sdk_version"`, m.SDKVersion).
 		Set(`"status"`, m.Status).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

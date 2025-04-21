@@ -7,12 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -29,12 +28,12 @@ func (s *Server) getAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID))
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(apiKeyID))
 	if err != nil {
 		return err
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return err
 	}
@@ -49,7 +48,7 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 	currentOrg := internal.CurrentOrganization(ctx)
 	currentUser := internal.CurrentUser(ctx)
 
-	envs, err := s.db.ListEnvironments(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	devKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByOrganizationID(currentOrg.ID), postgres.APIKeyByEnvironmentID(devEnv.ID), postgres.APIKeyByUserID(currentUser.ID))
+	devKey, err := s.db.APIKey().Get(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentID(devEnv.ID), database.APIKeyByUserID(currentUser.ID))
 	if err != nil {
 		return err
 	}
@@ -73,7 +72,7 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 	for _, env := range liveEnvs {
 		liveEnvIDs = append(liveEnvIDs, env.ID)
 	}
-	liveKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByOrganizationID(currentOrg.ID), postgres.APIKeyByEnvironmentIDs(liveEnvIDs))
+	liveKeys, err := s.db.APIKey().List(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentIDs(liveEnvIDs))
 	if err != nil {
 		return err
 	}
@@ -83,7 +82,7 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 		liveKeyIDs = append(liveKeyIDs, key.ID)
 	}
 
-	environments, err := s.db.MapEnvironmentsByAPIKeyIDs(ctx, liveKeyIDs)
+	environments, err := s.db.Environment().MapByAPIKeyIDs(ctx, liveKeyIDs)
 	if err != nil {
 		return err
 	}
@@ -121,7 +120,7 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
@@ -155,8 +154,8 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		Key:            key,
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 			return err
 		}
 		return nil
@@ -164,7 +163,7 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	apiKey, _ = s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKey.ID))
+	apiKey, _ = s.db.APIKey().Get(ctx, database.APIKeyByID(apiKey.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.CreateAPIKeyResponse{
 		APIKey: responses.APIKeyFromModel(apiKey, env),
@@ -193,12 +192,12 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID), postgres.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(apiKeyID), database.APIKeyByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return err
 	}
@@ -221,8 +220,8 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 		apiKey.Name = internal.SafeValue(req.Name)
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateAPIKey(ctx, tx, apiKey); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.APIKey().Update(ctx, apiKey); err != nil {
 			return err
 		}
 		return nil
@@ -247,12 +246,12 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(apiKeyID))
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(apiKeyID))
 	if err != nil {
 		return err
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(apiKey.EnvironmentID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(apiKey.EnvironmentID))
 	if err != nil {
 		return err
 	}
@@ -271,8 +270,8 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.APIKey().Delete(ctx, apiKey); err != nil {
 			return err
 		}
 		return nil

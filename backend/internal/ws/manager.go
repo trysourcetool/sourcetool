@@ -12,9 +12,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
 )
 
@@ -34,7 +34,7 @@ type Manager struct {
 	hostsMutex       sync.RWMutex
 	clientsMutex     sync.RWMutex
 	pubsub           *pubsub.PubSub
-	db               *postgres.DB
+	db               database.DB
 	ctx              context.Context    // Context for managing goroutine lifecycle
 	cancel           context.CancelFunc // Function to cancel the context
 	wg               sync.WaitGroup     // WaitGroup to wait for goroutines to finish
@@ -42,7 +42,7 @@ type Manager struct {
 
 // NewManager creates and initializes a new WebSocket connection manager.
 // It starts the background goroutines for handling pub/sub messages.
-func NewManager(ctx context.Context, db *postgres.DB, pubsub *pubsub.PubSub) *Manager {
+func NewManager(ctx context.Context, db database.DB, pubsub *pubsub.PubSub) *Manager {
 	managerCtx, cancel := context.WithCancel(ctx) // Use parent context
 	m := &Manager{
 		connectedHosts:   make(map[uuid.UUID]*connectedHost),

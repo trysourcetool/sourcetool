@@ -6,100 +6,113 @@ import (
 	"fmt"
 	"time"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
-	"github.com/trysourcetool/sourcetool/backend/internal/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 )
 
-type db interface {
-	Query(string, ...any) (*sql.Rows, error)
-	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
-	Exec(string, ...any) (sql.Result, error)
-	ExecContext(context.Context, string, ...any) (sql.Result, error)
-	GetContext(context.Context, any, string, ...any) error
-	QueryxContext(context.Context, string, ...any) (*sqlx.Rows, error)
-	SelectContext(context.Context, any, string, ...any) error
-	Beginx() (*sqlx.Tx, error)
+var _ database.DB = (*db)(nil)
+
+type db struct {
+	db *sqlx.DB
 }
 
-type queryLogger struct {
-	db db
+func (db *db) APIKey() database.APIKeyStore {
+	return newAPIKeyStore(internal.NewQueryLogger(db.db))
 }
 
-func newQueryLogger(db *sqlx.DB) *queryLogger {
-	return &queryLogger{db}
+func (db *db) Environment() database.EnvironmentStore {
+	return newEnvironmentStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) Query(query string, args ...any) (*sql.Rows, error) {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.Query(query, args...)
+func (db *db) Group() database.GroupStore {
+	return newGroupStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.QueryContext(ctx, query, args...)
+func (db *db) HostInstance() database.HostInstanceStore {
+	return newHostInstanceStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) Exec(query string, args ...any) (sql.Result, error) {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.Exec(query, args...)
+func (db *db) Organization() database.OrganizationStore {
+	return newOrganizationStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.ExecContext(ctx, query, args...)
+func (db *db) Page() database.PageStore {
+	return newPageStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) GetContext(ctx context.Context, dest any, query string, args ...any) error {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.GetContext(ctx, dest, query, args...)
+func (db *db) Session() database.SessionStore {
+	return newSessionStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) QueryxContext(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.QueryxContext(ctx, query, args...)
+func (db *db) User() database.UserStore {
+	return newUserStore(internal.NewQueryLogger(db.db))
 }
 
-func (l *queryLogger) SelectContext(ctx context.Context, dest any, query string, args ...any) error {
-	logger.Logger.Sugar().Debugf("%s, args: %s", query, args)
-	return l.db.SelectContext(ctx, dest, query, args...)
-}
-
-func (l *queryLogger) Beginx() (*sqlx.Tx, error) {
-	return l.db.Beginx()
-}
-
-type DB struct {
-	db      db
-	builder sq.StatementBuilderType
-}
-
-func New(db *sqlx.DB) *DB {
-	return &DB{
-		db:      newQueryLogger(db),
-		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-	}
-}
-
-func (db *DB) WithTx(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
-	tx, err := db.db.Beginx()
+func (db *db) WithTx(ctx context.Context, fn func(tx database.Tx) error) error {
+	sqlxTx, err := db.db.Beginx()
 	if err != nil {
 		return err
 	}
 
-	if err := fn(tx); err != nil {
-		if err := tx.Rollback(); err != nil {
+	t := &tx{db: sqlxTx}
+	if err := fn(t); err != nil {
+		if err := sqlxTx.Rollback(); err != nil {
 			return fmt.Errorf("failed to rollback transaction: %w", err)
 		}
 		return err
 	}
 
-	return tx.Commit()
+	return sqlxTx.Commit()
+}
+
+func New(sqlxDB *sqlx.DB) database.DB {
+	return &db{
+		db: sqlxDB,
+	}
+}
+
+var _ database.Tx = (*tx)(nil)
+
+type tx struct {
+	db *sqlx.Tx
+}
+
+func (tx *tx) APIKey() database.APIKeyStore {
+	return newAPIKeyStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) Environment() database.EnvironmentStore {
+	return newEnvironmentStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) Group() database.GroupStore {
+	return newGroupStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) HostInstance() database.HostInstanceStore {
+	return newHostInstanceStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) Organization() database.OrganizationStore {
+	return newOrganizationStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) Page() database.PageStore {
+	return newPageStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) Session() database.SessionStore {
+	return newSessionStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) User() database.UserStore {
+	return newUserStore(internal.NewQueryLogger(tx.db))
 }
 
 const (

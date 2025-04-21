@@ -52,7 +52,7 @@ func (m *Manager) startHostPingLoop(host *connectedHost) {
 
 				host.hostInstance.Status = core.HostInstanceStatusUnreachable
 
-				if err := m.db.UpdateHostInstance(context.Background(), nil, host.hostInstance); err != nil {
+				if err := m.db.HostInstance().Update(context.Background(), host.hostInstance); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 				}
 
@@ -81,7 +81,7 @@ func (m *Manager) startClientPingLoop(client *connectedClient) {
 
 				logger.Logger.Sugar().Errorf("Failed to ping client %s: %v", client.session.ID, err)
 
-				if err := m.db.DeleteSession(context.Background(), nil, client.session); err != nil {
+				if err := m.db.Session().Delete(context.Background(), client.session); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to delete session %s: %v", client.session.ID, err)
 				}
 

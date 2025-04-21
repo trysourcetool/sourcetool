@@ -11,16 +11,15 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/google"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -159,7 +158,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Check if user exists
-	exists, err := s.db.IsUserEmailExists(ctx, userInfo.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, userInfo.Email)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -174,7 +173,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		var role string
 		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// Verify invitation exists
-			userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(userInfo.Email), postgres.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
+			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(userInfo.Email), database.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
 			if err != nil {
 				return errdefs.ErrInvalidArgument(errors.New("invalid invitation"))
 			}
@@ -211,7 +210,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// For existing users
-	u, err := s.db.GetUser(ctx, postgres.UserByEmail(userInfo.Email))
+	u, err := s.db.User().Get(ctx, database.UserByEmail(userInfo.Email))
 	if err != nil {
 		return errdefs.ErrUnauthenticated(err)
 	}
@@ -224,12 +223,12 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 
 	if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 		// Handle invitation flow for existing users
-		invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(stateClaims.InvitationOrgID))
+		invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(stateClaims.InvitationOrgID))
 		if err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to get invited organization: %w", err))
 		}
 
-		userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(userInfo.Email), postgres.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
+		userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(userInfo.Email), database.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
 		if err != nil {
 			return errdefs.ErrInvalidArgument(errors.New("invalid invitation"))
 		}
@@ -245,7 +244,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 	} else {
 		// Standard flow - get user's organization info
 		// Get all organization accesses for the user
-		orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByUserID(u.ID))
+		orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByUserID(u.ID))
 		if err != nil {
 			return errdefs.ErrInternal(err)
 		}
@@ -257,7 +256,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 					// Handle multiple organizations by sending email with login URLs
 					loginURLs := make([]string, 0, len(orgAccesses))
 					for _, access := range orgAccesses {
-						org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(access.OrganizationID))
+						org, err := s.db.Organization().Get(ctx, database.OrganizationByID(access.OrganizationID))
 						if err != nil {
 							return errdefs.ErrInternal(err)
 						}
@@ -280,11 +279,11 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 						HasMultipleOrganizations: true,
 					})
 				} else {
-					org, err = s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(hostSubdomain))
+					org, err = s.db.Organization().Get(ctx, database.OrganizationBySubdomain(hostSubdomain))
 					if err != nil {
 						return errdefs.ErrInternal(err)
 					}
-					orgAccess, err = s.db.GetUserOrganizationAccess(ctx, postgres.UserOrganizationAccessByUserID(u.ID), postgres.UserOrganizationAccessByOrganizationID(org.ID))
+					orgAccess, err = s.db.User().GetOrganizationAccess(ctx, database.UserOrganizationAccessByUserID(u.ID), database.UserOrganizationAccessByOrganizationID(org.ID))
 					if err != nil {
 						return err
 					}
@@ -294,7 +293,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 				// Single organization case
 				orgAccess = orgAccesses[0]
 
-				org, err = s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+				org, err = s.db.Organization().Get(ctx, database.OrganizationByID(orgAccess.OrganizationID))
 				if err != nil {
 					return errdefs.ErrInternal(err)
 				}
@@ -303,7 +302,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		} else {
 			// Self-hosted mode
 			orgAccess = orgAccesses[0]
-			org, err = s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+			org, err = s.db.Organization().Get(ctx, database.OrganizationByID(orgAccess.OrganizationID))
 			if err != nil {
 				return errdefs.ErrInternal(err)
 			}
@@ -326,17 +325,17 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		return errdefs.ErrInternal(err)
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// For invitation flow, create org access and delete invitation
-			userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(userInfo.Email), postgres.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
+			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(userInfo.Email), database.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
 			if err != nil {
 				return err
 			}
-			if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+			if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 				return err
 			}
-			if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
 			}
 			if err := s.createPersonalAPIKey(ctx, tx, u, org); err != nil {
@@ -344,7 +343,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 			}
 		}
 
-		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+		if err := tx.User().Update(ctx, u); err != nil {
 			return err
 		}
 
@@ -388,7 +387,7 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	// Check if user already exists
-	exists, err := s.db.IsUserEmailExists(ctx, claims.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, claims.Email)
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to check user existence: %w", err))
 	}
@@ -416,18 +415,18 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	var authURL string
 	var hasOrganization bool
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.CreateUser(ctx, tx, u); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Create(ctx, u); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to create user: %w", err))
 		}
 
 		if claims.Flow == jwt.GoogleAuthFlowInvitation {
-			invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(claims.InvitationOrgID))
+			invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(claims.InvitationOrgID))
 			if err != nil {
 				return errdefs.ErrInternal(fmt.Errorf("failed to get invited organization: %w", err))
 			}
 
-			userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(claims.Email), postgres.UserInvitationByOrganizationID(claims.InvitationOrgID))
+			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(claims.Email), database.UserInvitationByOrganizationID(claims.InvitationOrgID))
 			if err != nil {
 				return errdefs.ErrInternal(fmt.Errorf("failed to get invitation: %w", err))
 			}
@@ -439,11 +438,11 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 				Role:           core.UserOrganizationRoleFromString(claims.Role),
 			}
 
-			if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+			if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 				return errdefs.ErrInternal(fmt.Errorf("failed to delete invitation: %w", err))
 			}
 
-			if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 				return errdefs.ErrInternal(fmt.Errorf("failed to create organization access: %w", err))
 			}
 
@@ -509,12 +508,12 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject for invitation"))
 	}
 
-	userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to retrieve invitation: %w", err))
 	}
 
-	invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to retrieve invited organization: %w", err))
 	}
@@ -524,7 +523,7 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		if subdomain == "" || subdomain == "auth" {
 			return errdefs.ErrInvalidArgument(errors.New("invitation must be accessed via organization subdomain"))
 		}
-		hostOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
 		if err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to retrieve host organization: %w", err))
 		}

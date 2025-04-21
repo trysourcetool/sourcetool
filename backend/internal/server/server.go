@@ -13,18 +13,18 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	exceptionv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/exception/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
 	"github.com/trysourcetool/sourcetool/backend/internal/ws"
 )
 
 type Server struct {
-	db        *postgres.DB
+	db        database.DB
 	pubsub    *pubsub.PubSub
 	wsManager *ws.Manager
 	checker   *permission.Checker
@@ -32,7 +32,7 @@ type Server struct {
 }
 
 func New(
-	db *postgres.DB,
+	db database.DB,
 	pubsub *pubsub.PubSub,
 	wsManager *ws.Manager,
 	checker *permission.Checker,

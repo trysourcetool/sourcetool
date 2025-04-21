@@ -12,14 +12,13 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -44,8 +43,8 @@ func buildLoginURL(subdomain string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("login"), nil)
 }
 
-func (s *Server) createPersonalAPIKey(ctx context.Context, tx *sqlx.Tx, u *core.User, org *core.Organization) error {
-	devEnv, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByOrganizationID(org.ID), postgres.EnvironmentBySlug(core.EnvironmentSlugDevelopment))
+func (s *Server) createPersonalAPIKey(ctx context.Context, tx database.Tx, u *core.User, org *core.Organization) error {
+	devEnv, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(org.ID), database.EnvironmentBySlug(core.EnvironmentSlugDevelopment))
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func (s *Server) createPersonalAPIKey(ctx context.Context, tx *sqlx.Tx, u *core.
 		Key:            key,
 	}
 
-	return s.db.CreateAPIKey(ctx, tx, apiKey)
+	return tx.APIKey().Create(ctx, apiKey)
 }
 
 // createTokens creates a new authentication token and refresh token.
@@ -111,7 +110,7 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 
 	// Get user by refresh token
 	hashedRefreshToken := core.HashRefreshToken(refreshTokenCookie.Value)
-	u, err := s.db.GetUser(ctx, postgres.UserByRefreshTokenHash(hashedRefreshToken))
+	u, err := s.db.User().Get(ctx, database.UserByRefreshTokenHash(hashedRefreshToken))
 	if err != nil {
 		return errdefs.ErrUnauthenticated(err)
 	}
@@ -123,9 +122,9 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// Verify user has access to this organization
-			if _, err := s.db.GetUserOrganizationAccess(ctx,
-				postgres.UserOrganizationAccessByUserID(u.ID),
-				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
+			if _, err := s.db.User().GetOrganizationAccess(ctx,
+				database.UserOrganizationAccessByUserID(u.ID),
+				database.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
 				return err
 			}
 
@@ -184,7 +183,7 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Get user by ID
-	u, err := s.db.GetUser(ctx, postgres.UserByID(userID))
+	u, err := s.db.User().Get(ctx, database.UserByID(userID))
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to get user: %w", err))
 	}
@@ -196,9 +195,9 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// Verify user has access to this organization
-			if _, err := s.db.GetUserOrganizationAccess(ctx,
-				postgres.UserOrganizationAccessByUserID(u.ID),
-				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
+			if _, err := s.db.User().GetOrganizationAccess(ctx,
+				database.UserOrganizationAccessByUserID(u.ID),
+				database.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
 				return err
 			}
 			orgSubdomain = subdomain
@@ -225,8 +224,8 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	// Update user's refresh token
 	u.RefreshTokenHash = hashedRefreshToken
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Update(ctx, u); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
 		}
 
@@ -278,8 +277,8 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Update user
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Update(ctx, u); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
 		}
 
@@ -299,16 +298,16 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) error {
 
 	u := internal.CurrentUser(ctx)
 
-	orgAccessOpts := []postgres.UserOrganizationAccessQuery{
-		postgres.UserOrganizationAccessByUserID(u.ID),
+	orgAccessOpts := []database.UserOrganizationAccessQuery{
+		database.UserOrganizationAccessByUserID(u.ID),
 	}
 
 	var subdomain string
 	if config.Config.IsCloudEdition {
 		subdomain = internal.Subdomain(ctx)
-		orgAccessOpts = append(orgAccessOpts, postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessOpts = append(orgAccessOpts, database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	}
-	_, err := s.db.GetUserOrganizationAccess(ctx, orgAccessOpts...)
+	_, err := s.db.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	if err != nil {
 		return err
 	}

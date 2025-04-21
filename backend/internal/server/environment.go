@@ -7,12 +7,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -31,7 +30,7 @@ func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
 
 	currentOrg := internal.CurrentOrganization(ctx)
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID), postgres.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
@@ -44,7 +43,7 @@ func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
 func (s *Server) listEnvironments(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	currentOrg := internal.CurrentOrganization(ctx)
-	envs, err := s.db.ListEnvironments(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID))
+	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -77,7 +76,7 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 
 	currentOrg := internal.CurrentOrganization(ctx)
 
-	slugExists, err := s.db.IsEnvironmentSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
+	slugExists, err := s.db.Environment().IsSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
 	if err != nil {
 		return err
 	}
@@ -97,8 +96,8 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 		Color:          req.Color,
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.CreateEnvironment(ctx, tx, env); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Environment().Create(ctx, env); err != nil {
 			return err
 		}
 
@@ -107,7 +106,7 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	env, _ = s.db.GetEnvironment(ctx, postgres.EnvironmentByID(env.ID))
+	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.CreateEnvironmentResponse{
 		Environment: responses.EnvironmentFromModel(env),
@@ -141,7 +140,7 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID), postgres.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
@@ -153,8 +152,8 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		env.Color = internal.SafeValue(req.Color)
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateEnvironment(ctx, tx, env); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Environment().Update(ctx, env); err != nil {
 			return err
 		}
 
@@ -163,7 +162,7 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	env, _ = s.db.GetEnvironment(ctx, postgres.EnvironmentByID(env.ID))
+	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateEnvironmentResponse{
 		Environment: responses.EnvironmentFromModel(env),
@@ -188,7 +187,7 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByOrganizationID(currentOrg.ID), postgres.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
@@ -197,7 +196,7 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrInvalidArgument(errors.New("cannot delete development or production environment"))
 	}
 
-	apiKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByEnvironmentID(env.ID))
+	apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByEnvironmentID(env.ID))
 	if err != nil {
 		return err
 	}
@@ -206,8 +205,8 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrEnvironmentDeletionNotAllowed(errors.New("cannot delete environment with API keys"))
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteEnvironment(ctx, tx, env); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Environment().Delete(ctx, env); err != nil {
 			return err
 		}
 

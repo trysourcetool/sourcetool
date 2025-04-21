@@ -12,15 +12,14 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -173,7 +172,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	// Check if email exists
-	exists, err := s.db.IsUserEmailExists(ctx, req.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, req.Email)
 	if err != nil {
 		return err
 	}
@@ -186,21 +185,21 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 		subdomain := internal.Subdomain(ctx)
 		if subdomain != "" && subdomain != "auth" {
 			// Get organization by subdomain
-			org, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+			org, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
 			if err != nil {
 				return err
 			}
 
 			if exists {
 				// For existing users, check if they have access to this organization
-				u, err := s.db.GetUser(ctx, postgres.UserByEmail(req.Email))
+				u, err := s.db.User().Get(ctx, database.UserByEmail(req.Email))
 				if err != nil {
 					return err
 				}
 
-				_, err = s.db.GetUserOrganizationAccess(ctx,
-					postgres.UserOrganizationAccessByUserID(u.ID),
-					postgres.UserOrganizationAccessByOrganizationID(org.ID))
+				_, err = s.db.User().GetOrganizationAccess(ctx,
+					database.UserOrganizationAccessByUserID(u.ID),
+					database.UserOrganizationAccessByOrganizationID(org.ID))
 				if err != nil {
 					return errdefs.ErrUnauthenticated(errors.New("user does not have access to this organization"))
 				}
@@ -213,14 +212,14 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 
 	if exists {
 		// Get user by email for existing users
-		u, err := s.db.GetUser(ctx, postgres.UserByEmail(req.Email))
+		u, err := s.db.User().Get(ctx, database.UserByEmail(req.Email))
 		if err != nil {
 			return err
 		}
 		firstName = u.FirstName
 
 		// Get user's organization access information
-		orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByUserID(u.ID))
+		orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByUserID(u.ID))
 		if err != nil {
 			return err
 		}
@@ -230,7 +229,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 			// Handle multiple organizations
 			loginURLs := make([]string, 0, len(orgAccesses))
 			for _, access := range orgAccesses {
-				org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(access.OrganizationID))
+				org, err := s.db.Organization().Get(ctx, database.OrganizationByID(access.OrganizationID))
 				if err != nil {
 					return err
 				}
@@ -320,7 +319,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Check if user exists
-	exists, err := s.db.IsUserEmailExists(ctx, c.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, c.Email)
 	if err != nil {
 		return err
 	}
@@ -340,13 +339,13 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Get existing user
-	u, err := s.db.GetUser(ctx, postgres.UserByEmail(c.Email))
+	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Email))
 	if err != nil {
 		return err
 	}
 
 	// Get user's organization access information
-	orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByUserID(u.ID))
+	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return err
 	}
@@ -359,9 +358,9 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	if config.Config.IsCloudEdition {
 		if subdomain != "auth" {
 			// For specific organization subdomain, resolve org and access
-			orgAccess, err = s.db.GetUserOrganizationAccess(ctx,
-				postgres.UserOrganizationAccessByUserID(u.ID),
-				postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+			orgAccess, err = s.db.User().GetOrganizationAccess(ctx,
+				database.UserOrganizationAccessByUserID(u.ID),
+				database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 			if err != nil {
 				return err
 			}
@@ -373,7 +372,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 			} else if len(orgAccesses) == 1 {
 				// Single organization - redirect to it
 				orgAccess = orgAccesses[0]
-				org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+				org, err := s.db.Organization().Get(ctx, database.OrganizationByID(orgAccess.OrganizationID))
 				if err != nil {
 					return err
 				}
@@ -385,7 +384,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	} else {
 		// Self-hosted mode has only one organization
 		orgAccess = orgAccesses[0]
-		_, err = s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+		_, err = s.db.Organization().Get(ctx, database.OrganizationByID(orgAccess.OrganizationID))
 		if err != nil {
 			return err
 		}
@@ -405,8 +404,8 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Update(ctx, u); err != nil {
 			return err
 		}
 		return nil
@@ -465,7 +464,7 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 		RefreshTokenHash: hashedRefreshToken,
 	}
 
-	orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByUserID(u.ID))
+	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return err
 	}
@@ -474,9 +473,9 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 	var token, xsrfToken string
 	var expiration time.Duration
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		// Create the user in a transaction
-		if err := s.db.CreateUser(ctx, tx, u); err != nil {
+		if err := tx.User().Create(ctx, u); err != nil {
 			return err
 		}
 
@@ -540,13 +539,13 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Get invitation
-	userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return err
 	}
 
 	// Get organization
-	invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return err
 	}
@@ -554,7 +553,7 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	// Verify organization access in cloud edition
 	if config.Config.IsCloudEdition {
 		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
 		if err != nil {
 			return err
 		}
@@ -608,13 +607,13 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Get invitation
-	userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return err
 	}
 
 	// Get organization
-	invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return err
 	}
@@ -623,7 +622,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
 		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
 		if err != nil {
 			return err
 		}
@@ -636,7 +635,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Check if user exists
-	exists, err := s.db.IsUserEmailExists(ctx, c.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, c.Email)
 	if err != nil {
 		return err
 	}
@@ -655,7 +654,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Get existing user
-	u, err := s.db.GetUser(ctx, postgres.UserByEmail(c.Email))
+	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Email))
 	if err != nil {
 		return err
 	}
@@ -677,12 +676,12 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 		return errdefs.ErrInvalidArgument(fmt.Errorf("failed to generate token: %w", err))
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
 
-		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}
 
@@ -724,13 +723,13 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 	}
 
 	// Get invitation
-	userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
 	if err != nil {
 		return err
 	}
 
 	// Get organization
-	invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(userInvitation.OrganizationID))
+	invitedOrg, err := s.db.Organization().Get(ctx, database.OrganizationByID(userInvitation.OrganizationID))
 	if err != nil {
 		return err
 	}
@@ -739,7 +738,7 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
 		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationBySubdomain(subdomain))
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
 		if err != nil {
 			return err
 		}
@@ -783,16 +782,16 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 		return errdefs.ErrInternal(err)
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
 
-		if err := s.db.CreateUser(ctx, tx, u); err != nil {
+		if err := tx.User().Create(ctx, u); err != nil {
 			return err
 		}
 
-		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}
 

@@ -11,8 +11,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
@@ -30,22 +30,22 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.db.GetEnvironment(ctx, postgres.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
 
-	pages, err := s.db.ListPages(ctx, postgres.PageByOrganizationID(o.ID), postgres.PageByEnvironmentID(env.ID), postgres.PageOrderBy(`array_length(p."path", 1), "path"`))
+	pages, err := s.db.Page().List(ctx, database.PageByOrganizationID(o.ID), database.PageByEnvironmentID(env.ID), database.PageOrderBy(`array_length(p."path", 1), "path"`))
 	if err != nil {
 		return err
 	}
 
-	users, err := s.db.ListUsers(ctx, postgres.UserByOrganizationID(o.ID))
+	users, err := s.db.User().List(ctx, database.UserByOrganizationID(o.ID))
 	if err != nil {
 		return err
 	}
 
-	userGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByOrganizationID(o.ID))
+	userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByOrganizationID(o.ID))
 	if err != nil {
 		return err
 	}
