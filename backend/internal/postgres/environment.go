@@ -73,7 +73,7 @@ func (s *environmentStore) applyQueries(b sq.SelectBuilder, queries ...database.
 }
 
 func (s *environmentStore) buildQuery(ctx context.Context, queries ...database.EnvironmentQuery) (string, []any, error) {
-	q := s.builder.Select(environmentColumns()...).
+	q := s.builder.Select(s.columns()...).
 		From(`"environment" e`)
 
 	q = s.applyQueries(q, queries...)
@@ -173,7 +173,7 @@ func (s *environmentStore) BulkInsert(ctx context.Context, m []*core.Environment
 }
 
 func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]*core.Environment, error) {
-	cols := append(environmentColumns(), `ak."id" AS "api_key_id"`)
+	cols := append(s.columns(), `ak."id" AS "api_key_id"`)
 	query, args, err := s.builder.Select(cols...).
 		From(`"environment" e`).
 		InnerJoin(`"api_key" ak ON ak."environment_id" = e."id"`).
@@ -206,7 +206,7 @@ func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) 
 	return m, nil
 }
 
-func environmentColumns() []string {
+func (s *environmentStore) columns() []string {
 	return []string{
 		`e."id"`,
 		`e."organization_id"`,
