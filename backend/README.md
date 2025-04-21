@@ -25,35 +25,26 @@ The backend provides the API for the Sourcetool application, handling:
 
 ## Directory Structure
 
-- `/cmd` - Application entry points
-- `/devtools` - Development tools
-- `/docs` - API documentation (Swagger)
-- `/ee` - Enterprise features (if applicable)
-- `/internal` - Internal application logic and packages
-  - `/app` - Application layer services
-  - `/config` - Configuration handling
-  - `/domain` - Core domain models and business logic
-  - `/fixtures` - Test fixtures and data
-  - `/infra` - Infrastructure components (database, external services)
-    - `/postgres` - PostgreSQL specific implementations
-    - `/smtp` - SMTP based email service
-    - `/redis` - Redis based pub/sub service
-    - `/wsmanager` - WebSocket connection management
-  - `/jwt` - JWT handling utilities
-  - `/logger` - Logging utilities
-  - `/pb` - Protocol Buffer definitions and generated code
-  - `/transport` - API transport layer (HTTP and WebSocket handlers)
-    - `/http` - HTTP API handlers and routing
-      - `/v1` - Version 1 of the HTTP API
-        - `/handlers` - HTTP request handlers
-        - `/requests` - Request models and validation
-        - `/responses` - Response models
-        - `/mapper` - Data mapping utilities
-        - `/middleware` - HTTP middleware components
-    - `/ws` - WebSocket handlers and routing
-      - `/handlers` - WebSocket message handlers
-      - `/message` - WebSocket message utilities
-      - `/middleware` - WebSocket middleware components
-    - `router.go` - Main router configuration
-    - `static.go` - Static file serving configuration
-- `/migrations` - Database migrations
+```
+backend/
+├── cmd/                # entry points
+│   ├── server/         # main.go – wires everything + graceful shutdown
+│   └── internal/       # helpers only needed by binaries (redis/smtp/upgrader/fixtures)
+├── devtools/           # CLI & scripts (migrations, etc.)
+├── internal/           # all import‑able code lives here (go’s internal visibility)
+│   ├── config/         # env parsing, URL helpers
+│   ├── core/           # *domain* models – NO I/O
+│   ├── postgres/       # SQL repos (`*_query.go`) + db logger
+│   ├── pubsub/         # Redis adapter (fan‑out)
+│   ├── mail/           # SMTP adapter
+│   ├── ws/             # WebSocket manager / ping loop
+│   ├── server/         # HTTP & WS handlers, DTOs, middleware, CORS (CE/EE split via build‑tags)
+│   ├── jwt/            # generic JWT helpers & claim structs
+│   ├── google/         # OAuth client
+│   ├── permission/     # RBAC checker
+│   ├── errdefs/        # error taxonomy (maps → HTTP status)
+│   ├── logger/         # zap wrapper
+│   └── pb/             # generated Protobuf (widget, page, websocket, …)
+├── migrations/         # SQL schema
+└── go.mod
+```
