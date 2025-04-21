@@ -52,6 +52,7 @@ type Cfg struct {
 		Username  string `env:"SMTP_USERNAME"`
 		Password  string `env:"SMTP_PASSWORD"`
 		FromEmail string `env:"SMTP_FROM_EMAIL"`
+		UseTLS    bool   `env:"SMTP_USE_TLS" envDefault:"true"`
 	}
 }
 
