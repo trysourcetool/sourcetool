@@ -61,6 +61,11 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		return err
 	}
 
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(apiKey.EnvironmentID))
+	if err != nil {
+		return err
+	}
+
 	hostInstances, err := s.db.HostInstance().List(ctx, database.HostInstanceByAPIKeyID(apiKey.ID))
 	if err != nil {
 		return err
@@ -125,8 +130,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		sess = &core.Session{
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: page.OrganizationID,
-			APIKeyID:       page.APIKeyID,
-			HostInstanceID: onlineHostInstance.ID,
+			EnvironmentID:  env.ID,
 			UserID:         currentUser.ID,
 		}
 		sessionExists = false
@@ -224,7 +228,12 @@ func (s *Server) handleRerunPage(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	if err := s.wsManager.SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByAPIKeyID(page.APIKeyID))
+	if err != nil {
+		return err
+	}
+
+	if err := s.wsManager.SendToHost(ctx, hostInstance.ID, &websocketv1.Message{
 		Id: msg.Id,
 		Type: &websocketv1.Message_RerunPage{
 			RerunPage: &websocketv1.RerunPage{
@@ -256,7 +265,7 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	_, err = s.db.Page().Get(ctx, database.PageByAPIKeyID(sess.APIKeyID), database.PageBySessionID(sess.ID))
+	_, err = s.db.Page().Get(ctx, database.PageByEnvironmentID(sess.EnvironmentID), database.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -270,7 +279,22 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	if err := s.wsManager.SendToHost(ctx, sess.HostInstanceID, &websocketv1.Message{
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(sess.EnvironmentID))
+	if err != nil {
+		return err
+	}
+
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByEnvironmentID(env.ID))
+	if err != nil {
+		return err
+	}
+
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByAPIKeyID(apiKey.ID))
+	if err != nil {
+		return err
+	}
+
+	if err := s.wsManager.SendToHost(ctx, hostInstance.ID, &websocketv1.Message{
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_CloseSession{
 			CloseSession: &websocketv1.CloseSession{
@@ -278,7 +302,7 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 			},
 		},
 	}); err != nil {
-		logger.Logger.Sugar().Warnf("Failed to send close session message to host %s for session %s: %v", sess.HostInstanceID, sess.ID, err)
+		logger.Logger.Sugar().Warnf("Failed to send close session message to host %s for session %s: %v", hostInstance.ID, sess.ID, err)
 	}
 
 	s.wsManager.DisconnectClient(sess.ID)

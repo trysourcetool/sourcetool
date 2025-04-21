@@ -139,6 +139,21 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentID(env.ID))
+	if err != nil {
+		return err
+	}
+
+	if len(apiKeys) >= 1 {
+		// currently, we only support one API key per environment.
+		// we will support multiple API keys per environment in the future:
+		// concern:
+		// 1. since multiple host instances can be associated with a single session, a client must call initializeClient multiple times; otherwise, there will be hosts without a session.
+		// 2. when closing a session, all related host instances must be properly closed as well.
+		// 3. additionally, if the same session ID is reused, the session persistence logic in initializeClient will also need to be updated.
+		return errdefs.ErrInvalidArgument(errors.New("cannot create more than one API key for this environment"))
+	}
+
 	key, err := env.GenerateAPIKey()
 	if err != nil {
 		return errdefs.ErrInternal(err)

@@ -16,7 +16,7 @@ func Init() {
 	case config.EnvProd:
 		Logger, err = zap.NewProduction()
 	case config.EnvStaging:
-		Logger, err = zap.NewProduction()
+		Logger, err = zap.NewDevelopment()
 	default:
 		Logger, err = zap.NewDevelopment()
 	}

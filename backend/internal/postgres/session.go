@@ -59,8 +59,7 @@ func (s *sessionStore) buildQuery(ctx context.Context, queries ...database.Sessi
 		`s."id"`,
 		`s."organization_id"`,
 		`s."user_id"`,
-		`s."api_key_id"`,
-		`s."host_instance_id"`,
+		`s."environment_id"`,
 		`s."created_at"`,
 		`s."updated_at"`,
 	).
@@ -83,15 +82,13 @@ func (s *sessionStore) Create(ctx context.Context, m *core.Session) error {
 			`"id"`,
 			`"organization_id"`,
 			`"user_id"`,
-			`"api_key_id"`,
-			`"host_instance_id"`,
+			`"environment_id"`,
 		).
 		Values(
 			m.ID,
 			m.OrganizationID,
 			m.UserID,
-			m.APIKeyID,
-			m.HostInstanceID,
+			m.EnvironmentID,
 		).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {

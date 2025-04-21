@@ -130,36 +130,40 @@ func TestGeneratePageID(t *testing.T) {
 	tests := []struct {
 		name     string
 		path     string
+		apiKey   string
 		wantSame bool
 	}{
 		{
 			name:     "Simple path",
 			path:     "/users",
+			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 		{
 			name:     "Nested path",
 			path:     "/admin/users/list",
+			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 		{
 			name:     "Root path",
 			path:     "/",
+			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id1 := r.generatePageID(tt.path)
-			id2 := r.generatePageID(tt.path)
+			id1 := r.generatePageID(tt.path, tt.apiKey)
+			id2 := r.generatePageID(tt.path, tt.apiKey)
 
 			if tt.wantSame && id1 != id2 {
 				t.Errorf("generatePageID() generated different IDs for same path")
 			}
 
 			differentPath := tt.path + "/different"
-			id3 := r.generatePageID(differentPath)
+			id3 := r.generatePageID(differentPath, tt.apiKey)
 			if id1 == id3 {
 				t.Errorf("generatePageID() generated same ID for different paths")
 			}
