@@ -5,14 +5,19 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
@@ -41,7 +46,67 @@ func New(
 	return &Server{db, pubsub, wsManager, checker, upgrader}
 }
 
-func (s *Server) Install(router *chi.Mux) error {
+func (s *Server) installDefaultMiddlewares(router *chi.Mux) {
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.Timeout(time.Duration(600) * time.Second))
+}
+
+func (s *Server) installCORSMiddleware(router *chi.Mux) {
+	router.Use(cors.New(cors.Options{
+		AllowOriginFunc: func(r *http.Request, origin string) bool {
+			if config.Config.IsCloudEdition {
+				var pattern string
+
+				switch config.Config.Env {
+				case config.EnvProd:
+					pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
+				case config.EnvStaging:
+					pattern = `^https://[a-zA-Z0-9-]+\.staging\.trysourcetool\.com$`
+				case config.EnvLocal:
+					pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`
+				default:
+					return false
+				}
+
+				matched, err := regexp.MatchString(pattern, origin)
+				if err != nil {
+					return false
+				}
+
+				return matched
+			} else {
+				// For self-hosted environments, we only need to check against the configured base URL
+				normalizedOrigin := strings.TrimRight(origin, "/")
+				normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
+				return normalizedOrigin == normalizedBaseURL
+			}
+		},
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{},
+		AllowCredentials: true,
+		MaxAge:           0,
+		Debug:            !(config.Config.Env == config.EnvProd),
+	}).Handler)
+}
+
+func (s *Server) errorHandler(f func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := f(w, r); err != nil {
+			s.serveError(w, r, err)
+		}
+	}
+}
+
+func (s *Server) installRESTHandlers(router *chi.Mux) {
 	router.Route("/api", func(r chi.Router) {
 		r.Use(s.setSubdomain)
 		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -172,24 +237,26 @@ func (s *Server) Install(router *chi.Mux) error {
 			})
 		})
 	})
+}
 
+func (s *Server) installWebSocketHandler(router *chi.Mux) {
 	router.Route("/ws", func(r chi.Router) {
 		r.Use(s.authWebSocketUser)
 		r.Get("/", s.handleWebSocket)
 	})
-
-	staticDir := os.Getenv("STATIC_FILES_DIR")
-	serveStaticFiles(router, staticDir)
-
-	return nil
 }
 
-func (s *Server) errorHandler(f func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f(w, r); err != nil {
-			s.serveError(w, r, err)
-		}
-	}
+func (s *Server) installStaticHandler(router *chi.Mux) {
+	staticDir := os.Getenv("STATIC_FILES_DIR")
+	serveStaticFiles(router, staticDir)
+}
+
+func (s *Server) Install(router *chi.Mux) {
+	s.installDefaultMiddlewares(router)
+	s.installCORSMiddleware(router)
+	s.installRESTHandlers(router)
+	s.installWebSocketHandler(router)
+	s.installStaticHandler(router)
 }
 
 func (s *Server) serveError(w http.ResponseWriter, r *http.Request, err error) {
