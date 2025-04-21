@@ -200,5 +200,3 @@ export class Cursor {
     this.index++;
   }
 }
-
-// Additional methods and logic can be added as needed.

@@ -90,8 +90,8 @@ export class Runtime {
 
     const msg = create(InitializeHostSchema, {
       apiKey,
-      sdkName: 'sourcetool-js',
-      sdkVersion: '0.0.1',
+      sdkName: 'sourcetool-node',
+      sdkVersion: '0.1.0',
       pages: pagesPayload,
     });
 
@@ -364,8 +364,6 @@ export class Runtime {
       }
     }
 
-    console.log('newWidgetStates', newWidgetStates);
-
     // Set new widget states
     session.state.setStates(newWidgetStates);
 
@@ -461,6 +459,8 @@ export async function startRuntime(
       runtime.sendInitializeHost(apiKey, pages);
     },
   });
+
+  await wsClient.createConnection();
 
   // Create runtime
   const runtime = new Runtime(wsClient, sessionManager, pageManager);

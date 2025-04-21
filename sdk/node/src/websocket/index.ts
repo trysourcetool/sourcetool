@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { create } from '@bufbuild/protobuf';
+import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import { Message, MessageSchema } from '../pb/websocket/v1/message_pb';
 
 /**
@@ -112,6 +112,17 @@ export class Client implements WebSocketClient {
     });
   }
 
+  public async createConnection(): Promise<void> {
+    try {
+      await this.connect();
+      this.startPingPongLoop();
+      this.startSendEnqueuedMessagesLoop();
+    } catch (err) {
+      console.error('[ERROR] Error creating connection', err);
+      throw err;
+    }
+  }
+
   /**
    * Connect to the WebSocket server
    */
@@ -135,7 +146,7 @@ export class Client implements WebSocketClient {
 
       this.conn.on('message', (data: Buffer) => {
         try {
-          const msg = JSON.parse(data.toString());
+          const msg = fromBinary(MessageSchema, data);
           this.handleMessage(msg);
         } catch (err) {
           console.error('[ERROR] Error parsing message', err);
@@ -218,6 +229,7 @@ export class Client implements WebSocketClient {
 
       if (this.messageQueue.length > 0) {
         const msg = this.messageQueue.shift();
+
         try {
           this.send(msg);
         } catch (err) {
@@ -237,7 +249,9 @@ export class Client implements WebSocketClient {
       throw new Error('WebSocket connection not established');
     }
 
-    this.conn.send(Buffer.from(JSON.stringify(msg)));
+    const bytes = toBinary(MessageSchema, msg);
+
+    this.conn.send(bytes);
   }
 
   /**
@@ -300,6 +314,7 @@ export class Client implements WebSocketClient {
     return new Promise((resolve, reject) => {
       try {
         const msg = newMessage(id, payload);
+
         this.responses.set(id, { resolve, reject });
         this.messageQueue.push(msg);
 

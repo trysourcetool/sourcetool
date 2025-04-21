@@ -17,6 +17,7 @@ const commonOptions: BuildOptions = {
   entryPoints,
   logLevel: 'info',
   platform: 'node',
+  target: 'ES2020',
 };
 
 const buildOptions = (format: 'esm' | 'cjs'): BuildOptions => {
@@ -25,8 +26,15 @@ const buildOptions = (format: 'esm' | 'cjs'): BuildOptions => {
     outbase: './src',
     outdir: format === 'esm' ? './dist/esm' : './dist/cjs',
     format,
+    sourcemap: true,
     bundle: format === 'esm',
     outExtension: { '.js': format === 'esm' ? '.mjs' : '.js' },
+    banner:
+      format === 'esm'
+        ? {
+            js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
+          }
+        : undefined,
   };
 };
 

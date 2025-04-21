@@ -258,8 +258,6 @@ export function convertTableProtoToState(
 
   const d = toJson(TableSchema, data);
 
-  console.log('convertTableProtoToState', { d }, typeof d.data);
-
   const tableData =
     typeof d.data === 'string' ? JSON.parse(atob(d.data)) : d.data;
   const tableValue: TableStateValue = {};

@@ -1,5 +1,5 @@
 {
-  "name": "sourcetool",
+  "name": "@sourcetool/node",
   "version": "0.0.1",
   "description": "Sourcetool JavaScript SDK",
   "author": "Sourcetool",
@@ -12,6 +12,15 @@
     "build:watch": "npx tsx build/build.ts --watch",
     "test": "vitest watch",
     "test:ci": "vitest run"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.mjs",
+      "default": "./dist/esm/index.mjs",
+      "types": "./dist/types/index.d.ts"
+    }
   },
   "devDependencies": {
     "@types/node": "^22.13.13",

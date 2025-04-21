@@ -465,7 +465,7 @@ describe('router page', () => {
     const sourcetool = new Sourcetool(config);
 
     sourcetool.page('/', 'Root Page', pageHandler);
-    console.log(sourcetool.pages);
+
     const page = findPageByPath(sourcetool.pages, '/');
     expect(page).toBe(null);
 
