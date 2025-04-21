@@ -67,6 +67,13 @@ func (db *DB) buildAPIKeyQuery(ctx context.Context, queries ...APIKeyQuery) (str
 }
 
 func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"api_key"`).
 		Columns(
@@ -85,7 +92,7 @@ func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 			m.Name,
 			m.Key,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return errdefs.ErrAlreadyExists(err)
@@ -97,13 +104,20 @@ func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 }
 
 func (db *DB) UpdateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"api_key"`).
 		Set(`"user_id"`, m.UserID).
 		Set(`"name"`, m.Name).
 		Set(`"key"`, m.Key).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -112,10 +126,17 @@ func (db *DB) UpdateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 }
 
 func (db *DB) DeleteAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"api_key"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

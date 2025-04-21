@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
@@ -160,21 +161,17 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateGroup(ctx, tx, g); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateGroup(ctx, tx, g); err != nil {
-		return err
-	}
+		if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+			return err
+		}
 
-	if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -239,30 +236,26 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateGroup(ctx, tx, g); err != nil {
+			return err
+		}
 
-	if err := s.db.UpdateGroup(ctx, tx, g); err != nil {
-		return err
-	}
+		existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByGroupID(g.ID))
+		if err != nil {
+			return err
+		}
 
-	existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByGroupID(g.ID))
-	if err != nil {
-		return err
-	}
+		if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
+			return err
+		}
 
-	if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
-		return err
-	}
+		if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+			return err
+		}
 
-	if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -293,17 +286,13 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteGroup(ctx, tx, g); err != nil {
+			return err
+		}
 
-	if err := s.db.DeleteGroup(ctx, tx, g); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 

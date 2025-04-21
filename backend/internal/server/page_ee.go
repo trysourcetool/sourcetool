@@ -17,10 +17,9 @@ import (
 
 func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-
-	envIDReq := r.URL.Query().Get("environmentID")
+	envIDReq := r.URL.Query().Get("environmentId")
 	if envIDReq == "" {
-		return errdefs.ErrInvalidArgument(errors.New("environmentID is required"))
+		return errdefs.ErrInvalidArgument(errors.New("environmentId is required"))
 	}
 
 	o := internal.CurrentOrganization(ctx)

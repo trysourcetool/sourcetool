@@ -69,6 +69,13 @@ func (db *DB) buildQuery(ctx context.Context, queries ...PageQuery) (string, []a
 }
 
 func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -98,7 +105,7 @@ func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 	}
 
 	if _, err := q.
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -107,6 +114,13 @@ func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 }
 
 func (db *DB) BulkUpdatePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -118,7 +132,7 @@ func (db *DB) BulkUpdatePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 			Set(`"route"`, v.Route).
 			Set(`"path"`, v.Path).
 			Where(sq.Eq{`"id"`: v.ID}).
-			RunWith(tx).
+			RunWith(runner).
 			ExecContext(ctx); err != nil {
 			return errdefs.ErrDatabase(err)
 		}
@@ -128,6 +142,13 @@ func (db *DB) BulkUpdatePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 }
 
 func (db *DB) BulkDeletePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -139,7 +160,7 @@ func (db *DB) BulkDeletePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 	if _, err := db.builder.
 		Delete(`"page"`).
 		Where(sq.Eq{`"id"`: ids}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

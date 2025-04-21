@@ -62,6 +62,13 @@ func (db *DB) buildGroupQuery(ctx context.Context, queries ...GroupQuery) (strin
 }
 
 func (db *DB) CreateGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"group"`).
 		Columns(
@@ -76,7 +83,7 @@ func (db *DB) CreateGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error
 			m.Name,
 			m.Slug,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -85,12 +92,19 @@ func (db *DB) CreateGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error
 }
 
 func (db *DB) UpdateGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"group"`).
 		Set(`"name"`, m.Name).
 		Set(`"slug"`, m.Slug).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -99,10 +113,17 @@ func (db *DB) UpdateGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error
 }
 
 func (db *DB) DeleteGroup(ctx context.Context, tx *sqlx.Tx, m *core.Group) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"group"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -166,6 +187,13 @@ func (db *DB) buildGroupPageQuery(ctx context.Context, queries ...GroupPageQuery
 }
 
 func (db *DB) BulkInsertGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*core.GroupPage) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(pages) == 0 {
 		return nil
 	}
@@ -182,7 +210,7 @@ func (db *DB) BulkInsertGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*co
 		q = q.Values(p.ID, p.GroupID, p.PageID)
 	}
 
-	if _, err := q.RunWith(tx).ExecContext(ctx); err != nil {
+	if _, err := q.RunWith(runner).ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
 
@@ -190,6 +218,13 @@ func (db *DB) BulkInsertGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*co
 }
 
 func (db *DB) BulkUpdateGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*core.GroupPage) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(pages) == 0 {
 		return nil
 	}
@@ -200,7 +235,7 @@ func (db *DB) BulkUpdateGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*co
 			Set(`"group_id"`, p.GroupID).
 			Set(`"page_id"`, p.PageID).
 			Where(sq.Eq{`"id"`: p.ID}).
-			RunWith(tx).
+			RunWith(runner).
 			ExecContext(ctx); err != nil {
 			return errdefs.ErrDatabase(err)
 		}
@@ -210,6 +245,13 @@ func (db *DB) BulkUpdateGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*co
 }
 
 func (db *DB) BulkDeleteGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*core.GroupPage) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(pages) == 0 {
 		return nil
 	}
@@ -221,7 +263,7 @@ func (db *DB) BulkDeleteGroupPages(ctx context.Context, tx *sqlx.Tx, pages []*co
 	if _, err := db.builder.
 		Delete(`"group_page"`).
 		Where(sq.Eq{`"id"`: ids}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

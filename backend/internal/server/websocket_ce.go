@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
@@ -93,42 +94,42 @@ func (s *Server) wsInitializeHost(ctx context.Context, conn *websocket.Conn, ins
 		}
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
 	for _, existingPage := range existingPages {
 		if _, exists := requestPageIDs[existingPage.ID.String()]; !exists {
 			deletePages = append(deletePages, existingPage)
 		}
 	}
 
-	if hostExists {
-		if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
-			return nil, err
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if hostExists {
+			if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
+				return err
+			}
+		} else {
+			if err := s.db.CreateHostInstance(ctx, tx, hostInstance); err != nil {
+				return err
+			}
 		}
-	} else {
-		if err := s.db.CreateHostInstance(ctx, tx, hostInstance); err != nil {
-			return nil, err
-		}
-	}
 
-	if len(deletePages) > 0 {
-		if err := s.db.BulkDeletePages(ctx, tx, deletePages); err != nil {
-			return nil, err
+		if len(deletePages) > 0 {
+			if err := s.db.BulkDeletePages(ctx, tx, deletePages); err != nil {
+				return err
+			}
 		}
-	}
-	if len(updatePages) > 0 {
-		if err := s.db.BulkUpdatePages(ctx, tx, updatePages); err != nil {
-			return nil, err
+		if len(updatePages) > 0 {
+			if err := s.db.BulkUpdatePages(ctx, tx, updatePages); err != nil {
+				return err
+			}
 		}
-	}
-	if len(insertPages) > 0 {
-		if err := s.db.BulkInsertPages(ctx, tx, insertPages); err != nil {
-			return nil, err
+		if len(insertPages) > 0 {
+			if err := s.db.BulkInsertPages(ctx, tx, insertPages); err != nil {
+				return err
+			}
 		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	s.wsManager.SetConnectedHost(hostInstance, apikey, conn)

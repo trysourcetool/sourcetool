@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
@@ -66,12 +67,6 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
 	// Try to find an online host that responds to ping
 	var onlineHostInstance *core.HostInstance
 	for _, hostInstance := range hostInstances {
@@ -79,7 +74,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
 				// Update host status to offline if ping fails
 				hostInstance.Status = core.HostInstanceStatusOffline
-				if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
+				if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 				}
 				continue
@@ -97,7 +92,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 				if err := s.wsManager.PingConnectedHost(hostInstance.ID); err == nil {
 					// Host is actually reachable, update its status
 					hostInstance.Status = core.HostInstanceStatusOnline
-					if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
+					if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
 						logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 						continue
 					}
@@ -138,14 +133,14 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 		sessionExists = false
 	}
 
-	if !sessionExists {
-		if err := s.db.CreateSession(ctx, tx, sess); err != nil {
-			return err
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if !sessionExists {
+			if err := s.db.CreateSession(ctx, tx, sess); err != nil {
+				return err
+			}
 		}
-	}
-
-	sess, err = s.db.GetSession(ctx, postgres.SessionByID(sess.ID))
-	if err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -171,13 +166,9 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 			},
 		},
 	}); err != nil {
-		s.db.DeleteSession(ctx, tx, sess)
+		s.db.DeleteSession(ctx, nil, sess)
 		s.wsManager.DisconnectClient(sess.ID)
 		logger.Logger.Sugar().Errorf("Failed to send initialize client message to host: %v", err)
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return err
 	}
 
@@ -271,13 +262,12 @@ func (s *Server) wsCloseSession(ctx context.Context, conn *websocket.Conn, msg *
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err := s.db.DeleteSession(ctx, tx, sess); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteSession(ctx, tx, sess); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -293,10 +283,6 @@ func (s *Server) wsCloseSession(ctx context.Context, conn *websocket.Conn, msg *
 	}
 
 	s.wsManager.DisconnectClient(sess.ID)
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -445,17 +431,12 @@ func (s *Server) updateHostInstanceStatus(ctx context.Context, hostInstanceID uu
 
 	host.Status = status
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err := s.db.UpdateHostInstance(ctx, tx, host); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateHostInstance(ctx, tx, host); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 

@@ -58,6 +58,13 @@ func (db *DB) buildEnvironmentQuery(ctx context.Context, queries ...EnvironmentQ
 }
 
 func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"environment"`).
 		Columns(
@@ -74,7 +81,7 @@ func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 			m.Slug,
 			m.Color,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -83,13 +90,20 @@ func (db *DB) CreateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 }
 
 func (db *DB) UpdateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"environment"`).
 		Set(`"name"`, m.Name).
 		Set(`"slug"`, m.Slug).
 		Set(`"color"`, m.Color).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -98,10 +112,17 @@ func (db *DB) UpdateEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 }
 
 func (db *DB) DeleteEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Environment) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"environment"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -110,6 +131,13 @@ func (db *DB) DeleteEnvironment(ctx context.Context, tx *sqlx.Tx, m *core.Enviro
 }
 
 func (db *DB) BulkInsertEnvironments(ctx context.Context, tx *sqlx.Tx, m []*core.Environment) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -135,7 +163,7 @@ func (db *DB) BulkInsertEnvironments(ctx context.Context, tx *sqlx.Tx, m []*core
 	}
 
 	if _, err := q.
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

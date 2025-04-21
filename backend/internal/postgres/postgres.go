@@ -147,3 +147,19 @@ func Migrate(dir string) error {
 
 	return nil
 }
+
+func (db *DB) WithTx(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return fmt.Errorf("failed to rollback transaction: %w", err)
+		}
+		return err
+	}
+
+	return tx.Commit()
+}

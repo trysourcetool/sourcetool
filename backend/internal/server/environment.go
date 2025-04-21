@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
@@ -97,17 +98,13 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 		Color:          req.Color,
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateEnvironment(ctx, tx, env); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateEnvironment(ctx, tx, env); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -157,17 +154,13 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		env.Color = internal.SafeValue(req.Color)
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateEnvironment(ctx, tx, env); err != nil {
+			return err
+		}
 
-	if err := s.db.UpdateEnvironment(ctx, tx, env); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -214,17 +207,13 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrEnvironmentDeletionNotAllowed(errors.New("cannot delete environment with API keys"))
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteEnvironment(ctx, tx, env); err != nil {
+			return err
+		}
 
-	if err := s.db.DeleteEnvironment(ctx, tx, env); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 

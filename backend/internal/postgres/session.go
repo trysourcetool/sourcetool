@@ -51,6 +51,13 @@ func (db *DB) buildSessionQuery(ctx context.Context, queries ...SessionQuery) (s
 }
 
 func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"session"`).
 		Columns(
@@ -67,7 +74,7 @@ func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) e
 			m.APIKeyID,
 			m.HostInstanceID,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -76,10 +83,17 @@ func (db *DB) CreateSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) e
 }
 
 func (db *DB) DeleteSession(ctx context.Context, tx *sqlx.Tx, m *core.Session) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"session"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

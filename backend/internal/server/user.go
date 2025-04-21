@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
+	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
@@ -161,22 +162,18 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		currentUser.LastName = internal.SafeValue(req.LastName)
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+			return err
+		}
 
-	if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
 	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
 	if err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return err
 	}
 
@@ -272,22 +269,18 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 
 	currentUser.Email = c.Email
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+			return err
+		}
 
-	if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
 	org, orgAccess, err := s.getUserOrganizationInfo(ctx)
 	if err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return err
 	}
 
@@ -380,46 +373,46 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if req.Role != nil {
+			orgAccess.Role = core.UserOrganizationRoleFromString(internal.SafeValue(req.Role))
 
-	if req.Role != nil {
-		orgAccess.Role = core.UserOrganizationRoleFromString(internal.SafeValue(req.Role))
-
-		if err := s.db.UpdateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-			return err
+			if err := s.db.UpdateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+				return err
+			}
 		}
-	}
 
-	if len(req.GroupIDs) != 0 {
-		userGroups := make([]*core.UserGroup, 0, len(req.GroupIDs))
-		for _, groupID := range req.GroupIDs {
-			groupID, err := uuid.FromString(groupID)
+		if len(req.GroupIDs) != 0 {
+			userGroups := make([]*core.UserGroup, 0, len(req.GroupIDs))
+			for _, groupID := range req.GroupIDs {
+				groupID, err := uuid.FromString(groupID)
+				if err != nil {
+					return err
+				}
+				userGroups = append(userGroups, &core.UserGroup{
+					ID:      uuid.Must(uuid.NewV4()),
+					UserID:  u.ID,
+					GroupID: groupID,
+				})
+			}
+
+			existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(u.ID))
 			if err != nil {
 				return err
 			}
-			userGroups = append(userGroups, &core.UserGroup{
-				ID:      uuid.Must(uuid.NewV4()),
-				UserID:  u.ID,
-				GroupID: groupID,
-			})
+
+			if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
+				return err
+			}
+
+			if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+				return err
+			}
 		}
 
-		existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(u.ID))
-		if err != nil {
-			return err
-		}
-
-		if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
-			return err
-		}
-
-		if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
-			return err
-		}
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateUserResponse{
@@ -481,38 +474,34 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err := s.db.DeleteUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-		return err
-	}
-
-	apiKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByUserID(userToRemove.ID), postgres.APIKeyByOrganizationID(currentOrg.ID))
-	if err != nil {
-		return err
-	}
-	for _, apiKey := range apiKeys {
-		if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
 			return err
 		}
-	}
 
-	userGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(userToRemove.ID), postgres.UserGroupByOrganizationID(currentOrg.ID))
-	if err != nil {
-		return err
-	}
-
-	if len(userGroups) > 0 {
-		if err := s.db.BulkDeleteUserGroups(ctx, tx, userGroups); err != nil {
+		apiKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByUserID(userToRemove.ID), postgres.APIKeyByOrganizationID(currentOrg.ID))
+		if err != nil {
 			return err
 		}
-	}
+		for _, apiKey := range apiKeys {
+			if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+				return err
+			}
+		}
 
-	if err := tx.Commit(); err != nil {
+		userGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(userToRemove.ID), postgres.UserGroupByOrganizationID(currentOrg.ID))
+		if err != nil {
+			return err
+		}
+
+		if len(userGroups) > 0 {
+			if err := s.db.BulkDeleteUserGroups(ctx, tx, userGroups); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -572,21 +561,17 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 		})
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.BulkInsertUserInvitations(ctx, tx, invitations); err != nil {
+			return err
+		}
 
-	if err := s.db.BulkInsertUserInvitations(ctx, tx, invitations); err != nil {
-		return err
-	}
+		if err := s.sendInvitationEmail(ctx, u.FullName(), emailURLs); err != nil {
+			return err
+		}
 
-	if err := s.sendInvitationEmail(ctx, u.FullName(), emailURLs); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 

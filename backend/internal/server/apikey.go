@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
@@ -155,17 +156,12 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		Key:            key,
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err = s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -226,17 +222,12 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 		apiKey.Name = internal.SafeValue(req.Name)
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err = s.db.UpdateAPIKey(ctx, tx, apiKey); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -281,17 +272,12 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err = s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 

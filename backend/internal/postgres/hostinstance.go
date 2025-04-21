@@ -66,6 +66,13 @@ func (db *DB) buildHostInstanceQuery(ctx context.Context, queries ...HostInstanc
 }
 
 func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostInstance) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"host_instance"`).
 		Columns(
@@ -84,7 +91,7 @@ func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostI
 			m.SDKVersion,
 			m.Status,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -93,13 +100,20 @@ func (db *DB) CreateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostI
 }
 
 func (db *DB) UpdateHostInstance(ctx context.Context, tx *sqlx.Tx, m *core.HostInstance) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"host_instance"`).
 		Set(`"sdk_name"`, m.SDKName).
 		Set(`"sdk_version"`, m.SDKVersion).
 		Set(`"status"`, m.Status).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

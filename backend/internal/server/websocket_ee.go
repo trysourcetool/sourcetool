@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"github.com/jmoiron/sqlx"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
@@ -111,79 +112,79 @@ func (s *Server) wsInitializeHost(ctx context.Context, conn *websocket.Conn, ins
 		}
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback()
-
-	if hostExists {
-		if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := s.db.CreateHostInstance(ctx, tx, hostInstance); err != nil {
-			return nil, err
-		}
-	}
-
-	if len(deletePages) > 0 {
-		if err := s.db.BulkDeletePages(ctx, tx, deletePages); err != nil {
-			return nil, err
-		}
-	}
-	if len(updatePages) > 0 {
-		if err := s.db.BulkUpdatePages(ctx, tx, updatePages); err != nil {
-			return nil, err
-		}
-	}
-	if len(insertPages) > 0 {
-		if err := s.db.BulkInsertPages(ctx, tx, insertPages); err != nil {
-			return nil, err
-		}
-	}
-
-	var pageIDs []uuid.UUID
-	pageGroupMap := make(map[uuid.UUID][]string) // pageID -> group slugs
-	for _, reqPage := range in.Pages {
-		pageID, err := uuid.FromString(reqPage.Id)
-		if err != nil {
-			return nil, err
-		}
-		pageIDs = append(pageIDs, pageID)
-		pageGroupMap[pageID] = reqPage.Groups
-	}
-
-	existingGroupPages, err := s.db.ListGroupPages(ctx, postgres.GroupPageByPageIDs(pageIDs))
-	if err != nil {
-		return nil, err
-	}
-
-	if len(existingGroupPages) > 0 {
-		if err := s.db.BulkDeleteGroupPages(ctx, tx, existingGroupPages); err != nil {
-			return nil, err
-		}
-	}
-
-	var newGroupPages []*core.GroupPage
-	for pageID, groupSlugs := range pageGroupMap {
-		for _, slug := range groupSlugs {
-			g, ok := groupMap[slug]
-			if !ok {
-				continue
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if hostExists {
+			if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
+				return err
 			}
-			newGroupPages = append(newGroupPages, &core.GroupPage{
-				ID:      uuid.Must(uuid.NewV4()),
-				GroupID: g.ID,
-				PageID:  pageID,
-			})
+		} else {
+			if err := s.db.CreateHostInstance(ctx, tx, hostInstance); err != nil {
+				return err
+			}
 		}
-	}
 
-	if len(newGroupPages) > 0 {
-		if err := s.db.BulkInsertGroupPages(ctx, tx, newGroupPages); err != nil {
-			return nil, err
+		if len(deletePages) > 0 {
+			if err := s.db.BulkDeletePages(ctx, tx, deletePages); err != nil {
+				return err
+			}
 		}
+		if len(updatePages) > 0 {
+			if err := s.db.BulkUpdatePages(ctx, tx, updatePages); err != nil {
+				return err
+			}
+		}
+		if len(insertPages) > 0 {
+			if err := s.db.BulkInsertPages(ctx, tx, insertPages); err != nil {
+				return err
+			}
+		}
+
+		var pageIDs []uuid.UUID
+		pageGroupMap := make(map[uuid.UUID][]string) // pageID -> group slugs
+		for _, reqPage := range in.Pages {
+			pageID, err := uuid.FromString(reqPage.Id)
+			if err != nil {
+				return err
+			}
+			pageIDs = append(pageIDs, pageID)
+			pageGroupMap[pageID] = reqPage.Groups
+		}
+
+		existingGroupPages, err := s.db.ListGroupPages(ctx, postgres.GroupPageByPageIDs(pageIDs))
+		if err != nil {
+			return err
+		}
+
+		if len(existingGroupPages) > 0 {
+			if err := s.db.BulkDeleteGroupPages(ctx, tx, existingGroupPages); err != nil {
+				return err
+			}
+		}
+
+		var newGroupPages []*core.GroupPage
+		for pageID, groupSlugs := range pageGroupMap {
+			for _, slug := range groupSlugs {
+				g, ok := groupMap[slug]
+				if !ok {
+					continue
+				}
+				newGroupPages = append(newGroupPages, &core.GroupPage{
+					ID:      uuid.Must(uuid.NewV4()),
+					GroupID: g.ID,
+					PageID:  pageID,
+				})
+			}
+		}
+
+		if len(newGroupPages) > 0 {
+			if err := s.db.BulkInsertGroupPages(ctx, tx, newGroupPages); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	s.wsManager.SetConnectedHost(hostInstance, apikey, conn)
@@ -196,10 +197,6 @@ func (s *Server) wsInitializeHost(ctx context.Context, conn *websocket.Conn, ins
 			},
 		},
 	}); err != nil {
-		return nil, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
+	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
@@ -90,29 +91,25 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 		Key:            key,
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateOrganization(ctx, tx, o); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateOrganization(ctx, tx, o); err != nil {
-		return err
-	}
+		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-		return err
-	}
+		if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+			return err
+		}
 
-	if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
-		return err
-	}
+		if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 

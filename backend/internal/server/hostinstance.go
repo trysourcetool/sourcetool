@@ -49,19 +49,13 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
 	var onlineHostInstance *core.HostInstance
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == core.HostInstanceStatusOnline {
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
 				hostInstance.Status = core.HostInstanceStatusOffline
 
-				if err := s.db.UpdateHostInstance(ctx, tx, hostInstance); err != nil {
+				if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
 					return err
 				}
 
@@ -75,10 +69,6 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 
 	if onlineHostInstance == nil {
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.PingHostInstanceResponse{

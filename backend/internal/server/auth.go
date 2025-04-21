@@ -680,18 +680,12 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	// Save changes
-	if err = s.db.UpdateUser(ctx, tx, u); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -755,34 +749,30 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 	var token, xsrfToken string
 	var expiration time.Duration
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	// Create the user in a transaction
-	if err := s.db.CreateUser(ctx, tx, u); err != nil {
-		return err
-	}
-
-	expiration = core.TmpTokenExpiration
-	if !config.Config.IsCloudEdition {
-		// For self-hosted, create initial organization
-		if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		// Create the user in a transaction
+		if err := s.db.CreateUser(ctx, tx, u); err != nil {
 			return err
 		}
-		expiration = core.TokenExpiration()
-		hasOrganization = true
-	}
 
-	// Create token
-	token, xsrfToken, _, _, _, err = s.createTokens(u.ID, expiration)
-	if err != nil {
-		return err
-	}
+		expiration = core.TmpTokenExpiration
+		if !config.Config.IsCloudEdition {
+			// For self-hosted, create initial organization
+			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
+				return err
+			}
+			expiration = core.TokenExpiration()
+			hasOrganization = true
+		}
 
-	if err = tx.Commit(); err != nil {
+		// Create token
+		token, xsrfToken, _, _, _, err = s.createTokens(u.ID, expiration)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -962,26 +952,21 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 		return errdefs.ErrInvalidArgument(fmt.Errorf("failed to generate token: %w", err))
 	}
 
-	// Save changes
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+			return err
+		}
 
-	if err = s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
-		return err
-	}
+		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-		return err
-	}
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
 
-	if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -1073,26 +1058,25 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 		return errdefs.ErrInternal(err)
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+			return err
+		}
 
-	// Save changes
-	if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
-		return err
-	}
+		if err := s.db.CreateUser(ctx, tx, u); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateUser(ctx, tx, u); err != nil {
-		return err
-	}
+		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			return err
+		}
 
-	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-		return err
-	}
+		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+			return err
+		}
 
-	if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -1346,34 +1330,30 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		return errdefs.ErrInternal(err)
 	}
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
+			// For invitation flow, create org access and delete invitation
+			userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(userInfo.Email), postgres.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
+			if err != nil {
+				return err
+			}
+			if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+				return err
+			}
+			if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+				return err
+			}
+			if err := s.createPersonalAPIKey(ctx, tx, u, org); err != nil {
+				return err
+			}
+		}
 
-	if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
-		// For invitation flow, create org access and delete invitation
-		userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(userInfo.Email), postgres.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
-		if err != nil {
+		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
 			return err
 		}
-		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
-			return err
-		}
-		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-			return err
-		}
-		if err := s.createPersonalAPIKey(ctx, tx, u, org); err != nil {
-			return err
-		}
-	}
 
-	if err := s.db.UpdateUser(ctx, tx, u); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -1440,70 +1420,66 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	var authURL string
 	var hasOrganization bool
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err := s.db.CreateUser(ctx, tx, u); err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to create user: %w", err))
-	}
-
-	if claims.Flow == jwt.GoogleAuthFlowInvitation {
-		invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(claims.InvitationOrgID))
-		if err != nil {
-			return errdefs.ErrInternal(fmt.Errorf("failed to get invited organization: %w", err))
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.CreateUser(ctx, tx, u); err != nil {
+			return errdefs.ErrInternal(fmt.Errorf("failed to create user: %w", err))
 		}
 
-		userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(claims.Email), postgres.UserInvitationByOrganizationID(claims.InvitationOrgID))
-		if err != nil {
-			return errdefs.ErrInternal(fmt.Errorf("failed to get invitation: %w", err))
-		}
-
-		orgAccess := &core.UserOrganizationAccess{
-			ID:             uuid.Must(uuid.NewV4()),
-			UserID:         u.ID,
-			OrganizationID: claims.InvitationOrgID,
-			Role:           core.UserOrganizationRoleFromString(claims.Role),
-		}
-
-		if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
-			return errdefs.ErrInternal(fmt.Errorf("failed to delete invitation: %w", err))
-		}
-
-		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
-			return errdefs.ErrInternal(fmt.Errorf("failed to create organization access: %w", err))
-		}
-
-		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
-			return errdefs.ErrInternal(fmt.Errorf("failed to create personal API key: %w", err))
-		}
-
-		orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
-		hasOrganization = true
-	} else {
-		if !config.Config.IsCloudEdition {
-			if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
-				return errdefs.ErrInternal(fmt.Errorf("failed to create initial organization: %w", err))
+		if claims.Flow == jwt.GoogleAuthFlowInvitation {
+			invitedOrg, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(claims.InvitationOrgID))
+			if err != nil {
+				return errdefs.ErrInternal(fmt.Errorf("failed to get invited organization: %w", err))
 			}
+
+			userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByEmail(claims.Email), postgres.UserInvitationByOrganizationID(claims.InvitationOrgID))
+			if err != nil {
+				return errdefs.ErrInternal(fmt.Errorf("failed to get invitation: %w", err))
+			}
+
+			orgAccess := &core.UserOrganizationAccess{
+				ID:             uuid.Must(uuid.NewV4()),
+				UserID:         u.ID,
+				OrganizationID: claims.InvitationOrgID,
+				Role:           core.UserOrganizationRoleFromString(claims.Role),
+			}
+
+			if err := s.db.DeleteUserInvitation(ctx, tx, userInvitation); err != nil {
+				return errdefs.ErrInternal(fmt.Errorf("failed to delete invitation: %w", err))
+			}
+
+			if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+				return errdefs.ErrInternal(fmt.Errorf("failed to create organization access: %w", err))
+			}
+
+			if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
+				return errdefs.ErrInternal(fmt.Errorf("failed to create personal API key: %w", err))
+			}
+
+			orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
 			hasOrganization = true
+		} else {
+			if !config.Config.IsCloudEdition {
+				if err := s.createInitialOrganizationForSelfHosted(ctx, tx, u); err != nil {
+					return errdefs.ErrInternal(fmt.Errorf("failed to create initial organization: %w", err))
+				}
+				hasOrganization = true
+			}
 		}
-	}
 
-	token, xsrfToken, _, _, _, err = s.createTokens(u.ID, tokenExpiration)
-	if err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to create auth token: %w", err))
-	}
-
-	if hasOrganization {
-		authURL, err = buildSaveAuthURL(orgSubdomain)
+		token, xsrfToken, _, _, _, err = s.createTokens(u.ID, tokenExpiration)
 		if err != nil {
-			return err
+			return errdefs.ErrInternal(fmt.Errorf("failed to create auth token: %w", err))
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		if hasOrganization {
+			authURL, err = buildSaveAuthURL(orgSubdomain)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -1722,18 +1698,14 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	// Update user's refresh token
 	u.RefreshTokenHash = hashedRefreshToken
 
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to begin transaction: %w", err))
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+			return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
+		}
 
-	if err := s.db.UpdateUser(ctx, tx, u); err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
-	}
-
-	if err := tx.Commit(); err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to commit transaction: %w", err))
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	cookieConfig := newCookieConfig()
@@ -1779,18 +1751,14 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Update user
-	tx, err := s.db.Beginx()
-	if err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to begin transaction: %w", err))
-	}
-	defer tx.Rollback()
+	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+		if err := s.db.UpdateUser(ctx, tx, u); err != nil {
+			return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
+		}
 
-	if err = s.db.UpdateUser(ctx, tx, u); err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
-	}
-
-	if err = tx.Commit(); err != nil {
-		return errdefs.ErrInternal(fmt.Errorf("failed to commit transaction: %w", err))
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return s.renderJSON(w, http.StatusOK, &responses.ObtainAuthTokenResponse{

@@ -69,6 +69,13 @@ func (db *DB) buildUserQuery(ctx context.Context, queries ...UserQuery) (string,
 }
 
 func (db *DB) CreateUser(ctx context.Context, tx *sqlx.Tx, m *core.User) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"user"`).
 		Columns(
@@ -87,7 +94,7 @@ func (db *DB) CreateUser(ctx context.Context, tx *sqlx.Tx, m *core.User) error {
 			m.RefreshTokenHash,
 			m.GoogleID,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return errdefs.ErrAlreadyExists(err)
@@ -99,6 +106,13 @@ func (db *DB) CreateUser(ctx context.Context, tx *sqlx.Tx, m *core.User) error {
 }
 
 func (db *DB) UpdateUser(ctx context.Context, tx *sqlx.Tx, m *core.User) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"user"`).
 		Set(`"email"`, m.Email).
@@ -107,7 +121,7 @@ func (db *DB) UpdateUser(ctx context.Context, tx *sqlx.Tx, m *core.User) error {
 		Set(`"refresh_token_hash"`, m.RefreshTokenHash).
 		Set(`"google_id"`, m.GoogleID).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return errdefs.ErrAlreadyExists(err)
@@ -181,6 +195,13 @@ func (db *DB) buildUserOrganizationAccessQuery(ctx context.Context, queries ...U
 }
 
 func (db *DB) CreateUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *core.UserOrganizationAccess) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"user_organization_access"`).
 		Columns(
@@ -195,7 +216,7 @@ func (db *DB) CreateUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *
 			m.OrganizationID,
 			m.Role,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -204,11 +225,18 @@ func (db *DB) CreateUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *
 }
 
 func (db *DB) UpdateUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *core.UserOrganizationAccess) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Update(`"user_organization_access"`).
 		Set(`"role"`, m.Role).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -217,10 +245,17 @@ func (db *DB) UpdateUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *
 }
 
 func (db *DB) DeleteUserOrganizationAccess(ctx context.Context, tx *sqlx.Tx, m *core.UserOrganizationAccess) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"user_organization_access"`).
 		Where(sq.Eq{`"user_id"`: m.UserID, `"organization_id"`: m.OrganizationID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		if err == sql.ErrNoRows {
 			return errdefs.ErrUserOrganizationAccessNotFound(err)
@@ -283,6 +318,13 @@ func (db *DB) buildUserGroupQuery(ctx context.Context, queries ...UserGroupQuery
 }
 
 func (db *DB) BulkInsertUserGroups(ctx context.Context, tx *sqlx.Tx, m []*core.UserGroup) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -296,7 +338,7 @@ func (db *DB) BulkInsertUserGroups(ctx context.Context, tx *sqlx.Tx, m []*core.U
 	}
 
 	if _, err := q.
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -305,6 +347,13 @@ func (db *DB) BulkInsertUserGroups(ctx context.Context, tx *sqlx.Tx, m []*core.U
 }
 
 func (db *DB) BulkDeleteUserGroups(ctx context.Context, tx *sqlx.Tx, m []*core.UserGroup) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -316,7 +365,7 @@ func (db *DB) BulkDeleteUserGroups(ctx context.Context, tx *sqlx.Tx, m []*core.U
 	if _, err := db.builder.
 		Delete(`"user_group"`).
 		Where(sq.Eq{`"id"`: ids}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -377,10 +426,17 @@ func (db *DB) buildUserInvitationQuery(ctx context.Context, queries ...UserInvit
 }
 
 func (db *DB) DeleteUserInvitation(ctx context.Context, tx *sqlx.Tx, m *core.UserInvitation) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Delete(`"user_invitation"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -389,6 +445,13 @@ func (db *DB) DeleteUserInvitation(ctx context.Context, tx *sqlx.Tx, m *core.Use
 }
 
 func (db *DB) BulkInsertUserInvitations(ctx context.Context, tx *sqlx.Tx, m []*core.UserInvitation) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if len(m) == 0 {
 		return nil
 	}
@@ -402,7 +465,7 @@ func (db *DB) BulkInsertUserInvitations(ctx context.Context, tx *sqlx.Tx, m []*c
 	}
 
 	if _, err := q.
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

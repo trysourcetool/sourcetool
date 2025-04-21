@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
@@ -62,6 +63,13 @@ func (db *DB) buildOrganizationQuery(ctx context.Context, queries ...Organizatio
 }
 
 func (db *DB) CreateOrganization(ctx context.Context, tx *sqlx.Tx, m *core.Organization) error {
+	var runner sq.BaseRunner
+	if tx != nil {
+		runner = tx
+	} else {
+		runner = db.db
+	}
+
 	if _, err := db.builder.
 		Insert(`"organization"`).
 		Columns(
@@ -72,7 +80,7 @@ func (db *DB) CreateOrganization(ctx context.Context, tx *sqlx.Tx, m *core.Organ
 			m.ID,
 			m.Subdomain,
 		).
-		RunWith(tx).
+		RunWith(runner).
 		ExecContext(ctx); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return errdefs.ErrAlreadyExists(err)
