@@ -19,7 +19,6 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
-	"github.com/trysourcetool/sourcetool/backend/internal/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
@@ -60,7 +59,7 @@ func main() {
 	upgrader := internal.NewUpgrader()
 
 	if config.Config.Env == config.EnvLocal {
-		if err := fixtures.Load(ctx, db); err != nil {
+		if err := internal.LoadFixtures(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
 		}
 	}

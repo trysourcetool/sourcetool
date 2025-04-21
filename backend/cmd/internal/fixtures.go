@@ -1,4 +1,4 @@
-package fixtures
+package internal
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 )
 
-func Load(ctx context.Context, db *postgres.DB) error {
+func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 	if !config.Config.IsCloudEdition {
 		return nil
 	}
