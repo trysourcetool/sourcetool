@@ -5,53 +5,55 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-type HostInstanceQuery interface{ isHostInstanceQuery() }
+type HostInstanceQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isHostInstanceQuery()
+}
 
-type HostInstanceByIDQuery struct{ ID uuid.UUID }
+type hostInstanceByIDQuery struct{ id uuid.UUID }
 
-func (HostInstanceByIDQuery) isHostInstanceQuery() {}
+func (q hostInstanceByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."id"`: q.id})
+}
 
-func HostInstanceByID(id uuid.UUID) HostInstanceQuery { return HostInstanceByIDQuery{ID: id} }
+func (hostInstanceByIDQuery) isHostInstanceQuery() {}
 
-type HostInstanceByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+func HostInstanceByID(id uuid.UUID) HostInstanceQuery { return hostInstanceByIDQuery{id: id} }
 
-func (HostInstanceByOrganizationIDQuery) isHostInstanceQuery() {}
+type hostInstanceByOrganizationIDQuery struct{ organizationID uuid.UUID }
+
+func (q hostInstanceByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."organization_id"`: q.organizationID})
+}
+
+func (hostInstanceByOrganizationIDQuery) isHostInstanceQuery() {}
 
 func HostInstanceByOrganizationID(organizationID uuid.UUID) HostInstanceQuery {
-	return HostInstanceByOrganizationIDQuery{OrganizationID: organizationID}
+	return hostInstanceByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type HostInstanceByAPIKeyIDQuery struct{ APIKeyID uuid.UUID }
+type hostInstanceByAPIKeyIDQuery struct{ apiKeyID uuid.UUID }
 
-func (HostInstanceByAPIKeyIDQuery) isHostInstanceQuery() {}
+func (q hostInstanceByAPIKeyIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`hi."api_key_id"`: q.apiKeyID})
+}
+
+func (hostInstanceByAPIKeyIDQuery) isHostInstanceQuery() {}
 
 func HostInstanceByAPIKeyID(apiKeyID uuid.UUID) HostInstanceQuery {
-	return HostInstanceByAPIKeyIDQuery{APIKeyID: apiKeyID}
+	return hostInstanceByAPIKeyIDQuery{apiKeyID: apiKeyID}
 }
 
-type HostInstanceByAPIKeyQuery struct{ APIKey string }
+type hostInstanceByKeyQuery struct{ key string }
 
-func (HostInstanceByAPIKeyQuery) isHostInstanceQuery() {}
-
-func HostInstanceByAPIKey(apiKey string) HostInstanceQuery {
-	return HostInstanceByAPIKeyQuery{APIKey: apiKey}
+func (q hostInstanceByKeyQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
+		Where(sq.Eq{`ak."key"`: q.key})
 }
 
-func applyHostInstanceQueries(b sq.SelectBuilder, queries ...HostInstanceQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case HostInstanceByIDQuery:
-			b = b.Where(sq.Eq{`hi."id"`: q.ID})
-		case HostInstanceByOrganizationIDQuery:
-			b = b.Where(sq.Eq{`hi."organization_id"`: q.OrganizationID})
-		case HostInstanceByAPIKeyIDQuery:
-			b = b.Where(sq.Eq{`hi."api_key_id"`: q.APIKeyID})
-		case HostInstanceByAPIKeyQuery:
-			b = b.
-				InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
-				Where(sq.Eq{`ak."key"`: q.APIKey})
-		}
-	}
+func (hostInstanceByKeyQuery) isHostInstanceQuery() {}
 
-	return b
+func HostInstanceByKey(key string) HostInstanceQuery {
+	return hostInstanceByKeyQuery{key: key}
 }

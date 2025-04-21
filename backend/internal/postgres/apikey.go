@@ -56,7 +56,9 @@ func (db *DB) buildAPIKeyQuery(ctx context.Context, queries ...APIKeyQuery) (str
 	).
 		From(`"api_key" ak`)
 
-	q = applyAPIKeyQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

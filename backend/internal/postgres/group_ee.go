@@ -51,7 +51,9 @@ func (db *DB) buildGroupQuery(ctx context.Context, queries ...GroupQuery) (strin
 	q := db.builder.Select(db.columns()...).
 		From(`"group" g`)
 
-	q = applyGroupQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -176,7 +178,9 @@ func (db *DB) buildGroupPageQuery(ctx context.Context, queries ...GroupPageQuery
 	).
 		From(`"group_page" gp`)
 
-	q = applyGroupPageQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

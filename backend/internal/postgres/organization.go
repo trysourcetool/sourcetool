@@ -52,7 +52,9 @@ func (db *DB) buildOrganizationQuery(ctx context.Context, queries ...Organizatio
 	).
 		From(`"organization" o`)
 
-	q = applyOrganizationQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

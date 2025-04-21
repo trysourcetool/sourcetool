@@ -7,226 +7,244 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 )
 
-type UserQuery interface{ isUserQuery() }
+type UserQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isUserQuery()
+}
 
-type UserByIDQuery struct{ ID uuid.UUID }
+type userByIDQuery struct{ id uuid.UUID }
 
-func (q UserByIDQuery) isUserQuery() {}
+func (q userByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."id"`: q.id})
+}
 
-func UserByID(id uuid.UUID) UserQuery { return UserByIDQuery{ID: id} }
+func (userByIDQuery) isUserQuery() {}
 
-type UserByEmailQuery struct{ Email string }
+func UserByID(id uuid.UUID) UserQuery { return userByIDQuery{id: id} }
 
-func (q UserByEmailQuery) isUserQuery() {}
+type userByEmailQuery struct{ email string }
 
-func UserByEmail(email string) UserQuery { return UserByEmailQuery{Email: email} }
+func (q userByEmailQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."email"`: q.email})
+}
 
-type UserByRefreshTokenHashQuery struct{ RefreshTokenHash string }
+func (userByEmailQuery) isUserQuery() {}
 
-func (q UserByRefreshTokenHashQuery) isUserQuery() {}
+func UserByEmail(email string) UserQuery { return userByEmailQuery{email: email} }
+
+type userByRefreshTokenHashQuery struct{ refreshTokenHash string }
+
+func (q userByRefreshTokenHashQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`u."refresh_token_hash"`: q.refreshTokenHash})
+}
+
+func (userByRefreshTokenHashQuery) isUserQuery() {}
 
 func UserByRefreshTokenHash(refreshTokenHash string) UserQuery {
-	return UserByRefreshTokenHashQuery{RefreshTokenHash: refreshTokenHash}
+	return userByRefreshTokenHashQuery{refreshTokenHash: refreshTokenHash}
 }
 
-type UserByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+type userByOrganizationIDQuery struct{ organizationID uuid.UUID }
 
-func (q UserByOrganizationIDQuery) isUserQuery() {}
+func (q userByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
+		Where(sq.Eq{`uoa."organization_id"`: q.organizationID})
+}
+
+func (userByOrganizationIDQuery) isUserQuery() {}
 
 func UserByOrganizationID(organizationID uuid.UUID) UserQuery {
-	return UserByOrganizationIDQuery{OrganizationID: organizationID}
+	return userByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type UserLimitQuery struct{ Limit uint64 }
+type userLimitQuery struct{ limit uint64 }
 
-func (q UserLimitQuery) isUserQuery() {}
-
-func UserLimit(limit uint64) UserQuery { return UserLimitQuery{Limit: limit} }
-
-type UserOffsetQuery struct{ Offset uint64 }
-
-func (q UserOffsetQuery) isUserQuery() {}
-
-func UserOffset(offset uint64) UserQuery { return UserOffsetQuery{Offset: offset} }
-
-type UserOrderByQuery struct{ OrderBy string }
-
-func (q UserOrderByQuery) isUserQuery() {}
-
-func UserOrderBy(orderBy string) UserQuery { return UserOrderByQuery{OrderBy: orderBy} }
-
-func applyUserQueries(b sq.SelectBuilder, queries ...UserQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case UserByIDQuery:
-			b = b.Where(sq.Eq{`u."id"`: q.ID})
-		case UserByEmailQuery:
-			b = b.Where(sq.Eq{`u."email"`: q.Email})
-		case UserByRefreshTokenHashQuery:
-			b = b.Where(sq.Eq{`u."refresh_token_hash"`: q.RefreshTokenHash})
-		case UserByOrganizationIDQuery:
-			b = b.
-				InnerJoin(`"user_organization_access" uoa ON u."id" = uoa."user_id"`).
-				Where(sq.Eq{`uoa."organization_id"`: q.OrganizationID})
-		case UserLimitQuery:
-			b = b.Limit(q.Limit)
-		case UserOffsetQuery:
-			b = b.Offset(q.Offset)
-		case UserOrderByQuery:
-			b = b.OrderBy(q.OrderBy)
-		}
-	}
-	return b
+func (q userLimitQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Limit(q.limit)
 }
 
-type UserOrganizationAccessQuery interface{ isUserOrganizationAccessQuery() }
+func (userLimitQuery) isUserQuery() {}
 
-type UserOrganizationAccessByUserIDQuery struct{ UserID uuid.UUID }
+func UserLimit(limit uint64) UserQuery { return userLimitQuery{limit: limit} }
 
-func (q UserOrganizationAccessByUserIDQuery) isUserOrganizationAccessQuery() {}
+type userOffsetQuery struct{ offset uint64 }
+
+func (q userOffsetQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Offset(q.offset)
+}
+
+func (userOffsetQuery) isUserQuery() {}
+
+func UserOffset(offset uint64) UserQuery { return userOffsetQuery{offset: offset} }
+
+type userOrderByQuery struct{ orderBy string }
+
+func (q userOrderByQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(q.orderBy)
+}
+
+func (userOrderByQuery) isUserQuery() {}
+
+func UserOrderBy(orderBy string) UserQuery { return userOrderByQuery{orderBy: orderBy} }
+
+type UserOrganizationAccessQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isUserOrganizationAccessQuery()
+}
+
+type userOrganizationAccessByUserIDQuery struct{ userID uuid.UUID }
+
+func (q userOrganizationAccessByUserIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."user_id"`: q.userID})
+}
+
+func (userOrganizationAccessByUserIDQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessByUserID(userID uuid.UUID) UserOrganizationAccessQuery {
-	return UserOrganizationAccessByUserIDQuery{UserID: userID}
+	return userOrganizationAccessByUserIDQuery{userID: userID}
 }
 
-type UserOrganizationAccessByUserIDsQuery struct{ UserIDs []uuid.UUID }
+type userOrganizationAccessByUserIDsQuery struct{ userIDs []uuid.UUID }
 
-func (q UserOrganizationAccessByUserIDsQuery) isUserOrganizationAccessQuery() {}
+func (q userOrganizationAccessByUserIDsQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."user_id"`: q.userIDs})
+}
+
+func (userOrganizationAccessByUserIDsQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessByUserIDs(userIDs []uuid.UUID) UserOrganizationAccessQuery {
-	return UserOrganizationAccessByUserIDsQuery{UserIDs: userIDs}
+	return userOrganizationAccessByUserIDsQuery{userIDs: userIDs}
 }
 
-type UserOrganizationAccessByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+type userOrganizationAccessByOrganizationIDQuery struct{ organizationID uuid.UUID }
 
-func (q UserOrganizationAccessByOrganizationIDQuery) isUserOrganizationAccessQuery() {}
+func (q userOrganizationAccessByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."organization_id"`: q.organizationID})
+}
+
+func (userOrganizationAccessByOrganizationIDQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessByOrganizationID(organizationID uuid.UUID) UserOrganizationAccessQuery {
-	return UserOrganizationAccessByOrganizationIDQuery{OrganizationID: organizationID}
+	return userOrganizationAccessByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type UserOrganizationAccessByOrganizationSubdomainQuery struct{ OrganizationSubdomain string }
+type userOrganizationAccessByOrganizationSubdomainQuery struct{ organizationSubdomain string }
 
-func (q UserOrganizationAccessByOrganizationSubdomainQuery) isUserOrganizationAccessQuery() {}
+func (q userOrganizationAccessByOrganizationSubdomainQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
+		Where(sq.Eq{`o."subdomain"`: q.organizationSubdomain})
+}
+
+func (userOrganizationAccessByOrganizationSubdomainQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessByOrganizationSubdomain(subdomain string) UserOrganizationAccessQuery {
-	return UserOrganizationAccessByOrganizationSubdomainQuery{OrganizationSubdomain: subdomain}
+	return userOrganizationAccessByOrganizationSubdomainQuery{organizationSubdomain: subdomain}
 }
 
-type UserOrganizationAccessOrderByQuery struct{ OrderBy string }
+type userOrganizationAccessOrderByQuery struct{ orderBy string }
 
-func (q UserOrganizationAccessOrderByQuery) isUserOrganizationAccessQuery() {}
+func (q userOrganizationAccessOrderByQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.OrderBy(q.orderBy)
+}
+
+func (userOrganizationAccessOrderByQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessOrderBy(orderBy string) UserOrganizationAccessQuery {
-	return UserOrganizationAccessOrderByQuery{OrderBy: orderBy}
+	return userOrganizationAccessOrderByQuery{orderBy: orderBy}
 }
 
-type UserOrganizationAccessByRoleQuery struct{ Role core.UserOrganizationRole }
+type userOrganizationAccessByRoleQuery struct{ role core.UserOrganizationRole }
 
-func (q UserOrganizationAccessByRoleQuery) isUserOrganizationAccessQuery() {}
+func (q userOrganizationAccessByRoleQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`uoa."role"`: q.role})
+}
+
+func (userOrganizationAccessByRoleQuery) isUserOrganizationAccessQuery() {}
 
 func UserOrganizationAccessByRole(role core.UserOrganizationRole) UserOrganizationAccessQuery {
-	return UserOrganizationAccessByRoleQuery{Role: role}
+	return userOrganizationAccessByRoleQuery{role: role}
 }
 
-func applyUserOrganizationAccessQueries(b sq.SelectBuilder, queries ...UserOrganizationAccessQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case UserOrganizationAccessByUserIDQuery:
-			b = b.Where(sq.Eq{`uoa."user_id"`: q.UserID})
-		case UserOrganizationAccessByUserIDsQuery:
-			b = b.Where(sq.Eq{`uoa."user_id"`: q.UserIDs})
-		case UserOrganizationAccessByOrganizationIDQuery:
-			b = b.
-				InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-				Where(sq.Eq{`o."id"`: q.OrganizationID})
-		case UserOrganizationAccessByOrganizationSubdomainQuery:
-			b = b.
-				InnerJoin(`"organization" o ON o."id" = uoa."organization_id"`).
-				Where(sq.Eq{`o."subdomain"`: q.OrganizationSubdomain})
-		case UserOrganizationAccessByRoleQuery:
-			b = b.Where(sq.Eq{`uoa."role"`: q.Role})
-		}
-	}
-	return b
+type UserGroupQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isUserGroupQuery()
 }
 
-type UserGroupQuery interface{ isUserGroupQuery() }
+type userGroupByUserIDQuery struct{ userID uuid.UUID }
 
-type UserGroupByUserIDQuery struct{ UserID uuid.UUID }
+func (q userGroupByUserIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ug."user_id"`: q.userID})
+}
 
-func (q UserGroupByUserIDQuery) isUserGroupQuery() {}
+func (userGroupByUserIDQuery) isUserGroupQuery() {}
 
 func UserGroupByUserID(userID uuid.UUID) UserGroupQuery {
-	return UserGroupByUserIDQuery{UserID: userID}
+	return userGroupByUserIDQuery{userID: userID}
 }
 
-type UserGroupByGroupIDQuery struct{ GroupID uuid.UUID }
+type userGroupByGroupIDQuery struct{ groupID uuid.UUID }
 
-func (q UserGroupByGroupIDQuery) isUserGroupQuery() {}
+func (q userGroupByGroupIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ug."group_id"`: q.groupID})
+}
+
+func (userGroupByGroupIDQuery) isUserGroupQuery() {}
 
 func UserGroupByGroupID(groupID uuid.UUID) UserGroupQuery {
-	return UserGroupByGroupIDQuery{GroupID: groupID}
+	return userGroupByGroupIDQuery{groupID: groupID}
 }
 
-type UserGroupByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+type userGroupByOrganizationIDQuery struct{ organizationID uuid.UUID }
 
-func (q UserGroupByOrganizationIDQuery) isUserGroupQuery() {}
+func (q userGroupByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"group" g ON g."id" = ug."group_id"`).
+		Where(sq.Eq{`g."organization_id"`: q.organizationID})
+}
+
+func (userGroupByOrganizationIDQuery) isUserGroupQuery() {}
 
 func UserGroupByOrganizationID(organizationID uuid.UUID) UserGroupQuery {
-	return UserGroupByOrganizationIDQuery{OrganizationID: organizationID}
+	return userGroupByOrganizationIDQuery{organizationID: organizationID}
 }
 
-func applyUserGroupQueries(b sq.SelectBuilder, queries ...UserGroupQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case UserGroupByUserIDQuery:
-			b = b.Where(sq.Eq{`ug."user_id"`: q.UserID})
-		case UserGroupByGroupIDQuery:
-			b = b.Where(sq.Eq{`ug."group_id"`: q.GroupID})
-		case UserGroupByOrganizationIDQuery:
-			b = b.
-				InnerJoin(`"group" g ON g."id" = ug."group_id"`).
-				Where(sq.Eq{`g."organization_id"`: q.OrganizationID})
-		}
-	}
-	return b
+type UserInvitationQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isUserInvitationQuery()
 }
 
-type UserInvitationQuery interface{ isUserInvitationQuery() }
+type userInvitationByOrganizationIDQuery struct{ organizationID uuid.UUID }
 
-type UserInvitationByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+func (q userInvitationByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."organization_id"`: q.organizationID})
+}
 
-func (q UserInvitationByOrganizationIDQuery) isUserInvitationQuery() {}
+func (userInvitationByOrganizationIDQuery) isUserInvitationQuery() {}
 
 func UserInvitationByOrganizationID(organizationID uuid.UUID) UserInvitationQuery {
-	return UserInvitationByOrganizationIDQuery{OrganizationID: organizationID}
+	return userInvitationByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type UserInvitationByIDQuery struct{ ID uuid.UUID }
+type userInvitationByIDQuery struct{ id uuid.UUID }
 
-func (q UserInvitationByIDQuery) isUserInvitationQuery() {}
+func (q userInvitationByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."id"`: q.id})
+}
 
-func UserInvitationByID(id uuid.UUID) UserInvitationQuery { return UserInvitationByIDQuery{ID: id} }
+func (userInvitationByIDQuery) isUserInvitationQuery() {}
 
-type UserInvitationByEmailQuery struct{ Email string }
+func UserInvitationByID(id uuid.UUID) UserInvitationQuery { return userInvitationByIDQuery{id: id} }
 
-func (q UserInvitationByEmailQuery) isUserInvitationQuery() {}
+type userInvitationByEmailQuery struct{ email string }
+
+func (q userInvitationByEmailQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`ui."email"`: q.email})
+}
+
+func (userInvitationByEmailQuery) isUserInvitationQuery() {}
 
 func UserInvitationByEmail(email string) UserInvitationQuery {
-	return UserInvitationByEmailQuery{Email: email}
-}
-
-func applyUserInvitationQueries(b sq.SelectBuilder, queries ...UserInvitationQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case UserInvitationByOrganizationIDQuery:
-			b = b.Where(sq.Eq{`ui."organization_id"`: q.OrganizationID})
-		case UserInvitationByIDQuery:
-			b = b.Where(sq.Eq{`ui."id"`: q.ID})
-		case UserInvitationByEmailQuery:
-			b = b.Where(sq.Eq{`ui."email"`: q.Email})
-		}
-	}
-	return b
+	return userInvitationByEmailQuery{email: email}
 }

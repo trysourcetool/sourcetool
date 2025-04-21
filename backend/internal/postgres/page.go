@@ -58,7 +58,9 @@ func (db *DB) buildQuery(ctx context.Context, queries ...PageQuery) (string, []a
 	).
 		From(`"page" p`)
 
-	q = applyPageQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

@@ -5,38 +5,39 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-type EnvironmentQuery interface{ isEnvironmentQuery() }
+type EnvironmentQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isEnvironmentQuery()
+}
 
-type EnvironmentByIDQuery struct{ ID uuid.UUID }
+type environmentByIDQuery struct{ id uuid.UUID }
 
-func (EnvironmentByIDQuery) isEnvironmentQuery() {}
+func (q environmentByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`e."id"`: q.id})
+}
 
-func EnvironmentByID(id uuid.UUID) EnvironmentQuery { return EnvironmentByIDQuery{ID: id} }
+func (environmentByIDQuery) isEnvironmentQuery() {}
 
-type EnvironmentByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+func EnvironmentByID(id uuid.UUID) EnvironmentQuery { return environmentByIDQuery{id: id} }
 
-func (EnvironmentByOrganizationIDQuery) isEnvironmentQuery() {}
+type environmentByOrganizationIDQuery struct{ organizationID uuid.UUID }
+
+func (q environmentByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`e."organization_id"`: q.organizationID})
+}
+
+func (environmentByOrganizationIDQuery) isEnvironmentQuery() {}
 
 func EnvironmentByOrganizationID(organizationID uuid.UUID) EnvironmentQuery {
-	return EnvironmentByOrganizationIDQuery{OrganizationID: organizationID}
+	return environmentByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type EnvironmentBySlugQuery struct{ Slug string }
+type environmentBySlugQuery struct{ slug string }
 
-func (EnvironmentBySlugQuery) isEnvironmentQuery() {}
-
-func EnvironmentBySlug(slug string) EnvironmentQuery { return EnvironmentBySlugQuery{Slug: slug} }
-
-func applyEnvironmentQueries(b sq.SelectBuilder, queries ...EnvironmentQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case EnvironmentByIDQuery:
-			b = b.Where(sq.Eq{`e."id"`: q.ID})
-		case EnvironmentByOrganizationIDQuery:
-			b = b.Where(sq.Eq{`e."organization_id"`: q.OrganizationID})
-		case EnvironmentBySlugQuery:
-			b = b.Where(sq.Eq{`e."slug"`: q.Slug})
-		}
-	}
-	return b
+func (q environmentBySlugQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`e."slug"`: q.slug})
 }
+
+func (environmentBySlugQuery) isEnvironmentQuery() {}
+
+func EnvironmentBySlug(slug string) EnvironmentQuery { return environmentBySlugQuery{slug: slug} }

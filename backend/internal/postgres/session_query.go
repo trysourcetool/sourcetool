@@ -5,21 +5,17 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-type SessionQuery interface{ isSessionQuery() }
-
-type SessionByIDQuery struct{ ID uuid.UUID }
-
-func (q SessionByIDQuery) isSessionQuery() {}
-
-func SessionByID(id uuid.UUID) SessionQuery { return SessionByIDQuery{ID: id} }
-
-func applySessionQueries(b sq.SelectBuilder, queries ...SessionQuery) sq.SelectBuilder {
-	for _, q := range queries {
-		switch q := q.(type) {
-		case SessionByIDQuery:
-			b = b.Where(sq.Eq{`s."id"`: q.ID})
-		}
-	}
-
-	return b
+type SessionQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isSessionQuery()
 }
+
+type sessionByIDQuery struct{ id uuid.UUID }
+
+func (q sessionByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`s."id"`: q.id})
+}
+
+func (sessionByIDQuery) isSessionQuery() {}
+
+func SessionByID(id uuid.UUID) SessionQuery { return sessionByIDQuery{id: id} }

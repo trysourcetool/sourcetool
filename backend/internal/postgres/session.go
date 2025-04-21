@@ -40,7 +40,9 @@ func (db *DB) buildSessionQuery(ctx context.Context, queries ...SessionQuery) (s
 	).
 		From(`"session" s`)
 
-	q = applySessionQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

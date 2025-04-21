@@ -58,7 +58,9 @@ func (db *DB) buildUserQuery(ctx context.Context, queries ...UserQuery) (string,
 	).
 		From(`"user" u`)
 
-	q = applyUserQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -184,7 +186,9 @@ func (db *DB) buildUserOrganizationAccessQuery(ctx context.Context, queries ...U
 	).
 		From(`"user_organization_access" uoa`)
 
-	q = applyUserOrganizationAccessQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -307,7 +311,9 @@ func (db *DB) buildUserGroupQuery(ctx context.Context, queries ...UserGroupQuery
 	).
 		From(`"user_group" ug`)
 
-	q = applyUserGroupQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -415,7 +421,9 @@ func (db *DB) buildUserInvitationQuery(ctx context.Context, queries ...UserInvit
 	).
 		From(`"user_invitation" ui`)
 
-	q = applyUserInvitationQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

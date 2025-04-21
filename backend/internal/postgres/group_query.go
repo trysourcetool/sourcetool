@@ -1,59 +1,98 @@
 package postgres
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 )
 
-type GroupQuery interface{ isGroupQuery() }
+type GroupQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isGroupQuery()
+}
 
-type GroupByIDQuery struct{ ID uuid.UUID }
+type groupByIDQuery struct{ id uuid.UUID }
 
-func (GroupByIDQuery) isGroupQuery() {}
+func (q groupByIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."id"`: q.id})
+}
 
-func GroupByID(id uuid.UUID) GroupQuery { return GroupByIDQuery{ID: id} }
+func (groupByIDQuery) isGroupQuery() {}
 
-type GroupByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+func GroupByID(id uuid.UUID) GroupQuery { return groupByIDQuery{id: id} }
 
-func (GroupByOrganizationIDQuery) isGroupQuery() {}
+type groupByOrganizationIDQuery struct{ organizationID uuid.UUID }
+
+func (q groupByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."organization_id"`: q.organizationID})
+}
+
+func (groupByOrganizationIDQuery) isGroupQuery() {}
 
 func GroupByOrganizationID(organizationID uuid.UUID) GroupQuery {
-	return GroupByOrganizationIDQuery{OrganizationID: organizationID}
+	return groupByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type GroupBySlugQuery struct{ Slug string }
+type groupBySlugQuery struct{ slug string }
 
-func (GroupBySlugQuery) isGroupQuery() {}
+func (q groupBySlugQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."slug"`: q.slug})
+}
 
-func GroupBySlug(slug string) GroupQuery { return GroupBySlugQuery{Slug: slug} }
+func (groupBySlugQuery) isGroupQuery() {}
 
-type GroupBySlugsQuery struct{ Slugs []string }
+func GroupBySlug(slug string) GroupQuery { return groupBySlugQuery{slug: slug} }
 
-func (GroupBySlugsQuery) isGroupQuery() {}
+type groupBySlugsQuery struct{ slugs []string }
 
-func GroupBySlugs(slugs []string) GroupQuery { return GroupBySlugsQuery{Slugs: slugs} }
+func (q groupBySlugsQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`g."slug"`: q.slugs})
+}
 
-type GroupPageQuery interface{ isGroupPageQuery() }
+func (groupBySlugsQuery) isGroupQuery() {}
 
-type GroupPageByOrganizationIDQuery struct{ OrganizationID uuid.UUID }
+func GroupBySlugs(slugs []string) GroupQuery { return groupBySlugsQuery{slugs: slugs} }
 
-func (GroupPageByOrganizationIDQuery) isGroupPageQuery() {}
+type GroupPageQuery interface {
+	apply(b sq.SelectBuilder) sq.SelectBuilder
+	isGroupPageQuery()
+}
+
+type groupPageByOrganizationIDQuery struct{ organizationID uuid.UUID }
+
+func (q groupPageByOrganizationIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"group" g ON g."id" = gp."group_id"`).
+		Where(sq.Eq{`g."organization_id"`: q.organizationID})
+}
+
+func (groupPageByOrganizationIDQuery) isGroupPageQuery() {}
 
 func GroupPageByOrganizationID(organizationID uuid.UUID) GroupPageQuery {
-	return GroupPageByOrganizationIDQuery{OrganizationID: organizationID}
+	return groupPageByOrganizationIDQuery{organizationID: organizationID}
 }
 
-type GroupPageByPageIDsQuery struct{ PageIDs []uuid.UUID }
+type groupPageByPageIDsQuery struct{ pageIDs []uuid.UUID }
 
-func (GroupPageByPageIDsQuery) isGroupPageQuery() {}
+func (q groupPageByPageIDsQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.Where(sq.Eq{`gp."page_id"`: q.pageIDs})
+}
+
+func (groupPageByPageIDsQuery) isGroupPageQuery() {}
 
 func GroupPageByPageIDs(pageIDs []uuid.UUID) GroupPageQuery {
-	return GroupPageByPageIDsQuery{PageIDs: pageIDs}
+	return groupPageByPageIDsQuery{pageIDs: pageIDs}
 }
 
-type GroupPageByEnvironmentIDQuery struct{ EnvironmentID uuid.UUID }
+type groupPageByEnvironmentIDQuery struct{ environmentID uuid.UUID }
 
-func (GroupPageByEnvironmentIDQuery) isGroupPageQuery() {}
+func (q groupPageByEnvironmentIDQuery) apply(b sq.SelectBuilder) sq.SelectBuilder {
+	return b.
+		InnerJoin(`"page" p ON p."id" = gp."page_id"`).
+		Where(sq.Eq{`p."environment_id"`: q.environmentID})
+}
+
+func (groupPageByEnvironmentIDQuery) isGroupPageQuery() {}
 
 func GroupPageByEnvironmentID(environmentID uuid.UUID) GroupPageQuery {
-	return GroupPageByEnvironmentIDQuery{EnvironmentID: environmentID}
+	return groupPageByEnvironmentIDQuery{environmentID: environmentID}
 }

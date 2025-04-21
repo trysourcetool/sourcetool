@@ -47,7 +47,9 @@ func (db *DB) buildEnvironmentQuery(ctx context.Context, queries ...EnvironmentQ
 	q := db.builder.Select(environmentColumns()...).
 		From(`"environment" e`)
 
-	q = applyEnvironmentQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {

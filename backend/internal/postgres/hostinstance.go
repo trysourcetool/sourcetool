@@ -55,7 +55,9 @@ func (db *DB) buildHostInstanceQuery(ctx context.Context, queries ...HostInstanc
 	).
 		From(`"host_instance" hi`)
 
-	q = applyHostInstanceQueries(q, queries...)
+	for _, query := range queries {
+		q = query.apply(q)
+	}
 
 	query, args, err := q.ToSql()
 	if err != nil {
