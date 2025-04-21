@@ -17,7 +17,10 @@
     "dev:docs": "pnpm --filter sourcetool-docs start",
     "typecheck:docs": "pnpm --filter sourcetool-docs typecheck",
     "build:mcp-docs": "pnpm --filter docs-mcp-server build",
-    "test:mcp-docs": "pnpm --filter docs-mcp-server test"
+    "test:mcp-docs": "pnpm --filter docs-mcp-server test",
+    "build:sdk-node": "pnpm --filter @sourcetool/node build",
+    "dev:sdk-node": "pnpm --filter @sourcetool/node build:watch",
+    "test:sdk-node": "pnpm --filter @sourcetool/node test"
   },
   "engines": {
     "npm": "use pnpm please!",
@@ -43,5 +46,9 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "catalog:",
     "typescript-eslint": "^8.30.1"
+  },
+  "dependencies": {
+    "@sourcetool/node": "link:sdk/node",
+    "hello-world": "link:examples/node/hello-world"
   }
 }
