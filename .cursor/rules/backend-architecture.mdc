@@ -5,27 +5,31 @@ alwaysApply: false
 ---
 # Backend architecture
 
-These rules reflect the **current** package layout (`core → infra → server`). Use them for all new code reviews and CI checks.
+These rules reflect the **current** package layout (`core → database → infra → server`). Use them for all new code reviews and CI checks.
 
 ---
 
 ## Layer map & allowed imports
 
 | Layer & path                                   | Purpose                                              | May **import**                                      |
-|------------------------------------------------|------------------------------------------------------|------------------------------------------------------|
+|---|---|---|
 | **core** `internal/core/**`                    | Pure domain entities & helpers – **no I/O**          | **stdlib**, tiny 3rd‑party (uuid, errors)            |
-| **infra** `internal/{postgres,mail,pubsub,ws,permission}/**` | Concrete adapters (DB, SMTP, Redis, WS, RBAC)       | **core**, support pkgs, stdlib, 3rd‑party            |
-| **server** `internal/server/**`                | HTTP/WS routers, handlers, DTOs, middleware          | **core**, **infra**, support pkgs, stdlib, 3rd‑party |
+| **database** `internal/database/**`            | Database interfaces & query builders                 | **core**, stdlib, sqlx                               |
+| **infra** `internal/{postgres,mail,pubsub,ws}/**` | Concrete adapters (DB, SMTP, Redis, WS)             | **core**, **database**, support pkgs, stdlib, 3rd‑party |
+| **permission** `internal/permission/**`         | Authorization & RBAC implementation                  | **core**, **database**, support pkgs, stdlib          |
+| **server** `internal/server/**`                | HTTP/WS routers, handlers, DTOs, middleware          | **core**, **database**, **infra**, **permission**, support pkgs, stdlib, 3rd‑party |
 | **support** `internal/{config,logger,jwt,google,errdefs}`, `internal/context.go`, `internal/url.go`, `internal/pb/go/**` | Cross‑cutting util & generated code | usable from any layer (never import `internal/server` from support pkgs) |
 
 ### Dependency direction
 
 ```
-server  →  infra  →  core
+server  →  infra/permission  →  database  →  core
 ```
 
 * `core` never depends on adapters or HTTP.
-* `infra` implements persistence / external‑service logic and depends on `core`.
+* `database` defines interfaces and query builders for data persistence.
+* `infra` implements persistence / external‑service logic and depends on `core` and `database`.
+* `permission` implements authorization checks using core rules and database access.
 * `server` wires everything; it can depend on anything below.
 
 ---
@@ -33,12 +37,18 @@ server  →  infra  →  core
 ## Directory conventions
 
 * **Core** package per model (`apikey`, `user`, …) containing structs and small helper methods.
+* **Database** package contains:
+  * Model interfaces and base types (`internal/database/<model>.go`)
+  * Common database utilities and interfaces (`internal/database/database.go`)
 * **Infra** adapter per tech:
-  * `internal/postgres/<model>_query.go` (+ optional `<model>.go` for repo helpers)
+  * `internal/postgres/<model>.go` (concrete SQL implementations)
+  * `internal/postgres/<model>_ce.go` and `<model>_ee.go` (edition-specific implementations)
   * `internal/pubsub/redis.go`
   * `internal/mail/smtp.go`
   * `internal/ws/manager.go`
-  * `internal/permission/checker.go`
+* **Permission** package:
+  * `internal/permission/checker.go` (RBAC implementation)
+  * Authorization middleware and helpers
 * **Server** keeps CE/EE variations with build‑tag files inside the same directory tree (e.g. `group_ee.go`, `websocket_ee.go`). There is **no separate `ee/internal` directory**.
   * Request/response DTOs under `internal/server/{requests,responses}`.
   * `internal/server/middleware.go`, `validate.go`, etc.
@@ -49,8 +59,10 @@ server  →  infra  →  core
 
 ## Import linter rules
 
-* `internal/core/**` **must not** import any `internal/server/**` or `internal/{postgres,pubsub,mail,ws,...}/**` packages.
-* `internal/{postgres,mail,pubsub,ws,permission}/**` **must not** import `internal/server/**`.
+* `internal/core/**` **must not** import any `internal/server/**`, `internal/database/**`, or `internal/{postgres,pubsub,mail,ws,...}/**` packages.
+* `internal/database/**` **must not** import any `internal/server/**` or `internal/{postgres,pubsub,mail,ws,...}/**` packages.
+* `internal/{postgres,mail,pubsub,ws}/**` **must not** import `internal/server/**`.
+* `internal/permission/**` **must not** import `internal/server/**` or `internal/{postgres,pubsub,mail,ws}/**`.
 * `internal/server/**` **must not** import sibling sub‑directories of itself to avoid cycles.
 * Generated protobuf in `internal/pb/go/**` is allowed anywhere, but heavy message types should stay out of `core`.
 * Enforce with `golangci‑lint` (`revive import‑graph`).
