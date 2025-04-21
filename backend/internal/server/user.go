@@ -12,16 +12,15 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
 	gojwt "github.com/golang-jwt/jwt/v5"
-	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -129,9 +128,9 @@ func (s *Server) getMe(w http.ResponseWriter, r *http.Request) error {
 
 	currentUser := internal.CurrentUser(ctx)
 	currentOrg := internal.CurrentOrganization(ctx)
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
-		postgres.UserOrganizationAccessByUserID(currentUser.ID),
-		postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
+		database.UserOrganizationAccessByUserID(currentUser.ID),
+		database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -163,8 +162,8 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		currentUser.LastName = internal.SafeValue(req.LastName)
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Update(ctx, currentUser); err != nil {
 			return err
 		}
 
@@ -206,7 +205,7 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 	}
 
 	// Check if email already exists
-	exists, err := s.db.IsUserEmailExists(ctx, req.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, req.Email)
 	if err != nil {
 		return err
 	}
@@ -258,7 +257,7 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
-	u, err := s.db.GetUser(ctx, postgres.UserByID(userID))
+	u, err := s.db.User().Get(ctx, database.UserByID(userID))
 	if err != nil {
 		return err
 	}
@@ -270,8 +269,8 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 
 	currentUser.Email = c.Email
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateUser(ctx, tx, currentUser); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().Update(ctx, currentUser); err != nil {
 			return err
 		}
 
@@ -300,17 +299,17 @@ func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) error {
 
 	currentOrg := internal.CurrentOrganization(ctx)
 
-	users, err := s.db.ListUsers(ctx, postgres.UserByOrganizationID(currentOrg.ID))
+	users, err := s.db.User().List(ctx, database.UserByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	userInvitations, err := s.db.ListUserInvitations(ctx, postgres.UserInvitationByOrganizationID(currentOrg.ID))
+	userInvitations, err := s.db.User().ListInvitations(ctx, database.UserInvitationByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -357,7 +356,7 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	u, err := s.db.GetUser(ctx, postgres.UserByID(userID))
+	u, err := s.db.User().Get(ctx, database.UserByID(userID))
 	if err != nil {
 		return err
 	}
@@ -367,18 +366,18 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
-		postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID),
-		postgres.UserOrganizationAccessByUserID(u.ID))
+	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
+		database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+		database.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return err
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if req.Role != nil {
 			orgAccess.Role = core.UserOrganizationRoleFromString(internal.SafeValue(req.Role))
 
-			if err := s.db.UpdateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
 			}
 		}
@@ -397,16 +396,16 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 				})
 			}
 
-			existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(u.ID))
+			existingGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByUserID(u.ID))
 			if err != nil {
 				return err
 			}
 
-			if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
+			if err := s.db.User().BulkDeleteGroups(ctx, existingGroups); err != nil {
 				return err
 			}
 
-			if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+			if err := s.db.User().BulkInsertGroups(ctx, userGroups); err != nil {
 				return err
 			}
 		}
@@ -448,14 +447,14 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrPermissionDenied(errors.New("cannot remove yourself from the organization"))
 	}
 
-	userToRemove, err := s.db.GetUser(ctx, postgres.UserByID(userIDToRemove))
+	userToRemove, err := s.db.User().Get(ctx, database.UserByID(userIDToRemove))
 	if err != nil {
 		return err
 	}
 
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx,
-		postgres.UserOrganizationAccessByUserID(userToRemove.ID),
-		postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
+		database.UserOrganizationAccessByUserID(userToRemove.ID),
+		database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
 	if err != nil {
 		if errdefs.IsUserOrganizationAccessNotFound(err) {
 			return nil
@@ -464,9 +463,9 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if orgAccess.Role == core.UserOrganizationRoleAdmin {
-		adminAccesses, err := s.db.ListUserOrganizationAccesses(ctx,
-			postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID),
-			postgres.UserOrganizationAccessByRole(core.UserOrganizationRoleAdmin))
+		adminAccesses, err := s.db.User().ListOrganizationAccesses(ctx,
+			database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+			database.UserOrganizationAccessByRole(core.UserOrganizationRoleAdmin))
 		if err != nil {
 			return err
 		}
@@ -475,28 +474,28 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().DeleteOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}
 
-		apiKeys, err := s.db.ListAPIKeys(ctx, postgres.APIKeyByUserID(userToRemove.ID), postgres.APIKeyByOrganizationID(currentOrg.ID))
+		apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByUserID(userToRemove.ID), database.APIKeyByOrganizationID(currentOrg.ID))
 		if err != nil {
 			return err
 		}
 		for _, apiKey := range apiKeys {
-			if err := s.db.DeleteAPIKey(ctx, tx, apiKey); err != nil {
+			if err := tx.APIKey().Delete(ctx, apiKey); err != nil {
 				return err
 			}
 		}
 
-		userGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByUserID(userToRemove.ID), postgres.UserGroupByOrganizationID(currentOrg.ID))
+		userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByUserID(userToRemove.ID), database.UserGroupByOrganizationID(currentOrg.ID))
 		if err != nil {
 			return err
 		}
 
 		if len(userGroups) > 0 {
-			if err := s.db.BulkDeleteUserGroups(ctx, tx, userGroups); err != nil {
+			if err := tx.User().BulkDeleteGroups(ctx, userGroups); err != nil {
 				return err
 			}
 		}
@@ -534,7 +533,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 	invitations := make([]*core.UserInvitation, 0)
 	emailURLs := make(map[string]string)
 	for _, email := range req.Emails {
-		emailExsts, err := s.db.IsUserInvitationEmailExists(ctx, o.ID, email)
+		emailExsts, err := s.db.User().IsInvitationEmailExists(ctx, o.ID, email)
 		if err != nil {
 			return err
 		}
@@ -562,8 +561,8 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 		})
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.BulkInsertUserInvitations(ctx, tx, invitations); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.User().BulkInsertInvitations(ctx, invitations); err != nil {
 			return err
 		}
 
@@ -603,7 +602,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	userInvitation, err := s.db.GetUserInvitation(ctx, postgres.UserInvitationByID(invitationID))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByID(invitationID))
 	if err != nil {
 		return err
 	}

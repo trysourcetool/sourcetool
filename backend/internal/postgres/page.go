@@ -6,21 +6,36 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func (db *DB) GetPage(ctx context.Context, queries ...PageQuery) (*core.Page, error) {
-	query, args, err := db.buildQuery(ctx, queries...)
+var _ database.PageStore = (*pageStore)(nil)
+
+type pageStore struct {
+	db      internal.DB
+	builder sq.StatementBuilderType
+}
+
+func newPageStore(db internal.DB) *pageStore {
+	return &pageStore{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
+}
+
+func (s *pageStore) Get(ctx context.Context, queries ...database.PageQuery) (*core.Page, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := core.Page{}
-	if err := db.db.GetContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrPageNotFound(err)
 		}
@@ -30,22 +45,50 @@ func (db *DB) GetPage(ctx context.Context, queries ...PageQuery) (*core.Page, er
 	return &m, nil
 }
 
-func (db *DB) ListPages(ctx context.Context, queries ...PageQuery) ([]*core.Page, error) {
-	query, args, err := db.buildQuery(ctx, queries...)
+func (s *pageStore) List(ctx context.Context, queries ...database.PageQuery) ([]*core.Page, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make([]*core.Page, 0)
-	if err := db.db.SelectContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
 
 	return m, nil
 }
 
-func (db *DB) buildQuery(ctx context.Context, queries ...PageQuery) (string, []any, error) {
-	q := db.builder.Select(
+func (s *pageStore) applyQueries(b sq.SelectBuilder, queries ...database.PageQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case database.PageByIDQuery:
+			b = b.Where(sq.Eq{`p."id"`: q.ID})
+		case database.PageByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`p."organization_id"`: q.OrganizationID})
+		case database.PageByAPIKeyIDQuery:
+			b = b.Where(sq.Eq{`p."api_key_id"`: q.APIKeyID})
+		case database.PageBySessionIDQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."id" = p."api_key_id"`).
+				InnerJoin(`"session" s ON s."api_key_id" = ak."id"`).
+				Where(sq.Eq{`s."id"`: q.SessionID})
+		case database.PageByEnvironmentIDQuery:
+			b = b.Where(sq.Eq{`p."environment_id"`: q.EnvironmentID})
+		case database.PageLimitQuery:
+			b = b.Limit(q.Limit)
+		case database.PageOffsetQuery:
+			b = b.Offset(q.Offset)
+		case database.PageOrderByQuery:
+			b = b.OrderBy(q.OrderBy)
+		}
+	}
+
+	return b
+}
+
+func (s *pageStore) buildQuery(ctx context.Context, queries ...database.PageQuery) (string, []any, error) {
+	q := s.builder.Select(
 		`p."id"`,
 		`p."organization_id"`,
 		`p."environment_id"`,
@@ -58,9 +101,7 @@ func (db *DB) buildQuery(ctx context.Context, queries ...PageQuery) (string, []a
 	).
 		From(`"page" p`)
 
-	for _, query := range queries {
-		q = query.apply(q)
-	}
+	q = s.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -70,19 +111,12 @@ func (db *DB) buildQuery(ctx context.Context, queries ...PageQuery) (string, []a
 	return query, args, err
 }
 
-func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
+func (s *pageStore) BulkInsert(ctx context.Context, m []*core.Page) error {
 	if len(m) == 0 {
 		return nil
 	}
 
-	q := db.builder.
+	q := s.builder.
 		Insert(`"page"`).
 		Columns(
 			`"id"`,
@@ -107,7 +141,7 @@ func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 	}
 
 	if _, err := q.
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -115,26 +149,19 @@ func (db *DB) BulkInsertPages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 	return nil
 }
 
-func (db *DB) BulkUpdatePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
+func (s *pageStore) BulkUpdate(ctx context.Context, m []*core.Page) error {
 	if len(m) == 0 {
 		return nil
 	}
 
 	for _, v := range m {
-		if _, err := db.builder.
+		if _, err := s.builder.
 			Update(`"page"`).
 			Set(`"name"`, v.Name).
 			Set(`"route"`, v.Route).
 			Set(`"path"`, v.Path).
 			Where(sq.Eq{`"id"`: v.ID}).
-			RunWith(runner).
+			RunWith(s.db).
 			ExecContext(ctx); err != nil {
 			return errdefs.ErrDatabase(err)
 		}
@@ -143,14 +170,7 @@ func (db *DB) BulkUpdatePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 	return nil
 }
 
-func (db *DB) BulkDeletePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
+func (s *pageStore) BulkDelete(ctx context.Context, m []*core.Page) error {
 	if len(m) == 0 {
 		return nil
 	}
@@ -159,10 +179,10 @@ func (db *DB) BulkDeletePages(ctx context.Context, tx *sqlx.Tx, m []*core.Page) 
 		return x.ID
 	})
 
-	if _, err := db.builder.
+	if _, err := s.builder.
 		Delete(`"page"`).
 		Where(sq.Eq{`"id"`: ids}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}

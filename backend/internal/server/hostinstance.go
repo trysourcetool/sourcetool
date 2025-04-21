@@ -8,8 +8,8 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
@@ -22,8 +22,8 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
-	hostInstanceOpts := []postgres.HostInstanceQuery{
-		postgres.HostInstanceByOrganizationID(currentOrg.ID),
+	hostInstanceOpts := []database.HostInstanceQuery{
+		database.HostInstanceByOrganizationID(currentOrg.ID),
 	}
 	if pageIDReq != nil {
 		pageID, err := uuid.FromString(internal.SafeValue(pageIDReq))
@@ -31,20 +31,20 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 			return errdefs.ErrInvalidArgument(err)
 		}
 
-		page, err := s.db.GetPage(ctx, postgres.PageByID(pageID))
+		page, err := s.db.Page().Get(ctx, database.PageByID(pageID))
 		if err != nil {
 			return err
 		}
 
-		apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(page.APIKeyID))
+		apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(page.APIKeyID))
 		if err != nil {
 			return err
 		}
 
-		hostInstanceOpts = append(hostInstanceOpts, postgres.HostInstanceByAPIKeyID(apiKey.ID))
+		hostInstanceOpts = append(hostInstanceOpts, database.HostInstanceByAPIKeyID(apiKey.ID))
 	}
 
-	hostInstances, err := s.db.ListHostInstances(ctx, hostInstanceOpts...)
+	hostInstances, err := s.db.HostInstance().List(ctx, hostInstanceOpts...)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
 				hostInstance.Status = core.HostInstanceStatusOffline
 
-				if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
+				if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
 					return err
 				}
 

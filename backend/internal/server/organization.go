@@ -7,13 +7,12 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -38,7 +37,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 			return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 		}
 
-		exists, err := s.db.IsOrganizationSubdomainExists(ctx, req.Subdomain)
+		exists, err := s.db.Organization().IsSubdomainExists(ctx, req.Subdomain)
 		if err != nil {
 			return err
 		}
@@ -91,20 +90,20 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 		Key:            key,
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.CreateOrganization(ctx, tx, o); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err
 		}
 
-		if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+		if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}
 
-		if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+		if err := tx.Environment().BulkInsert(ctx, envs); err != nil {
 			return err
 		}
 
-		if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+		if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 			return err
 		}
 
@@ -113,7 +112,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 
-	o, _ = s.db.GetOrganization(ctx, postgres.OrganizationByID(o.ID))
+	o, _ = s.db.Organization().Get(ctx, database.OrganizationByID(o.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.CreateOrganizationResponse{
 		Organization: responses.OrganizationFromModel(o),
@@ -128,7 +127,7 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		return errdefs.ErrInvalidArgument(errors.New("subdomain is required"))
 	}
 
-	exists, err := s.db.IsOrganizationSubdomainExists(ctx, subdomain)
+	exists, err := s.db.Organization().IsSubdomainExists(ctx, subdomain)
 	if err != nil {
 		return err
 	}
@@ -149,14 +148,14 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 func (s *Server) validateSelfHostedOrganization(ctx context.Context) error {
 	if !config.Config.IsCloudEdition {
 		// In self-hosted mode, check if an organization already exists
-		if _, err := s.db.GetOrganization(ctx); err == nil {
+		if _, err := s.db.Organization().Get(ctx); err == nil {
 			return errdefs.ErrPermissionDenied(errors.New("only one organization is allowed in self-hosted edition"))
 		}
 	}
 	return nil
 }
 
-func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx *sqlx.Tx, u *core.User) error {
+func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx database.Tx, u *core.User) error {
 	if config.Config.IsCloudEdition {
 		return nil
 	}
@@ -165,7 +164,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		ID:        uuid.Must(uuid.NewV4()),
 		Subdomain: nil, // Empty subdomain for non-cloud edition
 	}
-	if err := s.db.CreateOrganization(ctx, tx, org); err != nil {
+	if err := tx.Organization().Create(ctx, org); err != nil {
 		return err
 	}
 
@@ -175,7 +174,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		OrganizationID: org.ID,
 		Role:           core.UserOrganizationRoleAdmin,
 	}
-	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+	if err := tx.User().CreateOrganizationAccess(ctx, orgAccess); err != nil {
 		return err
 	}
 
@@ -196,7 +195,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		},
 		devEnv,
 	}
-	if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+	if err := tx.Environment().BulkInsert(ctx, envs); err != nil {
 		return err
 	}
 
@@ -212,7 +211,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		Name:           "",
 		Key:            key,
 	}
-	if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+	if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 		return err
 	}
 
@@ -227,22 +226,22 @@ func (s *Server) resolveOrganization(ctx context.Context, u *core.User) (*core.O
 	subdomain := internal.Subdomain(ctx)
 	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
 
-	orgAccessQueries := []postgres.UserOrganizationAccessQuery{
-		postgres.UserOrganizationAccessByUserID(u.ID),
-		postgres.UserOrganizationAccessOrderBy("created_at DESC"),
+	orgAccessQueries := []database.UserOrganizationAccessQuery{
+		database.UserOrganizationAccessByUserID(u.ID),
+		database.UserOrganizationAccessOrderBy("created_at DESC"),
 	}
 
 	if isCloudWithSubdomain {
-		orgAccessQueries = append(orgAccessQueries, postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessQueries = append(orgAccessQueries, database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
 	}
 
-	orgAccess, err := s.db.GetUserOrganizationAccess(ctx, orgAccessQueries...)
+	orgAccess, err := s.db.User().GetOrganizationAccess(ctx, orgAccessQueries...)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Get the organization
-	org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+	org, err := s.db.Organization().Get(ctx, database.OrganizationByID(orgAccess.OrganizationID))
 	if err != nil {
 		return nil, nil, err
 	}

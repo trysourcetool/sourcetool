@@ -8,15 +8,14 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
-	"github.com/jmoiron/sqlx"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 )
 
 const (
@@ -47,7 +46,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	page, err := s.db.GetPage(ctx, postgres.PageByID(pageID))
+	page, err := s.db.Page().Get(ctx, database.PageByID(pageID))
 	if err != nil {
 		return err
 	}
@@ -57,12 +56,12 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
 
-	apiKey, err := s.db.GetAPIKey(ctx, postgres.APIKeyByID(page.APIKeyID))
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(page.APIKeyID))
 	if err != nil {
 		return err
 	}
 
-	hostInstances, err := s.db.ListHostInstances(ctx, postgres.HostInstanceByAPIKeyID(apiKey.ID))
+	hostInstances, err := s.db.HostInstance().List(ctx, database.HostInstanceByAPIKeyID(apiKey.ID))
 	if err != nil {
 		return err
 	}
@@ -74,7 +73,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
 				// Update host status to offline if ping fails
 				hostInstance.Status = core.HostInstanceStatusOffline
-				if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
+				if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 				}
 				continue
@@ -92,7 +91,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 				if err := s.wsManager.PingConnectedHost(hostInstance.ID); err == nil {
 					// Host is actually reachable, update its status
 					hostInstance.Status = core.HostInstanceStatusOnline
-					if err := s.db.UpdateHostInstance(ctx, nil, hostInstance); err != nil {
+					if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
 						logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
 						continue
 					}
@@ -117,7 +116,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 			return errdefs.ErrSessionNotFound(err)
 		}
 
-		sess, err = s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+		sess, err = s.db.Session().Get(ctx, database.SessionByID(sessionID))
 		if err != nil {
 			return err
 		}
@@ -133,9 +132,9 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 		sessionExists = false
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if !sessionExists {
-			if err := s.db.CreateSession(ctx, tx, sess); err != nil {
+			if err := tx.Session().Create(ctx, sess); err != nil {
 				return err
 			}
 		}
@@ -166,7 +165,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 			},
 		},
 	}); err != nil {
-		s.db.DeleteSession(ctx, nil, sess)
+		s.db.Session().Delete(ctx, sess)
 		s.wsManager.DisconnectClient(sess.ID)
 		logger.Logger.Sugar().Errorf("Failed to send initialize client message to host: %v", err)
 		return err
@@ -186,7 +185,7 @@ func (s *Server) wsRenderWidget(ctx context.Context, conn *websocket.Conn, msg *
 		return err
 	}
 
-	_, err = s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+	_, err = s.db.Session().Get(ctx, database.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -210,7 +209,7 @@ func (s *Server) wsRerunPage(ctx context.Context, conn *websocket.Conn, msg *web
 		return err
 	}
 
-	sess, err := s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+	sess, err := s.db.Session().Get(ctx, database.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -220,7 +219,7 @@ func (s *Server) wsRerunPage(ctx context.Context, conn *websocket.Conn, msg *web
 		return err
 	}
 
-	page, err := s.db.GetPage(ctx, postgres.PageByID(pageID), postgres.PageBySessionID(sess.ID))
+	page, err := s.db.Page().Get(ctx, database.PageByID(pageID), database.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -252,18 +251,18 @@ func (s *Server) wsCloseSession(ctx context.Context, conn *websocket.Conn, msg *
 		return errdefs.ErrAPIKeyNotFound(err)
 	}
 
-	sess, err := s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+	sess, err := s.db.Session().Get(ctx, database.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
 
-	_, err = s.db.GetPage(ctx, postgres.PageByAPIKeyID(sess.APIKeyID), postgres.PageBySessionID(sess.ID))
+	_, err = s.db.Page().Get(ctx, database.PageByAPIKeyID(sess.APIKeyID), database.PageBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteSession(ctx, tx, sess); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Session().Delete(ctx, sess); err != nil {
 			return err
 		}
 		return nil
@@ -300,7 +299,7 @@ func (s *Server) wsScriptFinished(ctx context.Context, conn *websocket.Conn, msg
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	_, err = s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+	_, err = s.db.Session().Get(ctx, database.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -323,7 +322,7 @@ func (s *Server) wsException(ctx context.Context, conn *websocket.Conn, msg *web
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	_, err = s.db.GetSession(ctx, postgres.SessionByID(sessionID))
+	_, err = s.db.Session().Get(ctx, database.SessionByID(sessionID))
 	if err != nil {
 		return err
 	}
@@ -424,15 +423,15 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status core.HostInstanceStatus) error {
-	host, err := s.db.GetHostInstance(ctx, postgres.HostInstanceByID(hostInstanceID))
+	host, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
 	if err != nil {
 		return err
 	}
 
 	host.Status = status
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateHostInstance(ctx, tx, host); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.HostInstance().Update(ctx, host); err != nil {
 			return err
 		}
 		return nil

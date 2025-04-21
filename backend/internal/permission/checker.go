@@ -7,15 +7,15 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 )
 
 type Checker struct {
-	db *postgres.DB
+	db database.DB
 }
 
-func NewChecker(db *postgres.DB) *Checker {
+func NewChecker(db database.DB) *Checker {
 	return &Checker{db: db}
 }
 
@@ -25,10 +25,10 @@ func (c *Checker) AuthorizeOperation(ctx context.Context, op core.Operation) err
 	if currentUser == nil || currentOrg == nil {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}
-	orgAccess, err := c.db.GetUserOrganizationAccess(
+	orgAccess, err := c.db.User().GetOrganizationAccess(
 		ctx,
-		postgres.UserOrganizationAccessByUserID(currentUser.ID),
-		postgres.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+		database.UserOrganizationAccessByUserID(currentUser.ID),
+		database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
 	)
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return errdefs.ErrPermissionDenied(err)

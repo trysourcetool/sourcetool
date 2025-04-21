@@ -10,12 +10,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
@@ -34,7 +33,7 @@ func (s *Server) getGroup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	currentOrg := internal.CurrentOrganization(ctx)
-	group, err := s.db.GetGroup(ctx, postgres.GroupByOrganizationID(currentOrg.ID), postgres.GroupByID(groupID))
+	group, err := s.db.Group().Get(ctx, database.GroupByOrganizationID(currentOrg.ID), database.GroupByID(groupID))
 	if err != nil {
 		return err
 	}
@@ -48,17 +47,17 @@ func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	currentOrg := internal.CurrentOrganization(ctx)
-	groups, err := s.db.ListGroups(ctx, postgres.GroupByOrganizationID(currentOrg.ID))
+	groups, err := s.db.Group().List(ctx, database.GroupByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	users, err := s.db.ListUsers(ctx, postgres.UserByOrganizationID(currentOrg.ID))
+	users, err := s.db.User().List(ctx, database.UserByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	userGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByOrganizationID(currentOrg.ID))
+	userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -68,7 +67,7 @@ func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 		userIDs = append(userIDs, user.ID)
 	}
 
-	orgAccesses, err := s.db.ListUserOrganizationAccesses(ctx, postgres.UserOrganizationAccessByUserIDs(userIDs))
+	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByUserIDs(userIDs))
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 
 	currentOrg := internal.CurrentOrganization(ctx)
 
-	slugExists, err := s.db.IsGroupSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
+	slugExists, err := s.db.Group().IsSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
 	if err != nil {
 		return err
 	}
@@ -160,12 +159,12 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.CreateGroup(ctx, tx, g); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Group().Create(ctx, g); err != nil {
 			return err
 		}
 
-		if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+		if err := tx.User().BulkInsertGroups(ctx, userGroups); err != nil {
 			return err
 		}
 
@@ -174,7 +173,7 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	g, _ = s.db.GetGroup(ctx, postgres.GroupByID(g.ID))
+	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.CreateGroupResponse{
 		Group: responses.GroupFromModel(g),
@@ -208,7 +207,7 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	g, err := s.db.GetGroup(ctx, postgres.GroupByID(groupID), postgres.GroupByOrganizationID(currentOrg.ID))
+	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -235,21 +234,21 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.UpdateGroup(ctx, tx, g); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Group().Update(ctx, g); err != nil {
 			return err
 		}
 
-		existingGroups, err := s.db.ListUserGroups(ctx, postgres.UserGroupByGroupID(g.ID))
+		existingGroups, err := tx.User().ListGroups(ctx, database.UserGroupByGroupID(g.ID))
 		if err != nil {
 			return err
 		}
 
-		if err := s.db.BulkDeleteUserGroups(ctx, tx, existingGroups); err != nil {
+		if err := tx.User().BulkDeleteGroups(ctx, existingGroups); err != nil {
 			return err
 		}
 
-		if err := s.db.BulkInsertUserGroups(ctx, tx, userGroups); err != nil {
+		if err := tx.User().BulkInsertGroups(ctx, userGroups); err != nil {
 			return err
 		}
 
@@ -258,7 +257,7 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	g, _ = s.db.GetGroup(ctx, postgres.GroupByID(g.ID))
+	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateGroupResponse{
 		Group: responses.GroupFromModel(g),
@@ -280,13 +279,13 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request) error {
 
 	currentOrg := internal.CurrentOrganization(ctx)
 
-	g, err := s.db.GetGroup(ctx, postgres.GroupByID(groupID), postgres.GroupByOrganizationID(currentOrg.ID))
+	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(currentOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	if err := s.db.WithTx(ctx, func(tx *sqlx.Tx) error {
-		if err := s.db.DeleteGroup(ctx, tx, g); err != nil {
+	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		if err := tx.Group().Delete(ctx, g); err != nil {
 			return err
 		}
 

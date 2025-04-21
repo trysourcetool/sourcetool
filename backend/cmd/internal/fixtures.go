@@ -4,21 +4,20 @@ import (
 	"context"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
-	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 )
 
-func LoadFixtures(ctx context.Context, db *postgres.DB) error {
+func LoadFixtures(ctx context.Context, db database.DB) error {
 	if !config.Config.IsCloudEdition {
 		return nil
 	}
 
 	email := "john.doe@acme.com"
-	exists, err := db.IsUserEmailExists(ctx, email)
+	exists, err := db.User().IsEmailExists(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -31,7 +30,7 @@ func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 		return err
 	}
 
-	if err := db.WithTx(ctx, func(tx *sqlx.Tx) error {
+	if err := db.WithTx(ctx, func(tx database.Tx) error {
 		u := &core.User{
 			ID:               uuid.Must(uuid.NewV4()),
 			FirstName:        "John",
@@ -39,7 +38,7 @@ func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 			Email:            email,
 			RefreshTokenHash: hashedRefreshToken,
 		}
-		if err := db.CreateUser(ctx, tx, u); err != nil {
+		if err := tx.User().Create(ctx, u); err != nil {
 			return err
 		}
 
@@ -47,11 +46,11 @@ func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 			ID:        uuid.Must(uuid.NewV4()),
 			Subdomain: internal.NilValue("acme"),
 		}
-		if err := db.CreateOrganization(ctx, tx, o); err != nil {
+		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err
 		}
 
-		if err := db.CreateUserOrganizationAccess(ctx, tx, &core.UserOrganizationAccess{
+		if err := tx.User().CreateOrganizationAccess(ctx, &core.UserOrganizationAccess{
 			ID:             uuid.Must(uuid.NewV4()),
 			UserID:         u.ID,
 			OrganizationID: o.ID,
@@ -78,7 +77,7 @@ func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 			devEnv,
 		}
 
-		if err := db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+		if err := tx.Environment().BulkInsert(ctx, envs); err != nil {
 			return err
 		}
 
@@ -95,7 +94,7 @@ func LoadFixtures(ctx context.Context, db *postgres.DB) error {
 			Key:            key,
 		}
 
-		if err := db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+		if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 			return err
 		}
 

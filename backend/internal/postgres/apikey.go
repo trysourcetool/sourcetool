@@ -5,21 +5,36 @@ import (
 	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
+	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
+	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func (db *DB) GetAPIKey(ctx context.Context, queries ...APIKeyQuery) (*core.APIKey, error) {
-	query, args, err := db.buildAPIKeyQuery(ctx, queries...)
+var _ database.APIKeyStore = (*apiKeyStore)(nil)
+
+type apiKeyStore struct {
+	db      internal.DB
+	builder sq.StatementBuilderType
+}
+
+func newAPIKeyStore(db internal.DB) *apiKeyStore {
+	return &apiKeyStore{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
+}
+
+func (s *apiKeyStore) Get(ctx context.Context, queries ...database.APIKeyQuery) (*core.APIKey, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := core.APIKey{}
-	if err := db.db.GetContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.GetContext(ctx, &m, query, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errdefs.ErrAPIKeyNotFound(err)
 		}
@@ -29,22 +44,42 @@ func (db *DB) GetAPIKey(ctx context.Context, queries ...APIKeyQuery) (*core.APIK
 	return &m, nil
 }
 
-func (db *DB) ListAPIKeys(ctx context.Context, queries ...APIKeyQuery) ([]*core.APIKey, error) {
-	query, args, err := db.buildAPIKeyQuery(ctx, queries...)
+func (s *apiKeyStore) List(ctx context.Context, queries ...database.APIKeyQuery) ([]*core.APIKey, error) {
+	query, args, err := s.buildQuery(ctx, queries...)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make([]*core.APIKey, 0)
-	if err := db.db.SelectContext(ctx, &m, query, args...); err != nil {
+	if err := s.db.SelectContext(ctx, &m, query, args...); err != nil {
 		return nil, errdefs.ErrDatabase(err)
 	}
 
 	return m, nil
 }
 
-func (db *DB) buildAPIKeyQuery(ctx context.Context, queries ...APIKeyQuery) (string, []any, error) {
-	q := db.builder.Select(
+func (s *apiKeyStore) applyQueries(b sq.SelectBuilder, queries ...database.APIKeyQuery) sq.SelectBuilder {
+	for _, q := range queries {
+		switch q := q.(type) {
+		case database.APIKeyByIDQuery:
+			b = b.Where(sq.Eq{`ak."id"`: q.ID})
+		case database.APIKeyByOrganizationIDQuery:
+			b = b.Where(sq.Eq{`ak."organization_id"`: q.OrganizationID})
+		case database.APIKeyByEnvironmentIDQuery:
+			b = b.Where(sq.Eq{`ak."environment_id"`: q.EnvironmentID})
+		case database.APIKeyByEnvironmentIDsQuery:
+			b = b.Where(sq.Eq{`ak."environment_id"`: q.EnvironmentIDs})
+		case database.APIKeyByUserIDQuery:
+			b = b.Where(sq.Eq{`ak."user_id"`: q.UserID})
+		case database.APIKeyByKeyQuery:
+			b = b.Where(sq.Eq{`ak."key"`: q.Key})
+		}
+	}
+	return b
+}
+
+func (s *apiKeyStore) buildQuery(ctx context.Context, queries ...database.APIKeyQuery) (string, []any, error) {
+	q := s.builder.Select(
 		`ak."id"`,
 		`ak."organization_id"`,
 		`ak."environment_id"`,
@@ -56,9 +91,7 @@ func (db *DB) buildAPIKeyQuery(ctx context.Context, queries ...APIKeyQuery) (str
 	).
 		From(`"api_key" ak`)
 
-	for _, query := range queries {
-		q = query.apply(q)
-	}
+	q = s.applyQueries(q, queries...)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -68,15 +101,8 @@ func (db *DB) buildAPIKeyQuery(ctx context.Context, queries ...APIKeyQuery) (str
 	return query, args, err
 }
 
-func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *apiKeyStore) Create(ctx context.Context, m *core.APIKey) error {
+	if _, err := s.builder.
 		Insert(`"api_key"`).
 		Columns(
 			`"id"`,
@@ -94,7 +120,7 @@ func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 			m.Name,
 			m.Key,
 		).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			return errdefs.ErrAlreadyExists(err)
@@ -105,21 +131,14 @@ func (db *DB) CreateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 	return nil
 }
 
-func (db *DB) UpdateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *apiKeyStore) Update(ctx context.Context, m *core.APIKey) error {
+	if _, err := s.builder.
 		Update(`"api_key"`).
 		Set(`"user_id"`, m.UserID).
 		Set(`"name"`, m.Name).
 		Set(`"key"`, m.Key).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
@@ -127,18 +146,11 @@ func (db *DB) UpdateAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) err
 	return nil
 }
 
-func (db *DB) DeleteAPIKey(ctx context.Context, tx *sqlx.Tx, m *core.APIKey) error {
-	var runner sq.BaseRunner
-	if tx != nil {
-		runner = tx
-	} else {
-		runner = db.db
-	}
-
-	if _, err := db.builder.
+func (s *apiKeyStore) Delete(ctx context.Context, m *core.APIKey) error {
+	if _, err := s.builder.
 		Delete(`"api_key"`).
 		Where(sq.Eq{`"id"`: m.ID}).
-		RunWith(runner).
+		RunWith(s.db).
 		ExecContext(ctx); err != nil {
 		return errdefs.ErrDatabase(err)
 	}
