@@ -35,7 +35,7 @@ const (
 	maxRecoveryWait = 6 * time.Hour
 )
 
-func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetInitializeClient()
 	if in == nil {
 		return errors.New("invalid message")
@@ -174,7 +174,7 @@ func (s *Server) wsInitializeClient(ctx context.Context, conn *websocket.Conn, m
 	return nil
 }
 
-func (s *Server) wsRenderWidget(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleRenderWidget(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetRenderWidget()
 	if in == nil {
 		return errors.New("invalid message")
@@ -198,7 +198,7 @@ func (s *Server) wsRenderWidget(ctx context.Context, conn *websocket.Conn, msg *
 	return nil
 }
 
-func (s *Server) wsRerunPage(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleRerunPage(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetRerunPage()
 	if in == nil {
 		return errors.New("invalid message")
@@ -240,7 +240,7 @@ func (s *Server) wsRerunPage(ctx context.Context, conn *websocket.Conn, msg *web
 	return nil
 }
 
-func (s *Server) wsCloseSession(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetCloseSession()
 	if in == nil {
 		return errors.New("invalid message")
@@ -286,7 +286,7 @@ func (s *Server) wsCloseSession(ctx context.Context, conn *websocket.Conn, msg *
 	return nil
 }
 
-func (s *Server) wsScriptFinished(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleScriptFinished(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetScriptFinished()
 	if in == nil {
 		return errors.New("invalid message")
@@ -311,7 +311,7 @@ func (s *Server) wsScriptFinished(ctx context.Context, conn *websocket.Conn, msg
 	return nil
 }
 
-func (s *Server) wsException(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) handleException(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
 	in := msg.GetException()
 	if in == nil {
 		return errors.New("invalid message")
@@ -371,7 +371,7 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		switch msg.Type.(type) {
 		case *websocketv1.Message_InitializeHost:
 			instanceID := r.Header.Get("X-Instance-Id")
-			hostInstance, err := s.wsInitializeHost(ctx, conn, instanceID, &msg)
+			hostInstance, err := s.handleInitializeHost(ctx, conn, instanceID, &msg)
 			if err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
@@ -386,32 +386,32 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 			go s.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)
 		case *websocketv1.Message_InitializeClient:
-			if err := s.wsInitializeClient(ctx, conn, &msg); err != nil {
+			if err := s.handleInitializeClient(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RenderWidget:
-			if err := s.wsRenderWidget(ctx, conn, &msg); err != nil {
+			if err := s.handleRenderWidget(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_RerunPage:
-			if err := s.wsRerunPage(ctx, conn, &msg); err != nil {
+			if err := s.handleRerunPage(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_CloseSession:
-			if err := s.wsCloseSession(ctx, conn, &msg); err != nil {
+			if err := s.handleCloseSession(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_ScriptFinished:
-			if err := s.wsScriptFinished(ctx, conn, &msg); err != nil {
+			if err := s.handleScriptFinished(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
 		case *websocketv1.Message_Exception:
-			if err := s.wsException(ctx, conn, &msg); err != nil {
+			if err := s.handleException(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
@@ -488,4 +488,90 @@ func (s *Server) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.C
 			}
 		}
 	}
+}
+
+func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, bool, *core.APIKey, []*core.Page, []*core.Page, []*core.Page, error) {
+	in := msg.GetInitializeHost()
+	if in == nil {
+		return nil, false, nil, nil, nil, nil, errors.New("invalid message")
+	}
+
+	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKey(in.ApiKey))
+	if err != nil {
+		return nil, false, nil, nil, nil, nil, err
+	}
+
+	hostInstanceID, err := uuid.FromString(instanceID)
+	if err != nil {
+		return nil, false, nil, nil, nil, nil, errdefs.ErrInvalidArgument(err)
+	}
+
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
+	if err != nil && !errdefs.IsHostInstanceNotFound(err) {
+		return nil, false, nil, nil, nil, nil, err
+	}
+
+	hostExists := hostInstance != nil
+
+	if !hostExists {
+		hostInstance = &core.HostInstance{
+			ID:             hostInstanceID,
+			OrganizationID: apikey.OrganizationID,
+			APIKeyID:       apikey.ID,
+		}
+	}
+
+	hostInstance.SDKName = in.SdkName
+	hostInstance.SDKVersion = in.SdkVersion
+	hostInstance.Status = core.HostInstanceStatusOnline
+
+	existingPages, err := s.db.Page().List(ctx, database.PageByAPIKeyID(apikey.ID))
+	if err != nil {
+		return nil, false, nil, nil, nil, nil, err
+	}
+
+	existingPageMap := make(map[string]*core.Page)
+	for _, p := range existingPages {
+		existingPageMap[p.ID.String()] = p
+	}
+
+	requestPageIDs := make(map[string]struct{})
+	for _, p := range in.Pages {
+		requestPageIDs[p.Id] = struct{}{}
+	}
+
+	insertPages := make([]*core.Page, 0)
+	updatePages := make([]*core.Page, 0)
+	deletePages := make([]*core.Page, 0)
+	for _, reqPage := range in.Pages {
+		if existingPage, ok := existingPageMap[reqPage.Id]; ok {
+			existingPage.Name = reqPage.Name
+			existingPage.Route = reqPage.Route
+			existingPage.Path = reqPage.Path
+			updatePages = append(updatePages, existingPage)
+		} else {
+			pageID, err := uuid.FromString(reqPage.Id)
+			if err != nil {
+				return nil, false, nil, nil, nil, nil, err
+			}
+			newPage := &core.Page{
+				ID:             pageID,
+				OrganizationID: apikey.OrganizationID,
+				EnvironmentID:  apikey.EnvironmentID,
+				APIKeyID:       apikey.ID,
+				Name:           reqPage.Name,
+				Route:          reqPage.Route,
+				Path:           reqPage.Path,
+			}
+			insertPages = append(insertPages, newPage)
+		}
+	}
+
+	for _, existingPage := range existingPages {
+		if _, exists := requestPageIDs[existingPage.ID.String()]; !exists {
+			deletePages = append(deletePages, existingPage)
+		}
+	}
+
+	return hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, nil
 }

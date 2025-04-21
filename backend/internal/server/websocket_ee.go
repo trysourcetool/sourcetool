@@ -12,53 +12,18 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
-	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 )
 
-func (s *Server) wsInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, error) {
+func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
 		return nil, errors.New("invalid message")
 	}
 
-	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKey(in.ApiKey))
+	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
 	if err != nil {
 		return nil, err
-	}
-
-	hostInstanceID, err := uuid.FromString(instanceID)
-	if err != nil {
-		return nil, errdefs.ErrInvalidArgument(err)
-	}
-
-	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
-	if err != nil && !errdefs.IsHostInstanceNotFound(err) {
-		return nil, err
-	}
-
-	hostExists := hostInstance != nil
-
-	if !hostExists {
-		hostInstance = &core.HostInstance{
-			ID:             hostInstanceID,
-			OrganizationID: apikey.OrganizationID,
-			APIKeyID:       apikey.ID,
-		}
-	}
-
-	hostInstance.SDKName = in.SdkName
-	hostInstance.SDKVersion = in.SdkVersion
-	hostInstance.Status = core.HostInstanceStatusOnline
-
-	existingPages, err := s.db.Page().List(ctx, database.PageByAPIKeyID(apikey.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	existingPageMap := make(map[string]*core.Page)
-	for _, p := range existingPages {
-		existingPageMap[p.ID.String()] = p
 	}
 
 	var allGroupSlugs []string
@@ -72,44 +37,6 @@ func (s *Server) wsInitializeHost(ctx context.Context, conn *websocket.Conn, ins
 	groupMap := make(map[string]*core.Group)
 	for _, g := range groups {
 		groupMap[g.Slug] = g
-	}
-
-	requestPageIDs := make(map[string]struct{})
-	for _, p := range in.Pages {
-		requestPageIDs[p.Id] = struct{}{}
-	}
-
-	insertPages := make([]*core.Page, 0)
-	updatePages := make([]*core.Page, 0)
-	deletePages := make([]*core.Page, 0)
-	for _, reqPage := range in.Pages {
-		if existingPage, ok := existingPageMap[reqPage.Id]; ok {
-			existingPage.Name = reqPage.Name
-			existingPage.Route = reqPage.Route
-			existingPage.Path = reqPage.Path
-			updatePages = append(updatePages, existingPage)
-		} else {
-			pageID, err := uuid.FromString(reqPage.Id)
-			if err != nil {
-				return nil, err
-			}
-			newPage := &core.Page{
-				ID:             pageID,
-				OrganizationID: apikey.OrganizationID,
-				EnvironmentID:  apikey.EnvironmentID,
-				APIKeyID:       apikey.ID,
-				Name:           reqPage.Name,
-				Route:          reqPage.Route,
-				Path:           reqPage.Path,
-			}
-			insertPages = append(insertPages, newPage)
-		}
-	}
-
-	for _, existingPage := range existingPages {
-		if _, exists := requestPageIDs[existingPage.ID.String()]; !exists {
-			deletePages = append(deletePages, existingPage)
-		}
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
