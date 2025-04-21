@@ -1,13 +1,13 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jmoiron/sqlx"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -34,7 +34,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 	if config.Config.IsCloudEdition {
 		subdomain = internal.NilValue(req.Subdomain)
 
-		if lo.Contains(core.ReservedSubdomains, req.Subdomain) {
+		if core.IsReservedSubdomain(req.Subdomain) {
 			return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 		}
 
@@ -136,7 +136,7 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
 	}
 
-	if lo.Contains(core.ReservedSubdomains, subdomain) {
+	if core.IsReservedSubdomain(subdomain) {
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 	}
 
@@ -144,4 +144,108 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		Code:    http.StatusOK,
 		Message: "Subdomain is available",
 	})
+}
+
+func (s *Server) validateSelfHostedOrganization(ctx context.Context) error {
+	if !config.Config.IsCloudEdition {
+		// In self-hosted mode, check if an organization already exists
+		if _, err := s.db.GetOrganization(ctx); err == nil {
+			return errdefs.ErrPermissionDenied(errors.New("only one organization is allowed in self-hosted edition"))
+		}
+	}
+	return nil
+}
+
+func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx *sqlx.Tx, u *core.User) error {
+	if config.Config.IsCloudEdition {
+		return nil
+	}
+
+	org := &core.Organization{
+		ID:        uuid.Must(uuid.NewV4()),
+		Subdomain: nil, // Empty subdomain for non-cloud edition
+	}
+	if err := s.db.CreateOrganization(ctx, tx, org); err != nil {
+		return err
+	}
+
+	orgAccess := &core.UserOrganizationAccess{
+		ID:             uuid.Must(uuid.NewV4()),
+		UserID:         u.ID,
+		OrganizationID: org.ID,
+		Role:           core.UserOrganizationRoleAdmin,
+	}
+	if err := s.db.CreateUserOrganizationAccess(ctx, tx, orgAccess); err != nil {
+		return err
+	}
+
+	devEnv := &core.Environment{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		Name:           core.EnvironmentNameDevelopment,
+		Slug:           core.EnvironmentSlugDevelopment,
+		Color:          core.EnvironmentColorDevelopment,
+	}
+	envs := []*core.Environment{
+		{
+			ID:             uuid.Must(uuid.NewV4()),
+			OrganizationID: org.ID,
+			Name:           core.EnvironmentNameProduction,
+			Slug:           core.EnvironmentSlugProduction,
+			Color:          core.EnvironmentColorProduction,
+		},
+		devEnv,
+	}
+	if err := s.db.BulkInsertEnvironments(ctx, tx, envs); err != nil {
+		return err
+	}
+
+	key, err := devEnv.GenerateAPIKey()
+	if err != nil {
+		return err
+	}
+	apiKey := &core.APIKey{
+		ID:             uuid.Must(uuid.NewV4()),
+		OrganizationID: org.ID,
+		EnvironmentID:  devEnv.ID,
+		UserID:         u.ID,
+		Name:           "",
+		Key:            key,
+	}
+	if err := s.db.CreateAPIKey(ctx, tx, apiKey); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) resolveOrganization(ctx context.Context, u *core.User) (*core.Organization, *core.UserOrganizationAccess, error) {
+	if u == nil {
+		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
+	}
+
+	subdomain := internal.Subdomain(ctx)
+	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
+
+	orgAccessQueries := []postgres.UserOrganizationAccessQuery{
+		postgres.UserOrganizationAccessByUserID(u.ID),
+		postgres.UserOrganizationAccessOrderBy("created_at DESC"),
+	}
+
+	if isCloudWithSubdomain {
+		orgAccessQueries = append(orgAccessQueries, postgres.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+	}
+
+	orgAccess, err := s.db.GetUserOrganizationAccess(ctx, orgAccessQueries...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the organization
+	org, err := s.db.GetOrganization(ctx, postgres.OrganizationByID(orgAccess.OrganizationID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return org, orgAccess, nil
 }

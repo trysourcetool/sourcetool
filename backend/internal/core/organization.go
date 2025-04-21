@@ -1,6 +1,7 @@
 package core
 
 import (
+	"slices"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -195,4 +196,8 @@ var ReservedSubdomains = []string{
 	"temp",
 	"temporary",
 	"tmp",
+}
+
+func IsReservedSubdomain(subdomain string) bool {
+	return slices.Contains(ReservedSubdomains, subdomain)
 }

@@ -42,3 +42,8 @@ func GenerateRefreshToken() (plainRefreshToken, hashedRefreshToken string, err e
 
 	return plainRefreshToken, hashedRefreshToken, nil
 }
+
+func HashRefreshToken(plainRefreshToken string) string {
+	hash := sha256.Sum256([]byte(plainRefreshToken))
+	return hex.EncodeToString(hash[:])
+}

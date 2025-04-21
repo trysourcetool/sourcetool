@@ -12,7 +12,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
@@ -72,7 +71,7 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 
@@ -132,7 +131,7 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 
@@ -179,7 +178,7 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrInvalidArgument(errors.New("environmentID is required"))
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditEnvironment); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 

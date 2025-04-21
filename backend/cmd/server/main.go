@@ -47,7 +47,7 @@ func main() {
 		logger.Logger.Fatal("failed to open redis", zap.Error(err))
 	}
 
-	db := postgres.New(postgres.NewQueryLogger(pqClient))
+	db := postgres.New(pqClient)
 	pubsub := pubsub.New(redisClient)
 	wsManager := ws.NewManager(ctx, db, pubsub)
 	upgrader := internal.NewUpgrader()

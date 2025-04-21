@@ -31,7 +31,7 @@ type queryLogger struct {
 	db db
 }
 
-func NewQueryLogger(db db) *queryLogger {
+func newQueryLogger(db *sqlx.DB) *queryLogger {
 	return &queryLogger{db}
 }
 
@@ -79,15 +79,27 @@ type DB struct {
 	builder sq.StatementBuilderType
 }
 
-func New(db db) *DB {
+func New(db *sqlx.DB) *DB {
 	return &DB{
-		db:      db,
+		db:      newQueryLogger(db),
 		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }
 
-func (db *DB) Beginx() (*sqlx.Tx, error) {
-	return db.db.Beginx()
+func (db *DB) WithTx(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
+	tx, err := db.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return fmt.Errorf("failed to rollback transaction: %w", err)
+		}
+		return err
+	}
+
+	return tx.Commit()
 }
 
 const (
@@ -146,20 +158,4 @@ func Migrate(dir string) error {
 	}
 
 	return nil
-}
-
-func (db *DB) WithTx(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err := fn(tx); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return fmt.Errorf("failed to rollback transaction: %w", err)
-		}
-		return err
-	}
-
-	return tx.Commit()
 }

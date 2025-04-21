@@ -12,7 +12,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
@@ -132,11 +131,11 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}
@@ -209,11 +208,11 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}
@@ -263,11 +262,11 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditDevModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}
