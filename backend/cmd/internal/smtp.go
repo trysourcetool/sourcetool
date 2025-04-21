@@ -21,7 +21,6 @@ func OpenSMTP() (*smtp.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create TLS connection: %w", err)
 	}
-	defer conn.Close()
 
 	client, err := smtp.NewClient(conn, cfg.Host)
 	if err != nil {
