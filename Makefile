@@ -70,22 +70,22 @@ ps:
 
 # Enterprise Edition (EE) commands
 up-ee:
-	docker compose -f compose.ee.yaml up -d
+	docker compose -f ee/compose.yaml up -d
 
 down-ee:
-	docker compose -f compose.ee.yaml down
+	docker compose -f ee/compose.yaml down
 
 build-ee:
-	docker compose -f compose.ee.yaml build
+	docker compose -f ee/compose.yaml build
 
 clean-ee:
-	docker compose -f compose.ee.yaml down -v
+	docker compose -f ee/compose.yaml down -v
 
 logs-ee:
-	docker compose -f compose.ee.yaml logs -f
+	docker compose -f ee/compose.yaml logs -f
 
 ps-ee:
-	docker compose -f compose.ee.yaml ps
+	docker compose -f ee/compose.yaml ps
 
 # Key generation commands
 gen-keys: gen-encryption-key gen-jwt-key
