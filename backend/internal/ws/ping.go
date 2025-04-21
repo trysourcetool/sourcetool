@@ -52,18 +52,8 @@ func (m *Manager) startHostPingLoop(host *connectedHost) {
 
 				host.hostInstance.Status = core.HostInstanceStatusUnreachable
 
-				tx, err := m.db.Beginx()
-				if err != nil {
-					logger.Logger.Sugar().Errorf("Failed to begin transaction: %v", err)
-					continue
-				}
-
-				if err := m.db.UpdateHostInstance(context.Background(), tx, host.hostInstance); err != nil {
+				if err := m.db.UpdateHostInstance(context.Background(), nil, host.hostInstance); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
-				}
-
-				if err := tx.Rollback(); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to rollback transaction: %v", err)
 				}
 
 				m.DisconnectHost(host.hostInstance.ID) // Use manager method
@@ -91,18 +81,8 @@ func (m *Manager) startClientPingLoop(client *connectedClient) {
 
 				logger.Logger.Sugar().Errorf("Failed to ping client %s: %v", client.session.ID, err)
 
-				tx, err := m.db.Beginx()
-				if err != nil {
-					logger.Logger.Sugar().Errorf("Failed to begin transaction: %v", err)
-					continue
-				}
-
-				if err := m.db.DeleteSession(context.Background(), tx, client.session); err != nil {
+				if err := m.db.DeleteSession(context.Background(), nil, client.session); err != nil {
 					logger.Logger.Sugar().Errorf("Failed to delete session %s: %v", client.session.ID, err)
-				}
-
-				if err := tx.Rollback(); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to rollback transaction: %v", err)
 				}
 
 				m.DisconnectClient(client.session.ID) // Use manager method

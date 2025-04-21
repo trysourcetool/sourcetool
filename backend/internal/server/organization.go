@@ -8,7 +8,6 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/jmoiron/sqlx"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -35,7 +34,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 	if config.Config.IsCloudEdition {
 		subdomain = internal.NilValue(req.Subdomain)
 
-		if lo.Contains(core.ReservedSubdomains, req.Subdomain) {
+		if core.IsReservedSubdomain(req.Subdomain) {
 			return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 		}
 
@@ -137,7 +136,7 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain already exists"))
 	}
 
-	if lo.Contains(core.ReservedSubdomains, subdomain) {
+	if core.IsReservedSubdomain(subdomain) {
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 	}
 

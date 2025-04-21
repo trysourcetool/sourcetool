@@ -2,8 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -44,12 +42,6 @@ func createAuthToken(userID, xsrfToken string, expirationTime time.Time, subject
 
 func buildLoginURL(subdomain string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("login"), nil)
-}
-
-// hashRefreshToken creates a SHA-256 hash of a plaintext refresh token.
-func hashRefreshToken(plainRefreshToken string) string {
-	hash := sha256.Sum256([]byte(plainRefreshToken))
-	return hex.EncodeToString(hash[:])
 }
 
 func (s *Server) createPersonalAPIKey(ctx context.Context, tx *sqlx.Tx, u *core.User, org *core.Organization) error {
@@ -118,7 +110,7 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Get user by refresh token
-	hashedRefreshToken := hashRefreshToken(refreshTokenCookie.Value)
+	hashedRefreshToken := core.HashRefreshToken(refreshTokenCookie.Value)
 	u, err := s.db.GetUser(ctx, postgres.UserByRefreshTokenHash(hashedRefreshToken))
 	if err != nil {
 		return errdefs.ErrUnauthenticated(err)

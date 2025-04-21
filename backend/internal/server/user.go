@@ -21,7 +21,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
@@ -430,7 +429,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(errors.New("userID is required"))
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -525,7 +524,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -600,7 +599,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, permission.OperationEditUser); err != nil {
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
