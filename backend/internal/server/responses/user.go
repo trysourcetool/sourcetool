@@ -22,6 +22,10 @@ type UserResponse struct {
 }
 
 func UserFromModel(user *core.User, role core.UserOrganizationRole, org *core.Organization) *UserResponse {
+	if user == nil {
+		return nil
+	}
+
 	return &UserResponse{
 		ID:           user.ID.String(),
 		Email:        user.Email,

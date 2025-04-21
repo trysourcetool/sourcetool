@@ -15,6 +15,10 @@ type GroupResponse struct {
 }
 
 func GroupFromModel(g *core.Group) *GroupResponse {
+	if g == nil {
+		return nil
+	}
+
 	return &GroupResponse{
 		ID:        g.ID.String(),
 		Name:      g.Name,
@@ -33,6 +37,10 @@ type GroupPageResponse struct {
 }
 
 func GroupPageFromModel(g *core.GroupPage) *GroupPageResponse {
+	if g == nil {
+		return nil
+	}
+
 	return &GroupPageResponse{
 		ID:        g.ID.String(),
 		GroupID:   g.GroupID.String(),

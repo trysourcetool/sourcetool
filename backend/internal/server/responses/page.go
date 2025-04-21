@@ -15,6 +15,10 @@ type PageResponse struct {
 }
 
 func PageFromModel(page *core.Page) *PageResponse {
+	if page == nil {
+		return nil
+	}
+
 	return &PageResponse{
 		ID:        page.ID.String(),
 		Name:      page.Name,

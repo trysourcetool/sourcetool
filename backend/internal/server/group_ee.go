@@ -91,7 +91,7 @@ func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 		if ok {
 			role = orgAccess.Role
 		}
-		usersOut = append(usersOut, responses.UserFromModel(u, role, nil))
+		usersOut = append(usersOut, responses.UserFromModel(u, role, currentOrg))
 	}
 
 	userGroupsOut := make([]*responses.UserGroupResponse, 0, len(userGroups))

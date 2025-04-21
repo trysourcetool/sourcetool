@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -77,10 +78,32 @@ func main() {
 	handler.Use(middleware.Timeout(time.Duration(600) * time.Second))
 	handler.Use(cors.New(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
-			// For self-hosted environments, we only need to check against the configured base URL
-			normalizedOrigin := strings.TrimRight(origin, "/")
-			normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
-			return normalizedOrigin == normalizedBaseURL
+			if config.Config.IsCloudEdition {
+				var pattern string
+
+				switch config.Config.Env {
+				case config.EnvProd:
+					pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
+				case config.EnvStaging:
+					pattern = `^https://[a-zA-Z0-9-]+\.staging\.trysourcetool\.com$`
+				case config.EnvLocal:
+					pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`
+				default:
+					return false
+				}
+
+				matched, err := regexp.MatchString(pattern, origin)
+				if err != nil {
+					return false
+				}
+
+				return matched
+			} else {
+				// For self-hosted environments, we only need to check against the configured base URL
+				normalizedOrigin := strings.TrimRight(origin, "/")
+				normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
+				return normalizedOrigin == normalizedBaseURL
+			}
 		},
 		AllowedMethods: []string{
 			http.MethodGet,

@@ -17,6 +17,10 @@ type OrganizationResponse struct {
 }
 
 func OrganizationFromModel(o *core.Organization) *OrganizationResponse {
+	if o == nil {
+		return nil
+	}
+
 	return &OrganizationResponse{
 		ID:                o.ID.String(),
 		Subdomain:         internal.SafeValue(o.Subdomain),
