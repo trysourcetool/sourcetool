@@ -15,7 +15,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
-	"github.com/trysourcetool/sourcetool/backend/internal/mail"
 	exceptionv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/exception/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
@@ -27,7 +26,6 @@ import (
 type Server struct {
 	db        *postgres.DB
 	pubsub    *pubsub.PubSub
-	mail      *mail.Mail
 	wsManager *ws.Manager
 	checker   *permission.Checker
 	upgrader  websocket.Upgrader
@@ -36,12 +34,11 @@ type Server struct {
 func New(
 	db *postgres.DB,
 	pubsub *pubsub.PubSub,
-	mail *mail.Mail,
 	wsManager *ws.Manager,
 	checker *permission.Checker,
 	upgrader websocket.Upgrader,
 ) *Server {
-	return &Server{db, pubsub, mail, wsManager, checker, upgrader}
+	return &Server{db, pubsub, wsManager, checker, upgrader}
 }
 
 func (s *Server) Install(router *chi.Mux) error {

@@ -21,7 +21,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
-	"github.com/trysourcetool/sourcetool/backend/internal/mail"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
@@ -48,14 +47,8 @@ func main() {
 		logger.Logger.Fatal("failed to open redis", zap.Error(err))
 	}
 
-	smtpClient, err := internal.OpenSMTP()
-	if err != nil {
-		logger.Logger.Fatal("failed to open smtp", zap.Error(err))
-	}
-
 	db := postgres.New(postgres.NewQueryLogger(pqClient))
 	pubsub := pubsub.New(redisClient)
-	mail := mail.New(smtpClient)
 	wsManager := ws.NewManager(ctx, db, pubsub)
 	upgrader := internal.NewUpgrader()
 
@@ -119,7 +112,7 @@ func main() {
 		Debug:            !(config.Config.Env == config.EnvProd),
 	}).Handler)
 
-	s := server.New(db, pubsub, mail, wsManager, permission.NewChecker(db), upgrader)
+	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader)
 	s.Install(handler)
 
 	srv := &http.Server{
@@ -156,12 +149,6 @@ func main() {
 			logger.Logger.Sugar().Errorf("WebSocket manager graceful shutdown failed: %v", err)
 		} else {
 			logger.Logger.Sugar().Info("WebSocket manager gracefully stopped")
-		}
-
-		if err := smtpClient.Close(); err != nil {
-			logger.Logger.Sugar().Errorf("SMTP client close failed: %v", err)
-		} else {
-			logger.Logger.Sugar().Info("SMTP client gracefully stopped")
 		}
 
 		if err := redisClient.Close(); err != nil {

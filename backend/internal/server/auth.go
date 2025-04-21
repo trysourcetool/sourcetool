@@ -341,11 +341,12 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, url)
 
-	if err := s.mail.Send(ctx, mail.MailInput{
-		From:    "Sourcetool Team",
-		To:      []string{email},
-		Subject: subject,
-		Body:    content,
+	if err := mail.Send(ctx, mail.MailInput{
+		From:     config.Config.SMTP.FromEmail,
+		FromName: "Sourcetool Team",
+		To:       []string{email},
+		Subject:  subject,
+		Body:     content,
 	}); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
@@ -367,11 +368,12 @@ This link will expire in 15 minutes.
 Best regards,
 The Sourcetool Team`, firstName, url)
 
-	if err := s.mail.Send(ctx, mail.MailInput{
-		From:    "Sourcetool Team",
-		To:      []string{email},
-		Subject: subject,
-		Body:    content,
+	if err := mail.Send(ctx, mail.MailInput{
+		From:     config.Config.SMTP.FromEmail,
+		FromName: "Sourcetool Team",
+		To:       []string{email},
+		Subject:  subject,
+		Body:     content,
 	}); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
@@ -396,11 +398,12 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, email, urlList)
 
-	if err := s.mail.Send(ctx, mail.MailInput{
-		From:    "Sourcetool Team",
-		To:      []string{email},
-		Subject: subject,
-		Body:    content,
+	if err := mail.Send(ctx, mail.MailInput{
+		From:     config.Config.SMTP.FromEmail,
+		FromName: "Sourcetool Team",
+		To:       []string{email},
+		Subject:  subject,
+		Body:     content,
 	}); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
@@ -426,11 +429,12 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, email, urlList)
 
-	if err := s.mail.Send(ctx, mail.MailInput{
-		From:    "Sourcetool Team",
-		To:      []string{email},
-		Subject: subject,
-		Body:    content,
+	if err := mail.Send(ctx, mail.MailInput{
+		From:     config.Config.SMTP.FromEmail,
+		FromName: "Sourcetool Team",
+		To:       []string{email},
+		Subject:  subject,
+		Body:     content,
 	}); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}

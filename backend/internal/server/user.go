@@ -80,11 +80,12 @@ Sourcetool Team`,
 		url,
 	)
 
-	return s.mail.Send(ctx, mail.MailInput{
-		From:    "Sourcetool Team",
-		To:      []string{to},
-		Subject: subject,
-		Body:    content,
+	return mail.Send(ctx, mail.MailInput{
+		From:     config.Config.SMTP.FromEmail,
+		FromName: "Sourcetool Team",
+		To:       []string{to},
+		Subject:  subject,
+		Body:     content,
 	})
 }
 
@@ -108,11 +109,12 @@ To accept the invitation, please create your account by clicking the URL below w
 
 		content := fmt.Sprintf(baseContent, url)
 
-		if err := s.mail.Send(ctx, mail.MailInput{
-			From:    "Sourcetool Team",
-			To:      []string{email},
-			Subject: subject,
-			Body:    content,
+		if err := mail.Send(ctx, mail.MailInput{
+			From:     config.Config.SMTP.FromEmail,
+			FromName: "Sourcetool Team",
+			To:       []string{email},
+			Subject:  subject,
+			Body:     content,
 		}); err != nil {
 			return err
 		}
