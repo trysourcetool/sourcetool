@@ -26,7 +26,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
 	"github.com/trysourcetool/sourcetool/backend/internal/server"
-	"github.com/trysourcetool/sourcetool/backend/internal/websocket"
+	"github.com/trysourcetool/sourcetool/backend/internal/ws"
 )
 
 func init() {
@@ -56,7 +56,7 @@ func main() {
 	db := postgres.New(postgres.NewQueryLogger(pqClient))
 	pubsub := pubsub.New(redisClient)
 	mail := mail.New(smtpClient)
-	wsManager := websocket.NewManager(ctx, db, pubsub)
+	wsManager := ws.NewManager(ctx, db, pubsub)
 	upgrader := internal.NewUpgrader()
 
 	if config.Config.Env == config.EnvLocal {

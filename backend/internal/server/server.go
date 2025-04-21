@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	grillawebsocket "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
@@ -21,25 +21,25 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
 	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
-	"github.com/trysourcetool/sourcetool/backend/internal/websocket"
+	"github.com/trysourcetool/sourcetool/backend/internal/ws"
 )
 
 type Server struct {
 	db        *postgres.DB
 	pubsub    *pubsub.PubSub
 	mail      *mail.Mail
-	wsManager *websocket.Manager
+	wsManager *ws.Manager
 	checker   *permission.Checker
-	upgrader  grillawebsocket.Upgrader
+	upgrader  websocket.Upgrader
 }
 
 func New(
 	db *postgres.DB,
 	pubsub *pubsub.PubSub,
 	mail *mail.Mail,
-	wsManager *websocket.Manager,
+	wsManager *ws.Manager,
 	checker *permission.Checker,
-	upgrader grillawebsocket.Upgrader,
+	upgrader websocket.Upgrader,
 ) *Server {
 	return &Server{db, pubsub, mail, wsManager, checker, upgrader}
 }
@@ -256,20 +256,20 @@ func (s *Server) renderJSON(w http.ResponseWriter, status int, v any) error {
 	return nil
 }
 
-func (s *Server) sendWebSocketMessage(conn *grillawebsocket.Conn, msg *websocketv1.Message) error {
+func (s *Server) sendWebSocketMessage(conn *websocket.Conn, msg *websocketv1.Message) error {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	if err := conn.WriteMessage(grillawebsocket.BinaryMessage, data); err != nil {
+	if err := conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Server) sendErrWebSocketMessage(ctx context.Context, conn *grillawebsocket.Conn, id string, err error) {
+func (s *Server) sendErrWebSocketMessage(ctx context.Context, conn *websocket.Conn, id string, err error) {
 	currentUser := internal.CurrentUser(ctx)
 	var email string
 	if currentUser != nil {
@@ -323,7 +323,7 @@ func (s *Server) sendErrWebSocketMessage(ctx context.Context, conn *grillawebsoc
 		return
 	}
 
-	if err := conn.WriteMessage(grillawebsocket.BinaryMessage, data); err != nil {
+	if err := conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
 		logger.Logger.Error("Failed to write WS error message", zap.Error(err))
 		return
 	}
