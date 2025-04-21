@@ -1,6 +1,5 @@
 .PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
-	swagger swagger-open \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
 	db-migrate \
 	proto-generate proto-generate-all proto-generate-frontend proto-generate-backend proto-generate-sdk proto-lint proto-format proto-breaking proto-mod-update proto-clean \
@@ -28,8 +27,6 @@ help:
 	@echo "  make gen-keys        - Generate both encryption and JWT keys"
 	@echo "  make gen-encryption-key - Generate a random encryption key"
 	@echo "  make gen-jwt-key     - Generate a random JWT key"
-	@echo "  make swagger         - Generate Swagger documentation"
-	@echo "  make swagger-open    - Open Swagger UI in browser"
 	@echo "  make backend-lint    - Run linters on both CE and EE codebases (includes cache clean)"
 	@echo "  make frontend-lint   - Run linters on frontend codebase"
 	@echo "  make go-sdk-lint     - Run linters on Go SDK"
@@ -103,22 +100,15 @@ gen-jwt-key:
 	@cat /dev/urandom | base64 | head -c 256
 	@echo ""
 
-# Swagger commands
-swagger:
-	@echo "Generating Swagger documentation..."
-	@cd backend && swag init -g cmd/server/main.go
-
-swagger-open:
-	@echo "Opening Swagger UI in browser..."
-	@open http://localhost:8080/swagger/index.html
-
 # Linting commands
 backend-lint:
 	@echo "Cleaning linter cache..."
 	@cd backend && golangci-lint cache clean
-	@echo "Running linters on codebase..."
+	@echo "Running linters on CE codebase..."
 	@cd backend && gofumpt -l -w . && \
 		golangci-lint run --print-issued-lines --fix --go=1.22
+	@echo "Running linters on EE codebase..."
+	@cd backend && golangci-lint run --print-issued-lines --fix --go=1.22 --build-tags ee
 
 frontend-lint:
 	@echo "Running frontend linters..."
@@ -190,8 +180,10 @@ go-sdk-test:
 
 # Backend test commands
 backend-test:
-	@echo "Running backend tests..."
+	@echo "Running CE backend tests..."
 	@cd backend && go test -v ./...
+	@echo "Running EE backend tests..."
+	@cd backend && go test -v ./... -tags ee
 
 # Go module commands
 go-mod-tidy:

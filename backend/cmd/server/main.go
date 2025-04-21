@@ -14,12 +14,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
-	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
-	_ "github.com/trysourcetool/sourcetool/backend/docs"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/fixtures"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
@@ -36,12 +34,6 @@ func init() {
 	logger.Init()
 }
 
-// @title Sourcetool API
-// @version 1.0
-// @description Sourcetool's API documentation
-// @termsOfService http://swagger.io/terms/
-// @host https://api.trysourcetool.com
-// @BasePath /api/v1.
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
@@ -104,12 +96,6 @@ func main() {
 		MaxAge:           0,
 		Debug:            !(config.Config.Env == config.EnvProd),
 	}).Handler)
-
-	if config.Config.Env == config.EnvLocal {
-		handler.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", "http://localhost:8080")),
-		))
-	}
 
 	s := server.New(db, pubsub, mail, wsManager, permission.NewChecker(db), upgrader)
 	s.Install(handler)

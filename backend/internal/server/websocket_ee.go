@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 	"github.com/jmoiron/sqlx"
+
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
