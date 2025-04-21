@@ -58,7 +58,9 @@ func TestJoinPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &router{basePath: tt.basePath}
+			r := &router{basePath: tt.basePath, sourcetool: &Sourcetool{
+				environment: "test",
+			}}
 			got := r.joinPath(tt.path)
 			if got != tt.want {
 				t.Errorf("joinPath() = %v, want %v", got, tt.want)
@@ -124,46 +126,45 @@ func TestRemoveDuplicates(t *testing.T) {
 
 func TestGeneratePageID(t *testing.T) {
 	r := &router{
+		sourcetool: &Sourcetool{
+			environment: "test",
+		},
 		namespaceDNS: "test.trysourcetool.com",
 	}
 
 	tests := []struct {
 		name     string
 		path     string
-		apiKey   string
 		wantSame bool
 	}{
 		{
 			name:     "Simple path",
 			path:     "/users",
-			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 		{
 			name:     "Nested path",
 			path:     "/admin/users/list",
-			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 		{
 			name:     "Root path",
 			path:     "/",
-			apiKey:   "test_api_key",
 			wantSame: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id1 := r.generatePageID(tt.path, tt.apiKey)
-			id2 := r.generatePageID(tt.path, tt.apiKey)
+			id1 := r.generatePageID(tt.path)
+			id2 := r.generatePageID(tt.path)
 
 			if tt.wantSame && id1 != id2 {
 				t.Errorf("generatePageID() generated different IDs for same path")
 			}
 
 			differentPath := tt.path + "/different"
-			id3 := r.generatePageID(differentPath, tt.apiKey)
+			id3 := r.generatePageID(differentPath)
 			if id1 == id3 {
 				t.Errorf("generatePageID() generated same ID for different paths")
 			}
@@ -176,7 +177,7 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Group creation before and after AccessGroups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -207,7 +208,7 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Multiple AccessGroups calls", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -241,7 +242,7 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Sibling groups inheritance", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -273,7 +274,7 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Deep nested groups inheritance", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -299,7 +300,7 @@ func TestRouterAccessGroups(t *testing.T) {
 
 	t.Run("Mixed group and page specific access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -367,7 +368,7 @@ func TestRouterGroup(t *testing.T) {
 
 	t.Run("Base path construction", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -387,7 +388,7 @@ func TestRouterGroup(t *testing.T) {
 
 	t.Run("Multiple nested groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -410,7 +411,7 @@ func TestRouterGroup(t *testing.T) {
 func TestRouter_Page(t *testing.T) {
 	t.Run("Basic page", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -429,7 +430,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Skip top-level root path", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -451,7 +452,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Allow nested root path", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -484,7 +485,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -504,7 +505,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with error handler", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -525,7 +526,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with empty route", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -548,7 +549,7 @@ func TestRouter_Page(t *testing.T) {
 
 	t.Run("Page with duplicate route", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -570,7 +571,7 @@ func TestRouter_Page(t *testing.T) {
 func TestRouter_Group(t *testing.T) {
 	t.Run("Basic group", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -591,7 +592,7 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Group with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -613,7 +614,7 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Nested groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -635,7 +636,7 @@ func TestRouter_Group(t *testing.T) {
 
 	t.Run("Group with empty path", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -658,7 +659,7 @@ func TestRouter_Group(t *testing.T) {
 func TestRouter_AccessGroups(t *testing.T) {
 	t.Run("Set access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -693,7 +694,7 @@ func TestRouter_AccessGroups(t *testing.T) {
 
 	t.Run("Clear access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)

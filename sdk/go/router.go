@@ -28,9 +28,9 @@ func newRouter(st *Sourcetool, namespaceDNS string) Router {
 	}
 }
 
-func (r *router) generatePageID(fullPath string, apiKey string) uuid.UUID {
+func (r *router) generatePageID(fullPath string) uuid.UUID {
 	ns := uuid.NewV5(uuid.NamespaceDNS, r.namespaceDNS)
-	return uuid.NewV5(ns, fullPath+"-"+apiKey)
+	return uuid.NewV5(ns, fullPath+"-"+r.sourcetool.environment)
 }
 
 func (r *router) joinPath(relativePath string) string {
@@ -91,7 +91,7 @@ func (r *router) Page(relativePath, name string, handler func(UIBuilder) error) 
 	} else {
 		fullPath = r.joinPath(relativePath)
 	}
-	pageID := r.generatePageID(fullPath, r.sourcetool.apiKey)
+	pageID := r.generatePageID(fullPath)
 
 	page := &page{
 		id:           pageID,

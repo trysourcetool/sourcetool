@@ -12,11 +12,12 @@ import (
 
 type Sourcetool struct {
 	Router
-	apiKey   string
-	endpoint string
-	runtime  *runtime
-	pages    map[uuid.UUID]*page
-	mu       sync.RWMutex
+	apiKey      string
+	environment string
+	endpoint    string
+	runtime     *runtime
+	pages       map[uuid.UUID]*page
+	mu          sync.RWMutex
 }
 
 func New(config *Config) *Sourcetool {
@@ -25,10 +26,15 @@ func New(config *Config) *Sourcetool {
 		panic("invalid host")
 	}
 	namespaceDNS := strings.Split(hostParts[1], ":")[0]
+	keyParts := strings.Split(config.APIKey, "_")
+	if len(keyParts) != 2 {
+		panic("invalid api key")
+	}
 	s := &Sourcetool{
-		apiKey:   config.APIKey,
-		endpoint: fmt.Sprintf("%s/ws", config.Endpoint),
-		pages:    make(map[uuid.UUID]*page),
+		apiKey:      config.APIKey,
+		environment: keyParts[0],
+		endpoint:    fmt.Sprintf("%s/ws", config.Endpoint),
+		pages:       make(map[uuid.UUID]*page),
 	}
 	s.Router = newRouter(s, namespaceDNS)
 	return s
