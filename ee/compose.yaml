@@ -20,7 +20,7 @@ services:
     environment:
       <<: [*database-variables, *go-variables]
     env_file:
-      - .env
+      - ../.env
     volumes:
       - ./backend:/go/src/github.com/trysourcetool/sourcetool/backend
       - gomodcache:/gomodcache
@@ -34,7 +34,7 @@ services:
     depends_on:
       - backend
     env_file:
-      - .env
+      - ../.env
     environment:
       - NODE_ENV=development
       - HOST=0.0.0.0
