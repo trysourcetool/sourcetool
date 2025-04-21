@@ -222,7 +222,7 @@ func (s *groupStore) BulkInsertPages(ctx context.Context, pages []*core.GroupPag
 	}
 
 	q := s.builder.
-		Insert(`group_page`).
+		Insert(`"group_page"`).
 		Columns(
 			`"id"`,
 			`"group_id"`,
@@ -247,7 +247,7 @@ func (s *groupStore) BulkUpdatePages(ctx context.Context, pages []*core.GroupPag
 
 	for _, p := range pages {
 		if _, err := s.builder.
-			Update(`group_page`).
+			Update(`"group_page"`).
 			Set(`"group_id"`, p.GroupID).
 			Set(`"page_id"`, p.PageID).
 			Where(sq.Eq{`"id"`: p.ID}).
