@@ -6,14 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -65,53 +61,6 @@ func main() {
 	}
 
 	handler := chi.NewRouter()
-	handler.Use(middleware.RequestID)
-	handler.Use(middleware.Logger)
-	handler.Use(middleware.Recoverer)
-	handler.Use(middleware.Timeout(time.Duration(600) * time.Second))
-	handler.Use(cors.New(cors.Options{
-		AllowOriginFunc: func(r *http.Request, origin string) bool {
-			if config.Config.IsCloudEdition {
-				var pattern string
-
-				switch config.Config.Env {
-				case config.EnvProd:
-					pattern = `^https://[a-zA-Z0-9-]+\.trysourcetool\.com$`
-				case config.EnvStaging:
-					pattern = `^https://[a-zA-Z0-9-]+\.staging\.trysourcetool\.com$`
-				case config.EnvLocal:
-					pattern = `^(http://[a-zA-Z0-9-]+\.local\.trysourcetool\.com:\d+|http://localhost:\d+)$`
-				default:
-					return false
-				}
-
-				matched, err := regexp.MatchString(pattern, origin)
-				if err != nil {
-					return false
-				}
-
-				return matched
-			} else {
-				// For self-hosted environments, we only need to check against the configured base URL
-				normalizedOrigin := strings.TrimRight(origin, "/")
-				normalizedBaseURL := strings.TrimRight(config.Config.BaseURL, "/")
-				return normalizedOrigin == normalizedBaseURL
-			}
-		},
-		AllowedMethods: []string{
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodDelete,
-			http.MethodOptions,
-		},
-		AllowedHeaders:   []string{"*"},
-		ExposedHeaders:   []string{},
-		AllowCredentials: true,
-		MaxAge:           0,
-		Debug:            !(config.Config.Env == config.EnvProd),
-	}).Handler)
-
 	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader)
 	s.Install(handler)
 
