@@ -1,7 +1,7 @@
 .PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
-	db-migrate \
+	db-migrate create-migrate \
 	proto-generate proto-generate-all proto-generate-frontend proto-generate-backend proto-generate-sdk proto-lint proto-format proto-breaking proto-mod-update proto-clean \
 	go-sdk-test backend-test go-mod-tidy
 
@@ -36,6 +36,7 @@ help:
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-migrate      - Run database migrations"
+	@echo "  make create-migrate  - Create a new database migration file"
 	@echo ""
 	@echo "Protocol Buffer Commands:"
 	@echo "  make proto-generate  - Generate Go code from proto files"
@@ -132,6 +133,10 @@ remove-docker-builder:
 db-migrate:
 	@echo "Running database migrations..."
 	@cd backend && go run ./devtools/cmd/db/main.go migrate
+
+create-migrate:
+	@echo "Creating a new database migration file..."
+	@cd backend && ./devtools/create_migrate.sh $(name)
 
 # Protocol Buffer commands
 proto-generate: proto-generate-all

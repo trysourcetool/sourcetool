@@ -8,7 +8,7 @@ import (
 	"github.com/caarlos0/env/v11"
 )
 
-var Config *Cfg
+var Config *config
 
 const (
 	EnvLocal   = "local"
@@ -16,7 +16,7 @@ const (
 	EnvProd    = "prod"
 )
 
-type Cfg struct {
+type config struct {
 	Env            string `env:"ENV"`
 	BaseURL        string `env:"BASE_URL"`
 	SSL            bool   `env:"-"`
@@ -57,7 +57,7 @@ type Cfg struct {
 }
 
 func Init() {
-	cfg := new(Cfg)
+	cfg := new(config)
 	envOpts := env.Options{RequiredIfNoDef: true}
 	if err := env.ParseWithOptions(cfg, envOpts); err != nil {
 		log.Fatal("[INIT] config: ", err)
@@ -82,7 +82,7 @@ func Init() {
 }
 
 // AuthHostname returns the hostname for the Auth domain.
-func (c *Cfg) AuthHostname() string {
+func (c *config) AuthHostname() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseHostname
 	}
@@ -90,7 +90,7 @@ func (c *Cfg) AuthHostname() string {
 }
 
 // OrgHostname returns the hostname for the organization.
-func (c *Cfg) OrgHostname(subdomain string) string {
+func (c *config) OrgHostname(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseHostname
 	}
@@ -98,7 +98,7 @@ func (c *Cfg) OrgHostname(subdomain string) string {
 }
 
 // AuthDomain returns the domain for the Auth domain.
-func (c *Cfg) AuthDomain() string {
+func (c *config) AuthDomain() string {
 	if c.IsCloudEdition {
 		return "auth." + c.BaseDomain
 	}
@@ -106,7 +106,7 @@ func (c *Cfg) AuthDomain() string {
 }
 
 // OrgDomain returns the domain for the organization.
-func (c *Cfg) OrgDomain(subdomain string) string {
+func (c *config) OrgDomain(subdomain string) string {
 	if c.IsCloudEdition {
 		return subdomain + "." + c.BaseDomain
 	}
@@ -114,17 +114,17 @@ func (c *Cfg) OrgDomain(subdomain string) string {
 }
 
 // AuthBaseURL returns the base URL for the Auth domain.
-func (c *Cfg) AuthBaseURL() string {
+func (c *config) AuthBaseURL() string {
 	return c.Protocol + "://" + c.AuthHostname()
 }
 
 // OrgBaseURL returns the base URL for the organization domain.
-func (c *Cfg) OrgBaseURL(subdomain string) string {
+func (c *config) OrgBaseURL(subdomain string) string {
 	return c.Protocol + "://" + c.OrgHostname(subdomain)
 }
 
 // WebSocketOrgBaseURL returns the base URL for the organization domain for WebSocket connections.
-func (c *Cfg) WebSocketOrgBaseURL(subdomain string) string {
+func (c *config) WebSocketOrgBaseURL(subdomain string) string {
 	if c.SSL {
 		return "wss://" + c.OrgHostname(subdomain)
 	}
