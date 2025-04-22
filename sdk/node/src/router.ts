@@ -77,7 +77,7 @@ export class Router implements RouterInterface {
    */
   generatePageID(fullPath: string): string {
     const ns = uuidv5(this.namespaceDNS, uuidv5.DNS);
-    return uuidv5(fullPath, ns);
+    return uuidv5(`${fullPath}-${this.sourcetool?.environment}`, ns);
   }
 
   /**

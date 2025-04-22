@@ -62,8 +62,14 @@ describe('join path', () => {
 
   for (const t of tests) {
     test(t.name, () => {
+      const config: SourcetoolConfig = {
+        apiKey: 'test_apikey',
+        endpoint: 'ws://test.trysourcetool.com',
+      };
+
+      const sourcetool = new Sourcetool(config);
       const router = new Router(
-        null,
+        sourcetool,
         'test.trysourcetool.com',
         null,
         t.basePath,
@@ -112,7 +118,14 @@ describe('remove duplicates', () => {
 });
 
 describe('generate page id', () => {
-  const router = new Router(null, 'test.trysourcetool.com', null);
+  const config: SourcetoolConfig = {
+    apiKey: 'test_apikey',
+    endpoint: 'ws://test.trysourcetool.com',
+  };
+
+  const sourcetool = new Sourcetool(config);
+
+  const router = new Router(sourcetool, 'test.trysourcetool.com', null);
 
   const tests = [
     {
@@ -150,7 +163,7 @@ describe('router access groups', () => {
 
   describe('Group creation before and after AccessGroups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -204,7 +217,7 @@ describe('router access groups', () => {
 
   describe('Multiple AccessGroups calls', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -257,7 +270,7 @@ describe('router access groups', () => {
 
   describe('Sibling groups inheritance', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -301,7 +314,7 @@ describe('router access groups', () => {
 
   test('Deep nested groups inheritance', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -346,7 +359,7 @@ describe('router access groups', () => {
 
   describe('Mixed group and page specific access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -400,7 +413,7 @@ describe('router groups', () => {
 
   test('group access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -418,7 +431,7 @@ describe('router groups', () => {
 
   test('Multiple nested groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -442,7 +455,7 @@ describe('router page', () => {
 
   test('Basic page', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -458,7 +471,7 @@ describe('router page', () => {
 
   test('Skip top-level root path', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -479,7 +492,7 @@ describe('router page', () => {
 
   test('Allow nested root path', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -506,7 +519,7 @@ describe('router page', () => {
 
   test('Page with access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -525,7 +538,7 @@ describe('router page', () => {
 
   test('Page with error handler', async () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -550,7 +563,7 @@ describe('router page', () => {
 
   test('Page with empty route', async () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -566,7 +579,7 @@ describe('router page', () => {
 
   test('Page with duplicate route', async () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -587,7 +600,7 @@ describe('router group', () => {
   const pageHandler = async () => {};
   test('Basic group', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -605,7 +618,7 @@ describe('router group', () => {
 
   test('Group with access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -625,7 +638,7 @@ describe('router group', () => {
 
   test('Nested groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -643,7 +656,7 @@ describe('router group', () => {
 
   test('Group with empty path', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -663,7 +676,7 @@ describe('router access groups', () => {
   const pageHandler = async () => {};
   test('Set access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -683,7 +696,7 @@ describe('router access groups', () => {
 
   test('Clear access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 

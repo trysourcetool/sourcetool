@@ -14,7 +14,7 @@ const pageHandler = async (): Promise<void> => {};
 
 describe('new', () => {
   const config: SourcetoolConfig = {
-    apiKey: 'test_api_key',
+    apiKey: 'test_apikey',
     endpoint: 'ws://test.trysourcetool.com',
   };
 
@@ -44,7 +44,7 @@ describe('new', () => {
 describe('page', () => {
   test('Public page', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -58,7 +58,7 @@ describe('page', () => {
 
   test('Page with direct access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -73,7 +73,7 @@ describe('page', () => {
 
   test('Group with access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -94,7 +94,7 @@ describe('page', () => {
 
   test('Nested groups with access groups', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -129,7 +129,7 @@ describe('page', () => {
 
   test('Complex group structure', () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 
@@ -173,7 +173,7 @@ describe('page', () => {
 
   test('Error handling', async () => {
     const config: SourcetoolConfig = {
-      apiKey: 'test_api_key',
+      apiKey: 'test_apikey',
       endpoint: 'ws://test.trysourcetool.com',
     };
 

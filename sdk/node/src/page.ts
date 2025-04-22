@@ -56,11 +56,9 @@ export class Page {
       return true;
     }
 
-    for (const userGroup of userGroups) {
-      for (const requiredGroup of this.accessGroups) {
-        if (userGroup === requiredGroup) {
-          return true;
-        }
+    for (const requiredGroup of this.accessGroups) {
+      if (userGroups.includes(requiredGroup)) {
+        return true;
       }
     }
     return false;
