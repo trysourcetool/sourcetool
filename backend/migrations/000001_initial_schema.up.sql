@@ -24,6 +24,7 @@ CREATE TABLE "user" (
 
 CREATE UNIQUE INDEX idx_user_email ON "user" ("email");
 CREATE UNIQUE INDEX idx_user_refresh_token_hash ON "user" ("refresh_token_hash");
+CREATE UNIQUE INDEX idx_user_google_id ON "user" ("google_id");
 
 CREATE TRIGGER update_user_updated_at
     BEFORE UPDATE ON "user"
