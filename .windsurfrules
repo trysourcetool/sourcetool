@@ -1,6 +1,6 @@
 # Backend architecture (/backend)
 
-These rules reflect the **current** package layout (`core → database → infra → server`). Use them for all new code reviews and CI checks.
+These rules reflect the **current** package layout (`server → {database, pubsub, mail, permission} → infra → core`). Use them for all new code reviews and CI checks.
 
 ---
 
@@ -18,14 +18,14 @@ These rules reflect the **current** package layout (`core → database → infra
 ### Dependency direction
 
 ```
-server  →  infra/permission  →  database  →  core
+server → {database, pubsub, mail, permission} → infra → core
 ```
 
 * `core` never depends on adapters or HTTP.
 * `database` defines interfaces and query builders for data persistence.
-* `infra` implements persistence / external‑service logic and depends on `core` and `database`.
-* `permission` implements authorization checks using core rules and database access.
-* `server` wires everything; it can depend on anything below.
+* `infra` implements concrete adapters (DB, Redis, SMTP) and depends on `core`.
+* `pubsub`, `mail`, and `permission` provide high-level services using infra implementations.
+* `server` wires everything; it can depend on any layer below.
 
 ---
 
