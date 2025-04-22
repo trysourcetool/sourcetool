@@ -10,8 +10,8 @@ services:
   backend:
     image: golang:1.23
     command: bash -c "
-        go run ./devtools/cmd/db/main.go migrate &&
-        go run -tags ee ./cmd/server"
+        go run ../backend/devtools/cmd/db/main.go migrate &&
+        go run -tags ee ../backend/cmd/server"
     ports:
       - 8080:8080
     depends_on:
@@ -22,7 +22,7 @@ services:
     env_file:
       - ../.env
     volumes:
-      - ./backend:/go/src/github.com/trysourcetool/sourcetool/backend
+      - ../backend:/go/src/github.com/trysourcetool/sourcetool/backend
       - gomodcache:/gomodcache
     working_dir: /go/src/github.com/trysourcetool/sourcetool/backend
 
@@ -39,10 +39,10 @@ services:
       - NODE_ENV=development
       - HOST=0.0.0.0
     volumes:
-      - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml
-      - ./frontend:/app/frontend
+      - ../package.json:/app/package.json
+      - ../pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+      - ../frontend:/app/frontend
       - frontend_node_modules:/app/frontend/node_modules
     working_dir: /app
 
@@ -51,7 +51,7 @@ services:
     ports:
       - 3000:80
     volumes:
-      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
+      - ../nginx.dev.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - frontend
       - backend

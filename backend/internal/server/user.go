@@ -269,6 +269,10 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 
 	currentUser.Email = c.Email
 
+	if currentUser.GoogleID != "" {
+		currentUser.GoogleID = ""
+	}
+
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if err := tx.User().Update(ctx, currentUser); err != nil {
 			return err
