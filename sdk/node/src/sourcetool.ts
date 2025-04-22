@@ -53,6 +53,11 @@ export class Sourcetool implements RouterInterface {
   runtime: Runtime | null = null;
 
   /**
+   * Environment
+   */
+  environment: string = '';
+
+  /**
    * Constructor
    * @param config Configuration
    */
@@ -69,6 +74,13 @@ export class Sourcetool implements RouterInterface {
 
     // Extract namespace DNS
     const namespaceDNS = hostParts[1].split(':')[0];
+
+    const keyParts = this.apiKey.split('_');
+    if (keyParts.length !== 2) {
+      throw new Error('invalid api key');
+    }
+
+    this.environment = keyParts[0];
 
     // Initialize pages
     this.pages = {};
