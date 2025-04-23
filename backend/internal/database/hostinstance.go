@@ -40,6 +40,14 @@ func HostInstanceByAPIKey(apiKey string) HostInstanceQuery {
 	return HostInstanceByAPIKeyQuery{APIKey: apiKey}
 }
 
+type HostInstanceBySessionIDQuery struct{ SessionID uuid.UUID }
+
+func (HostInstanceBySessionIDQuery) isHostInstanceQuery() {}
+
+func HostInstanceBySessionID(sessionID uuid.UUID) HostInstanceQuery {
+	return HostInstanceBySessionIDQuery{SessionID: sessionID}
+}
+
 type HostInstanceStore interface {
 	Get(ctx context.Context, queries ...HostInstanceQuery) (*core.HostInstance, error)
 	List(ctx context.Context, queries ...HostInstanceQuery) ([]*core.HostInstance, error)

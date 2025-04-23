@@ -109,3 +109,24 @@ func (s *sessionStore) Delete(ctx context.Context, m *core.Session) error {
 
 	return nil
 }
+
+func (s *sessionStore) CreateHostInstance(ctx context.Context, m *core.SessionHostInstance) error {
+	if _, err := s.builder.
+		Insert(`"session_host_instance"`).
+		Columns(
+			`"id"`,
+			`"session_id"`,
+			`"host_instance_id"`,
+		).
+		Values(
+			m.ID,
+			m.SessionID,
+			m.HostInstanceID,
+		).
+		RunWith(s.db).
+		ExecContext(ctx); err != nil {
+		return errdefs.ErrDatabase(err)
+	}
+
+	return nil
+}

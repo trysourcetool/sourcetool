@@ -141,6 +141,14 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 			if err := tx.Session().Create(ctx, sess); err != nil {
 				return err
 			}
+
+			if err := tx.Session().CreateHostInstance(ctx, &core.SessionHostInstance{
+				ID:             uuid.Must(uuid.NewV4()),
+				SessionID:      sess.ID,
+				HostInstanceID: onlineHostInstance.ID,
+			}); err != nil {
+				return err
+			}
 		}
 		return nil
 	}); err != nil {
@@ -228,7 +236,7 @@ func (s *Server) handleRerunPage(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByAPIKeyID(page.APIKeyID))
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
@@ -279,17 +287,7 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	env, err := s.db.Environment().Get(ctx, database.EnvironmentByID(sess.EnvironmentID))
-	if err != nil {
-		return err
-	}
-
-	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByEnvironmentID(env.ID))
-	if err != nil {
-		return err
-	}
-
-	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByAPIKeyID(apiKey.ID))
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}

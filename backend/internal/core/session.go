@@ -14,3 +14,11 @@ type Session struct {
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
 }
+
+type SessionHostInstance struct {
+	ID             uuid.UUID `db:"id"`
+	SessionID      uuid.UUID `db:"session_id"`
+	HostInstanceID uuid.UUID `db:"host_instance_id"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
+}

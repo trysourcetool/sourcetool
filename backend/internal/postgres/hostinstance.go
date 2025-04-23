@@ -70,6 +70,10 @@ func (s *hostInstanceStore) applyQueries(b sq.SelectBuilder, queries ...database
 			b = b.
 				InnerJoin(`"api_key" ak ON ak."id" = hi."api_key_id"`).
 				Where(sq.Eq{`ak."key"`: q.APIKey})
+		case database.HostInstanceBySessionIDQuery:
+			b = b.
+				InnerJoin(`"session_host_instance" shi ON shi."host_instance_id" = hi."id"`).
+				Where(sq.Eq{`shi."session_id"`: q.SessionID})
 		}
 	}
 
