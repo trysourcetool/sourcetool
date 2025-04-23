@@ -49,6 +49,13 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
 	formGender := form.Selectbox("Gender", selectbox.WithOptions("male", "female"), selectbox.WithDefaultValue(defaultGender))
 
 	if submitted {
+		if formGender == nil {
+			return fmt.Errorf("formGender is nil")
+		}
+		if formAge == nil {
+			return fmt.Errorf("formAge is nil")
+		}
+
 		user := User{
 			Name:   formName,
 			Email:  formEmail,

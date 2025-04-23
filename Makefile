@@ -1,7 +1,7 @@
 .PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
-	db-migrate create-migrate \
+	db-migrate create-migrate connect-ce-db connect-ee-db \
 	proto-generate proto-generate-all proto-generate-frontend proto-generate-backend proto-generate-sdk proto-lint proto-format proto-breaking proto-mod-update proto-clean \
 	go-sdk-test backend-test go-mod-tidy
 
@@ -137,6 +137,14 @@ db-migrate:
 create-migrate:
 	@echo "Creating a new database migration file..."
 	@cd backend && ./devtools/create_migrate.sh $(name)
+
+connect-ce-db:
+	@echo "Connecting to CE database..."
+	@docker compose exec postgres psql -U postgres -d sourcetool_development
+
+connect-ee-db:
+	@echo "Connecting to EE database..."
+	@docker compose -f ee/compose.yaml exec postgres psql -U postgres -d sourcetool_development
 
 # Protocol Buffer commands
 proto-generate: proto-generate-all

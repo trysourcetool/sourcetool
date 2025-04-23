@@ -20,4 +20,6 @@ type SessionStore interface {
 	Get(ctx context.Context, queries ...SessionQuery) (*core.Session, error)
 	Create(ctx context.Context, m *core.Session) error
 	Delete(ctx context.Context, m *core.Session) error
+
+	CreateHostInstance(ctx context.Context, m *core.SessionHostInstance) error
 }

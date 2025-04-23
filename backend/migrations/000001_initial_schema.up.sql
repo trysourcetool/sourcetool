@@ -344,6 +344,51 @@ CREATE TRIGGER validate_session
     FOR EACH ROW
     EXECUTE FUNCTION validate_session();
 
+-- session_host_instance table
+CREATE OR REPLACE FUNCTION validate_session_host_instance()
+RETURNS TRIGGER AS $$
+DECLARE
+    api_key_environment_id UUID;
+    session_environment_id UUID;
+BEGIN
+    SELECT environment_id INTO api_key_environment_id
+    FROM "api_key" ak
+    JOIN "host_instance" hi ON hi.api_key_id = ak.id
+    WHERE hi.id = NEW.host_instance_id;
+
+    SELECT environment_id INTO session_environment_id
+    FROM "session"
+    WHERE id = NEW.session_id;
+
+    IF api_key_environment_id != session_environment_id THEN
+        RAISE EXCEPTION 'Host instance (API key environment: %) and Session (environment: %) must belong to the same environment', api_key_environment_id, session_environment_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE "session_host_instance" (
+  "id"               UUID        NOT NULL,
+  "session_id"       UUID        NOT NULL,
+  "host_instance_id" UUID        NOT NULL,
+  "created_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("host_instance_id") REFERENCES "host_instance"("id") ON DELETE CASCADE,
+  PRIMARY KEY ("id")
+);
+
+CREATE TRIGGER update_session_host_instance_updated_at
+    BEFORE UPDATE ON "session_host_instance"
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER validate_session_host_instance
+    BEFORE INSERT OR UPDATE ON "session_host_instance"
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_session_host_instance();
+
 -- group table
 CREATE TABLE "group" (
   "id"               UUID          NOT NULL,
