@@ -303,6 +303,7 @@ const slice = createSlice({
               if (
                 payloadWidget[type].defaultValue !== widget[type].defaultValue
               ) {
+                payloadWidget[type].value = payloadWidget[type].defaultValue;
                 widgetState.value = payloadWidget[type].defaultValue;
               }
             }
@@ -311,7 +312,7 @@ const slice = createSlice({
 
         widgetsAdapter.updateOne(state.widgets, {
           id: action.payload.widget?.id ?? '',
-          changes: action.payload,
+          changes: { ...action.payload, widget: { ...payloadWidget } },
         });
       }
     },
@@ -341,9 +342,7 @@ const slice = createSlice({
               const childWidgetType = Object.keys(childWidget.widget).filter(
                 (key) => key !== 'id',
               )[0] as WidgetType;
-              console.log({
-                childWidgetType: childWidget?.widget?.[childWidgetType],
-              });
+
               if ('value' in (childWidget?.widget?.[childWidgetType] ?? {})) {
                 (childWidget.widget[childWidgetType] as any).value = (
                   childWidget.widget[childWidgetType] as any
@@ -377,16 +376,6 @@ const slice = createSlice({
     setWidgetState: (state, action: PayloadAction<SetWidgetStatePayload>) => {
       const widget = state.widgets.entities[action.payload.widgetId];
       if (widget?.widget) {
-        console.log(
-          'validateWidgetValue',
-          current(widget.widget),
-          validateWidgetValue(
-            current(widget.widget),
-            action.payload.widgetType,
-            action.payload.value,
-          ),
-        );
-
         const validateResult = validateWidgetValue(
           current(widget.widget),
           action.payload.widgetType,
@@ -408,7 +397,6 @@ const slice = createSlice({
       }
     },
     setWidgetValue: (state, action: PayloadAction<SetWidgetStatePayload>) => {
-      console.log('setWidgetValue', action.payload);
       const widget = state.widgets.entities[action.payload.widgetId];
       const widgets = state.widgets.ids.map((id) => state.widgets.entities[id]);
       if (widget.widget) {
@@ -417,7 +405,7 @@ const slice = createSlice({
             widgets,
             widget.path ?? [],
           );
-          console.log({ childFormItemWidgetIds });
+
           let hasError = false;
           childFormItemWidgetIds.forEach((id) => {
             const childWidget = state.widgets.entities[id];
@@ -450,10 +438,10 @@ const slice = createSlice({
             action.payload.widgetType,
             action.payload.value,
           );
-          console.log('validateResult', validateResult);
+
           if (validateResult.success) {
             const hasParentForm = checkParentForm(widgets, widget.path ?? []);
-            console.log({ hasParentForm });
+
             if (
               widget.widget &&
               Object.keys(widget.widget).includes(action.payload.widgetType)
