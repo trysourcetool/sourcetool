@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,37 +20,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
-
-func (s *Server) sendMultipleOrganizationsLoginEmail(ctx context.Context, email, firstName string, loginURLs []string) error {
-	subject := "Choose your Sourcetool organization to log in"
-
-	urlList := ""
-	for _, url := range loginURLs {
-		urlList += url + "\n"
-	}
-
-	content := fmt.Sprintf(`Hi %s,
-
-Your email, %s, is associated with multiple Sourcetool organizations. You may log in to each one by clicking its login link below:
-
-%s
-
-Thank you for using Sourcetool!
-
-The Sourcetool Team`, firstName, email, urlList)
-
-	if err := mail.Send(ctx, mail.MailInput{
-		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
-		To:       []string{email},
-		Subject:  subject,
-		Body:     content,
-	}); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	return nil
-}
 
 func (s *Server) requestGoogleAuthLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
@@ -231,7 +199,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 					}
 
 					// Send email with multiple organization links
-					if err := s.sendMultipleOrganizationsLoginEmail(ctx, u.Email, u.FirstName, loginURLs); err != nil {
+					if err := mail.SendMultipleOrganizationsLoginEmail(ctx, u.Email, u.FirstName, loginURLs); err != nil {
 						return errdefs.ErrInternal(err)
 					}
 
