@@ -376,6 +376,7 @@ CREATE TABLE "session_host_instance" (
   "updated_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE CASCADE,
   FOREIGN KEY ("host_instance_id") REFERENCES "host_instance"("id") ON DELETE CASCADE,
+  UNIQUE("session_id", "host_instance_id"),
   PRIMARY KEY ("id")
 );
 
