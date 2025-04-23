@@ -197,10 +197,6 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditGroup); err != nil {
-		return err
-	}
-
 	ctxOrg := internal.ContextOrganization(ctx)
 	groupID, err := uuid.FromString(groupIDReq)
 	if err != nil {
@@ -213,7 +209,7 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if req.Name != nil {
-		g.Name = internal.SafeValue(req.Name)
+		g.Name = internal.StringValue(req.Name)
 	}
 
 	userIDs := make([]uuid.UUID, 0, len(req.UserIDs))

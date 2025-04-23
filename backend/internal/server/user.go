@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"slices"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -76,7 +76,7 @@ To accept the invitation, please create your account by clicking the URL below w
 
 	sendEmails := make([]string, 0)
 	for email, url := range emaiURLs {
-		if lo.Contains(sendEmails, email) {
+		if slices.Contains(sendEmails, email) {
 			continue
 		}
 
@@ -131,10 +131,10 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 	ctxUser := internal.ContextUser(ctx)
 
 	if req.FirstName != nil {
-		ctxUser.FirstName = internal.SafeValue(req.FirstName)
+		ctxUser.FirstName = internal.StringValue(req.FirstName)
 	}
 	if req.LastName != nil {
-		ctxUser.LastName = internal.SafeValue(req.LastName)
+		ctxUser.LastName = internal.StringValue(req.LastName)
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -199,7 +199,7 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 	}
 
 	// Build update URL
-	url, err := buildUpdateEmailURL(internal.SafeValue(ctxOrg.Subdomain), tok)
+	url, err := buildUpdateEmailURL(internal.StringValue(ctxOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
@@ -350,7 +350,7 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if req.Role != nil {
-			orgAccess.Role = core.UserOrganizationRoleFromString(internal.SafeValue(req.Role))
+			orgAccess.Role = core.UserOrganizationRoleFromString(internal.StringValue(req.Role))
 
 			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
@@ -521,7 +521,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 			return err
 		}
 
-		url, err := buildInvitationURL(internal.SafeValue(ctxOrg.Subdomain), tok, email)
+		url, err := buildInvitationURL(internal.StringValue(ctxOrg.Subdomain), tok, email)
 		if err != nil {
 			return err
 		}
@@ -594,7 +594,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	url, err := buildInvitationURL(internal.SafeValue(ctxOrg.Subdomain), tok, userInvitation.Email)
+	url, err := buildInvitationURL(internal.StringValue(ctxOrg.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return err
 	}

@@ -23,8 +23,8 @@ func OrganizationFromModel(o *core.Organization) *OrganizationResponse {
 
 	return &OrganizationResponse{
 		ID:                o.ID.String(),
-		Subdomain:         internal.SafeValue(o.Subdomain),
-		WebSocketEndpoint: config.Config.WebSocketOrgBaseURL(internal.SafeValue(o.Subdomain)),
+		Subdomain:         internal.StringValue(o.Subdomain),
+		WebSocketEndpoint: config.Config.WebSocketOrgBaseURL(internal.StringValue(o.Subdomain)),
 		CreatedAt:         strconv.FormatInt(o.CreatedAt.Unix(), 10),
 		UpdatedAt:         strconv.FormatInt(o.UpdatedAt.Unix(), 10),
 	}

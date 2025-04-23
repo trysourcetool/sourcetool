@@ -206,7 +206,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 					return err
 				}
 
-				url, err := buildMagicLinkURL(internal.SafeValue(org.Subdomain), tok)
+				url, err := buildMagicLinkURL(internal.StringValue(org.Subdomain), tok)
 				if err != nil {
 					return err
 				}
@@ -338,7 +338,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 				if err != nil {
 					return err
 				}
-				orgSubdomain = internal.SafeValue(org.Subdomain)
+				orgSubdomain = internal.StringValue(org.Subdomain)
 			} else {
 				return errdefs.ErrUserMultipleOrganizations(errors.New("user has multiple organizations"))
 			}
@@ -524,7 +524,7 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Build magic link URL
-	url, err := buildInvitationMagicLinkURL(internal.SafeValue(invitedOrg.Subdomain), tok)
+	url, err := buildInvitationMagicLinkURL(internal.StringValue(invitedOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
@@ -581,7 +581,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 			return errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = internal.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = internal.StringValue(hostOrg.Subdomain)
 	}
 
 	// Check if user exists
@@ -693,7 +693,7 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 			return errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 		}
 
-		orgSubdomain = internal.SafeValue(hostOrg.Subdomain)
+		orgSubdomain = internal.StringValue(hostOrg.Subdomain)
 	}
 
 	// Generate refresh token

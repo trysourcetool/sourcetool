@@ -146,10 +146,10 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if req.Name != nil {
-		env.Name = internal.SafeValue(req.Name)
+		env.Name = internal.StringValue(req.Name)
 	}
 	if req.Color != nil {
-		env.Color = internal.SafeValue(req.Color)
+		env.Color = internal.StringValue(req.Color)
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {

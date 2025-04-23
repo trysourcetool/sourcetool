@@ -258,7 +258,7 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Build auth URL with organization subdomain
-	authURL, err := buildSaveAuthURL(internal.SafeValue(org.Subdomain))
+	authURL, err := buildSaveAuthURL(internal.StringValue(org.Subdomain))
 	if err != nil {
 		return err
 	}

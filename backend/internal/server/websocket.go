@@ -117,8 +117,8 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 
 	var sess *core.Session
 	var sessionExists bool
-	if internal.SafeValue(in.SessionId) != "" {
-		sessionID, err := uuid.FromString(internal.SafeValue(in.SessionId))
+	if internal.StringValue(in.SessionId) != "" {
+		sessionID, err := uuid.FromString(internal.StringValue(in.SessionId))
 		if err != nil {
 			return errdefs.ErrSessionNotFound(err)
 		}
@@ -174,7 +174,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
-				SessionId: internal.NilValue(sess.ID.String()),
+				SessionId: internal.StringPtr(sess.ID.String()),
 				PageId:    page.ID.String(),
 			},
 		},

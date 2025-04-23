@@ -31,7 +31,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 
 	var subdomain *string
 	if config.Config.IsCloudEdition {
-		subdomain = internal.NilValue(req.Subdomain)
+		subdomain = internal.StringPtr(req.Subdomain)
 
 		if core.IsReservedSubdomain(req.Subdomain) {
 			return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))

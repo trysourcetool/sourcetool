@@ -232,7 +232,7 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if req.Name != nil {
-		apiKey.Name = internal.SafeValue(req.Name)
+		apiKey.Name = internal.StringValue(req.Name)
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {

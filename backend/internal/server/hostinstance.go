@@ -16,7 +16,7 @@ import (
 func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	pageIDReq := internal.NilValue(r.URL.Query().Get("pageId"))
+	pageIDReq := internal.StringPtr(r.URL.Query().Get("pageId"))
 	ctxOrg := internal.ContextOrganization(ctx)
 	if ctxOrg == nil {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
@@ -26,7 +26,7 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 		database.HostInstanceByOrganizationID(ctxOrg.ID),
 	}
 	if pageIDReq != nil {
-		pageID, err := uuid.FromString(internal.SafeValue(pageIDReq))
+		pageID, err := uuid.FromString(internal.StringValue(pageIDReq))
 		if err != nil {
 			return errdefs.ErrInvalidArgument(err)
 		}

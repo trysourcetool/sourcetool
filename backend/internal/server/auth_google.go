@@ -202,7 +202,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 			Role:           userInvitation.Role,
 		}
 		org = invitedOrg
-		orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
+		orgSubdomain = internal.StringValue(invitedOrg.Subdomain)
 	} else {
 		// Standard flow - get user's organization info
 		// Get all organization accesses for the user
@@ -223,7 +223,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 							return errdefs.ErrInternal(err)
 						}
 
-						url, err := buildLoginURL(internal.SafeValue(org.Subdomain))
+						url, err := buildLoginURL(internal.StringValue(org.Subdomain))
 						if err != nil {
 							return errdefs.ErrInternal(err)
 						}
@@ -249,7 +249,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 					if err != nil {
 						return err
 					}
-					orgSubdomain = internal.SafeValue(org.Subdomain)
+					orgSubdomain = internal.StringValue(org.Subdomain)
 				}
 			} else {
 				// Single organization case
@@ -259,7 +259,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 				if err != nil {
 					return errdefs.ErrInternal(err)
 				}
-				orgSubdomain = internal.SafeValue(org.Subdomain)
+				orgSubdomain = internal.StringValue(org.Subdomain)
 			}
 		} else {
 			// Self-hosted mode
@@ -409,7 +409,7 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 				return errdefs.ErrInternal(fmt.Errorf("failed to create personal API key: %w", err))
 			}
 
-			orgSubdomain = internal.SafeValue(invitedOrg.Subdomain)
+			orgSubdomain = internal.StringValue(invitedOrg.Subdomain)
 			hasOrganization = true
 		} else {
 			if !config.Config.IsCloudEdition {
