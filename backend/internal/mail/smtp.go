@@ -13,7 +13,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
-type mailReq struct {
+type input struct {
 	To       []string
 	From     string
 	FromName string
@@ -21,11 +21,11 @@ type mailReq struct {
 	Body     string
 }
 
-func send(ctx context.Context, req mailReq) error {
+func send(ctx context.Context, in input) error {
 	// Build From header with proper format
-	fromHeader := req.From
-	if req.FromName != "" {
-		fromHeader = fmt.Sprintf("%s <%s>", req.FromName, req.From)
+	fromHeader := in.From
+	if in.FromName != "" {
+		fromHeader = fmt.Sprintf("%s <%s>", in.FromName, in.From)
 	}
 
 	msg := fmt.Sprintf("From: %s\r\n"+
@@ -35,7 +35,7 @@ func send(ctx context.Context, req mailReq) error {
 		"Content-Type: text/plain; charset=UTF-8\r\n"+
 		"Content-Transfer-Encoding: 7bit\r\n"+
 		"\r\n"+
-		"%s\r\n", fromHeader, strings.Join(req.To, ","), req.Subject, req.Body)
+		"%s\r\n", fromHeader, strings.Join(in.To, ","), in.Subject, in.Body)
 
 	if config.Config.Env == config.EnvLocal {
 		// In local environment, just log the email content
@@ -100,11 +100,11 @@ func send(ctx context.Context, req mailReq) error {
 		return fmt.Errorf("failed to authenticate: %w", err)
 	}
 
-	if err := client.Mail(req.From); err != nil {
+	if err := client.Mail(in.From); err != nil {
 		return fmt.Errorf("failed to set FROM address: %w", err)
 	}
 
-	for _, addr := range req.To {
+	for _, addr := range in.To {
 		if err := client.Rcpt(addr); err != nil {
 			return fmt.Errorf("failed to set TO address: %w", err)
 		}
@@ -123,6 +123,8 @@ func send(ctx context.Context, req mailReq) error {
 	return nil
 }
 
+const fromName = "Sourcetool Team"
+
 func SendUpdateEmailInstructions(ctx context.Context, to, firstName, url string) error {
 	subject := "[Sourcetool] Confirm your new email address"
 	content := fmt.Sprintf(`Hi %s,
@@ -135,14 +137,14 @@ Please click the following link within the next 24 hours to confirm your email c
 Thank you for being a part of the Sourcetool community!
 Regards,
 
-Sourcetool Team`,
+The Sourcetool Team`,
 		firstName,
 		url,
 	)
 
-	return send(ctx, mailReq{
+	return send(ctx, input{
 		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
+		FromName: fromName,
 		To:       []string{to},
 		Subject:  subject,
 		Body:     content,
@@ -169,9 +171,9 @@ To accept the invitation, please create your account by clicking the URL below w
 
 		content := fmt.Sprintf(baseContent, url)
 
-		if err := send(ctx, mailReq{
+		if err := send(ctx, input{
 			From:     config.Config.SMTP.FromEmail,
-			FromName: "Sourcetool Team",
+			FromName: fromName,
 			To:       []string{email},
 			Subject:  subject,
 			Body:     content,
@@ -201,9 +203,9 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, url)
 
-	if err := send(ctx, mailReq{
+	if err := send(ctx, input{
 		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
+		FromName: fromName,
 		To:       []string{email},
 		Subject:  subject,
 		Body:     content,
@@ -228,9 +230,9 @@ This link will expire in 15 minutes.
 Best regards,
 The Sourcetool Team`, firstName, url)
 
-	if err := send(ctx, mailReq{
+	if err := send(ctx, input{
 		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
+		FromName: fromName,
 		To:       []string{email},
 		Subject:  subject,
 		Body:     content,
@@ -258,9 +260,9 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, email, urlList)
 
-	if err := send(ctx, mailReq{
+	if err := send(ctx, input{
 		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
+		FromName: fromName,
 		To:       []string{email},
 		Subject:  subject,
 		Body:     content,
@@ -289,9 +291,9 @@ Thank you for using Sourcetool!
 
 The Sourcetool Team`, firstName, email, urlList)
 
-	if err := send(ctx, mailReq{
+	if err := send(ctx, input{
 		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
+		FromName: fromName,
 		To:       []string{email},
 		Subject:  subject,
 		Body:     content,
