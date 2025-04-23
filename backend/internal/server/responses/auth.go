@@ -68,7 +68,3 @@ type ObtainAuthTokenResponse struct {
 	AuthURL string `json:"authUrl"`
 	Token   string `json:"token"`
 }
-
-type LogoutResponse struct {
-	Domain string
-}
