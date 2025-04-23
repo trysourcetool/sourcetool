@@ -11,9 +11,9 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 )
 
 func TestMain(m *testing.M) {
@@ -119,7 +119,7 @@ func TestClient_MessageHandling(t *testing.T) {
 		Id: "test_id",
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
-				SessionId: conv.NilValue("test_session"),
+				SessionId: ptrconv.StringPtr("test_session"),
 				PageId:    "test_page",
 			},
 		},

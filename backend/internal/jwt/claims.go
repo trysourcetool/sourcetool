@@ -5,45 +5,31 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const (
-	Issuer = "trysourcetool.com"
+const issuer = "https://auth.trysourcetool.com"
 
-	UserSignatureSubjectEmail                 = "email"
-	UserSignatureSubjectUpdateEmail           = "update_email"
-	UserSignatureSubjectActivate              = "activate"
-	UserSignatureSubjectInvitation            = "invitation"
-	UserSignatureSubjectInvitationMagicLink   = "invitation_magic_link"
-	UserSignatureSubjectMagicLink             = "magic_link"
-	UserSignatureSubjectMagicLinkRegistration = "magic_link_registration"
-	UserSignatureSubjectGoogleAuthLink        = "google_auth_link"
-	UserSignatureSubjectGoogleRegistration    = "google_registration"
-)
-
-type RegisteredClaims jwt.RegisteredClaims
-
-// UserClaims represents claims for general user authentication.
-type UserClaims struct {
-	UserID string
-	Email  string
-	jwt.RegisteredClaims
-}
-
-// UserEmailClaims represents claims for email-related operations.
-type UserEmailClaims struct {
-	Email string
-	jwt.RegisteredClaims
-}
-
-// UserAuthClaims represents claims for user authentication with XSRF token.
-type UserAuthClaims struct {
-	UserID    string
+type AuthClaims struct {
 	XSRFToken string
 	jwt.RegisteredClaims
 }
 
-// UserMagicLinkRegistrationClaims represents claims for magic link registration.
-type UserMagicLinkRegistrationClaims struct {
+type UpdateUserEmailClaims struct {
 	Email string
+	jwt.RegisteredClaims
+}
+
+type InvitationClaims struct {
+	jwt.RegisteredClaims
+}
+
+type MagicLinkClaims struct {
+	jwt.RegisteredClaims
+}
+
+type InvitationMagicLinkClaims struct {
+	jwt.RegisteredClaims
+}
+
+type MagicLinkRegistrationClaims struct {
 	jwt.RegisteredClaims
 }
 
@@ -54,18 +40,15 @@ const (
 	GoogleAuthFlowInvitation GoogleAuthFlow = "invitation"
 )
 
-// UserGoogleAuthLinkClaims represents claims for Google authentication link.
-type UserGoogleAuthLinkClaims struct {
+type GoogleAuthLinkClaims struct {
 	Flow            GoogleAuthFlow
 	InvitationOrgID uuid.UUID
 	HostSubdomain   string
 	jwt.RegisteredClaims
 }
 
-// UserGoogleRegistrationClaims represents claims for Google registration.
-type UserGoogleRegistrationClaims struct {
+type GoogleRegistrationClaims struct {
 	GoogleID        string
-	Email           string
 	FirstName       string
 	LastName        string
 	Flow            GoogleAuthFlow

@@ -261,10 +261,10 @@ func (s *Server) Install(router *chi.Mux) {
 
 func (s *Server) serveError(w http.ResponseWriter, r *http.Request, err error) {
 	ctx := r.Context()
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 	var email string
-	if currentUser != nil {
-		email = currentUser.Email
+	if ctxUser != nil {
+		email = ctxUser.Email
 	}
 
 	v, ok := err.(*errdefs.Error)
@@ -334,10 +334,10 @@ func (s *Server) sendWebSocketMessage(conn *websocket.Conn, msg *websocketv1.Mes
 }
 
 func (s *Server) sendErrWebSocketMessage(ctx context.Context, conn *websocket.Conn, id string, err error) {
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 	var email string
-	if currentUser != nil {
-		email = currentUser.Email
+	if ctxUser != nil {
+		email = ctxUser.Email
 	}
 
 	e, ok := err.(*errdefs.Error)

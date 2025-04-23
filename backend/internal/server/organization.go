@@ -31,7 +31,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 
 	var subdomain *string
 	if config.Config.IsCloudEdition {
-		subdomain = internal.NilValue(req.Subdomain)
+		subdomain = internal.StringPtr(req.Subdomain)
 
 		if core.IsReservedSubdomain(req.Subdomain) {
 			return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
@@ -51,11 +51,11 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 		Subdomain: subdomain,
 	}
 
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	orgAccess := &core.UserOrganizationAccess{
 		ID:             uuid.Must(uuid.NewV4()),
-		UserID:         currentUser.ID,
+		UserID:         ctxUser.ID,
 		OrganizationID: o.ID,
 		Role:           core.UserOrganizationRoleAdmin,
 	}
@@ -85,7 +85,7 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 		ID:             uuid.Must(uuid.NewV4()),
 		OrganizationID: o.ID,
 		EnvironmentID:  devEnv.ID,
-		UserID:         currentUser.ID,
+		UserID:         ctxUser.ID,
 		Name:           "",
 		Key:            key,
 	}
@@ -223,8 +223,8 @@ func (s *Server) resolveOrganization(ctx context.Context, u *core.User) (*core.O
 		return nil, nil, errdefs.ErrInvalidArgument(errors.New("user cannot be nil"))
 	}
 
-	subdomain := internal.Subdomain(ctx)
-	isCloudWithSubdomain := config.Config.IsCloudEdition && subdomain != "" && subdomain != "auth"
+	ctxSubdomain := internal.ContextSubdomain(ctx)
+	isCloudWithSubdomain := config.Config.IsCloudEdition && ctxSubdomain != "" && ctxSubdomain != "auth"
 
 	orgAccessQueries := []database.UserOrganizationAccessQuery{
 		database.UserOrganizationAccessByUserID(u.ID),
@@ -232,7 +232,7 @@ func (s *Server) resolveOrganization(ctx context.Context, u *core.User) (*core.O
 	}
 
 	if isCloudWithSubdomain {
-		orgAccessQueries = append(orgAccessQueries, database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		orgAccessQueries = append(orgAccessQueries, database.UserOrganizationAccessByOrganizationSubdomain(ctxSubdomain))
 	}
 
 	orgAccess, err := s.db.User().GetOrganizationAccess(ctx, orgAccessQueries...)

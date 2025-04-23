@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -24,9 +24,9 @@ func TestConvertStateToTextAreaProto(t *testing.T) {
 	textAreaState := &state.TextAreaState{
 		ID:           id,
 		Label:        "Test TextArea",
-		Value:        conv.NilValue("test value"),
+		Value:        ptrconv.StringPtr("test value"),
 		Placeholder:  "Enter text",
-		DefaultValue: conv.NilValue("default"),
+		DefaultValue: ptrconv.StringPtr("default"),
 		Required:     true,
 		Disabled:     false,
 		MaxLength:    &maxLength,
@@ -78,9 +78,9 @@ func TestConvertTextAreaProtoToState(t *testing.T) {
 
 	data := &widgetv1.TextArea{
 		Label:        "Test TextArea",
-		Value:        conv.NilValue("test value"),
+		Value:        ptrconv.StringPtr("test value"),
 		Placeholder:  "Enter text",
-		DefaultValue: conv.NilValue("default"),
+		DefaultValue: ptrconv.StringPtr("default"),
 		Required:     true,
 		Disabled:     false,
 		MaxLength:    &maxLength,
@@ -188,9 +188,9 @@ func TestTextArea(t *testing.T) {
 		want any
 	}{
 		{"Label", state.Label, label},
-		{"Value", conv.SafeValue(state.Value), defaultValue},
+		{"Value", ptrconv.StringValue(state.Value), defaultValue},
 		{"Placeholder", state.Placeholder, placeholder},
-		{"DefaultValue", conv.SafeValue(state.DefaultValue), defaultValue},
+		{"DefaultValue", ptrconv.StringValue(state.DefaultValue), defaultValue},
 		{"Required", state.Required, true},
 		{"Disabled", state.Disabled, true},
 		{"MaxLength", *state.MaxLength, maxLength},

@@ -53,8 +53,8 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 
 	logger.Logger.Sugar().Infof("Page: %v", page.Name)
 
-	currentOrg := internal.CurrentOrganization(ctx)
-	if currentOrg.ID != page.OrganizationID {
+	ctxOrg := internal.ContextOrganization(ctx)
+	if ctxOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
 
@@ -113,12 +113,12 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("no available host instances"))
 	}
 
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	var sess *core.Session
 	var sessionExists bool
-	if internal.SafeValue(in.SessionId) != "" {
-		sessionID, err := uuid.FromString(internal.SafeValue(in.SessionId))
+	if internal.StringValue(in.SessionId) != "" {
+		sessionID, err := uuid.FromString(internal.StringValue(in.SessionId))
 		if err != nil {
 			return errdefs.ErrSessionNotFound(err)
 		}
@@ -133,7 +133,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: page.OrganizationID,
 			EnvironmentID:  env.ID,
-			UserID:         currentUser.ID,
+			UserID:         ctxUser.ID,
 		}
 		sessionExists = false
 	}
@@ -174,7 +174,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		Id: uuid.Must(uuid.NewV4()).String(),
 		Type: &websocketv1.Message_InitializeClient{
 			InitializeClient: &websocketv1.InitializeClient{
-				SessionId: internal.NilValue(sess.ID.String()),
+				SessionId: internal.StringPtr(sess.ID.String()),
 				PageId:    page.ID.String(),
 			},
 		},

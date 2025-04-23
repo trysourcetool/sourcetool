@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -42,9 +42,9 @@ func TestConvertStateToTimeInputProto(t *testing.T) {
 		want any
 	}{
 		{"Label", data.Label, timeInputState.Label},
-		{"Value", conv.SafeValue(data.Value), timeInputState.Value.Format(time.TimeOnly)},
+		{"Value", ptrconv.StringValue(data.Value), timeInputState.Value.Format(time.TimeOnly)},
 		{"Placeholder", data.Placeholder, timeInputState.Placeholder},
-		{"DefaultValue", conv.SafeValue(data.DefaultValue), timeInputState.DefaultValue.Format(time.TimeOnly)},
+		{"DefaultValue", ptrconv.StringValue(data.DefaultValue), timeInputState.DefaultValue.Format(time.TimeOnly)},
 		{"Required", data.Required, timeInputState.Required},
 		{"Disabled", data.Disabled, timeInputState.Disabled},
 	}
@@ -65,9 +65,9 @@ func TestConvertTimeInputProtoToState(t *testing.T) {
 
 	data := &widgetv1.TimeInput{
 		Label:        "Test TimeInput",
-		Value:        conv.NilValue(timeStr),
+		Value:        ptrconv.StringPtr(timeStr),
 		Placeholder:  "Select time",
-		DefaultValue: conv.NilValue(timeStr),
+		DefaultValue: ptrconv.StringPtr(timeStr),
 		Required:     true,
 		Disabled:     false,
 	}
@@ -88,9 +88,9 @@ func TestConvertTimeInputProtoToState(t *testing.T) {
 	}{
 		{"ID", state.ID, id},
 		{"Label", state.Label, data.Label},
-		{"Value", state.Value.Format(time.TimeOnly), conv.SafeValue(data.Value)},
+		{"Value", state.Value.Format(time.TimeOnly), ptrconv.StringValue(data.Value)},
 		{"Placeholder", state.Placeholder, data.Placeholder},
-		{"DefaultValue", state.DefaultValue.Format(time.TimeOnly), conv.SafeValue(data.DefaultValue)},
+		{"DefaultValue", state.DefaultValue.Format(time.TimeOnly), ptrconv.StringValue(data.DefaultValue)},
 		{"Required", state.Required, data.Required},
 		{"Disabled", state.Disabled, data.Disabled},
 		{"Location", state.Location.String(), time.Local.String()},
@@ -108,7 +108,7 @@ func TestConvertTimeInputProtoToState(t *testing.T) {
 func TestConvertTimeInputProtoToState_InvalidTime(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	data := &widgetv1.TimeInput{
-		Value: conv.NilValue("invalid-time"),
+		Value: ptrconv.StringPtr("invalid-time"),
 	}
 
 	_, err := convertTimeInputProtoToState(id, data, time.Local)

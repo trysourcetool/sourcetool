@@ -7,7 +7,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
 	"github.com/lib/pq"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
@@ -386,9 +385,10 @@ func (s *userStore) BulkDeleteGroups(ctx context.Context, m []*core.UserGroup) e
 		return nil
 	}
 
-	ids := lo.Map(m, func(x *core.UserGroup, _ int) uuid.UUID {
-		return x.ID
-	})
+	ids := make([]uuid.UUID, len(m))
+	for i, group := range m {
+		ids[i] = group.ID
+	}
 
 	if _, err := s.builder.
 		Delete(`"user_group"`).

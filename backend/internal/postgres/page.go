@@ -6,7 +6,6 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid/v5"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
@@ -176,9 +175,10 @@ func (s *pageStore) BulkDelete(ctx context.Context, m []*core.Page) error {
 		return nil
 	}
 
-	ids := lo.Map(m, func(x *core.Page, _ int) uuid.UUID {
-		return x.ID
-	})
+	ids := make([]uuid.UUID, len(m))
+	for i, page := range m {
+		ids[i] = page.ID
+	}
 
 	if _, err := s.builder.
 		Delete(`"page"`).

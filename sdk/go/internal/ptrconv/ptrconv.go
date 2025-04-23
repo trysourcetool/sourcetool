@@ -1,4 +1,4 @@
-package internal
+package ptrconv
 
 // StringValue returns the value of a string pointer.
 // If the pointer is nil, returns an empty string.

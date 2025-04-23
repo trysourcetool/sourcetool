@@ -3,10 +3,10 @@ package sourcetool
 import (
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/radio"
 )
@@ -41,7 +41,7 @@ func (b *uiBuilder) Radio(label string, opts ...radio.Option) *radio.Value {
 	var defaultVal *int32
 	if radioOpts.DefaultValue != nil {
 		for i, o := range radioOpts.Options {
-			if conv.SafeValue(radioOpts.DefaultValue) == o {
+			if ptrconv.StringValue(radioOpts.DefaultValue) == o {
 				v := int32(i)
 				defaultVal = &v
 				break
@@ -96,7 +96,7 @@ func (b *uiBuilder) Radio(label string, opts ...radio.Option) *radio.Value {
 	if radioState.Value != nil {
 		value = &radio.Value{
 			Value: radioOpts.Options[*radioState.Value],
-			Index: int(conv.SafeValue(radioState.Value)),
+			Index: int(*radioState.Value),
 		}
 	}
 

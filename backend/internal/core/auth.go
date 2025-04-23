@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	EmailTokenExpiration     = time.Duration(24) * time.Hour
 	tokenExpiration          = time.Duration(60) * time.Minute
 	tokenExpirationDev       = time.Duration(365*24) * time.Hour
 	RefreshTokenExpiration   = time.Duration(30*24) * time.Hour

@@ -44,7 +44,7 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 
 		o := &core.Organization{
 			ID:        uuid.Must(uuid.NewV4()),
-			Subdomain: internal.NilValue("acme"),
+			Subdomain: internal.StringPtr("acme"),
 		}
 		if err := tx.Organization().Create(ctx, o); err != nil {
 			return err

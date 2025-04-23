@@ -3,7 +3,6 @@ package sourcetool
 import (
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
@@ -15,7 +14,7 @@ func (b *uiBuilder) NumberInput(label string, opts ...numberinput.Option) *float
 	numberInputOpts := &options.NumberInputOptions{
 		Label:        label,
 		Placeholder:  "",
-		DefaultValue: conv.NilValue(float64(0)),
+		DefaultValue: nil,
 		Required:     false,
 		Disabled:     false,
 		MaxValue:     nil,

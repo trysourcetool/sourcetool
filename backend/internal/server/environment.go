@@ -28,9 +28,9 @@ func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
-	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(ctxOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
@@ -42,8 +42,8 @@ func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
 
 func (s *Server) listEnvironments(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	currentOrg := internal.CurrentOrganization(ctx)
-	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(currentOrg.ID))
+	ctxOrg := internal.ContextOrganization(ctx)
+	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -74,9 +74,9 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
-	slugExists, err := s.db.Environment().IsSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
+	slugExists, err := s.db.Environment().IsSlugExistsInOrganization(ctx, ctxOrg.ID, req.Slug)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 
 	env := &core.Environment{
 		ID:             uuid.Must(uuid.NewV4()),
-		OrganizationID: currentOrg.ID,
+		OrganizationID: ctxOrg.ID,
 		Name:           req.Name,
 		Slug:           req.Slug,
 		Color:          req.Color,
@@ -134,22 +134,22 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 	envID, err := uuid.FromString(envIDReq)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(ctxOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}
 
 	if req.Name != nil {
-		env.Name = internal.SafeValue(req.Name)
+		env.Name = internal.StringValue(req.Name)
 	}
 	if req.Color != nil {
-		env.Color = internal.SafeValue(req.Color)
+		env.Color = internal.StringValue(req.Color)
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -181,13 +181,13 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 	envID, err := uuid.FromString(envIDReq)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(currentOrg.ID), database.EnvironmentByID(envID))
+	env, err := s.db.Environment().Get(ctx, database.EnvironmentByOrganizationID(ctxOrg.ID), database.EnvironmentByID(envID))
 	if err != nil {
 		return err
 	}

@@ -7,12 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"time"
+	"slices"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
-	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -35,29 +33,6 @@ func buildInvitationURL(subdomain, token, email string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("auth", "invitations", "login"), map[string]string{
 		"token": token,
 		"email": email,
-	})
-}
-
-func createUpdateEmailToken(userID, email string) (string, error) {
-	return jwt.SignToken(&jwt.UserClaims{
-		UserID: userID,
-		Email:  email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(core.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectUpdateEmail,
-		},
-	})
-}
-
-func createInvitationToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserClaims{
-		Email: email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(core.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectInvitation,
-		},
 	})
 }
 
@@ -101,7 +76,7 @@ To accept the invitation, please create your account by clicking the URL below w
 
 	sendEmails := make([]string, 0)
 	for email, url := range emaiURLs {
-		if lo.Contains(sendEmails, email) {
+		if slices.Contains(sendEmails, email) {
 			continue
 		}
 
@@ -126,18 +101,18 @@ To accept the invitation, please create your account by clicking the URL below w
 func (s *Server) getMe(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	currentUser := internal.CurrentUser(ctx)
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxUser := internal.ContextUser(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
-		database.UserOrganizationAccessByUserID(currentUser.ID),
-		database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+		database.UserOrganizationAccessByUserID(ctxUser.ID),
+		database.UserOrganizationAccessByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
 	role := orgAccess.Role
 
 	return s.renderJSON(w, http.StatusOK, responses.GetMeResponse{
-		User: responses.UserFromModel(currentUser, role, currentOrg),
+		User: responses.UserFromModel(ctxUser, role, ctxOrg),
 	})
 }
 
@@ -153,17 +128,17 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	if req.FirstName != nil {
-		currentUser.FirstName = internal.SafeValue(req.FirstName)
+		ctxUser.FirstName = internal.StringValue(req.FirstName)
 	}
 	if req.LastName != nil {
-		currentUser.LastName = internal.SafeValue(req.LastName)
+		ctxUser.LastName = internal.StringValue(req.LastName)
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
-		if err := tx.User().Update(ctx, currentUser); err != nil {
+		if err := tx.User().Update(ctx, ctxUser); err != nil {
 			return err
 		}
 
@@ -172,7 +147,7 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	org, orgAccess, err := s.resolveOrganization(ctx, currentUser)
+	org, orgAccess, err := s.resolveOrganization(ctx, ctxUser)
 	if err != nil {
 		return err
 	}
@@ -183,7 +158,7 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateMeResponse{
-		User: responses.UserFromModel(currentUser, role, org),
+		User: responses.UserFromModel(ctxUser, role, org),
 	})
 }
 
@@ -214,22 +189,22 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 	}
 
 	// Get current user and organization
-	currentUser := internal.CurrentUser(ctx)
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxUser := internal.ContextUser(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
 	// Create token for email update
-	tok, err := createUpdateEmailToken(currentUser.ID.String(), req.Email)
+	tok, err := jwt.SignUpdateUserEmailToken(ctxUser.ID.String(), req.Email)
 	if err != nil {
 		return err
 	}
 
 	// Build update URL
-	url, err := buildUpdateEmailURL(internal.SafeValue(currentOrg.Subdomain), tok)
+	url, err := buildUpdateEmailURL(internal.StringValue(ctxOrg.Subdomain), tok)
 	if err != nil {
 		return err
 	}
 
-	return s.sendUpdateEmailInstructions(ctx, req.Email, currentUser.FirstName, url)
+	return s.sendUpdateEmailInstructions(ctx, req.Email, ctxUser.FirstName, url)
 }
 
 func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
@@ -244,16 +219,12 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	c, err := jwt.ParseToken[*jwt.UserClaims](req.Token)
+	c, err := jwt.ParseUpdateUserEmailClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectUpdateEmail {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	userID, err := uuid.FromString(c.UserID)
+	userID, err := uuid.FromString(c.Subject)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -262,19 +233,19 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentUser := internal.CurrentUser(ctx)
-	if u.ID != currentUser.ID {
+	ctxUser := internal.ContextUser(ctx)
+	if u.ID != ctxUser.ID {
 		return errdefs.ErrUnauthenticated(errors.New("unauthorized"))
 	}
 
-	currentUser.Email = c.Email
+	ctxUser.Email = c.Email
 
-	if currentUser.GoogleID != "" {
-		currentUser.GoogleID = ""
+	if ctxUser.GoogleID != "" {
+		ctxUser.GoogleID = ""
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
-		if err := tx.User().Update(ctx, currentUser); err != nil {
+		if err := tx.User().Update(ctx, ctxUser); err != nil {
 			return err
 		}
 
@@ -283,7 +254,7 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	org, orgAccess, err := s.resolveOrganization(ctx, currentUser)
+	org, orgAccess, err := s.resolveOrganization(ctx, ctxUser)
 	if err != nil {
 		return err
 	}
@@ -294,26 +265,26 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateMeEmailResponse{
-		User: responses.UserFromModel(currentUser, role, org),
+		User: responses.UserFromModel(ctxUser, role, org),
 	})
 }
 
 func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
-	users, err := s.db.User().List(ctx, database.UserByOrganizationID(currentOrg.ID))
+	users, err := s.db.User().List(ctx, database.UserByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	userInvitations, err := s.db.User().ListInvitations(ctx, database.UserInvitationByOrganizationID(currentOrg.ID))
+	userInvitations, err := s.db.User().ListInvitations(ctx, database.UserInvitationByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+	orgAccesses, err := s.db.User().ListOrganizationAccesses(ctx, database.UserOrganizationAccessByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -324,7 +295,7 @@ func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) error {
 
 	usersOut := make([]*responses.UserResponse, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, responses.UserFromModel(u, roleMap[u.ID], currentOrg))
+		usersOut = append(usersOut, responses.UserFromModel(u, roleMap[u.ID], ctxOrg))
 	}
 
 	userInvitationsOut := make([]*responses.UserInvitationResponse, 0, len(userInvitations))
@@ -365,13 +336,13 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
-	if currentOrg == nil {
+	ctxOrg := internal.ContextOrganization(ctx)
+	if ctxOrg == nil {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
 	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
-		database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+		database.UserOrganizationAccessByOrganizationID(ctxOrg.ID),
 		database.UserOrganizationAccessByUserID(u.ID))
 	if err != nil {
 		return err
@@ -379,7 +350,7 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if req.Role != nil {
-			orgAccess.Role = core.UserOrganizationRoleFromString(internal.SafeValue(req.Role))
+			orgAccess.Role = core.UserOrganizationRoleFromString(internal.StringValue(req.Role))
 
 			if err := tx.User().UpdateOrganizationAccess(ctx, orgAccess); err != nil {
 				return err
@@ -420,7 +391,7 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.UpdateUserResponse{
-		User: responses.UserFromModel(u, orgAccess.Role, currentOrg),
+		User: responses.UserFromModel(u, orgAccess.Role, ctxOrg),
 	})
 }
 
@@ -436,9 +407,9 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentUser := internal.CurrentUser(ctx)
-	currentOrg := internal.CurrentOrganization(ctx)
-	if currentOrg == nil {
+	ctxUser := internal.ContextUser(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
+	if ctxOrg == nil {
 		return errdefs.ErrUnauthenticated(errors.New("current organization not found"))
 	}
 
@@ -447,7 +418,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if currentUser.ID == userIDToRemove {
+	if ctxUser.ID == userIDToRemove {
 		return errdefs.ErrPermissionDenied(errors.New("cannot remove yourself from the organization"))
 	}
 
@@ -458,7 +429,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 
 	orgAccess, err := s.db.User().GetOrganizationAccess(ctx,
 		database.UserOrganizationAccessByUserID(userToRemove.ID),
-		database.UserOrganizationAccessByOrganizationID(currentOrg.ID))
+		database.UserOrganizationAccessByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		if errdefs.IsUserOrganizationAccessNotFound(err) {
 			return nil
@@ -468,7 +439,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 
 	if orgAccess.Role == core.UserOrganizationRoleAdmin {
 		adminAccesses, err := s.db.User().ListOrganizationAccesses(ctx,
-			database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+			database.UserOrganizationAccessByOrganizationID(ctxOrg.ID),
 			database.UserOrganizationAccessByRole(core.UserOrganizationRoleAdmin))
 		if err != nil {
 			return err
@@ -483,7 +454,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByUserID(userToRemove.ID), database.APIKeyByOrganizationID(currentOrg.ID))
+		apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByUserID(userToRemove.ID), database.APIKeyByOrganizationID(ctxOrg.ID))
 		if err != nil {
 			return err
 		}
@@ -493,7 +464,7 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 			}
 		}
 
-		userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByUserID(userToRemove.ID), database.UserGroupByOrganizationID(currentOrg.ID))
+		userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByUserID(userToRemove.ID), database.UserGroupByOrganizationID(ctxOrg.ID))
 		if err != nil {
 			return err
 		}
@@ -531,13 +502,13 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	o := internal.CurrentOrganization(ctx)
-	u := internal.CurrentUser(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	invitations := make([]*core.UserInvitation, 0)
 	emailURLs := make(map[string]string)
 	for _, email := range req.Emails {
-		emailExsts, err := s.db.User().IsInvitationEmailExists(ctx, o.ID, email)
+		emailExsts, err := s.db.User().IsInvitationEmailExists(ctx, ctxOrg.ID, email)
 		if err != nil {
 			return err
 		}
@@ -545,12 +516,12 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 			continue
 		}
 
-		tok, err := createInvitationToken(email)
+		tok, err := jwt.SignInvitationToken(email)
 		if err != nil {
 			return err
 		}
 
-		url, err := buildInvitationURL(internal.SafeValue(o.Subdomain), tok, email)
+		url, err := buildInvitationURL(internal.StringValue(ctxOrg.Subdomain), tok, email)
 		if err != nil {
 			return err
 		}
@@ -559,7 +530,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 
 		invitations = append(invitations, &core.UserInvitation{
 			ID:             uuid.Must(uuid.NewV4()),
-			OrganizationID: o.ID,
+			OrganizationID: ctxOrg.ID,
 			Email:          email,
 			Role:           core.UserOrganizationRoleFromString(req.Role),
 		})
@@ -570,7 +541,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 			return err
 		}
 
-		if err := s.sendInvitationEmail(ctx, u.FullName(), emailURLs); err != nil {
+		if err := s.sendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
 			return err
 		}
 
@@ -611,25 +582,25 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	o := internal.CurrentOrganization(ctx)
-	if userInvitation.OrganizationID != o.ID {
+	ctxOrg := internal.ContextOrganization(ctx)
+	if userInvitation.OrganizationID != ctxOrg.ID {
 		return errdefs.ErrUnauthenticated(errors.New("invalid organization"))
 	}
 
-	u := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
-	tok, err := createInvitationToken(userInvitation.Email)
+	tok, err := jwt.SignInvitationToken(userInvitation.Email)
 	if err != nil {
 		return err
 	}
 
-	url, err := buildInvitationURL(internal.SafeValue(o.Subdomain), tok, userInvitation.Email)
+	url, err := buildInvitationURL(internal.StringValue(ctxOrg.Subdomain), tok, userInvitation.Email)
 	if err != nil {
 		return err
 	}
 
 	emailURLs := map[string]string{userInvitation.Email: url}
-	if err := s.sendInvitationEmail(ctx, u.FullName(), emailURLs); err != nil {
+	if err := s.sendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
 		return err
 	}
 
