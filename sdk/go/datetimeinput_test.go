@@ -8,8 +8,8 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool-go/datetimeinput"
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -47,9 +47,9 @@ func TestConvertStateToDateTimeInputProto(t *testing.T) {
 		want any
 	}{
 		{"Label", data.Label, dateTimeInputState.Label},
-		{"Value", conv.SafeValue(data.Value), dateTimeInputState.Value.Format(time.DateTime)},
+		{"Value", ptrconv.StringValue(data.Value), dateTimeInputState.Value.Format(time.DateTime)},
 		{"Placeholder", data.Placeholder, dateTimeInputState.Placeholder},
-		{"DefaultValue", conv.SafeValue(data.DefaultValue), dateTimeInputState.DefaultValue.Format(time.DateTime)},
+		{"DefaultValue", ptrconv.StringValue(data.DefaultValue), dateTimeInputState.DefaultValue.Format(time.DateTime)},
 		{"Required", data.Required, dateTimeInputState.Required},
 		{"Disabled", data.Disabled, dateTimeInputState.Disabled},
 		{"Format", data.Format, dateTimeInputState.Format},
@@ -75,9 +75,9 @@ func TestConvertDateTimeInputProtoToState(t *testing.T) {
 
 	data := &widgetv1.DateTimeInput{
 		Label:        "Test DateTimeInput",
-		Value:        conv.NilValue(dateStr),
+		Value:        ptrconv.StringPtr(dateStr),
 		Placeholder:  "Select date and time",
-		DefaultValue: conv.NilValue(dateStr),
+		DefaultValue: ptrconv.StringPtr(dateStr),
 		Required:     true,
 		Disabled:     false,
 		Format:       "YYYY/MM/DD HH:MM:SS",
@@ -101,9 +101,9 @@ func TestConvertDateTimeInputProtoToState(t *testing.T) {
 	}{
 		{"ID", state.ID, id},
 		{"Label", state.Label, data.Label},
-		{"Value", state.Value.Format(time.DateTime), conv.SafeValue(data.Value)},
+		{"Value", state.Value.Format(time.DateTime), ptrconv.StringValue(data.Value)},
 		{"Placeholder", state.Placeholder, data.Placeholder},
-		{"DefaultValue", state.DefaultValue.Format(time.DateTime), conv.SafeValue(data.DefaultValue)},
+		{"DefaultValue", state.DefaultValue.Format(time.DateTime), ptrconv.StringValue(data.DefaultValue)},
 		{"Required", state.Required, data.Required},
 		{"Disabled", state.Disabled, data.Disabled},
 		{"Format", state.Format, data.Format},
@@ -124,7 +124,7 @@ func TestConvertDateTimeInputProtoToState(t *testing.T) {
 func TestConvertDateTimeInputProtoToState_InvalidDateTime(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	data := &widgetv1.DateTimeInput{
-		Value: conv.NilValue("invalid-datetime"),
+		Value: ptrconv.StringPtr("invalid-datetime"),
 	}
 
 	_, err := convertDateTimeInputProtoToState(id, data, time.Local)

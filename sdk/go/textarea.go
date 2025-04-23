@@ -3,10 +3,10 @@ package sourcetool
 import (
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/textarea"
 )
@@ -79,7 +79,7 @@ func (b *uiBuilder) TextArea(label string, opts ...textarea.Option) string {
 
 	cursor.next()
 
-	return conv.SafeValue(textAreaState.Value)
+	return ptrconv.StringValue(textAreaState.Value)
 }
 
 func convertStateToTextAreaProto(state *state.TextAreaState) *widgetv1.TextArea {

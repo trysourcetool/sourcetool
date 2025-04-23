@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
 )
@@ -37,7 +37,7 @@ func TestRuntime_HandleInitializeClient(t *testing.T) {
 	// Create test message
 	sessionID := uuid.Must(uuid.NewV4())
 	initClient := &websocketv1.InitializeClient{
-		SessionId: conv.NilValue(sessionID.String()),
+		SessionId: ptrconv.StringPtr(sessionID.String()),
 		PageId:    pageID.String(),
 	}
 
