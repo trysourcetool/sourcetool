@@ -1,4 +1,4 @@
-name: Release to GHCR
+name: Release
 
 on:
   push:
@@ -7,9 +7,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  MCP_IMAGE_NAME: ${{ github.repository }}-docs-mcp-server
-  SDK_REPO: trysourcetool/sourcetool-go
+  MAIN_IMAGE_NAME: ${{ github.repository }}
+  DOCS_MCP_IMAGE_NAME: ${{ github.repository }}-docs-mcp-server
+  GO_SDK_REPO: trysourcetool/sourcetool-go
 
 jobs:
   build-and-push:
@@ -27,13 +27,13 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PAT }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -66,13 +66,13 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PAT }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta-mcp
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.MCP_IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -124,7 +124,7 @@ jobs:
       - name: Clone SDK repository
         run: |
           TEMP_DIR=$(mktemp -d)
-          git clone "https://${{ secrets.GH_PAT }}@github.com/${{ env.SDK_REPO }}.git" "$TEMP_DIR"
+          git clone "https://${{ secrets.GH_PAT }}@github.com/${{ env.GO_SDK_REPO }}.git" "$TEMP_DIR"
           echo "SDK_DIR=$TEMP_DIR" >> $GITHUB_ENV
           cd "$TEMP_DIR"
 
@@ -160,11 +160,11 @@ jobs:
 
             ## Installation
             ```bash
-            go get github.com/${{ env.SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
+            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
             ```
 
             This release corresponds to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
-          repository: ${{ env.SDK_REPO }}
+          repository: ${{ env.GO_SDK_REPO }}
           token: ${{ secrets.GH_PAT }}
           draft: false
           prerelease: false
@@ -174,7 +174,7 @@ jobs:
         run: |
           # Wait for the module to be available in the proxy
           for i in {1..5}; do
-            if GOPROXY=proxy.golang.org go list -m github.com/${{ env.SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}; then
+            if GOPROXY=proxy.golang.org go list -m github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}; then
               echo "Module is available in Go proxy"
               exit 0
             fi
@@ -230,12 +230,12 @@ jobs:
             ### Docker Images
             Main application:
             ```bash
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
+            docker pull ${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
             ```
 
-            MCP Server:
+            Docs MCP Server:
             ```bash
-            docker pull ${{ env.REGISTRY }}/${{ env.MCP_IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
+            docker pull ${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
             ```
 
             ### Go SDK
@@ -244,8 +244,8 @@ jobs:
             ```
 
             ## Links
-            - [Main Docker Image](${{ env.REGISTRY }}/${{ env.IMAGE_NAME }})
-            - [MCP Server Docker Image](${{ env.REGISTRY }}/${{ env.MCP_IMAGE_NAME }})
+            - [Main Docker Image](${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }})
+            - [Docs MCP Server Docker Image](${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }})
             - [Go SDK](https://github.com/trysourcetool/sourcetool-go/releases/tag/${{ steps.get_version.outputs.VERSION }})
           draft: false
           prerelease: false
