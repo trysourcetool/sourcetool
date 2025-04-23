@@ -51,6 +51,8 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		return err
 	}
 
+	logger.Logger.Sugar().Infof("Page: %v", page.Name)
+
 	currentOrg := internal.CurrentOrganization(ctx)
 	if currentOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
@@ -236,7 +238,7 @@ func (s *Server) handleRerunPage(ctx context.Context, conn *websocket.Conn, msg 
 		return err
 	}
 
-	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceBySessionID(sess.ID))
+	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceBySessionID(sess.ID), database.HostInstanceByStatus(core.HostInstanceStatusOnline))
 	if err != nil {
 		return err
 	}
@@ -287,20 +289,22 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceBySessionID(sess.ID))
+	hostInstances, err := s.db.HostInstance().List(ctx, database.HostInstanceBySessionID(sess.ID))
 	if err != nil {
 		return err
 	}
 
-	if err := s.wsManager.SendToHost(ctx, hostInstance.ID, &websocketv1.Message{
-		Id: uuid.Must(uuid.NewV4()).String(),
-		Type: &websocketv1.Message_CloseSession{
-			CloseSession: &websocketv1.CloseSession{
-				SessionId: sess.ID.String(),
+	for _, hostInstance := range hostInstances {
+		if err := s.wsManager.SendToHost(ctx, hostInstance.ID, &websocketv1.Message{
+			Id: uuid.Must(uuid.NewV4()).String(),
+			Type: &websocketv1.Message_CloseSession{
+				CloseSession: &websocketv1.CloseSession{
+					SessionId: sess.ID.String(),
+				},
 			},
-		},
-	}); err != nil {
-		logger.Logger.Sugar().Warnf("Failed to send close session message to host %s for session %s: %v", hostInstance.ID, sess.ID, err)
+		}); err != nil {
+			logger.Logger.Sugar().Warnf("Failed to send close session message to host %s for session %s: %v", hostInstance.ID, sess.ID, err)
+		}
 	}
 
 	s.wsManager.DisconnectClient(sess.ID)

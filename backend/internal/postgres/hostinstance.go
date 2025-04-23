@@ -74,6 +74,8 @@ func (s *hostInstanceStore) applyQueries(b sq.SelectBuilder, queries ...database
 			b = b.
 				InnerJoin(`"session_host_instance" shi ON shi."host_instance_id" = hi."id"`).
 				Where(sq.Eq{`shi."session_id"`: q.SessionID})
+		case database.HostInstanceByStatusQuery:
+			b = b.Where(sq.Eq{`hi."status"`: q.Status})
 		}
 	}
 
