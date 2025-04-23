@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -38,92 +37,6 @@ func buildInvitationMagicLinkURL(subdomain, token string) (string, error) {
 	return internal.BuildURL(baseURL, path.Join("auth", "invitations", "magic", "authenticate"), map[string]string{
 		"token": token,
 	})
-}
-
-func (s *Server) sendMagicLinkEmail(ctx context.Context, email, firstName, url string) error {
-	subject := "Log in to your Sourcetool account"
-
-	content := fmt.Sprintf(`Hi %s,
-
-Here's your magic link to log in to your Sourcetool account. Click the link below to access your account securely without a password:
-
-%s
-
-- This link will expire in 15 minutes for security reasons.
-- If you didn't request this link, you can safely ignore this email.
-
-Thank you for using Sourcetool!
-
-The Sourcetool Team`, firstName, url)
-
-	if err := mail.Send(ctx, mail.MailInput{
-		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
-		To:       []string{email},
-		Subject:  subject,
-		Body:     content,
-	}); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Server) sendInvitationMagicLinkEmail(ctx context.Context, email, firstName, url string) error {
-	subject := "Your invitation to join Sourcetool"
-
-	content := fmt.Sprintf(`Hi %s,
-
-You've been invited to join Sourcetool. Click the link below to accept the invitation:
-
-%s
-
-This link will expire in 15 minutes.
-
-Best regards,
-The Sourcetool Team`, firstName, url)
-
-	if err := mail.Send(ctx, mail.MailInput{
-		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
-		To:       []string{email},
-		Subject:  subject,
-		Body:     content,
-	}); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-	return nil
-}
-
-func (s *Server) sendMultipleOrganizationsMagicLinkEmail(ctx context.Context, email, firstName string, loginURLs []string) error {
-	subject := "Choose your Sourcetool organization to log in"
-
-	urlList := ""
-	for _, url := range loginURLs {
-		urlList += url + "\n"
-	}
-
-	content := fmt.Sprintf(`Hi %s,
-
-Your email, %s, is associated with multiple Sourcetool organizations. You may log in to each one by clicking its magic link below:
-
-%s
-
-Thank you for using Sourcetool!
-
-The Sourcetool Team`, firstName, email, urlList)
-
-	if err := mail.Send(ctx, mail.MailInput{
-		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
-		To:       []string{email},
-		Subject:  subject,
-		Body:     content,
-	}); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	return nil
 }
 
 func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error {
@@ -213,7 +126,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 				loginURLs = append(loginURLs, url)
 			}
 
-			if err := s.sendMultipleOrganizationsMagicLinkEmail(ctx, req.Email, firstName, loginURLs); err != nil {
+			if err := mail.SendMultipleOrganizationsMagicLinkEmail(ctx, req.Email, firstName, loginURLs); err != nil {
 				return err
 			}
 
@@ -254,7 +167,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	// Send magic link email
-	if err := s.sendMagicLinkEmail(ctx, req.Email, firstName, url); err != nil {
+	if err := mail.SendMagicLinkEmail(ctx, req.Email, firstName, url); err != nil {
 		return err
 	}
 
@@ -530,7 +443,7 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Send magic link email
-	if err := s.sendInvitationMagicLinkEmail(ctx, c.Subject, "there", url); err != nil {
+	if err := mail.SendInvitationMagicLinkEmail(ctx, c.Subject, "there", url); err != nil {
 		return err
 	}
 

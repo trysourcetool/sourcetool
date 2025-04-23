@@ -1,13 +1,10 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"path"
-	"slices"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -34,68 +31,6 @@ func buildInvitationURL(subdomain, token, email string) (string, error) {
 		"token": token,
 		"email": email,
 	})
-}
-
-func (s *Server) sendUpdateEmailInstructions(ctx context.Context, to, firstName, url string) error {
-	subject := "[Sourcetool] Confirm your new email address"
-	content := fmt.Sprintf(`Hi %s,
-
-We received a request to change the email address associated with your Sourcetool account. To ensure the security of your account, we need you to verify your new email address.
-
-Please click the following link within the next 24 hours to confirm your email change:
-%s
-
-Thank you for being a part of the Sourcetool community!
-Regards,
-
-Sourcetool Team`,
-		firstName,
-		url,
-	)
-
-	return mail.Send(ctx, mail.MailInput{
-		From:     config.Config.SMTP.FromEmail,
-		FromName: "Sourcetool Team",
-		To:       []string{to},
-		Subject:  subject,
-		Body:     content,
-	})
-}
-
-func (s *Server) sendInvitationEmail(ctx context.Context, invitees string, emaiURLs map[string]string) error {
-	subject := "You've been invited to join Sourcetool!"
-	baseContent := `You've been invited to join Sourcetool!
-
-To accept the invitation, please create your account by clicking the URL below within 24 hours.
-
-%s
-
-- This URL will expire in 24 hours.
-- This is a send-only email address.
-- Your account will not be created unless you complete the next steps.`
-
-	sendEmails := make([]string, 0)
-	for email, url := range emaiURLs {
-		if slices.Contains(sendEmails, email) {
-			continue
-		}
-
-		content := fmt.Sprintf(baseContent, url)
-
-		if err := mail.Send(ctx, mail.MailInput{
-			From:     config.Config.SMTP.FromEmail,
-			FromName: "Sourcetool Team",
-			To:       []string{email},
-			Subject:  subject,
-			Body:     content,
-		}); err != nil {
-			return err
-		}
-
-		sendEmails = append(sendEmails, email)
-	}
-
-	return nil
 }
 
 func (s *Server) getMe(w http.ResponseWriter, r *http.Request) error {
@@ -204,7 +139,7 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 		return err
 	}
 
-	return s.sendUpdateEmailInstructions(ctx, req.Email, ctxUser.FirstName, url)
+	return mail.SendUpdateEmailInstructions(ctx, req.Email, ctxUser.FirstName, url)
 }
 
 func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
@@ -541,7 +476,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 			return err
 		}
 
-		if err := s.sendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
+		if err := mail.SendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
 			return err
 		}
 
@@ -600,7 +535,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 	}
 
 	emailURLs := map[string]string{userInvitation.Email: url}
-	if err := s.sendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
+	if err := mail.SendInvitationEmail(ctx, ctxUser.FullName(), emailURLs); err != nil {
 		return err
 	}
 
