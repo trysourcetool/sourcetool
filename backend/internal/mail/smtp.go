@@ -151,7 +151,7 @@ The Sourcetool Team`,
 	})
 }
 
-func SendInvitationEmail(ctx context.Context, invitees string, emaiURLs map[string]string) error {
+func SendInvitationEmail(ctx context.Context, invitees string, emailURLs map[string]string) error {
 	subject := "You've been invited to join Sourcetool!"
 	baseContent := `You've been invited to join Sourcetool!
 
@@ -164,7 +164,7 @@ To accept the invitation, please create your account by clicking the URL below w
 - Your account will not be created unless you complete the next steps.`
 
 	sendEmails := make([]string, 0)
-	for email, url := range emaiURLs {
+	for email, url := range emailURLs {
 		if slices.Contains(sendEmails, email) {
 			continue
 		}
