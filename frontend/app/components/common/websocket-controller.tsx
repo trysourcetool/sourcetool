@@ -253,8 +253,6 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
       }
     });
 
-    console.log({ states });
-
     sendMessage(
       toBinary(
         MessageSchema,
