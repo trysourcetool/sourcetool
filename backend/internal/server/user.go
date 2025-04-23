@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
 	"github.com/samber/lo"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
@@ -35,29 +33,6 @@ func buildInvitationURL(subdomain, token, email string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("auth", "invitations", "login"), map[string]string{
 		"token": token,
 		"email": email,
-	})
-}
-
-func createUpdateEmailToken(userID, email string) (string, error) {
-	return jwt.SignToken(&jwt.UserClaims{
-		UserID: userID,
-		Email:  email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(core.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectUpdateEmail,
-		},
-	})
-}
-
-func createInvitationToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserClaims{
-		Email: email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(core.EmailTokenExpiration)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectInvitation,
-		},
 	})
 }
 
@@ -218,7 +193,7 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 	ctxOrg := internal.ContextOrganization(ctx)
 
 	// Create token for email update
-	tok, err := createUpdateEmailToken(ctxUser.ID.String(), req.Email)
+	tok, err := jwt.SignUpdateUserEmailToken(ctxUser.ID.String(), req.Email)
 	if err != nil {
 		return err
 	}
@@ -244,16 +219,12 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	c, err := jwt.ParseToken[*jwt.UserClaims](req.Token)
+	c, err := jwt.ParseUpdateUserEmailClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectUpdateEmail {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
-	userID, err := uuid.FromString(c.UserID)
+	userID, err := uuid.FromString(c.Subject)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -545,7 +516,7 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 			continue
 		}
 
-		tok, err := createInvitationToken(email)
+		tok, err := jwt.SignInvitationToken(email)
 		if err != nil {
 			return err
 		}
@@ -618,7 +589,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 
 	ctxUser := internal.ContextUser(ctx)
 
-	tok, err := createInvitationToken(userInvitation.Email)
+	tok, err := jwt.SignInvitationToken(userInvitation.Email)
 	if err != nil {
 		return err
 	}

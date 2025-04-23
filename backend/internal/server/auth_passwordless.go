@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -23,39 +22,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
-
-func createMagicLinkToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserEmailClaims{
-		Email: email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectMagicLink,
-		},
-	})
-}
-
-func createInvitationMagicLinkToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserEmailClaims{
-		Email: email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectInvitationMagicLink,
-		},
-	})
-}
-
-func createMagicLinkRegistrationToken(email string) (string, error) {
-	return jwt.SignToken(&jwt.UserEmailClaims{
-		Email: email,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectMagicLinkRegistration,
-		},
-	})
-}
 
 func buildMagicLinkURL(subdomain, token string) (string, error) {
 	base := config.Config.AuthBaseURL()
@@ -235,7 +201,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 				}
 
 				// Create org-specific magic link
-				tok, err := createMagicLinkToken(req.Email)
+				tok, err := jwt.SignMagicLinkToken(req.Email)
 				if err != nil {
 					return err
 				}
@@ -276,7 +242,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	// Create token for magic link authentication
-	tok, err := createMagicLinkToken(req.Email)
+	tok, err := jwt.SignMagicLinkToken(req.Email)
 	if err != nil {
 		return err
 	}
@@ -309,24 +275,20 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](req.Token)
+	c, err := jwt.ParseMagicLinkClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectMagicLink {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
 	// Check if user exists
-	exists, err := s.db.User().IsEmailExists(ctx, c.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, c.Subject)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
 		// Generate registration token for new user
-		registrationToken, err := createMagicLinkRegistrationToken(c.Email)
+		registrationToken, err := jwt.SignMagicLinkRegistrationToken(c.Subject)
 		if err != nil {
 			return fmt.Errorf("failed to generate registration token: %w", err)
 		}
@@ -339,7 +301,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Get existing user
-	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Email))
+	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Subject))
 	if err != nil {
 		return err
 	}
@@ -439,13 +401,9 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 	}
 
 	// Parse and validate the registration token
-	claims, err := jwt.ParseToken[*jwt.UserMagicLinkRegistrationClaims](req.Token)
+	claims, err := jwt.ParseMagicLinkRegistrationClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
-	}
-
-	if claims.Subject != jwt.UserSignatureSubjectMagicLinkRegistration {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
 	// Generate refresh token and XSRF token
@@ -458,7 +416,7 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 	now := time.Now()
 	u := &core.User{
 		ID:               uuid.Must(uuid.NewV4()),
-		Email:            claims.Email,
+		Email:            claims.Subject,
 		FirstName:        req.FirstName,
 		LastName:         req.LastName,
 		RefreshTokenHash: hashedRefreshToken,
@@ -529,17 +487,13 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Parse and validate invitation token
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](req.InvitationToken)
+	c, err := jwt.ParseInvitationClaims(req.InvitationToken)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectInvitation {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
 	// Get invitation
-	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Subject))
 	if err != nil {
 		return err
 	}
@@ -564,7 +518,7 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Create magic link token
-	tok, err := createInvitationMagicLinkToken(c.Email)
+	tok, err := jwt.SignInvitationMagicLinkToken(c.Subject)
 	if err != nil {
 		return err
 	}
@@ -576,12 +530,12 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Send magic link email
-	if err := s.sendInvitationMagicLinkEmail(ctx, c.Email, "there", url); err != nil {
+	if err := s.sendInvitationMagicLinkEmail(ctx, c.Subject, "there", url); err != nil {
 		return err
 	}
 
 	return s.renderJSON(w, http.StatusOK, &responses.RequestInvitationMagicLinkResponse{
-		Email: c.Email,
+		Email: c.Subject,
 	})
 }
 
@@ -597,17 +551,13 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Parse and validate token
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](req.Token)
+	c, err := jwt.ParseInvitationMagicLinkClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectInvitationMagicLink {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
 	// Get invitation
-	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Subject))
 	if err != nil {
 		return err
 	}
@@ -635,14 +585,14 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Check if user exists
-	exists, err := s.db.User().IsEmailExists(ctx, c.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, c.Subject)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
 		// Generate registration token for new user
-		registrationToken, err := createMagicLinkRegistrationToken(c.Email)
+		registrationToken, err := jwt.SignMagicLinkRegistrationToken(c.Subject)
 		if err != nil {
 			return errdefs.ErrInvalidArgument(fmt.Errorf("failed to generate registration token: %w", err))
 		}
@@ -654,7 +604,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	}
 
 	// Get existing user
-	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Email))
+	u, err := s.db.User().Get(ctx, database.UserByEmail(c.Subject))
 	if err != nil {
 		return err
 	}
@@ -671,7 +621,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	now := time.Now()
 	expiresAt := now.Add(core.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := jwt.SignAuthToken(u.ID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(fmt.Errorf("failed to generate token: %w", err))
 	}
@@ -713,17 +663,13 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 	}
 
 	// Parse and validate token
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](req.Token)
+	c, err := jwt.ParseMagicLinkRegistrationClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if c.Subject != jwt.UserSignatureSubjectMagicLinkRegistration {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
-	}
-
 	// Get invitation
-	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Subject))
 	if err != nil {
 		return err
 	}
@@ -763,7 +709,7 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 		ID:               uuid.Must(uuid.NewV4()),
 		FirstName:        req.FirstName,
 		LastName:         req.LastName,
-		Email:            c.Email,
+		Email:            c.Subject,
 		RefreshTokenHash: hashedRefreshToken,
 	}
 
@@ -777,7 +723,7 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 
 	// Generate token
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := jwt.SignAuthToken(u.ID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}

@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -23,38 +21,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
 	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
-
-func createGoogleAuthLinkToken(flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID, hostSubdomain string) (string, error) {
-	claims := &jwt.UserGoogleAuthLinkClaims{
-		Flow:            flow,
-		InvitationOrgID: invitationOrgID,
-		HostSubdomain:   hostSubdomain,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectGoogleAuthLink,
-		},
-	}
-	return jwt.SignToken(claims)
-}
-
-func createGoogleRegistrationToken(googleID, email, firstName, lastName string, flow jwt.GoogleAuthFlow, invitationOrgID uuid.UUID, role string) (string, error) {
-	claims := &jwt.UserGoogleRegistrationClaims{
-		GoogleID:        googleID,
-		Email:           email,
-		FirstName:       firstName,
-		LastName:        lastName,
-		Flow:            flow,
-		InvitationOrgID: invitationOrgID,
-		Role:            role,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
-			Issuer:    jwt.Issuer,
-			Subject:   jwt.UserSignatureSubjectGoogleRegistration,
-		},
-	}
-	return jwt.SignToken(claims)
-}
 
 func (s *Server) sendMultipleOrganizationsLoginEmail(ctx context.Context, email, firstName string, loginURLs []string) error {
 	subject := "Choose your Sourcetool organization to log in"
@@ -98,7 +64,7 @@ func (s *Server) requestGoogleAuthLink(w http.ResponseWriter, r *http.Request) e
 		}
 	}
 
-	stateToken, err := createGoogleAuthLinkToken(
+	stateToken, err := jwt.SignGoogleAuthLinkToken(
 		jwt.GoogleAuthFlowStandard,
 		uuid.Nil,
 		hostSubdomain,
@@ -131,13 +97,9 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Parse and validate state token
-	stateClaims, err := jwt.ParseToken[*jwt.UserGoogleAuthLinkClaims](req.State)
+	stateClaims, err := jwt.ParseGoogleAuthLinkClaims(req.State)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
-	}
-
-	if stateClaims.Subject != jwt.UserSignatureSubjectGoogleAuthLink {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject"))
 	}
 
 	// Get Google token and user info
@@ -181,7 +143,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		}
 
 		// Generate registration token with flow info
-		registrationToken, err := createGoogleRegistrationToken(
+		registrationToken, err := jwt.SignGoogleRegistrationToken(
 			userInfo.ID,
 			userInfo.Email,
 			userInfo.GivenName,
@@ -378,21 +340,18 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	// Parse and validate registration token
-	claims, err := jwt.ParseToken[*jwt.UserGoogleRegistrationClaims](req.Token)
+	claims, err := jwt.ParseGoogleRegistrationClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(fmt.Errorf("invalid registration token: %w", err))
 	}
-	if claims.Subject != jwt.UserSignatureSubjectGoogleRegistration {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject for google registration"))
-	}
 
 	// Check if user already exists
-	exists, err := s.db.User().IsEmailExists(ctx, claims.Email)
+	exists, err := s.db.User().IsEmailExists(ctx, claims.Subject)
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to check user existence: %w", err))
 	}
 	if exists {
-		return errdefs.ErrUserEmailAlreadyExists(fmt.Errorf("user with email %s already exists", claims.Email))
+		return errdefs.ErrUserEmailAlreadyExists(fmt.Errorf("user with email %s already exists", claims.Subject))
 	}
 
 	_, hashedRefreshToken, err := core.GenerateRefreshToken()
@@ -403,7 +362,7 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	tokenExpiration := core.TokenExpiration()
 	u := &core.User{
 		ID:               uuid.Must(uuid.NewV4()),
-		Email:            claims.Email,
+		Email:            claims.Subject,
 		FirstName:        claims.FirstName,
 		LastName:         claims.LastName,
 		RefreshTokenHash: hashedRefreshToken,
@@ -426,7 +385,7 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 				return errdefs.ErrInternal(fmt.Errorf("failed to get invited organization: %w", err))
 			}
 
-			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(claims.Email), database.UserInvitationByOrganizationID(claims.InvitationOrgID))
+			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(claims.Subject), database.UserInvitationByOrganizationID(claims.InvitationOrgID))
 			if err != nil {
 				return errdefs.ErrInternal(fmt.Errorf("failed to get invitation: %w", err))
 			}
@@ -500,15 +459,12 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		return err
 	}
 
-	c, err := jwt.ParseToken[*jwt.UserEmailClaims](req.InvitationToken)
+	c, err := jwt.ParseInvitationClaims(req.InvitationToken)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(fmt.Errorf("invalid invitation token: %w", err))
 	}
-	if c.Subject != jwt.UserSignatureSubjectInvitation {
-		return errdefs.ErrInvalidArgument(errors.New("invalid jwt subject for invitation"))
-	}
 
-	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Email))
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(c.Subject))
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to retrieve invitation: %w", err))
 	}
@@ -537,7 +493,7 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		ctxSubdomain = internal.ContextSubdomain(ctx)
 	}
 
-	stateToken, err := createGoogleAuthLinkToken(
+	stateToken, err := jwt.SignGoogleAuthLinkToken(
 		jwt.GoogleAuthFlowInvitation,
 		invitedOrg.ID,
 		ctxSubdomain,

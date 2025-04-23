@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	gojwt "github.com/golang-jwt/jwt/v5"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
@@ -25,18 +24,6 @@ import (
 
 func buildSaveAuthURL(subdomain string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), core.SaveAuthPath, nil)
-}
-
-func createAuthToken(userID, xsrfToken string, expirationTime time.Time, subject string) (string, error) {
-	return jwt.SignToken(&jwt.UserAuthClaims{
-		UserID:    userID,
-		XSRFToken: xsrfToken,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(expirationTime),
-			Issuer:    jwt.Issuer,
-			Subject:   subject,
-		},
-	})
 }
 
 func buildLoginURL(subdomain string) (string, error) {
@@ -72,7 +59,7 @@ func (s *Server) createTokens(userID uuid.UUID, expiration time.Duration) (token
 	expiresAt = now.Add(expiration)
 	xsrfToken = uuid.Must(uuid.NewV4()).String()
 
-	token, err = createAuthToken(userID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err = jwt.SignAuthToken(userID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return "", "", "", "", time.Time{}, err
 	}
@@ -142,7 +129,7 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 	now := time.Now()
 	expiresAt := now.Add(core.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := jwt.SignAuthToken(u.ID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -172,12 +159,12 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Parse and validate token
-	c, err := jwt.ParseToken[*jwt.UserAuthClaims](req.Token)
+	c, err := jwt.ParseAuthClaims(req.Token)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(fmt.Errorf("invalid token: %w", err))
 	}
 
-	userID, err := uuid.FromString(c.UserID)
+	userID, err := uuid.FromString(c.Subject)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(fmt.Errorf("invalid user id: %w", err))
 	}
@@ -211,7 +198,7 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	now := time.Now()
 	expiresAt := now.Add(core.TokenExpiration())
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := jwt.SignAuthToken(u.ID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -265,7 +252,7 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	now := time.Now()
 	expiresAt := now.Add(core.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(ctxUser.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := jwt.SignAuthToken(ctxUser.ID.String(), xsrfToken, expiresAt)
 	if err != nil {
 		return err
 	}

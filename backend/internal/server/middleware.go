@@ -45,7 +45,7 @@ func (s *Server) authenticateUser(w http.ResponseWriter, r *http.Request) (*core
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
 
-	userID, err := uuid.FromString(c.UserID)
+	userID, err := uuid.FromString(c.Subject)
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -85,12 +85,12 @@ func (s *Server) getContextOrganization(ctx context.Context, subdomain string) (
 	return s.db.Organization().Get(ctx, opts...)
 }
 
-func (s *Server) validateUserToken(token string) (*jwt.UserAuthClaims, error) {
+func (s *Server) validateUserToken(token string) (*jwt.AuthClaims, error) {
 	if token == "" {
 		return nil, errdefs.ErrUnauthenticated(errors.New("failed to get token"))
 	}
 
-	claims, err := jwt.ParseToken[*jwt.UserAuthClaims](token)
+	claims, err := jwt.ParseAuthClaims(token)
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
@@ -225,7 +225,7 @@ func (s *Server) getCurrentUser(ctx context.Context, token string) (*core.User, 
 		return nil, err
 	}
 
-	userID, err := uuid.FromString(c.UserID)
+	userID, err := uuid.FromString(c.Subject)
 	if err != nil {
 		return nil, errdefs.ErrUnauthenticated(err)
 	}
