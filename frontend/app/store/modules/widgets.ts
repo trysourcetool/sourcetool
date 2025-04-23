@@ -291,6 +291,24 @@ const slice = createSlice({
           }
         }
       } else {
+        const widgetState =
+          state.widgetStates.entities[action.payload.widget?.id ?? ''];
+        const payloadWidget = action.payload.widget;
+        const widget =
+          state.widgets.entities[action.payload.widget?.id ?? ''].widget;
+
+        if (widget) {
+          inputWidgetTypes.forEach((type) => {
+            if (widget[type] && payloadWidget?.[type]) {
+              if (
+                payloadWidget[type].defaultValue !== widget[type].defaultValue
+              ) {
+                widgetState.value = payloadWidget[type].defaultValue;
+              }
+            }
+          });
+        }
+
         widgetsAdapter.updateOne(state.widgets, {
           id: action.payload.widget?.id ?? '',
           changes: action.payload,
@@ -344,13 +362,10 @@ const slice = createSlice({
         }
       });
 
-      console.log({ hasClearOnSubmit });
-
       if (!hasClearOnSubmit) {
         state.isWidgetWaiting = false;
       } else {
-        // Update with 1 second later to avoid generating the same timestamp
-        state.updateAt = dayjs().add(1, 'second').unix();
+        state.updateAt = dayjs().valueOf();
       }
     },
     clearWidgets: (state) => {

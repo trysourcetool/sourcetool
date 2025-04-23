@@ -120,19 +120,21 @@ export const WidgetTable: FC<{
   return (
     widget &&
     widget.widget?.table && (
-      <div className="space-y-4">
-        <div className="space-y-1">
-          {widget.widget.table.header && (
-            <p className="text-xl font-bold text-foreground">
-              {widget.widget.table.header}
-            </p>
-          )}
-          {widget.widget.table.description && (
-            <p className="text-sm text-muted-foreground">
-              {widget.widget.table.description}
-            </p>
-          )}
-        </div>
+      <div className="grid grid-cols-1 gap-4">
+        {(widget.widget.table.header || widget.widget.table.description) && (
+          <div className="space-y-1">
+            {widget.widget.table.header && (
+              <p className="text-foreground text-xl font-bold">
+                {widget.widget.table.header}
+              </p>
+            )}
+            {widget.widget.table.description && (
+              <p className="text-muted-foreground text-sm">
+                {widget.widget.table.description}
+              </p>
+            )}
+          </div>
+        )}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -190,7 +192,7 @@ export const WidgetTable: FC<{
               ))}
             </TableBody>
           </Table>
-          <div className="border-t bg-muted p-4">
+          <div className="bg-muted border-t p-4">
             <Pagination className="flex justify-end">
               <PaginationContent>
                 {page !== 1 && (

@@ -19,10 +19,7 @@ import {
   toBinary,
   toJson,
 } from '@bufbuild/protobuf';
-import {
-  WidgetSchema,
-  type Widget,
-} from '@/pb/ts/widget/v1/widget_pb';
+import { WidgetSchema, type Widget } from '@/pb/ts/widget/v1/widget_pb';
 import { pagesStore } from '@/store/modules/pages';
 import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
@@ -256,8 +253,6 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
       }
     });
 
-    console.log({ states });
-
     sendMessage(
       toBinary(
         MessageSchema,
@@ -274,7 +269,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         }),
       ),
     );
-  }, [widgetUpdateAt]);
+  }, [widgetEntities, sendMessage]);
 
   useEffect(() => {
     if (widgetUpdateAt && currentPageId.current) {
@@ -355,16 +350,13 @@ export const WebSocketController = () => {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) || !ENVIRONMENTS.IS_CLOUD_EDITION) &&
+      ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) ||
+        !ENVIRONMENTS.IS_CLOUD_EDITION) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
     }
-  }, [
-    location.pathname,
-    isSubDomainMatched,
-    isAuthChecked,
-  ]);
+  }, [location.pathname, isSubDomainMatched, isAuthChecked]);
 
   return (
     <>
