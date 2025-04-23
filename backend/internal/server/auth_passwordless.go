@@ -182,10 +182,10 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 
 	// Handle Cloud Edition with subdomain
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		if subdomain != "" && subdomain != "auth" {
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		if ctxSubdomain != "" && ctxSubdomain != "auth" {
 			// Get organization by subdomain
-			org, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
+			org, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(ctxSubdomain))
 			if err != nil {
 				return err
 			}
@@ -272,7 +272,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 	// Determine subdomain context based on edition
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain = internal.Subdomain(ctx)
+		subdomain = internal.ContextSubdomain(ctx)
 	}
 
 	// Create token for magic link authentication
@@ -351,20 +351,20 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Handle organization subdomain logic
-	subdomain := internal.Subdomain(ctx)
+	ctxSubdomain := internal.ContextSubdomain(ctx)
 	var orgAccess *core.UserOrganizationAccess
 	var orgSubdomain string
 
 	if config.Config.IsCloudEdition {
-		if subdomain != "auth" {
+		if ctxSubdomain != "auth" {
 			// For specific organization subdomain, resolve org and access
 			orgAccess, err = s.db.User().GetOrganizationAccess(ctx,
 				database.UserOrganizationAccessByUserID(u.ID),
-				database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+				database.UserOrganizationAccessByOrganizationSubdomain(ctxSubdomain))
 			if err != nil {
 				return err
 			}
-			orgSubdomain = subdomain
+			orgSubdomain = ctxSubdomain
 		} else {
 			// For auth subdomain
 			if len(orgAccesses) == 0 {
@@ -552,8 +552,8 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 
 	// Verify organization access in cloud edition
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(ctxSubdomain))
 		if err != nil {
 			return err
 		}
@@ -621,8 +621,8 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 	// Verify organization access in cloud edition
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(ctxSubdomain))
 		if err != nil {
 			return err
 		}
@@ -737,8 +737,8 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 	// Verify organization access in cloud edition
 	var orgSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(ctxSubdomain))
 		if err != nil {
 			return err
 		}

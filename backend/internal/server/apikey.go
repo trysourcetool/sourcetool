@@ -45,8 +45,8 @@ func (s *Server) getAPIKey(w http.ResponseWriter, r *http.Request) error {
 
 func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	currentOrg := internal.CurrentOrganization(ctx)
-	currentUser := internal.CurrentUser(ctx)
+	currentOrg := internal.ContextOrganization(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(currentOrg.ID))
 	if err != nil {
@@ -63,7 +63,7 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	devKey, err := s.db.APIKey().Get(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentID(devEnv.ID), database.APIKeyByUserID(currentUser.ID))
+	devKey, err := s.db.APIKey().Get(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentID(devEnv.ID), database.APIKeyByUserID(ctxUser.ID))
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
 	envID, err := uuid.FromString(req.EnvironmentID)
 	if err != nil {
@@ -139,7 +139,7 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByOrganizationID(currentOrg.ID), database.APIKeyByEnvironmentID(env.ID))
+	apiKeys, err := s.db.APIKey().List(ctx, database.APIKeyByOrganizationID(ctxOrg.ID), database.APIKeyByEnvironmentID(env.ID))
 	if err != nil {
 		return err
 	}
@@ -159,12 +159,12 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInternal(err)
 	}
 
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 	apiKey := &core.APIKey{
 		ID:             uuid.Must(uuid.NewV4()),
-		OrganizationID: currentOrg.ID,
+		OrganizationID: ctxOrg.ID,
 		EnvironmentID:  env.ID,
-		UserID:         currentUser.ID,
+		UserID:         ctxUser.ID,
 		Name:           req.Name,
 		Key:            key,
 	}
@@ -201,13 +201,13 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 	apiKeyID, err := uuid.FromString(apiKeyIDReq)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(apiKeyID), database.APIKeyByOrganizationID(currentOrg.ID))
+	apiKey, err := s.db.APIKey().Get(ctx, database.APIKeyByID(apiKeyID), database.APIKeyByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}

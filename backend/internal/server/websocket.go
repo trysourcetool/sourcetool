@@ -53,8 +53,8 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 
 	logger.Logger.Sugar().Infof("Page: %v", page.Name)
 
-	currentOrg := internal.CurrentOrganization(ctx)
-	if currentOrg.ID != page.OrganizationID {
+	ctxOrg := internal.ContextOrganization(ctx)
+	if ctxOrg.ID != page.OrganizationID {
 		return errdefs.ErrPermissionDenied(errors.New("organization mismatch"))
 	}
 
@@ -113,7 +113,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("no available host instances"))
 	}
 
-	currentUser := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	var sess *core.Session
 	var sessionExists bool
@@ -133,7 +133,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 			ID:             uuid.Must(uuid.NewV4()),
 			OrganizationID: page.OrganizationID,
 			EnvironmentID:  env.ID,
-			UserID:         currentUser.ID,
+			UserID:         ctxUser.ID,
 		}
 		sessionExists = false
 	}

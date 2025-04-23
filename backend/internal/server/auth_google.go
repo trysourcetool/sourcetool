@@ -92,9 +92,9 @@ func (s *Server) requestGoogleAuthLink(w http.ResponseWriter, r *http.Request) e
 
 	var hostSubdomain string
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		if subdomain != "auth" {
-			hostSubdomain = subdomain
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		if ctxSubdomain != "auth" {
+			hostSubdomain = ctxSubdomain
 		}
 	}
 
@@ -519,11 +519,11 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 	}
 
 	if config.Config.IsCloudEdition {
-		subdomain := internal.Subdomain(ctx)
-		if subdomain == "" || subdomain == "auth" {
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		if ctxSubdomain == "" || ctxSubdomain == "auth" {
 			return errdefs.ErrInvalidArgument(errors.New("invitation must be accessed via organization subdomain"))
 		}
-		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(subdomain))
+		hostOrg, err := s.db.Organization().Get(ctx, database.OrganizationBySubdomain(ctxSubdomain))
 		if err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to retrieve host organization: %w", err))
 		}
@@ -532,15 +532,15 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		}
 	}
 
-	var hostSubdomain string
+	var ctxSubdomain string
 	if config.Config.IsCloudEdition {
-		hostSubdomain = internal.Subdomain(ctx)
+		ctxSubdomain = internal.ContextSubdomain(ctx)
 	}
 
 	stateToken, err := createGoogleAuthLinkToken(
 		jwt.GoogleAuthFlowInvitation,
 		invitedOrg.ID,
-		hostSubdomain,
+		ctxSubdomain,
 	)
 	if err != nil {
 		return errdefs.ErrInternal(fmt.Errorf("failed to create state token: %w", err))

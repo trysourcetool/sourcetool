@@ -22,7 +22,7 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(errors.New("environmentId is required"))
 	}
 
-	o := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
 	envID, err := uuid.FromString(envIDReq)
 	if err != nil {
@@ -34,7 +34,7 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	pagesOut, usersOut, userGroupsOut, err := s.listPagesBase(ctx, env, o)
+	pagesOut, usersOut, userGroupsOut, err := s.listPagesBase(ctx, env, ctxOrg)
 	if err != nil {
 		return err
 	}

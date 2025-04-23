@@ -76,7 +76,7 @@ func (s *Server) validateOrganizationAccess(ctx context.Context, userID uuid.UUI
 	return err
 }
 
-func (s *Server) getCurrentOrganization(ctx context.Context, subdomain string) (*core.Organization, error) {
+func (s *Server) getContextOrganization(ctx context.Context, subdomain string) (*core.Organization, error) {
 	opts := []database.OrganizationQuery{}
 	if subdomain != "" && subdomain != "auth" {
 		opts = append(opts, database.OrganizationBySubdomain(subdomain))
@@ -118,7 +118,7 @@ func (s *Server) authUser(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.ContextUserKey, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -133,7 +133,7 @@ func (s *Server) authUserWithOrganization(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.ContextUserKey, u)
 
 		subdomain, err := s.getSubdomainIfCloudEdition(r)
 		if err != nil {
@@ -141,7 +141,7 @@ func (s *Server) authUserWithOrganization(next http.Handler) http.Handler {
 			return
 		}
 
-		o, err := s.getCurrentOrganization(ctx, subdomain)
+		o, err := s.getContextOrganization(ctx, subdomain)
 		if err != nil {
 			s.serveError(w, r, errdefs.ErrUnauthenticated(err))
 			return
@@ -152,7 +152,7 @@ func (s *Server) authUserWithOrganization(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, internal.ContextOrganizationKey, o)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -168,7 +168,7 @@ func (s *Server) authUserWithOrganizationIfSubdomainExists(next http.Handler) ht
 			return
 		}
 
-		ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
+		ctx = context.WithValue(ctx, internal.ContextUserKey, u)
 
 		subdomain, err := s.getSubdomainIfCloudEdition(r)
 		if err != nil {
@@ -177,7 +177,7 @@ func (s *Server) authUserWithOrganizationIfSubdomainExists(next http.Handler) ht
 		}
 
 		if subdomain != "" && subdomain != "auth" {
-			o, err := s.getCurrentOrganization(ctx, subdomain)
+			o, err := s.getContextOrganization(ctx, subdomain)
 			if err != nil {
 				s.serveError(w, r, errdefs.ErrUnauthenticated(err))
 				return
@@ -188,7 +188,7 @@ func (s *Server) authUserWithOrganizationIfSubdomainExists(next http.Handler) ht
 				return
 			}
 
-			ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, internal.ContextOrganizationKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -206,13 +206,13 @@ func (s *Server) authOrganizationIfSubdomainExists(next http.Handler) http.Handl
 		}
 
 		if subdomain != "" && subdomain != "auth" {
-			o, err := s.getCurrentOrganization(ctx, subdomain)
+			o, err := s.getContextOrganization(ctx, subdomain)
 			if err != nil {
 				s.serveError(w, r, errdefs.ErrUnauthenticated(err))
 				return
 			}
 
-			ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
+			ctx = context.WithValue(ctx, internal.ContextOrganizationKey, o)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -241,7 +241,7 @@ func (s *Server) getCurrentUser(ctx context.Context, token string) (*core.User, 
 func (s *Server) setSubdomain(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		subdomain, _ := internal.GetSubdomainFromHost(r.Host)
-		ctx := context.WithValue(r.Context(), internal.SubdomainCtxKey, subdomain)
+		ctx := context.WithValue(r.Context(), internal.ContextSubdomainKey, subdomain)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -262,13 +262,13 @@ func (s *Server) authWebSocketUser(next http.Handler) http.Handler {
 			return
 		}
 
-		o, err := s.getCurrentOrganization(ctx, subdomain)
+		o, err := s.getContextOrganization(ctx, subdomain)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		ctx = context.WithValue(ctx, internal.CurrentOrganizationCtxKey, o)
+		ctx = context.WithValue(ctx, internal.ContextOrganizationKey, o)
 
 		if token, err := r.Cookie("access_token"); err == nil {
 			u, err := s.getCurrentUser(ctx, token.Value)
@@ -277,7 +277,7 @@ func (s *Server) authWebSocketUser(next http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, internal.CurrentUserCtxKey, u)
+			ctx = context.WithValue(ctx, internal.ContextUserKey, u)
 		} else if apiKeyHeader := r.Header.Get("Authorization"); apiKeyHeader != "" {
 			apikeyVal, err := s.extractIncomingToken(apiKeyHeader)
 			if err != nil {

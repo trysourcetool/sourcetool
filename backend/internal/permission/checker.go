@@ -20,15 +20,15 @@ func NewChecker(db database.DB) *Checker {
 }
 
 func (c *Checker) AuthorizeOperation(ctx context.Context, op core.Operation) error {
-	currentUser := internal.CurrentUser(ctx)
-	currentOrg := internal.CurrentOrganization(ctx)
-	if currentUser == nil || currentOrg == nil {
+	ctxUser := internal.ContextUser(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
+	if ctxUser == nil || ctxOrg == nil {
 		return errdefs.ErrPermissionDenied(errors.New("user or organization context not found"))
 	}
 	orgAccess, err := c.db.User().GetOrganizationAccess(
 		ctx,
-		database.UserOrganizationAccessByUserID(currentUser.ID),
-		database.UserOrganizationAccessByOrganizationID(currentOrg.ID),
+		database.UserOrganizationAccessByUserID(ctxUser.ID),
+		database.UserOrganizationAccessByOrganizationID(ctxOrg.ID),
 	)
 	if err != nil && !errdefs.IsUserOrganizationAccessNotFound(err) {
 		return errdefs.ErrPermissionDenied(err)

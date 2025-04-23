@@ -116,19 +116,19 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Get current subdomain and resolve organization
-	subdomain := internal.Subdomain(ctx)
+	ctxSubdomain := internal.ContextSubdomain(ctx)
 	var orgSubdomain string
 
 	if config.Config.IsCloudEdition {
-		if subdomain != "auth" {
+		if ctxSubdomain != "auth" {
 			// Verify user has access to this organization
 			if _, err := s.db.User().GetOrganizationAccess(ctx,
 				database.UserOrganizationAccessByUserID(u.ID),
-				database.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
+				database.UserOrganizationAccessByOrganizationSubdomain(ctxSubdomain)); err != nil {
 				return err
 			}
 
-			orgSubdomain = subdomain
+			orgSubdomain = ctxSubdomain
 		} else {
 			// For auth subdomain, use default
 			orgSubdomain = "auth"
@@ -189,18 +189,18 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Get current subdomain and verify organization access
-	subdomain := internal.Subdomain(ctx)
+	ctxSubdomain := internal.ContextSubdomain(ctx)
 	var orgSubdomain string
 
 	if config.Config.IsCloudEdition {
-		if subdomain != "auth" {
+		if ctxSubdomain != "auth" {
 			// Verify user has access to this organization
 			if _, err := s.db.User().GetOrganizationAccess(ctx,
 				database.UserOrganizationAccessByUserID(u.ID),
-				database.UserOrganizationAccessByOrganizationSubdomain(subdomain)); err != nil {
+				database.UserOrganizationAccessByOrganizationSubdomain(ctxSubdomain)); err != nil {
 				return err
 			}
-			orgSubdomain = subdomain
+			orgSubdomain = ctxSubdomain
 		} else {
 			// For auth subdomain, use default
 			orgSubdomain = "auth"
@@ -250,13 +250,13 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	// Get current user from context
-	u := internal.CurrentUser(ctx)
-	if u == nil {
+	ctxUser := internal.ContextUser(ctx)
+	if ctxUser == nil {
 		return errdefs.ErrUnauthenticated(errors.New("no user in context"))
 	}
 
 	// Get user's organization info
-	org, _, err := s.resolveOrganization(ctx, u)
+	org, _, err := s.resolveOrganization(ctx, ctxUser)
 	if err != nil {
 		return err
 	}
@@ -265,7 +265,7 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	now := time.Now()
 	expiresAt := now.Add(core.TmpTokenExpiration)
 	xsrfToken := uuid.Must(uuid.NewV4()).String()
-	token, err := createAuthToken(u.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
+	token, err := createAuthToken(ctxUser.ID.String(), xsrfToken, expiresAt, jwt.UserSignatureSubjectEmail)
 	if err != nil {
 		return err
 	}
@@ -278,7 +278,7 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 
 	// Update user
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
-		if err := tx.User().Update(ctx, u); err != nil {
+		if err := tx.User().Update(ctx, ctxUser); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to update user: %w", err))
 		}
 
@@ -296,16 +296,16 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 func (s *Server) logout(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	u := internal.CurrentUser(ctx)
+	ctxUser := internal.ContextUser(ctx)
 
 	orgAccessOpts := []database.UserOrganizationAccessQuery{
-		database.UserOrganizationAccessByUserID(u.ID),
+		database.UserOrganizationAccessByUserID(ctxUser.ID),
 	}
 
 	var subdomain string
 	if config.Config.IsCloudEdition {
-		subdomain = internal.Subdomain(ctx)
-		orgAccessOpts = append(orgAccessOpts, database.UserOrganizationAccessByOrganizationSubdomain(subdomain))
+		ctxSubdomain := internal.ContextSubdomain(ctx)
+		orgAccessOpts = append(orgAccessOpts, database.UserOrganizationAccessByOrganizationSubdomain(ctxSubdomain))
 	}
 	_, err := s.db.User().GetOrganizationAccess(ctx, orgAccessOpts...)
 	if err != nil {

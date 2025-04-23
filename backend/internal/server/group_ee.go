@@ -32,8 +32,8 @@ func (s *Server) getGroup(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
-	group, err := s.db.Group().Get(ctx, database.GroupByOrganizationID(currentOrg.ID), database.GroupByID(groupID))
+	ctxOrg := internal.ContextOrganization(ctx)
+	group, err := s.db.Group().Get(ctx, database.GroupByOrganizationID(ctxOrg.ID), database.GroupByID(groupID))
 	if err != nil {
 		return err
 	}
@@ -46,18 +46,18 @@ func (s *Server) getGroup(w http.ResponseWriter, r *http.Request) error {
 func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	currentOrg := internal.CurrentOrganization(ctx)
-	groups, err := s.db.Group().List(ctx, database.GroupByOrganizationID(currentOrg.ID))
+	ctxOrg := internal.ContextOrganization(ctx)
+	groups, err := s.db.Group().List(ctx, database.GroupByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	users, err := s.db.User().List(ctx, database.UserByOrganizationID(currentOrg.ID))
+	users, err := s.db.User().List(ctx, database.UserByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
 
-	userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByOrganizationID(currentOrg.ID))
+	userGroups, err := s.db.User().ListGroups(ctx, database.UserGroupByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 		if ok {
 			role = orgAccess.Role
 		}
-		usersOut = append(usersOut, responses.UserFromModel(u, role, currentOrg))
+		usersOut = append(usersOut, responses.UserFromModel(u, role, ctxOrg))
 	}
 
 	userGroupsOut := make([]*responses.UserGroupResponse, 0, len(userGroups))
@@ -120,9 +120,9 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
-	slugExists, err := s.db.Group().IsSlugExistsInOrganization(ctx, currentOrg.ID, req.Slug)
+	slugExists, err := s.db.Group().IsSlugExistsInOrganization(ctx, ctxOrg.ID, req.Slug)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 
 	g := &core.Group{
 		ID:             uuid.Must(uuid.NewV4()),
-		OrganizationID: currentOrg.ID,
+		OrganizationID: ctxOrg.ID,
 		Name:           req.Name,
 		Slug:           req.Slug,
 	}
@@ -201,13 +201,13 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 	groupID, err := uuid.FromString(groupIDReq)
 	if err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(currentOrg.ID))
+	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
@@ -277,9 +277,9 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	currentOrg := internal.CurrentOrganization(ctx)
+	ctxOrg := internal.ContextOrganization(ctx)
 
-	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(currentOrg.ID))
+	g, err := s.db.Group().Get(ctx, database.GroupByID(groupID), database.GroupByOrganizationID(ctxOrg.ID))
 	if err != nil {
 		return err
 	}
