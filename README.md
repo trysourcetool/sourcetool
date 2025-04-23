@@ -66,7 +66,7 @@ Sourcetool provides UI components you can use directly from Go code:
 > **Note:** While our cloud version is coming soon, you can start using Sourcetool today by deploying it in your own environment.
 
 1. **Deploy Sourcetool**
-   - Follow our [Deployment Guide](docs/docs/getting-started/deployment.md) to set up Sourcetool in your environment
+   - Follow our [Deployment Guide](https://docs.trysourcetool.com/docs/getting-started/deployment) to set up Sourcetool in your environment
    - Use Docker for quick and easy deployment
 
 2. **Install the Sourcetool SDK**
@@ -125,7 +125,7 @@ Sourcetool can be easily deployed using Docker in your environment. We provide c
 - Environment variables setup
 - Production best practices
 
-For detailed instructions, check out our [Deployment Guide](docs/docs/getting-started/deployment.md).
+For detailed instructions, check out our [Deployment Guide](https://docs.trysourcetool.com/docs/getting-started/deployment).
 
 ## ❓ FAQ
 
