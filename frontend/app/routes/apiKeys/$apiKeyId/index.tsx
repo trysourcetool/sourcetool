@@ -18,8 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { Button } from '@/components/ui/button';
-import { Link, useParams } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { Copy, Loader2 } from 'lucide-react';
 import { apiKeysStore } from '@/store/modules/apiKeys';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +28,9 @@ export default function ApiKeysEdit() {
   const isInitialLoading = useRef(false);
   const { toast } = useToast();
   const dispatch = useDispatch();
-  const { apiKeyId } = useParams();
+  const { apiKeyId } = useParams({
+    from: '/_auth/apiKeys/$apiKeyId/',
+  });
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
 
@@ -94,7 +95,7 @@ export default function ApiKeysEdit() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_api_keys'), to: $path('/apiKeys') },
+      { label: t('breadcrumbs_api_keys'), to: '/apiKeys' },
       { label: t('breadcrumbs_edit_api_key') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -164,18 +165,18 @@ export default function ApiKeysEdit() {
                 {t('routes_apikeys_edit_save_button')}
               </Button>
               <Button variant="outline" asChild>
-                <Link to={$path('/apiKeys')}>
+                <Link to={'/apiKeys'}>
                   {t('routes_apikeys_edit_cancel_button')}
                 </Link>
               </Button>
             </div>
 
-            <div className="flex flex-col gap-4 bg-muted px-6 py-4">
+            <div className="bg-muted flex flex-col gap-4 px-6 py-4">
               <div className="flex flex-col gap-1">
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-foreground text-lg font-bold">
                   {t('routes_apikeys_edit_key_title')}
                 </p>
-                <p className="text-sm font-normal text-muted-foreground">
+                <p className="text-muted-foreground text-sm font-normal">
                   {t('routes_apikeys_edit_created_on', {
                     date: dayjs
                       .unix(Number(apiKey?.createdAt))
@@ -184,8 +185,8 @@ export default function ApiKeysEdit() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex min-w-0 flex-1 truncate rounded-md bg-input px-3 py-2.5 text-sm font-normal text-foreground">
-                  <p className="line-clamp-1 break-all whitespace-break-spaces">
+                <div className="bg-input text-foreground flex min-w-0 flex-1 truncate rounded-md px-3 py-2.5 text-sm font-normal">
+                  <p className="line-clamp-1 whitespace-break-spaces break-all">
                     {apiKey?.key ?? ''}
                   </p>
                 </div>
@@ -205,3 +206,7 @@ export default function ApiKeysEdit() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/apiKeys/$apiKeyId/')({
+  component: ApiKeysEdit,
+});

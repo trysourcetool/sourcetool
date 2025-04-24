@@ -20,12 +20,11 @@ import { useDispatch, useSelector } from '@/store';
 import { organizationsStore } from '@/store/modules/organizations';
 import { useDebouncedCallback } from 'use-debounce';
 import { authStore } from '@/store/modules/auth';
-import { $path } from 'safe-routes';
-import { useNavigate } from 'react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { ErrorResponse } from '@/api/instance';
 import { useToast } from '@/hooks/use-toast';
 
-export default function Signup() {
+export default function OrganizationsNew() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -67,7 +66,9 @@ export default function Signup() {
           }),
         );
         if (!authStore.asyncActions.saveAuth.fulfilled.match(res)) {
-          throw new Error(t('routes_auth_magic_link_toast_save_auth_failed_desc' as any));
+          throw new Error(
+            t('routes_auth_magic_link_toast_save_auth_failed_desc' as any),
+          );
         }
         window.location.replace(res.payload.redirectUrl);
       }
@@ -95,7 +96,7 @@ export default function Signup() {
     } else {
       if (result.error && result.payload) {
         if ((result.payload as ErrorResponse).status === 401) {
-          navigate($path('/login'));
+          navigate({ to: '/login' });
           toast({
             title: t('routes_organizations_new_toast_auth_error'),
             description: t(
@@ -143,7 +144,7 @@ export default function Signup() {
                           debouncedHandleChange(e);
                         }}
                       />
-                      <p className="text-sm font-medium text-muted-foreground">
+                      <p className="text-muted-foreground text-sm font-medium">
                         {t('routes_organizations_new_domain_suffix')}
                       </p>
                     </div>
@@ -164,3 +165,7 @@ export default function Signup() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/organizations/new/')({
+  component: OrganizationsNew,
+});

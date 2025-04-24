@@ -10,8 +10,8 @@ services:
   backend:
     image: golang:1.23
     command: bash -c "
-        go run ../backend/devtools/cmd/db/main.go migrate &&
-        go run -tags ee ../backend/cmd/server"
+      go run ../backend/devtools/cmd/db/main.go migrate &&
+      go run -tags ee ../backend/cmd/server"
     ports:
       - 8080:8080
     depends_on:
@@ -28,7 +28,7 @@ services:
 
   frontend:
     image: node:20-alpine
-    command: sh -c "npm install --global corepack@latest && corepack enable && pnpm install --frozen-lockfile && pnpm dev:frontend --host 0.0.0.0"
+    command: sh -c "npm install --global corepack@latest && corepack enable && pnpm install --frozen-lockfile && pnpm dev:frontend --host 0.0.0.0 && pnpm dev:frontend:tsr"
     ports:
       - 5173:5173
     depends_on:

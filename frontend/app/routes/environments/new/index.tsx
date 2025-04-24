@@ -19,8 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { object, string } from 'zod';
 import type { z } from 'zod';
 
@@ -68,11 +67,10 @@ export default function EnvironmentNew() {
         resultAction,
       )
     ) {
-      navigate(
-        $path('/environments/:environmentId', {
-          environmentId: resultAction.payload.environment.id,
-        }),
-      );
+      navigate({
+        to: '/environments/$environmentId',
+        params: { environmentId: resultAction.payload.environment.id },
+      });
     } else {
       console.error(resultAction.error);
       toast({
@@ -84,7 +82,7 @@ export default function EnvironmentNew() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_environment'), to: $path('/environments') },
+      { label: t('breadcrumbs_environment'), to: '/environments' },
       { label: t('breadcrumbs_create_new') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -165,7 +163,7 @@ export default function EnvironmentNew() {
               asChild
               disabled={isCreateEnvironmentWaiting}
             >
-              <Link to={$path('/environments')}>
+              <Link to={'/environments'}>
                 {t('routes_environments_new_cancel_button')}
               </Link>
             </Button>
@@ -175,3 +173,7 @@ export default function EnvironmentNew() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/environments/new/')({
+  component: EnvironmentNew,
+});

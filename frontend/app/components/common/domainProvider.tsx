@@ -10,8 +10,7 @@ import {
   type FC,
   type ReactNode,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 
 export const domainContext = createContext({});
 
@@ -40,7 +39,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
       pathname.startsWith('/signup') ||
       pathname.startsWith('/organizations/new')
     ) {
-      navigate($path('/login'));
+      navigate({ to: '/login' });
       checkComplete();
       return;
     }
@@ -50,7 +49,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
         pathname.startsWith('/users/invitation') ||
         pathname.startsWith('/resetPassword')
       ) {
-        navigate($path('/'));
+        navigate({ to: '/' });
         checkComplete();
         return;
       }
@@ -61,12 +60,12 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
           pathname.startsWith('/apiKeys') ||
           pathname.startsWith('/environments'))
       ) {
-        navigate($path('/'));
+        navigate({ to: '/' });
         checkComplete();
         return;
       }
     } else if (account && !account.organization) {
-      navigate('/organizations/new');
+      navigate({ to: '/organizations/new' });
       checkComplete();
       return;
     }
@@ -82,7 +81,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
       pathname.startsWith('/environments') ||
       pathname.startsWith('/onboarding')
     ) {
-      navigate($path('/login'));
+      navigate({ to: '/login' });
       checkComplete();
       return;
     }

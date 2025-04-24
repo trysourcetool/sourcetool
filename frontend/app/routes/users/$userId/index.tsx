@@ -49,15 +49,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Ellipsis, Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams } from 'react-router';
-import { $path } from 'safe-routes';
 import { array, object, string } from 'zod';
 import type { z } from 'zod';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 
 export default function UsersUserId() {
   const isInitialLoading = useRef(false);
   const dispatch = useDispatch();
-  const { userId } = useParams();
+  const userId = useParams({
+    from: '/_auth/users/$userId',
+    select: (params) => params.userId,
+  });
   const { toast } = useToast();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const [search, setSearch] = useState('');
@@ -116,11 +118,7 @@ export default function UsersUserId() {
         },
       }),
     );
-    if (
-      usersStore.asyncActions.updateUser.fulfilled.match(
-        resultAction,
-      )
-    ) {
+    if (usersStore.asyncActions.updateUser.fulfilled.match(resultAction)) {
       toast({
         title: t('routes_users_edit_toast_updated'),
       });
@@ -145,7 +143,7 @@ export default function UsersUserId() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_users'), to: $path('/users') },
+      { label: t('breadcrumbs_users'), to: '/users' },
       { label: `${user?.firstName} ${user?.lastName}` },
     ]);
   }, [setBreadcrumbsState, user, t]);
@@ -332,7 +330,7 @@ export default function UsersUserId() {
                   asChild
                   disabled={isUpdateUserWaiting}
                 >
-                  <Link to={$path('/users')}>
+                  <Link to={'/users'}>
                     {t('routes_users_edit_cancel_button')}
                   </Link>
                 </Button>
@@ -344,3 +342,7 @@ export default function UsersUserId() {
     )
   );
 }
+
+export const Route = createFileRoute('/_auth/users/$userId')({
+  component: UsersUserId,
+});

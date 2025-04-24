@@ -18,8 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import Fuse from 'fuse.js';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Ellipsis, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { groupsStore } from '@/store/modules/groups';
@@ -122,11 +121,10 @@ export default function GroupNew() {
       }),
     );
     if (groupsStore.asyncActions.createGroup.fulfilled.match(resultAction)) {
-      navigate(
-        $path('/groups/:groupId', {
-          groupId: resultAction.payload.group.id,
-        }),
-      );
+      navigate({
+        to: '/groups/$groupId',
+        params: { groupId: resultAction.payload.group.id },
+      });
     } else {
       toast({
         title: t('routes_groups_new_toast_create_failed'),
@@ -137,7 +135,7 @@ export default function GroupNew() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_permission_groups'), to: $path('/groups') },
+      { label: t('breadcrumbs_permission_groups'), to: '/groups' },
       { label: t('breadcrumbs_create_new') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -192,7 +190,7 @@ export default function GroupNew() {
             name="userIds"
             render={({ field }) => (
               <div className="flex flex-col gap-6">
-                <p className="text-xl font-bold text-foreground">
+                <p className="text-foreground text-xl font-bold">
                   {t('routes_groups_new_users_title')}
                 </p>
                 <div className="flex">
@@ -315,9 +313,7 @@ export default function GroupNew() {
               {t('routes_groups_new_create_button')}
             </Button>
             <Button variant="outline" asChild disabled={isCreateGroupWaiting}>
-              <Link to={$path('/groups')}>
-                {t('routes_groups_new_cancel_button')}
-              </Link>
+              <Link to={'/groups'}>{t('routes_groups_new_cancel_button')}</Link>
             </Button>
           </div>
         </form>
@@ -325,3 +321,7 @@ export default function GroupNew() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/groups/new/')({
+  component: GroupNew,
+});

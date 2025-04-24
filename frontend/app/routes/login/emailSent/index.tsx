@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 import {
   Card,
   CardDescription,
@@ -8,19 +8,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useDispatch, useSelector } from '@/store';
 import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
-import { $path } from 'safe-routes';
-
-export type SearchParams = {
-  email: string;
-};
+import { zodValidator } from '@tanstack/zod-adapter';
+import { object, string } from 'zod';
 
 export default function EmailSent() {
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get('email');
+  const search = useSearch({ from: '/_default/login/emailSent/' });
+  const email = search.email;
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -39,9 +36,7 @@ export default function EmailSent() {
         data: { email },
       }),
     );
-    if (
-      authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
-    ) {
+    if (authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)) {
       toast({
         title: t('routes_login_email_sent_resend_success'),
         description: t('routes_login_email_sent_resend_success_description'),
@@ -59,19 +54,19 @@ export default function EmailSent() {
     <div className="m-auto flex w-full items-center justify-center">
       <Card className="flex w-full max-w-[384px] flex-col gap-4 p-6">
         <CardHeader className="space-y-6 p-0">
-          <CardTitle className="text-2xl font-semibold text-foreground">
+          <CardTitle className="text-foreground text-2xl font-semibold">
             {t('routes_login_email_sent_title')}
           </CardTitle>
-          <div className="flex items-center gap-3 rounded-md border border-border p-3">
+          <div className="border-border flex items-center gap-3 rounded-md border p-3">
             <Mail className="h-5 w-5" />
-            <CardDescription className="flex-1 text-sm text-muted-foreground">
+            <CardDescription className="text-muted-foreground flex-1 text-sm">
               {t('routes_login_email_sent_description')}{' '}
-              <span className="font-medium text-foreground">{email}</span>
+              <span className="text-foreground font-medium">{email}</span>
             </CardDescription>
           </div>
         </CardHeader>
 
-        <p className="text-center text-xs font-normal text-muted-foreground">
+        <p className="text-muted-foreground text-center text-xs font-normal">
           {t('routes_login_email_sent_resend_text')}{' '}
           <button
             type="button"
@@ -88,7 +83,7 @@ export default function EmailSent() {
         <Button
           variant="secondary"
           className="cursor-pointer"
-          onClick={() => navigate($path('/login'))}
+          onClick={() => navigate({ to: '/login' })}
         >
           <ArrowLeft className="h-4 w-4" />
           {t('routes_login_email_sent_back')}
@@ -97,3 +92,12 @@ export default function EmailSent() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/login/emailSent/')({
+  component: EmailSent,
+  validateSearch: zodValidator(
+    object({
+      email: string(),
+    }),
+  ),
+});

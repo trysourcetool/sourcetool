@@ -13,8 +13,7 @@ import {
 } from '../ui/sidebar';
 
 import { ModeToggle } from '../common/mode-toggle';
-import { Link, useNavigate, useParams } from 'react-router';
-import { $path } from 'safe-routes';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from '@/store';
@@ -25,12 +24,10 @@ import { ENVIRONMENTS } from '@/environments';
 
 export function AppPreviewLayout(props: PropsWithChildren) {
   const isInitialLoading = useRef(false);
-  const { '*': path } = useParams();
-  const {
-    isSubDomainMatched,
-    isAuthChecked,
-    handleNoAuthRoute,
-  } = useAuth();
+  const { _splat: path } = useParams({
+    from: '/_preview/pages/$',
+  });
+  const { isSubDomainMatched, isAuthChecked, handleNoAuthRoute } = useAuth();
   const dispatch = useDispatch();
   const user = useSelector(usersStore.selector.getUserMe);
   const pages = useSelector(pagesStore.selector.getPermissionPages);
@@ -68,7 +65,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
             getLocalStorageSelectedEnvironmentId();
           console.log({ localStorageEnvironmentId });
           if (!localStorageEnvironmentId) {
-            navigate($path('/'));
+            navigate({ to: '/' });
             return;
           }
           const hasEnvironmentId = resultAction.payload.environments.some(
@@ -76,7 +73,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
           );
           console.log({ hasEnvironmentId }, resultAction.payload.environments);
           if (!hasEnvironmentId) {
-            navigate($path('/'));
+            navigate({ to: '/' });
             return;
           }
           const resultActionPages = await dispatch(
@@ -92,13 +89,17 @@ export function AppPreviewLayout(props: PropsWithChildren) {
             );
             console.log({ hasPage, path }, resultActionPages.payload.pages);
             if (!hasPage) {
-              navigate($path('/'));
+              navigate({ to: '/' });
             }
           }
         }
         isInitialLoading.current = false;
       })();
-    } else if (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && !user) {
+    } else if (
+      isAuthChecked === 'checked' &&
+      !ENVIRONMENTS.IS_CLOUD_EDITION &&
+      !user
+    ) {
       handleNoAuthRoute();
     }
   }, [dispatch]);
@@ -114,10 +115,10 @@ export function AppPreviewLayout(props: PropsWithChildren) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 size="lg"
-                className="w-full cursor-default data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full cursor-default"
               >
                 <div className="flex flex-1 items-center gap-2 data-[state=open]:px-2 data-[state=open]:py-1">
-                  <Link to={$path('/')} className="size-8">
+                  <Link to={'/'} className="size-8">
                     <img
                       src="/images/logo-sidebar.png"
                       alt="Sourcetool"
@@ -125,10 +126,10 @@ export function AppPreviewLayout(props: PropsWithChildren) {
                     />
                   </Link>
                   <div className="flex flex-1 flex-col gap-0.5">
-                    <p className="text-sm font-semibold text-sidebar-foreground">
+                    <p className="text-sidebar-foreground text-sm font-semibold">
                       {t('components_layout_app_name')}
                     </p>
-                    <p className="text-xs font-normal text-sidebar-foreground">
+                    <p className="text-sidebar-foreground text-xs font-normal">
                       {t('components_layout_app_version')}
                     </p>
                   </div>
@@ -143,7 +144,7 @@ export function AppPreviewLayout(props: PropsWithChildren) {
             {pages.map((page) => (
               <SidebarMenu key={page.id}>
                 <SidebarMenuButton asChild isActive={`/${path}` === page.route}>
-                  <Link to={`/pages${page.route}`}>
+                  <Link to={`/pages/$`} params={{ _splat: page.route }}>
                     <span>{page.name}</span>
                   </Link>
                 </SidebarMenuButton>

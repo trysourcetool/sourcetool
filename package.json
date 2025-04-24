@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "build:frontend": "pnpm --filter sourcetool-frontend build",
     "dev:frontend": "pnpm --filter sourcetool-frontend dev",
+    "dev:frontend:tsr": "pnpm --filter sourcetool-frontend dev:tsr",
     "lint:frontend": "eslint ./frontend",
     "format:frontend": "eslint ./frontend --fix && prettier ./frontend --write",
     "preview:frontend": "pnpm --filter sourcetool-frontend preview",
