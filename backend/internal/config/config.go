@@ -42,8 +42,9 @@ type config struct {
 	}
 	Google struct {
 		OAuth struct {
-			ClientID     string `env:"GOOGLE_OAUTH_CLIENT_ID"`
-			ClientSecret string `env:"GOOGLE_OAUTH_CLIENT_SECRET"`
+			// Optional for self-hosted deployments, users may leave these unset if not using Google OAuth.
+			ClientID     string `env:"GOOGLE_OAUTH_CLIENT_ID" envDefault:""`
+			ClientSecret string `env:"GOOGLE_OAUTH_CLIENT_SECRET" envDefault:""`
 		}
 	}
 	SMTP struct {
