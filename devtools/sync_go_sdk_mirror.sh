@@ -2,7 +2,7 @@
 set -e
 
 # This script syncs the sdk/go directory to a mirror repository
-# Usage: ./sync_sdk_go_mirror.sh <github_pat> <mirror_repo_url>
+# Usage: ./sync_go_sdk_mirror.sh <github_pat> <mirror_repo_url>
 
 # Get the GitHub PAT from the first argument
 GH_PAT=$1
@@ -18,7 +18,7 @@ fi
 # Check if the mirror repository URL is provided
 if [ -z "$MIRROR_REPO_URL" ]; then
   echo "Error: Mirror repository URL is not provided"
-  echo "Usage: ./sync_sdk_go_mirror.sh <github_pat> <mirror_repo_url>"
+  echo "Usage: ./sync_go_sdk_mirror.sh <github_pat> <mirror_repo_url>"
   exit 1
 fi
 
@@ -32,7 +32,7 @@ echo "Commit author: $COMMIT_AUTHOR_NAME <$COMMIT_AUTHOR_EMAIL>"
 
 # If commit message is empty, use a default message
 if [ -z "$LATEST_COMMIT_MSG" ]; then
-  LATEST_COMMIT_MSG="Update SDK Go files"
+  LATEST_COMMIT_MSG="Update Go SDK files"
   echo "Using default commit message: $LATEST_COMMIT_MSG"
 fi
 
@@ -74,7 +74,7 @@ fi
 # Add and commit the changes
 echo "Committing changes..."
 git add .
-git commit -m "$LATEST_COMMIT_MSG" || git commit -m "Update SDK Go files"
+git commit -m "$LATEST_COMMIT_MSG" || git commit -m "Update Go SDK files"
 
 # Push the changes
 echo "Pushing changes to mirror repository..."
