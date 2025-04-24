@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=backend-builder /go/bin/server /app/
 COPY --from=backend-builder /go/bin/migrate /app/
 COPY backend/migrations /app/migrations
-COPY --from=frontend-builder /app/frontend/build /app/static-full
+COPY --from=frontend-builder /app/frontend/dist /app/static-full
 RUN ln -s /app/static-full /app/static
 ENV STATIC_FILES_DIR=/app/static
 EXPOSE 8080
