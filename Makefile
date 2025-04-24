@@ -107,9 +107,9 @@ backend-lint:
 	@cd backend && golangci-lint cache clean
 	@echo "Running linters on CE codebase..."
 	@cd backend && gofumpt -l -w . && \
-		golangci-lint run --print-issued-lines --fix --go=1.22
+		golangci-lint run --print-issued-lines --fix --go=1.24
 	@echo "Running linters on EE codebase..."
-	@cd backend && golangci-lint run --print-issued-lines --fix --go=1.22 --build-tags ee
+	@cd backend && golangci-lint run --print-issued-lines --fix --go=1.24 --build-tags ee
 
 frontend-lint:
 	@echo "Running frontend linters..."
@@ -118,7 +118,7 @@ frontend-lint:
 go-sdk-lint:
 	@echo "Running Go SDK linters..."
 	@cd sdk/go && gofumpt -l -w . && \
-		golangci-lint run --print-issued-lines --fix --go=1.22
+		golangci-lint run --print-issued-lines --fix --go=1.24
 
 # Maintenance commands
 remove-docker-images:

@@ -18,7 +18,7 @@ The backend provides the API for the Sourcetool application, handling:
 
 ## Technology
 
-- Go 1.22
+- Go 1.24
 - PostgreSQL 15
 - Redis 7
 - Docker

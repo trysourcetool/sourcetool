@@ -8,7 +8,7 @@ x-go-variables: &go-variables
 
 services:
   backend:
-    image: golang:1.23
+    image: golang:1.24
     command: bash -c "
       go run ./devtools/cmd/db/main.go migrate &&
       go run ./cmd/server"

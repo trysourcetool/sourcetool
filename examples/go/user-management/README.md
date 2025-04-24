@@ -11,7 +11,7 @@ This example demonstrates how to use the Sourcetool Go SDK to create a simple us
 
 ## Prerequisites
 
-- Go 1.22 or later
+- Go 1.24 or later
 - Access to Sourcetool API
 
 ## Getting Started

@@ -1,11 +1,10 @@
 module github.com/trysourcetool/sourcetool/examples/go/hello-world
 
-go 1.22
+go 1.24.0
 
-replace (
-	github.com/trysourcetool/sourcetool-go => ../../../sdk/go
-	github.com/trysourcetool/sourcetool/proto => ../../../proto
-)
+toolchain go1.24.2
+
+replace github.com/trysourcetool/sourcetool-go => ../../../sdk/go
 
 require (
 	github.com/trysourcetool/sourcetool-go v0.0.0-00010101000000-000000000000
