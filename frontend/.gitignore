@@ -6,4 +6,3 @@ node_modules
 .env
 .vite
 *.log
-.react-router/

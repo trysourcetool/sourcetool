@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useDispatch, useSelector } from '@/store';
 import { widgetsStore } from '@/store/modules/widgets';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router';
+import { useParams, useLocation, useNavigate } from '@tanstack/react-router';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -23,11 +23,13 @@ import { WidgetSchema, type Widget } from '@/pb/ts/widget/v1/widget_pb';
 import { pagesStore } from '@/store/modules/pages';
 import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
-import { $path } from 'safe-routes';
 
 const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const dispatch = useDispatch();
-  const { '*': path } = useParams();
+  const { _splat: path } = useParams({
+    strict: false,
+  });
+
   const currentPageId = useRef('');
   const currentSessionId = useRef('');
   const prevVisibilityStatus = useRef(!document.hidden);
@@ -168,7 +170,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
           )
         ) {
           currentSessionId.current = '';
-          navigate($path('/error/hostInstancePingError'));
+          navigate({ to: '/error/hostInstancePingError' });
           return;
         }
         if (pageId && currentPageId.current === '') {
@@ -303,7 +305,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
             )
           ) {
             currentSessionId.current = '';
-            navigate($path('/error/hostInstancePingError'));
+            navigate({ to: '/error/hostInstancePingError' });
             return;
           }
 

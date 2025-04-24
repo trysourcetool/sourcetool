@@ -19,8 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { Button } from '@/components/ui/button';
-import { Link, useParams } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { Ellipsis, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { groupsStore } from '@/store/modules/groups';
@@ -65,7 +64,7 @@ export default function GroupEdit() {
   const isInitialLoading = useRef(false);
   const { toast } = useToast();
   const dispatch = useDispatch();
-  const { groupId } = useParams();
+  const { groupId } = useParams({ from: '/_auth/groups/$groupId/' });
   const { setBreadcrumbsState } = useBreadcrumbs();
   const [search, setSearch] = useState('');
   const { t } = useTranslation('common');
@@ -140,7 +139,7 @@ export default function GroupEdit() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_groups'), to: $path('/groups') },
+      { label: t('breadcrumbs_groups'), to: '/groups' },
       { label: t('breadcrumbs_edit_group') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -202,7 +201,7 @@ export default function GroupEdit() {
               name="userIds"
               render={({ field }) => (
                 <div className="flex flex-col gap-6">
-                  <p className="text-xl font-bold text-foreground">
+                  <p className="text-foreground text-xl font-bold">
                     {t('routes_groups_edit_users_title')}
                   </p>
                   <div className="flex">
@@ -328,7 +327,7 @@ export default function GroupEdit() {
                 {t('routes_groups_edit_save_button')}
               </Button>
               <Button variant="outline" asChild>
-                <Link to={$path('/groups')}>
+                <Link to={'/groups'}>
                   {t('routes_groups_edit_cancel_button')}
                 </Link>
               </Button>
@@ -339,3 +338,7 @@ export default function GroupEdit() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/groups/$groupId/')({
+  component: GroupEdit,
+});

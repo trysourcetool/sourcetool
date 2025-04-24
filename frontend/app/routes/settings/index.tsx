@@ -20,7 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { usersStore } from '@/store/modules/users';
 import { useDispatch, useSelector } from '@/store';
 import { useToast } from '@/hooks/use-toast';
-
+import { createFileRoute } from '@tanstack/react-router';
 export default function Settings() {
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -149,10 +149,10 @@ export default function Settings() {
         <div className="flex flex-col gap-4 px-4 py-6 md:gap-6 md:px-6 md:py-6">
           <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <div className="flex flex-1 flex-col gap-2">
-              <p className="text-xl font-semibold text-foreground">
+              <p className="text-foreground text-xl font-semibold">
                 {t('routes_settings_name_title')}
               </p>
-              <p className="text-sm font-normal text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-normal">
                 {t('routes_settings_name_description')}
               </p>
             </div>
@@ -206,10 +206,10 @@ export default function Settings() {
 
           <div className="flex flex-col gap-4 md:flex-row md:gap-6">
             <div className="flex flex-1 flex-col gap-2">
-              <p className="text-xl font-semibold text-foreground">
+              <p className="text-foreground text-xl font-semibold">
                 {t('routes_settings_email_title')}
               </p>
-              <p className="text-sm font-normal text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-normal">
                 {t('routes_settings_email_description')}
               </p>
             </div>
@@ -218,11 +218,11 @@ export default function Settings() {
                 className="flex flex-1 flex-col gap-6"
                 onSubmit={handleSubmitEmail}
               >
-                <div className="flex flex-col gap-1 rounded-md bg-muted px-4 py-3">
-                  <p className="text-sm font-normal text-muted-foreground">
+                <div className="bg-muted flex flex-col gap-1 rounded-md px-4 py-3">
+                  <p className="text-muted-foreground text-sm font-normal">
                     {t('routes_settings_current_email')}
                   </p>
-                  <p className="text-base font-semibold text-foreground">
+                  <p className="text-foreground text-base font-semibold">
                     {user.email}
                   </p>
                 </div>
@@ -276,3 +276,7 @@ export default function Settings() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/settings/')({
+  component: Settings,
+});

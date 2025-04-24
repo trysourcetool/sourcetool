@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { createFileRoute, useParams } from '@tanstack/react-router';
 import { RenderWidgets } from './components/render-widgets';
 import { useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { ExceptionView } from './components/exception/exception-view';
 
 export default function Preview() {
-  const { '*': path } = useParams();
+  const { _splat: path } = useParams({ from: '/_preview/pages/$' });
   console.log({ path });
   const page = useSelector((state) =>
     pagesStore.selector.getPageFromPath(state, `/${path}`),
@@ -22,3 +22,7 @@ export default function Preview() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_preview/pages/$')({
+  component: Preview,
+});

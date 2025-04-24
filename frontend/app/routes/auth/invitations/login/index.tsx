@@ -18,28 +18,29 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useNavigate, useSearchParams } from 'react-router';
-import { $path } from 'safe-routes';
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import { useDispatch, useSelector } from '@/store';
 import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { SocialButtonGoogle } from '@/components/common/social-button-google';
-
-export type SearchParams = {
-  token: string;
-  email: string;
-};
+import { zodValidator } from '@tanstack/zod-adapter';
 
 export default function InvitationLogin() {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const search = useSearch({
+    from: '/_default/auth/invitations/login/',
+  });
   const { t } = useTranslation('common');
 
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
+  const token = search.token;
+  const email = search.email;
 
   const isRequestInvitationMagicLinkWaiting = useSelector(
     (state) => state.auth.isRequestInvitationMagicLinkWaiting,
@@ -79,9 +80,10 @@ export default function InvitationLogin() {
         resultAction,
       )
     ) {
-      navigate(
-        $path('/auth/invitations/emailSent', { email: data.email, token }),
-      );
+      navigate({
+        to: '/auth/invitations/emailSent',
+        search: { email: data.email, token },
+      });
     } else {
       toast({
         title: t('routes_login_toast_failed'),
@@ -121,10 +123,10 @@ export default function InvitationLogin() {
       <Form {...form}>
         <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
           <CardHeader className="space-y-1.5 p-0">
-            <CardTitle className="text-2xl font-semibold text-foreground">
+            <CardTitle className="text-foreground text-2xl font-semibold">
               {t('routes_login_invitation_title')}
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-sm">
               {t('routes_login_invitation_description')}
             </CardDescription>
           </CardHeader>
@@ -135,8 +137,8 @@ export default function InvitationLogin() {
             />
 
             <div className="relative flex items-center justify-center">
-              <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
-              <span className="relative bg-background px-2 text-sm font-medium text-foreground">
+              <div className="bg-border absolute inset-x-0 top-1/2 h-px" />
+              <span className="bg-background text-foreground relative px-2 text-sm font-medium">
                 {t('routes_login_or')}
               </span>
             </div>
@@ -149,7 +151,7 @@ export default function InvitationLogin() {
                   <FormControl>
                     <Input
                       placeholder={t('routes_login_email_placeholder')}
-                      className="h-[42px] border-border text-sm"
+                      className="border-border h-[42px] text-sm"
                       {...field}
                       disabled={!!email}
                     />
@@ -171,7 +173,7 @@ export default function InvitationLogin() {
               {t('routes_login_invitation_login_button')}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-center text-xs">
               {t('routes_login_terms_text')}
             </p>
           </form>
@@ -180,3 +182,13 @@ export default function InvitationLogin() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/auth/invitations/login/')({
+  component: InvitationLogin,
+  validateSearch: zodValidator(
+    object({
+      token: string(),
+      email: string(),
+    }),
+  ),
+});

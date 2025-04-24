@@ -29,9 +29,12 @@ import { apiKeysStore } from '@/store/modules/apiKeys';
 import dayjs from 'dayjs';
 import { Copy, Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router';
-import { $path } from 'safe-routes';
-import { useQueryState } from 'nuqs';
+import {
+  useNavigate,
+  Link,
+  createFileRoute,
+  useSearch,
+} from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Pagination,
@@ -53,6 +56,8 @@ import {
 } from '@/components/ui/dialog';
 import type { ErrorResponse } from '@/api/instance';
 import { Input } from '@/components/ui/input';
+import { zodValidator } from '@tanstack/zod-adapter';
+import { number, object } from 'zod';
 
 export default function ApiKeys() {
   const isInitialLoading = useRef(false);
@@ -63,17 +68,14 @@ export default function ApiKeys() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
   const [search, setSearch] = useState('');
+  const searchParams = useSearch({ from: '/_auth/apiKeys/' });
+  const page = searchParams.page || 1;
   const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
   const [selectApiKeyId, setSelectApiKeyId] = useState<string | null>(null);
   const isDeleteApiKeyWaiting = useSelector(
     (state) => state.apiKeys.isDeleteApiKeyWaiting,
   );
-
-  const [page, setPage] = useQueryState('page', {
-    parse: (query: string) => parseInt(query, 10),
-    serialize: (value) => value.toString(),
-  });
 
   const pageSize = 10;
 
@@ -153,7 +155,7 @@ export default function ApiKeys() {
       <PageHeader label={t('routes_apikeys_page_header')} />
       <div className="flex w-screen flex-col gap-6 px-4 py-6 md:w-auto md:gap-6 md:px-6">
         <div className="flex flex-col justify-between gap-2 md:pt-6">
-          <p className="text-xl font-bold text-foreground">
+          <p className="text-foreground text-xl font-bold">
             {t('routes_apikeys_personal_key_title')}
           </p>
         </div>
@@ -206,13 +208,13 @@ export default function ApiKeys() {
         </div>
 
         <div className="flex flex-col items-start justify-between gap-2 pt-4 md:flex-row md:items-center md:pt-6">
-          <p className="text-xl font-bold text-foreground">
+          <p className="text-foreground text-xl font-bold">
             {t('routes_apikeys_live_mode_keys_title')}
           </p>
           {isInitialLoaded && apiKeys.length === 0 && (
             <div>
               <Button asChild>
-                <Link to={$path('/apiKeys/new')}>
+                <Link to={'/apiKeys/new'}>
                   <Plus />
                   {t('routes_apikeys_create_new')}
                 </Link>
@@ -223,10 +225,10 @@ export default function ApiKeys() {
 
         {apiKeys.length === 0 && (
           <div className="flex flex-col gap-1 rounded-md border p-6">
-            <h3 className="text-lg leading-7 font-bold">
+            <h3 className="text-lg font-bold leading-7">
               {t('routes_apikeys_no_keys_title')}
             </h3>
-            <p className="text-sm font-normal text-muted-foreground">
+            <p className="text-muted-foreground text-sm font-normal">
               {t('routes_apikeys_no_keys_description')}
             </p>
           </div>
@@ -245,7 +247,7 @@ export default function ApiKeys() {
             </div>
             <div>
               <Button asChild>
-                <Link to={$path('/apiKeys/new')}>
+                <Link to={'/apiKeys/new'}>
                   <Plus />
                   {t('routes_apikeys_create_new')}
                 </Link>
@@ -273,9 +275,10 @@ export default function ApiKeys() {
                     key={apiKey.id}
                     className="cursor-pointer"
                     onClick={() =>
-                      navigate(
-                        $path('/apiKeys/:apiKeyId', { apiKeyId: apiKey.id }),
-                      )
+                      navigate({
+                        to: '/apiKeys/$apiKeyId',
+                        params: { apiKeyId: apiKey.id },
+                      })
                     }
                   >
                     <TableCell className="font-medium">{apiKey.name}</TableCell>
@@ -340,7 +343,7 @@ export default function ApiKeys() {
                 ))}
               </TableBody>
             </Table>
-            <div className="border-t bg-muted p-4">
+            <div className="bg-muted border-t p-4">
               <Pagination className="flex justify-end">
                 <PaginationContent>
                   {page !== 1 && page !== null && (
@@ -354,7 +357,10 @@ export default function ApiKeys() {
                           if (page === 1 || page === null) {
                             return;
                           }
-                          setPage((page || 1) - 1);
+                          navigate({
+                            to: '/apiKeys',
+                            search: { page: (page || 1) - 1 },
+                          });
                         }}
                       />
                       <PaginationLink
@@ -362,7 +368,10 @@ export default function ApiKeys() {
                           if (page === 1 || page === null) {
                             return;
                           }
-                          setPage((page || 1) - 1);
+                          navigate({
+                            to: '/apiKeys',
+                            search: { page: (page || 1) - 1 },
+                          });
                         }}
                         isActive
                         className={clsx(
@@ -392,7 +401,12 @@ export default function ApiKeys() {
                     return (
                       <PaginationItem key={index} className="hidden md:block">
                         <PaginationLink
-                          onClick={() => setPage(index + 1)}
+                          onClick={() =>
+                            navigate({
+                              to: '/apiKeys',
+                              search: { page: index + 1 },
+                            })
+                          }
                           className={clsx(
                             page !== index + 1 && 'cursor-pointer',
                             page === index + 1 && 'pointer-events-none',
@@ -414,7 +428,10 @@ export default function ApiKeys() {
                           if (page === pageCount) {
                             return;
                           }
-                          setPage((page || 1) + 1);
+                          navigate({
+                            to: '/apiKeys',
+                            search: { page: (page || 1) + 1 },
+                          });
                         }}
                         className={clsx(
                           page !== pageCount && 'cursor-pointer',
@@ -426,7 +443,10 @@ export default function ApiKeys() {
                           if (page === pageCount) {
                             return;
                           }
-                          setPage((page || 1) + 1);
+                          navigate({
+                            to: '/apiKeys',
+                            search: { page: (page || 1) + 1 },
+                          });
                         }}
                         isActive
                         className={clsx(
@@ -497,3 +517,12 @@ export default function ApiKeys() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/apiKeys/')({
+  component: ApiKeys,
+  validateSearch: zodValidator(
+    object({
+      page: number().optional(),
+    }),
+  ),
+});

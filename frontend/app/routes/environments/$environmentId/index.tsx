@@ -19,8 +19,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { object, string } from 'zod';
 import type { z } from 'zod';
 
@@ -28,7 +27,9 @@ export default function EnvironmentEdit() {
   const isInitialLoading = useRef(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { environmentId } = useParams();
+  const { environmentId } = useParams({
+    from: '/_auth/environments/$environmentId/',
+  });
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
 
@@ -84,7 +85,7 @@ export default function EnvironmentEdit() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_environment'), to: $path('/environments') },
+      { label: t('breadcrumbs_environment'), to: '/environments' },
       { label: t('breadcrumbs_edit_environment') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -182,7 +183,7 @@ export default function EnvironmentEdit() {
                 asChild
                 disabled={isCreateEnvironmentWaiting}
               >
-                <Link to={$path('/environments')}>
+                <Link to={'/environments'}>
                   {t('routes_environments_edit_cancel_button')}
                 </Link>
               </Button>
@@ -193,3 +194,7 @@ export default function EnvironmentEdit() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/environments/$environmentId/')({
+  component: EnvironmentEdit,
+});

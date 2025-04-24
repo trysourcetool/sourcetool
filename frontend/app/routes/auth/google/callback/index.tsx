@@ -1,18 +1,24 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-// Use react-router provided by Remix
-import { useSearchParams, useNavigate } from 'react-router'; 
+import {
+  useSearch,
+  useNavigate,
+  createFileRoute,
+} from '@tanstack/react-router';
 import { useDispatch } from '@/store';
 import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
-import { $path } from 'safe-routes';
 import { Loader2 } from 'lucide-react';
+import { zodValidator } from '@tanstack/zod-adapter';
+import { object, string } from 'zod';
 
 export default function GoogleAuthenticate() {
   const isProcessing = useRef(false);
-  const [searchParams] = useSearchParams();
-  const code = searchParams.get('code');
-  const state = searchParams.get('state');
+  const search = useSearch({
+    from: '/_default/auth/google/callback/',
+  });
+  const code = search.code;
+  const state = search.state;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -31,7 +37,7 @@ export default function GoogleAuthenticate() {
           description: t('routes_auth_google_toast_missing_params_desc' as any),
           variant: 'destructive',
         });
-        navigate($path('/login'));
+        navigate({ to: '/login' });
         return;
       }
 
@@ -42,9 +48,15 @@ export default function GoogleAuthenticate() {
           }),
         );
 
-        if (!authStore.asyncActions.authenticateWithGoogle.fulfilled.match(authResultAction)) {
+        if (
+          !authStore.asyncActions.authenticateWithGoogle.fulfilled.match(
+            authResultAction,
+          )
+        ) {
           const errorPayload = (authResultAction.payload as any)?.error || {};
-          const errorMessage = errorPayload.message || t('routes_auth_google_toast_auth_failed_desc' as any);
+          const errorMessage =
+            errorPayload.message ||
+            t('routes_auth_google_toast_auth_failed_desc' as any);
           throw new Error(errorMessage);
         }
 
@@ -52,10 +64,14 @@ export default function GoogleAuthenticate() {
 
         if (authResult.hasMultipleOrganizations) {
           toast({
-            title: t('routes_auth_google_toast_multiple_organizations_title' as any),
-            description: t('routes_auth_google_toast_multiple_organizations_desc' as any),
+            title: t(
+              'routes_auth_google_toast_multiple_organizations_title' as any,
+            ),
+            description: t(
+              'routes_auth_google_toast_multiple_organizations_desc' as any,
+            ),
           });
-          navigate($path('/login'));
+          navigate({ to: '/login' });
           return;
         }
 
@@ -68,14 +84,21 @@ export default function GoogleAuthenticate() {
             }),
           );
 
-          if (!authStore.asyncActions.registerWithGoogle.fulfilled.match(registerResultAction)) {
-            const errorPayload = (registerResultAction.payload as any)?.error || {};
-            const errorMessage = errorPayload.message || t('routes_auth_google_toast_reg_failed_desc' as any);
+          if (
+            !authStore.asyncActions.registerWithGoogle.fulfilled.match(
+              registerResultAction,
+            )
+          ) {
+            const errorPayload =
+              (registerResultAction.payload as any)?.error || {};
+            const errorMessage =
+              errorPayload.message ||
+              t('routes_auth_google_toast_reg_failed_desc' as any);
             throw new Error(errorMessage);
           }
 
           if (!registerResultAction.payload.hasOrganization) {
-            navigate($path('/organizations/new'));
+            navigate({ to: '/organizations/new' });
             return;
           }
 
@@ -86,14 +109,20 @@ export default function GoogleAuthenticate() {
             }),
           );
 
-          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
-            throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
+          if (
+            !authStore.asyncActions.saveAuth.fulfilled.match(
+              saveAuthResultAction,
+            )
+          ) {
+            throw new Error(
+              t('routes_auth_google_toast_save_auth_failed_desc' as any),
+            );
           }
 
           window.location.replace(saveAuthResultAction.payload.redirectUrl);
         } else {
           if (!authResult.hasOrganization) {
-            navigate($path('/organizations/new'));
+            navigate({ to: '/organizations/new' });
             return;
           }
 
@@ -104,8 +133,14 @@ export default function GoogleAuthenticate() {
             }),
           );
 
-          if (!authStore.asyncActions.saveAuth.fulfilled.match(saveAuthResultAction)) {
-            throw new Error(t('routes_auth_google_toast_save_auth_failed_desc' as any));
+          if (
+            !authStore.asyncActions.saveAuth.fulfilled.match(
+              saveAuthResultAction,
+            )
+          ) {
+            throw new Error(
+              t('routes_auth_google_toast_save_auth_failed_desc' as any),
+            );
           }
 
           window.location.replace(saveAuthResultAction.payload.redirectUrl);
@@ -113,10 +148,12 @@ export default function GoogleAuthenticate() {
       } catch (error: any) {
         toast({
           title: t('routes_auth_google_toast_error_title' as any),
-          description: error.message || t('routes_auth_google_toast_try_again_desc' as any),
+          description:
+            error.message ||
+            t('routes_auth_google_toast_try_again_desc' as any),
           variant: 'destructive',
         });
-        navigate($path('/login'));
+        navigate({ to: '/login' });
       }
     };
 
@@ -129,4 +166,14 @@ export default function GoogleAuthenticate() {
       <Loader2 className="size-8 animate-spin" />
     </div>
   );
-} 
+}
+
+export const Route = createFileRoute('/_default/auth/google/callback/')({
+  component: GoogleAuthenticate,
+  validateSearch: zodValidator(
+    object({
+      code: string(),
+      state: string(),
+    }),
+  ),
+});

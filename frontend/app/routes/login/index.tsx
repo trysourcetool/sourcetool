@@ -19,8 +19,7 @@ import {
 import { SocialButtonGoogle } from '@/components/common/social-button-google';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useDispatch, useSelector } from '@/store';
 import { authStore } from '@/store/modules/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -58,10 +57,12 @@ export default function Login() {
     const resultAction = await dispatch(
       authStore.asyncActions.requestMagicLink({ data }),
     );
-    if (
-      authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)
-    ) {
-      navigate($path('/login/emailSent', { email: data.email }));
+    if (authStore.asyncActions.requestMagicLink.fulfilled.match(resultAction)) {
+      console.log('navigate', {
+        to: '/login/emailSent',
+        search: { email: data.email },
+      });
+      navigate({ to: '/login/emailSent', search: { email: data.email } });
     } else {
       toast({
         title: t('routes_login_toast_failed'),
@@ -79,9 +80,7 @@ export default function Login() {
       authStore.asyncActions.requestGoogleAuthLink(),
     );
     if (
-      authStore.asyncActions.requestGoogleAuthLink.fulfilled.match(
-        resultAction,
-      )
+      authStore.asyncActions.requestGoogleAuthLink.fulfilled.match(resultAction)
     ) {
       const url = resultAction.payload.authUrl;
       window.location.href = url;
@@ -99,10 +98,10 @@ export default function Login() {
       <Form {...form}>
         <Card className="flex w-full max-w-[384px] flex-col gap-6 p-6">
           <CardHeader className="space-y-1.5 p-0">
-            <CardTitle className="text-2xl font-semibold text-foreground">
+            <CardTitle className="text-foreground text-2xl font-semibold">
               {t('routes_login_title')}
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-sm">
               {t('routes_login_description')}
             </CardDescription>
           </CardHeader>
@@ -113,7 +112,7 @@ export default function Login() {
             />
 
             <div className="relative flex items-center justify-center">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-foreground text-sm font-medium">
                 {t('routes_login_or')}
               </span>
             </div>
@@ -126,7 +125,7 @@ export default function Login() {
                   <FormControl>
                     <Input
                       placeholder={t('routes_login_email_placeholder')}
-                      className="h-[42px] border-border text-sm"
+                      className="border-border h-[42px] text-sm"
                       {...field}
                     />
                   </FormControl>
@@ -147,7 +146,7 @@ export default function Login() {
               {t('routes_login_login_button')}
             </Button>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-center text-xs">
               {t('routes_login_terms_text')}
             </p>
           </form>
@@ -156,3 +155,7 @@ export default function Login() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/login/')({
+  component: Login,
+});

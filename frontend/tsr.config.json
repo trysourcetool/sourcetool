@@ -1,0 +1,6 @@
+{
+  "routesDirectory": "./app/routes",
+  "virtualRouteConfig": "./app/routes.ts",
+  "generatedRouteTree": "./app/routeTree.gen.ts",
+  "quoteStyle": "single"
+}

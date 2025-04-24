@@ -49,7 +49,7 @@ func findIndexFile(staticDir string) string {
 	indexPath := filepath.Join(staticDir, "index.html")
 	if _, err := os.Stat(indexPath); os.IsNotExist(err) {
 		if staticDir == "/app/static" {
-			alternativePath := "/app/static-full/client/index.html"
+			alternativePath := "/app/static-full/index.html"
 			if _, err := os.Stat(alternativePath); !os.IsNotExist(err) {
 				fmt.Printf("Found index.html at alternative location: %s\n", alternativePath)
 				return alternativePath
