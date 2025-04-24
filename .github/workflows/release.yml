@@ -185,6 +185,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: sdk/go/${{ steps.get_version.outputs.VERSION }}
+          tag_name: sdk/go/${{ steps.get_version.outputs.VERSION }}
           body: |
             ## Go SDK Release ${{ steps.get_version.outputs.VERSION }}
 
