@@ -153,9 +153,6 @@ func (s *hostInstanceStore) Delete(ctx context.Context, m *core.HostInstance) er
 		Where(sq.Eq{`"id"`: m.ID}).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {
-		if err == sql.ErrNoRows {
-			return errdefs.ErrHostInstanceNotFound(err)
-		}
 		return errdefs.ErrDatabase(err)
 	}
 	return nil
