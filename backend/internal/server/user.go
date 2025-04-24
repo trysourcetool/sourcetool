@@ -139,7 +139,14 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 		return err
 	}
 
-	return mail.SendUpdateEmailInstructions(ctx, req.Email, ctxUser.FirstName, url)
+	if err := mail.SendUpdateEmailInstructions(ctx, req.Email, ctxUser.FirstName, url); err != nil {
+		return err
+	}
+
+	return s.renderJSON(w, http.StatusOK, responses.StatusResponse{
+		Code:    http.StatusOK,
+		Message: "Email update instructions sent successfully",
+	})
 }
 
 func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
