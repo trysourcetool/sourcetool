@@ -23,6 +23,8 @@ RELEASE_DATE=$(date +"%Y-%m-%d")
 # Format the title based on the path
 if [ "$PATH_FILTER" = "sdk/go" ]; then
   TITLE="## sdk/go/${CURRENT_TAG} - ${RELEASE_DATE}"
+elif [ "$PATH_FILTER" = "mcp/docs-mcp-server" ]; then
+  TITLE="## mcp/docs-mcp-server/${CURRENT_TAG} - ${RELEASE_DATE}"
 else
   TITLE="## ${CURRENT_TAG} - ${RELEASE_DATE}"
 fi
