@@ -17,7 +17,7 @@ go get github.com/trysourcetool/sourcetool-go
 ### Prerequisites
 
 1. Create a project and copy the API key from the **Sourcetool Dashboard**.
-2. Go 1.21 or newer.
+2. Go 1.24 or newer.
 
 ## Hello, users page
 
@@ -64,7 +64,7 @@ func usersPage(ui sourcetool.UIBuilder) error {
 func main() {
     st := sourcetool.New(&sourcetool.Config{ // New now takes a *Config
         APIKey:   "YOUR_API_KEY",
-        Endpoint: "wss://api.trysourcetool.com", // bare host is fine; SDK appends /ws
+        Endpoint: "wss://your-sourcetool-instance",  // Your self-hosted Sourcetool endpoint
     })
 
     st.Page("/users", "Users", usersPage)

@@ -10,7 +10,7 @@ This is a simple "Hello World" example demonstrating the basic usage of the Sour
 
 ## Prerequisites
 
-- Go 1.22 or later
+- Go 1.24 or later
 - Access to Sourcetool API
 
 ## Getting Started
