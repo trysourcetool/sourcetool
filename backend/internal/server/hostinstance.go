@@ -53,12 +53,6 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == core.HostInstanceStatusOnline {
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
-				hostInstance.Status = core.HostInstanceStatusOffline
-
-				if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
-					return err
-				}
-
 				continue
 			}
 

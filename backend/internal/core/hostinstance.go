@@ -12,14 +12,10 @@ const (
 	HostInstanceStatusUnknown HostInstanceStatus = iota
 	HostInstanceStatusOnline
 	HostInstanceStatusUnreachable
-	HostInstanceStatusOffline
-	HostInstanceStatusShuttingDown
 
-	hostInstanceStatusUnknown      = "unknown"
-	hostInstanceStatusOnline       = "online"
-	hostInstanceStatusUnreachable  = "unreachable"
-	hostInstanceStatusOffline      = "offline"
-	hostInstanceStatusShuttingDown = "shuttingDown"
+	hostInstanceStatusUnknown     = "unknown"
+	hostInstanceStatusOnline      = "online"
+	hostInstanceStatusUnreachable = "unreachable"
 )
 
 func (s HostInstanceStatus) String() string {
@@ -28,10 +24,6 @@ func (s HostInstanceStatus) String() string {
 		return hostInstanceStatusOnline
 	case HostInstanceStatusUnreachable:
 		return hostInstanceStatusUnreachable
-	case HostInstanceStatusOffline:
-		return hostInstanceStatusOffline
-	case HostInstanceStatusShuttingDown:
-		return hostInstanceStatusShuttingDown
 	default:
 		return hostInstanceStatusUnknown
 	}
@@ -43,10 +35,6 @@ func HostInstanceStatusFromString(s string) HostInstanceStatus {
 		return HostInstanceStatusOnline
 	case hostInstanceStatusUnreachable:
 		return HostInstanceStatusUnreachable
-	case hostInstanceStatusOffline:
-		return HostInstanceStatusOffline
-	case hostInstanceStatusShuttingDown:
-		return HostInstanceStatusShuttingDown
 	default:
 		return HostInstanceStatusUnknown
 	}

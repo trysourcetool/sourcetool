@@ -146,3 +146,17 @@ func (s *hostInstanceStore) Update(ctx context.Context, m *core.HostInstance) er
 
 	return nil
 }
+
+func (s *hostInstanceStore) Delete(ctx context.Context, m *core.HostInstance) error {
+	if _, err := s.builder.
+		Delete(`"host_instance"`).
+		Where(sq.Eq{`"id"`: m.ID}).
+		RunWith(s.db).
+		ExecContext(ctx); err != nil {
+		if err == sql.ErrNoRows {
+			return errdefs.ErrHostInstanceNotFound(err)
+		}
+		return errdefs.ErrDatabase(err)
+	}
+	return nil
+}

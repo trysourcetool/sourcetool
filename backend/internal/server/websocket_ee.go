@@ -15,15 +15,15 @@ import (
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 )
 
-func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, error) {
+func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) error {
 	in := msg.GetInitializeHost()
 	if in == nil {
-		return nil, errors.New("invalid message")
+		return errors.New("invalid message")
 	}
 
 	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var allGroupSlugs []string
@@ -32,7 +32,7 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 	}
 	groups, err := s.db.Group().List(ctx, database.GroupByOrganizationID(apikey.OrganizationID), database.GroupBySlugs(allGroupSlugs))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	groupMap := make(map[string]*core.Group)
 	for _, g := range groups {
@@ -111,7 +111,7 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	s.wsManager.SetConnectedHost(hostInstance, apikey, conn)
@@ -124,8 +124,8 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 			},
 		},
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return hostInstance, nil
+	return nil
 }

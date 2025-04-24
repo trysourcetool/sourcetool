@@ -17,6 +17,9 @@ const (
 
 	// Send pings to peer with this period.
 	pingPeriod = 30 * time.Second
+
+	// Maximum time to wait for connection recovery before deleting the host instance.
+	maxRecoveryWait = 6 * time.Hour
 )
 
 // pingConnection sends a ping control message to the given websocket connection.
@@ -35,32 +38,70 @@ func (m *Manager) pingConnection(conn *websocket.Conn) error {
 }
 
 // startHostPingLoop starts a goroutine that periodically sends ping messages to a connected host.
+// It handles connection recovery attempts and deletes the host instance if recovery fails.
 // It stops when the host's done channel is closed.
 func (m *Manager) startHostPingLoop(host *connectedHost) {
 	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 
+	var firstFailureTime *time.Time
 	for {
 		select {
 		case <-host.done:
+			logger.Logger.Sugar().Infof("Ping loop received done signal for host %s", host.hostInstance.ID)
+			if firstFailureTime != nil && time.Since(*firstFailureTime) > maxRecoveryWait {
+				logger.Logger.Sugar().Infof("Host %s was already unrecoverable (%v elapsed > %v) when done signal received, proceeding with deletion.", host.hostInstance.ID, time.Since(*firstFailureTime), maxRecoveryWait)
+				if delErr := m.db.HostInstance().Delete(context.Background(), host.hostInstance); delErr != nil {
+					logger.Logger.Sugar().Errorf("Failed to delete unrecoverable host instance %s during done signal handling: %v", host.hostInstance.ID, delErr)
+				}
+				m.DisconnectHost(host.hostInstance.ID)
+			}
 			return
 		case <-ticker.C:
 			if err := m.pingConnection(host.conn); err != nil {
-				// Consider retrying the connection a few times before disconnecting the host immediately.
-
 				logger.Logger.Sugar().Errorf("Failed to ping host %s: %v", host.hostInstance.ID, err)
 
-				host.hostInstance.Status = core.HostInstanceStatusUnreachable
-
-				if err := m.db.HostInstance().Update(context.Background(), host.hostInstance); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
+				if firstFailureTime == nil {
+					now := time.Now()
+					firstFailureTime = &now
+					logger.Logger.Sugar().Infof("Recording first ping failure time for host %s: %v", host.hostInstance.ID, now)
 				}
 
-				m.DisconnectHost(host.hostInstance.ID) // Use manager method
-				return
+				if time.Since(*firstFailureTime) > maxRecoveryWait {
+					logger.Logger.Sugar().Infof("Connection for host %s unrecoverable after %v, deleting instance.", host.hostInstance.ID, maxRecoveryWait)
+					if delErr := m.db.HostInstance().Delete(context.Background(), host.hostInstance); delErr != nil {
+						logger.Logger.Sugar().Errorf("Failed to delete unrecoverable host instance %s: %v", host.hostInstance.ID, delErr)
+					}
+					m.DisconnectHost(host.hostInstance.ID)
+					return
+				}
+
+				if host.hostInstance.Status != core.HostInstanceStatusUnreachable {
+					host.hostInstance.Status = core.HostInstanceStatusUnreachable // Update local state first
+					if err := m.db.HostInstance().Update(context.Background(), host.hostInstance); err != nil {
+						logger.Logger.Sugar().Errorf("Failed to update host %s status to unreachable: %v", host.hostInstance.ID, err)
+					} else {
+						logger.Logger.Sugar().Infof("Updated host %s status to unreachable due to ping failure.", host.hostInstance.ID)
+					}
+				}
+				continue
 			}
 
 			logger.Logger.Sugar().Debugf("Successfully pinged host %s", host.hostInstance.ID)
+
+			if firstFailureTime != nil {
+				logger.Logger.Sugar().Infof("Connection recovered for host %s, resetting failure time", host.hostInstance.ID)
+				firstFailureTime = nil
+			}
+
+			if host.hostInstance.Status != core.HostInstanceStatusOnline {
+				host.hostInstance.Status = core.HostInstanceStatusOnline // Update local state first
+				if err := m.db.HostInstance().Update(context.Background(), host.hostInstance); err != nil {
+					logger.Logger.Sugar().Errorf("Failed to update host %s status to online after recovery: %v", host.hostInstance.ID, err)
+				} else {
+					logger.Logger.Sugar().Infof("Updated host %s status to online after successful ping.", host.hostInstance.ID)
+				}
+			}
 		}
 	}
 }

@@ -207,9 +207,7 @@ CREATE UNIQUE INDEX idx_host_instance_status_name ON "host_instance_status" ("na
 INSERT INTO "host_instance_status" ("code", "name") VALUES
   (0, 'unknown'),
   (1, 'online'),
-  (2, 'unreachable'),
-  (3, 'offline'),
-  (4, 'shuttingDown');
+  (2, 'unreachable');
 
 CREATE TABLE "host_instance" (
   "id"              UUID          NOT NULL,

@@ -61,4 +61,5 @@ type HostInstanceStore interface {
 	List(ctx context.Context, queries ...HostInstanceQuery) ([]*core.HostInstance, error)
 	Create(ctx context.Context, m *core.HostInstance) error
 	Update(ctx context.Context, m *core.HostInstance) error
+	Delete(ctx context.Context, m *core.HostInstance) error
 }
