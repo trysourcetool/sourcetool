@@ -144,7 +144,7 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 	}
 
 	return s.renderJSON(w, http.StatusOK, responses.StatusResponse{
-		Code:    0, // Using 0 as the success code as specified in the requirements
+		Code:    http.StatusOK,
 		Message: "Email update instructions sent successfully",
 	})
 }
