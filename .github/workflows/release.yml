@@ -162,6 +162,7 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "VERSION_NO_V=${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "RELEASE_DATE=$(date +"%Y-%m-%d")" >> $GITHUB_OUTPUT
 
       - name: Generate changelog
         id: changelog
@@ -184,19 +185,11 @@ jobs:
       - name: Create SDK Release
         uses: softprops/action-gh-release@v1
         with:
-          name: sdk/go/${{ steps.get_version.outputs.VERSION }}
+          name: sdk/go/${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
           tag_name: sdk/go/${{ steps.get_version.outputs.VERSION }}
           body: |
-            ## Go SDK Release ${{ steps.get_version.outputs.VERSION }}
+            ## sdk/go/${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
 
-            This is the Go SDK release corresponding to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
-
-            ### Installation
-            ```bash
-            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            ### Changelog
             ${{ steps.go_sdk_changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
@@ -204,32 +197,11 @@ jobs:
       - name: Create Main Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ steps.get_version.outputs.VERSION }}
+          name: ${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
           body: |
+            ## ${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
+
             ${{ steps.changelog.outputs.CHANGELOG }}
-
-            ## Installation
-
-            ### Docker Images
-            Main application:
-            ```bash
-            docker pull ${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            Docs MCP Server:
-            ```bash
-            docker pull ${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }}:${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            ### Go SDK
-            ```bash
-            go get github.com/trysourcetool/sourcetool-go@${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            ## Links
-            - [Main Docker Image](${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }})
-            - [Docs MCP Server Docker Image](${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }})
-            - [Go SDK Release](https://github.com/${{ github.repository }}/releases/tag/sdk/go/${{ steps.get_version.outputs.VERSION }})
           draft: false
           prerelease: false
           make_latest: true

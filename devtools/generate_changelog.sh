@@ -16,17 +16,21 @@ fi
 # Get the path filter if provided
 PATH_FILTER=$2
 
+# Get the current tag and date
+CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "Initial Release")
+RELEASE_DATE=$(date +"%Y-%m-%d")
+
 # Generate changelog content
 {
   if [ -n "$PREV_TAG" ]; then
-    echo "## Changes since $PREV_TAG"
+    echo "## ${CURRENT_TAG} - ${RELEASE_DATE}"
     if [ -n "$PATH_FILTER" ]; then
       git log --pretty=format:"* %s" $PREV_TAG..HEAD -- "$PATH_FILTER"
     else
       git log --pretty=format:"* %s" $PREV_TAG..HEAD
     fi
   else
-    echo "## Initial Release"
+    echo "## ${CURRENT_TAG} - ${RELEASE_DATE}"
     if [ -n "$PATH_FILTER" ]; then
       git log --pretty=format:"* %s" -- "$PATH_FILTER"
     else
