@@ -7,7 +7,7 @@ on:
     paths:
       - 'mcp/docs-mcp-server/**'
       - 'docker/mcp/docs-mcp-server/**'
-      - '.github/workflows/docker-publish-docs-mcp.yml'
+      - '.github/workflows/publish-docs-mcp-staging.yml'
 
 env:
   REGISTRY: ghcr.io
