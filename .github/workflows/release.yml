@@ -85,7 +85,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  release-sdk-go:
+  release-go-sdk:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -113,9 +113,6 @@ jobs:
             echo "Version must follow semver format: vX.Y.Z"
             exit 1
           fi
-
-      - name: Sync SDK Go to mirror repository
-        run: ./devtools/sync_sdk_go_mirror.sh "${{ secrets.GH_PAT }}" "github.com/trysourcetool/sourcetool-go.git"
 
       - name: Clone SDK repository
         run: |
@@ -146,7 +143,7 @@ jobs:
           exit 1
 
   create-release:
-    needs: [build-and-push, build-and-push-mcp, release-sdk-go]
+    needs: [build-and-push, build-and-push-mcp, release-go-sdk]
     runs-on: ubuntu-latest
     permissions:
       contents: write

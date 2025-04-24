@@ -1,0 +1,25 @@
+name: Sync Go SDK to Mirror Repository
+ 
+ on:
+   push:
+     branches:
+       - main
+     paths:
+       - 'sdk/go/**'
+       - '.github/workflows/sync-go-sdk.yml'
+   workflow_dispatch:
+ 
+ jobs:
+   sync:
+     runs-on: ubuntu-latest
+     permissions:
+       contents: write
+ 
+     steps:
+       - name: Checkout repository
+         uses: actions/checkout@v4
+         with:
+           fetch-depth: 0
+ 
+       - name: Sync Go SDK to mirror repository
+         run: ./devtools/sync_go_sdk_mirror.sh "${{ secrets.GH_PAT }}" "github.com/trysourcetool/sourcetool-go.git"
