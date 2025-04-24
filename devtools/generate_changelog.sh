@@ -20,17 +20,24 @@ PATH_FILTER=$2
 CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "Initial Release")
 RELEASE_DATE=$(date +"%Y-%m-%d")
 
+# Format the title based on the path
+if [ "$PATH_FILTER" = "sdk/go" ]; then
+  TITLE="## sdk/go/${CURRENT_TAG} - ${RELEASE_DATE}"
+else
+  TITLE="## ${CURRENT_TAG} - ${RELEASE_DATE}"
+fi
+
 # Generate changelog content
 {
   if [ -n "$PREV_TAG" ]; then
-    echo "## ${CURRENT_TAG} - ${RELEASE_DATE}"
+    echo "$TITLE"
     if [ -n "$PATH_FILTER" ]; then
       git log --pretty=format:"* %s" $PREV_TAG..HEAD -- "$PATH_FILTER"
     else
       git log --pretty=format:"* %s" $PREV_TAG..HEAD
     fi
   else
-    echo "## ${CURRENT_TAG} - ${RELEASE_DATE}"
+    echo "$TITLE"
     if [ -n "$PATH_FILTER" ]; then
       git log --pretty=format:"* %s" -- "$PATH_FILTER"
     else

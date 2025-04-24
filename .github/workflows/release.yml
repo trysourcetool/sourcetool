@@ -185,23 +185,17 @@ jobs:
       - name: Create SDK Release
         uses: softprops/action-gh-release@v1
         with:
-          name: sdk/go/${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
+          name: sdk/go/${{ steps.get_version.outputs.VERSION }}
           tag_name: sdk/go/${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## sdk/go/${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
-
-            ${{ steps.go_sdk_changelog.outputs.CHANGELOG }}
+          body: ${{ steps.go_sdk_changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
 
       - name: Create Main Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
-          body: |
-            ## ${{ steps.get_version.outputs.VERSION }} - ${{ steps.get_version.outputs.RELEASE_DATE }}
-
-            ${{ steps.changelog.outputs.CHANGELOG }}
+          name: ${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
           make_latest: true
