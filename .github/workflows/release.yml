@@ -172,6 +172,34 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> $GITHUB_OUTPUT
 
+      - name: Generate Go SDK changelog
+        id: go_sdk_changelog
+        run: |
+          {
+            echo 'CHANGELOG<<CHANGELOG_EOF'
+            ./devtools/generate_changelog.sh "" "sdk/go"
+            echo 'CHANGELOG_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Create SDK Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: sdk/go/${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Go SDK Release ${{ steps.get_version.outputs.VERSION }}
+
+            This is the Go SDK release corresponding to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
+
+            ### Installation
+            ```bash
+            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
+            ```
+
+            ### Changelog
+            ${{ steps.go_sdk_changelog.outputs.CHANGELOG }}
+          draft: false
+          prerelease: false
+
       - name: Create Main Release
         uses: softprops/action-gh-release@v1
         with:
@@ -203,23 +231,4 @@ jobs:
             - [Go SDK Release](https://github.com/${{ github.repository }}/releases/tag/sdk/go/${{ steps.get_version.outputs.VERSION }})
           draft: false
           prerelease: false
-
-      - name: Create SDK Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: sdk/go/${{ steps.get_version.outputs.VERSION }}
-          name: Go SDK ${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ## Go SDK Release ${{ steps.get_version.outputs.VERSION }}
-
-            This is the Go SDK release corresponding to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
-
-            ### Installation
-            ```bash
-            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            ### Changelog
-            ${{ steps.changelog.outputs.CHANGELOG }}
-          draft: false
-          prerelease: false
+          make_latest: true
