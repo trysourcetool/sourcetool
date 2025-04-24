@@ -83,12 +83,18 @@ func (m *Manager) SendToClient(ctx context.Context, sessionID uuid.UUID, msg *we
 }
 
 // SetConnectedHost registers a new host connection with the manager.
-// It handles potential existing connections and starts the ping loop.
+// It handles potential existing connections, sets initial read deadline, pong handler, and starts the ping loop.
 func (m *Manager) SetConnectedHost(hostInstance *core.HostInstance, apiKey *core.APIKey, conn *websocket.Conn) {
 	// Disconnect any existing connection for the same host ID first.
 	m.DisconnectHost(hostInstance.ID)
 
 	logger.Logger.Sugar().Infof("Registering new connection for host: %s", hostInstance.ID)
+
+	if err := conn.SetReadDeadline(time.Now().Add(hostPongWait)); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to set initial read deadline for host %s: %v", hostInstance.ID, err)
+		conn.Close()
+		return
+	}
 
 	conn.SetPongHandler(func(string) error {
 		logger.Logger.Sugar().Debugf("Received pong from host %s", hostInstance.ID)
@@ -138,12 +144,18 @@ func (m *Manager) DisconnectHost(hostInstanceID uuid.UUID) {
 }
 
 // SetConnectedClient registers a new client connection with the manager.
-// It handles potential existing connections and starts the ping loop.
+// It handles potential existing connections, sets initial read deadline, pong handler, and starts the ping loop.
 func (m *Manager) SetConnectedClient(session *core.Session, conn *websocket.Conn) {
 	// Disconnect any existing connection for the same session ID first.
 	m.DisconnectClient(session.ID)
 
 	logger.Logger.Sugar().Infof("Registering new connection for client session: %s", session.ID)
+
+	if err := conn.SetReadDeadline(time.Now().Add(clientPongWait)); err != nil {
+		logger.Logger.Sugar().Errorf("Failed to set initial read deadline for client %s: %v", session.ID, err)
+		conn.Close()
+		return
+	}
 
 	conn.SetPongHandler(func(string) error {
 		logger.Logger.Sugar().Debugf("Received pong from client %s", session.ID)

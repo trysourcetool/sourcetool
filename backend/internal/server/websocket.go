@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
@@ -19,20 +18,8 @@ import (
 )
 
 const (
-	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = 30 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = pingPeriod * 2
-
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512 * 1024 // 512KB
-
-	// Maximum time to wait for connection recovery.
-	maxRecoveryWait = 6 * time.Hour
 )
 
 func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Conn, msg *websocketv1.Message) error {
@@ -78,11 +65,6 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 	for _, hostInstance := range hostInstances {
 		if hostInstance.Status == core.HostInstanceStatusOnline {
 			if err := s.wsManager.PingConnectedHost(hostInstance.ID); err != nil {
-				// Update host status to offline if ping fails
-				hostInstance.Status = core.HostInstanceStatusOffline
-				if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
-				}
 				continue
 			}
 
@@ -96,7 +78,6 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 		for _, hostInstance := range hostInstances {
 			if hostInstance.Status == core.HostInstanceStatusUnreachable {
 				if err := s.wsManager.PingConnectedHost(hostInstance.ID); err == nil {
-					// Host is actually reachable, update its status
 					hostInstance.Status = core.HostInstanceStatusOnline
 					if err := s.db.HostInstance().Update(ctx, hostInstance); err != nil {
 						logger.Logger.Sugar().Errorf("Failed to update host status: %v", err)
@@ -368,12 +349,8 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	conn.SetReadLimit(maxMessageSize)
-	conn.SetPongHandler(func(string) error {
-		return conn.SetReadDeadline(time.Now().Add(pongWait))
-	})
 
 	ctx := internal.NewBackgroundContext(r.Context())
-
 	done := make(chan struct{})
 	defer func() {
 		logger.Logger.Info("Closing connection")
@@ -397,20 +374,10 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		switch msg.Type.(type) {
 		case *websocketv1.Message_InitializeHost:
 			instanceID := r.Header.Get("X-Instance-Id")
-			hostInstance, err := s.handleInitializeHost(ctx, conn, instanceID, &msg)
-			if err != nil {
+			if err := s.handleInitializeHost(ctx, conn, instanceID, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
-
-			defer func() {
-				if err := s.updateHostInstanceStatus(ctx, hostInstance.ID, core.HostInstanceStatusOffline); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to update host instance status offline: %v", err)
-				}
-				s.wsManager.DisconnectHost(hostInstance.ID)
-			}()
-
-			go s.pingPongHostInstanceLoop(ctx, conn, done, hostInstance)
 		case *websocketv1.Message_InitializeClient:
 			if err := s.handleInitializeClient(ctx, conn, &msg); err != nil {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
@@ -444,74 +411,6 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		default:
 			logger.Logger.Sugar().Errorf("Unknown method: %s", msg.Type)
 			continue
-		}
-	}
-}
-
-func (s *Server) updateHostInstanceStatus(ctx context.Context, hostInstanceID uuid.UUID, status core.HostInstanceStatus) error {
-	host, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
-	if err != nil {
-		return err
-	}
-
-	host.Status = status
-
-	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
-		if err := tx.HostInstance().Update(ctx, host); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *Server) pingPongHostInstanceLoop(ctx context.Context, conn *websocket.Conn, done chan struct{}, hostInstance *core.HostInstance) {
-	ticker := time.NewTicker(pingPeriod)
-	defer func() {
-		logger.Logger.Info("Stopped ping ticker")
-		ticker.Stop()
-	}()
-
-	var firstFailureTime *time.Time
-	for {
-		select {
-		case <-done:
-			return
-		case <-ticker.C:
-			if err := conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(writeWait)); err != nil {
-				logger.Logger.Sugar().Errorf("Failed to write ping message: %v", err)
-				// Record the first failure time if not already set
-				if firstFailureTime == nil {
-					now := time.Now()
-					firstFailureTime = &now
-					logger.Logger.Sugar().Infof("Recording first ping failure time: %v", now)
-				}
-
-				// Check if we've exceeded the maximum recovery wait time
-				if time.Since(*firstFailureTime) > maxRecoveryWait {
-					logger.Logger.Sugar().Infof("Connection unrecoverable after %v", maxRecoveryWait)
-					return
-				}
-				if hostInstance.Status != core.HostInstanceStatusUnreachable {
-					if err := s.updateHostInstanceStatus(ctx, hostInstance.ID, core.HostInstanceStatusUnreachable); err != nil {
-						logger.Logger.Sugar().Errorf("Failed to update host instance status unreachable: %v", err)
-					}
-				}
-				continue
-			}
-			// Reset failure time if ping succeeds
-			if firstFailureTime != nil {
-				logger.Logger.Info("Connection recovered, resetting failure time")
-				firstFailureTime = nil
-			}
-			if hostInstance.Status != core.HostInstanceStatusOnline {
-				if err := s.updateHostInstanceStatus(ctx, hostInstance.ID, core.HostInstanceStatusOnline); err != nil {
-					logger.Logger.Sugar().Errorf("Failed to update host instance status online: %v", err)
-				}
-			}
 		}
 	}
 }

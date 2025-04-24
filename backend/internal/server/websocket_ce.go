@@ -8,15 +8,14 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	websocketv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1"
 )
 
-func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, error) {
+func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) error {
 	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -48,7 +47,7 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	s.wsManager.SetConnectedHost(hostInstance, apikey, conn)
@@ -61,8 +60,8 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 			},
 		},
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return hostInstance, nil
+	return nil
 }
