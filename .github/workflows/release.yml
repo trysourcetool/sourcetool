@@ -130,34 +130,6 @@ jobs:
           git tag ${{ steps.get_version.outputs.VERSION }}
           git push origin ${{ steps.get_version.outputs.VERSION }}
 
-      - name: Generate SDK changelog
-        id: sdk_changelog
-        working-directory: ${{ env.SDK_DIR }}
-        run: |
-          {
-            echo 'CHANGELOG<<CHANGELOG_EOF'
-            $GITHUB_WORKSPACE/devtools/generate_changelog.sh
-            echo 'CHANGELOG_EOF'
-          } >> $GITHUB_OUTPUT
-
-      - name: Create SDK Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Release ${{ steps.get_version.outputs.VERSION }}
-          body: |
-            ${{ steps.sdk_changelog.outputs.CHANGELOG }}
-
-            ## Installation
-            ```bash
-            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
-            ```
-
-            This release corresponds to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
-          repository: ${{ env.GO_SDK_REPO }}
-          token: ${{ secrets.GH_PAT }}
-          draft: false
-          prerelease: false
-
       - name: Verify Go module availability
         working-directory: ${{ env.SDK_DIR }}
         run: |
@@ -200,10 +172,10 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> $GITHUB_OUTPUT
 
-      - name: Create Release
+      - name: Create Main Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Release ${{ steps.get_version.outputs.VERSION }}
+          name: ${{ steps.get_version.outputs.VERSION }}
           body: |
             ${{ steps.changelog.outputs.CHANGELOG }}
 
@@ -228,6 +200,26 @@ jobs:
             ## Links
             - [Main Docker Image](${{ env.REGISTRY }}/${{ env.MAIN_IMAGE_NAME }})
             - [Docs MCP Server Docker Image](${{ env.REGISTRY }}/${{ env.DOCS_MCP_IMAGE_NAME }})
-            - [Go SDK](https://github.com/trysourcetool/sourcetool-go/releases/tag/${{ steps.get_version.outputs.VERSION }})
+            - [Go SDK Release](https://github.com/${{ github.repository }}/releases/tag/sdk/go/${{ steps.get_version.outputs.VERSION }})
+          draft: false
+          prerelease: false
+
+      - name: Create SDK Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: sdk/go/${{ steps.get_version.outputs.VERSION }}
+          name: Go SDK ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Go SDK Release ${{ steps.get_version.outputs.VERSION }}
+
+            This is the Go SDK release corresponding to sourcetool version ${{ steps.get_version.outputs.VERSION }}.
+
+            ### Installation
+            ```bash
+            go get github.com/${{ env.GO_SDK_REPO }}@${{ steps.get_version.outputs.VERSION }}
+            ```
+
+            ### Changelog
+            ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false

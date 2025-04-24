@@ -20,6 +20,11 @@ git tag -d $TAG || echo "Local tag $TAG not found"
 echo "Deleting remote tag $TAG from origin..."
 git push origin :refs/tags/$TAG || echo "Remote tag $TAG not found or already deleted"
 
+# Delete SDK tag if it exists
+echo "Deleting SDK tag sdk/go/$TAG..."
+git tag -d "sdk/go/$TAG" || echo "Local SDK tag sdk/go/$TAG not found"
+git push origin :refs/tags/sdk/go/$TAG || echo "Remote SDK tag sdk/go/$TAG not found or already deleted"
+
 # If SDK repo exists, delete tag there too
 if [ -d "../sourcetool-go" ]; then
   echo "SDK repository found, deleting tag from sourcetool-go..."
