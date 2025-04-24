@@ -191,14 +191,14 @@ jobs:
             echo 'CHANGELOG_EOF'
           } >> $GITHUB_OUTPUT
 
-      - name: Create Main Release
+      - name: Create Docs MCP Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ steps.get_version.outputs.VERSION }}
-          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          name: mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
+          tag_name: mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.docs_mcp_changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
-          make_latest: true
 
       - name: Create Go SDK Release
         uses: softprops/action-gh-release@v1
@@ -208,14 +208,11 @@ jobs:
           body: ${{ steps.go_sdk_changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
-          make_latest: false
 
-      - name: Create Docs MCP Release
+      - name: Create Main Release
         uses: softprops/action-gh-release@v1
         with:
-          name: mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
-          tag_name: mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
-          body: ${{ steps.docs_mcp_changelog.outputs.CHANGELOG }}
+          name: ${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
-          make_latest: false
