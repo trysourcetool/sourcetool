@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -15,11 +16,41 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) getGroup(w http.ResponseWriter, r *http.Request) error {
+func groupFromModel(g *core.Group) *groupResponse {
+	if g == nil {
+		return nil
+	}
+
+	return &groupResponse{
+		ID:        g.ID.String(),
+		Name:      g.Name,
+		Slug:      g.Slug,
+		CreatedAt: strconv.FormatInt(g.CreatedAt.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(g.UpdatedAt.Unix(), 10),
+	}
+}
+
+func groupPageFromModel(g *core.GroupPage) *groupPageResponse {
+	if g == nil {
+		return nil
+	}
+
+	return &groupPageResponse{
+		ID:        g.ID.String(),
+		GroupID:   g.GroupID.String(),
+		PageID:    g.PageID.String(),
+		CreatedAt: strconv.FormatInt(g.CreatedAt.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(g.UpdatedAt.Unix(), 10),
+	}
+}
+
+type getGroupResponse struct {
+	Group *groupResponse `json:"group"`
+}
+
+func (s *Server) handleGetGroup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	groupIDReq := chi.URLParam(r, "groupID")
@@ -38,12 +69,18 @@ func (s *Server) getGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.GetGroupResponse{
-		Group: responses.GroupFromModel(group),
+	return s.renderJSON(w, http.StatusOK, getGroupResponse{
+		Group: groupFromModel(group),
 	})
 }
 
-func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
+type listGroupsResponse struct {
+	Groups     []*groupResponse     `json:"groups"`
+	Users      []*userResponse      `json:"users"`
+	UserGroups []*userGroupResponse `json:"userGroups"`
+}
+
+func (s *Server) handleListGroups(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	ctxOrg := internal.ContextOrganization(ctx)
@@ -77,37 +114,47 @@ func (s *Server) listGroups(w http.ResponseWriter, r *http.Request) error {
 		orgAccessesMap[orgAccess.UserID] = orgAccess
 	}
 
-	groupsOut := make([]*responses.GroupResponse, 0, len(groups))
+	groupsOut := make([]*groupResponse, 0, len(groups))
 	for _, group := range groups {
-		groupsOut = append(groupsOut, responses.GroupFromModel(group))
+		groupsOut = append(groupsOut, groupFromModel(group))
 	}
 
-	usersOut := make([]*responses.UserResponse, 0, len(users))
+	usersOut := make([]*userResponse, 0, len(users))
 	for _, u := range users {
 		var role core.UserOrganizationRole
 		orgAccess, ok := orgAccessesMap[u.ID]
 		if ok {
 			role = orgAccess.Role
 		}
-		usersOut = append(usersOut, responses.UserFromModel(u, role, ctxOrg))
+		usersOut = append(usersOut, userFromModel(u, role, ctxOrg))
 	}
 
-	userGroupsOut := make([]*responses.UserGroupResponse, 0, len(userGroups))
+	userGroupsOut := make([]*userGroupResponse, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, responses.UserGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, userGroupFromModel(userGroup))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListGroupsResponse{
+	return s.renderJSON(w, http.StatusOK, listGroupsResponse{
 		Groups:     groupsOut,
 		Users:      usersOut,
 		UserGroups: userGroupsOut,
 	})
 }
 
-func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
+type createGroupRequest struct {
+	Name    string   `json:"name" validate:"required"`
+	Slug    string   `json:"slug" validate:"required"`
+	UserIDs []string `json:"userIds" validate:"required"`
+}
+
+type createGroupResponse struct {
+	Group *groupResponse `json:"group"`
+}
+
+func (s *Server) handleCreateGroup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.CreateGroupRequest
+	var req createGroupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -175,12 +222,21 @@ func (s *Server) createGroup(w http.ResponseWriter, r *http.Request) error {
 
 	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.CreateGroupResponse{
-		Group: responses.GroupFromModel(g),
+	return s.renderJSON(w, http.StatusOK, createGroupResponse{
+		Group: groupFromModel(g),
 	})
 }
 
-func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
+type updateGroupRequest struct {
+	Name    *string  `json:"name" validate:"required"`
+	UserIDs []string `json:"userIds" validate:"required"`
+}
+
+type updateGroupResponse struct {
+	Group *groupResponse `json:"group"`
+}
+
+func (s *Server) handleUpdateGroup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	groupIDReq := chi.URLParam(r, "groupID")
@@ -188,7 +244,7 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(errors.New("groupID is required"))
 	}
 
-	var req requests.UpdateGroupRequest
+	var req updateGroupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -255,12 +311,16 @@ func (s *Server) updateGroup(w http.ResponseWriter, r *http.Request) error {
 
 	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateGroupResponse{
-		Group: responses.GroupFromModel(g),
+	return s.renderJSON(w, http.StatusOK, updateGroupResponse{
+		Group: groupFromModel(g),
 	})
 }
 
-func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request) error {
+type deleteGroupResponse struct {
+	Group *groupResponse `json:"group"`
+}
+
+func (s *Server) handleDeleteGroup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	groupIDReq := chi.URLParam(r, "groupID")
@@ -290,7 +350,7 @@ func (s *Server) deleteGroup(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.DeleteGroupResponse{
-		Group: responses.GroupFromModel(g),
+	return s.renderJSON(w, http.StatusOK, deleteGroupResponse{
+		Group: groupFromModel(g),
 	})
 }

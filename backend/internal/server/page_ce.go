@@ -12,10 +12,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) handleListPages(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	envIDReq := r.URL.Query().Get("environmentId")
 	if envIDReq == "" {
@@ -34,15 +33,15 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	pagesOut, usersOut, userGroupsOut, err := s.listPagesBase(ctx, env, ctxOrg)
+	pagesOut, usersOut, userGroupsOut, err := s.handleListPagesBase(ctx, env, ctxOrg)
 	if err != nil {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListPagesResponse{
+	return s.renderJSON(w, http.StatusOK, listPagesResponse{
 		Pages:      pagesOut,
-		Groups:     make([]*responses.GroupResponse, 0),
-		GroupPages: make([]*responses.GroupPageResponse, 0),
+		Groups:     make([]*groupResponse, 0),
+		GroupPages: make([]*groupPageResponse, 0),
 		Users:      usersOut,
 		UserGroups: userGroupsOut,
 	})

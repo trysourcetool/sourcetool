@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -12,11 +13,37 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
+type environmentResponse struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Color     string `json:"color"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+func environmentFromModel(env *core.Environment) *environmentResponse {
+	if env == nil {
+		return nil
+	}
+
+	return &environmentResponse{
+		ID:        env.ID.String(),
+		Name:      env.Name,
+		Slug:      env.Slug,
+		Color:     env.Color,
+		CreatedAt: strconv.FormatInt(env.CreatedAt.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(env.UpdatedAt.Unix(), 10),
+	}
+}
+
+type getEnvironmentResponse struct {
+	Environment *environmentResponse `json:"environment"`
+}
+
+func (s *Server) handleGetEnvironment(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	envIDReq := chi.URLParam(r, "environmentID")
 	if envIDReq == "" {
@@ -35,12 +62,16 @@ func (s *Server) getEnvironment(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.GetEnvironmentResponse{
-		Environment: responses.EnvironmentFromModel(env),
+	return s.renderJSON(w, http.StatusOK, getEnvironmentResponse{
+		Environment: environmentFromModel(env),
 	})
 }
 
-func (s *Server) listEnvironments(w http.ResponseWriter, r *http.Request) error {
+type listEnvironmentsResponse struct {
+	Environments []*environmentResponse `json:"environments"`
+}
+
+func (s *Server) handleListEnvironments(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	ctxOrg := internal.ContextOrganization(ctx)
 	envs, err := s.db.Environment().List(ctx, database.EnvironmentByOrganizationID(ctxOrg.ID))
@@ -48,20 +79,30 @@ func (s *Server) listEnvironments(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	envsOut := make([]*responses.EnvironmentResponse, 0, len(envs))
+	envsOut := make([]*environmentResponse, 0, len(envs))
 	for _, env := range envs {
-		envsOut = append(envsOut, responses.EnvironmentFromModel(env))
+		envsOut = append(envsOut, environmentFromModel(env))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListEnvironmentsResponse{
+	return s.renderJSON(w, http.StatusOK, listEnvironmentsResponse{
 		Environments: envsOut,
 	})
 }
 
-func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error {
+type createEnvironmentRequest struct {
+	Name  string `json:"name" validate:"required"`
+	Slug  string `json:"slug" validate:"required"`
+	Color string `json:"color" validate:"required"`
+}
+
+type createEnvironmentResponse struct {
+	Environment *environmentResponse `json:"environment"`
+}
+
+func (s *Server) handleCreateEnvironment(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.CreateEnvironmentRequest
+	var req createEnvironmentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -108,12 +149,21 @@ func (s *Server) createEnvironment(w http.ResponseWriter, r *http.Request) error
 
 	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.CreateEnvironmentResponse{
-		Environment: responses.EnvironmentFromModel(env),
+	return s.renderJSON(w, http.StatusOK, createEnvironmentResponse{
+		Environment: environmentFromModel(env),
 	})
 }
 
-func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error {
+type updateEnvironmentRequest struct {
+	Name  *string `json:"name" validate:"required"`
+	Color *string `json:"color" validate:"required"`
+}
+
+type updateEnvironmentResponse struct {
+	Environment *environmentResponse `json:"environment"`
+}
+
+func (s *Server) handleUpdateEnvironment(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	envIDReq := chi.URLParam(r, "environmentID")
@@ -121,7 +171,7 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 		return errdefs.ErrInvalidArgument(errors.New("environmentID is required"))
 	}
 
-	var req requests.UpdateEnvironmentRequest
+	var req updateEnvironmentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -164,12 +214,16 @@ func (s *Server) updateEnvironment(w http.ResponseWriter, r *http.Request) error
 
 	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateEnvironmentResponse{
-		Environment: responses.EnvironmentFromModel(env),
+	return s.renderJSON(w, http.StatusOK, updateEnvironmentResponse{
+		Environment: environmentFromModel(env),
 	})
 }
 
-func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error {
+type deleteEnvironmentResponse struct {
+	Environment *environmentResponse `json:"environment"`
+}
+
+func (s *Server) handleDeleteEnvironment(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	envIDReq := chi.URLParam(r, "environmentID")
@@ -215,7 +269,7 @@ func (s *Server) deleteEnvironment(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.DeleteEnvironmentResponse{
-		Environment: responses.EnvironmentFromModel(env),
+	return s.renderJSON(w, http.StatusOK, deleteEnvironmentResponse{
+		Environment: environmentFromModel(env),
 	})
 }

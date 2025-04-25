@@ -118,97 +118,85 @@ func (s *Server) installRESTHandlers(router *chi.Mux) {
 		r.Route("/v1", func(r chi.Router) {
 			r.Route("/apiKeys", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
-				r.Get("/", s.errorHandler(s.listAPIKeys))
-				r.Post("/", s.errorHandler(s.createAPIKey))
+				r.Get("/", s.errorHandler(s.handleListAPIKeys))
+				r.Post("/", s.errorHandler(s.handleCreateAPIKey))
 
 				r.Route("/{apiKeyID}", func(r chi.Router) {
-					r.Get("/", s.errorHandler(s.getAPIKey))
-					r.Put("/", s.errorHandler(s.updateAPIKey))
-					r.Delete("/", s.errorHandler(s.deleteAPIKey))
+					r.Get("/", s.errorHandler(s.handleGetAPIKey))
+					r.Put("/", s.errorHandler(s.handleUpdateAPIKey))
+					r.Delete("/", s.errorHandler(s.handleDeleteAPIKey))
 				})
 			})
 
 			r.Route("/auth", func(r chi.Router) {
 				r.Group(func(r chi.Router) {
-					r.Group(func(r chi.Router) {
-						r.Use(s.authOrganizationIfSubdomainExists)
+					r.Use(s.authOrganizationIfSubdomainExists)
 
-						r.Post("/magic/request", s.errorHandler(s.requestMagicLink))
-						r.Post("/magic/authenticate", s.errorHandler(s.authenticateWithMagicLink))
-						r.Post("/magic/register", s.errorHandler(s.registerWithMagicLink))
-						r.Post("/invitations/magic/request", s.errorHandler(s.requestInvitationMagicLink))
-						r.Post("/invitations/magic/authenticate", s.errorHandler(s.authenticateWithInvitationMagicLink))
-						r.Post("/invitations/magic/register", s.errorHandler(s.registerWithInvitationMagicLink))
+					r.Post("/magic/request", s.errorHandler(s.handleRequestMagicLink))
+					r.Post("/magic/authenticate", s.errorHandler(s.handleAuthenticateWithMagicLink))
+					r.Post("/magic/register", s.errorHandler(s.handleRegisterWithMagicLink))
+					r.Post("/invitations/magic/request", s.errorHandler(s.handleRequestInvitationMagicLink))
+					r.Post("/invitations/magic/authenticate", s.errorHandler(s.handleAuthenticateWithInvitationMagicLink))
+					r.Post("/invitations/magic/register", s.errorHandler(s.handleRegisterWithInvitationMagicLink))
 
-						r.Post("/google/request", s.errorHandler(s.requestGoogleAuthLink))
-						r.Post("/google/authenticate", s.errorHandler(s.authenticateWithGoogle))
-						r.Post("/google/register", s.errorHandler(s.registerWithGoogle))
-						r.Post("/invitations/google/request", s.errorHandler(s.requestInvitationGoogleAuthLink))
+					r.Post("/google/request", s.errorHandler(s.handleRequestGoogleAuthLink))
+					r.Post("/google/authenticate", s.errorHandler(s.handleAuthenticateWithGoogle))
+					r.Post("/google/register", s.errorHandler(s.handleRegisterWithGoogle))
+					r.Post("/invitations/google/request", s.errorHandler(s.handleRequestInvitationGoogleAuthLink))
 
-						r.Post("/save", s.errorHandler(s.saveAuth))
-						r.Post("/refresh", s.errorHandler(s.refreshToken))
-					})
-
-					r.Group(func(r chi.Router) {
-						r.Use(s.authUserWithOrganizationIfSubdomainExists)
-						r.Post("/token/obtain", s.errorHandler(s.obtainAuthToken))
-					})
-
-					r.Group(func(r chi.Router) {
-						r.Use(s.authUserWithOrganization)
-						r.Post("/logout", s.errorHandler(s.logout))
-					})
+					r.Post("/save", s.errorHandler(s.handleSaveAuth))
+					r.Post("/refresh", s.errorHandler(s.handleRefreshToken))
 				})
 
 				r.Group(func(r chi.Router) {
 					r.Use(s.authUserWithOrganizationIfSubdomainExists)
-					r.Post("/token/obtain", s.errorHandler(s.obtainAuthToken))
+					r.Post("/token/obtain", s.errorHandler(s.handleObtainAuthToken))
 				})
 
 				r.Group(func(r chi.Router) {
 					r.Use(s.authUserWithOrganization)
-					r.Post("/logout", s.errorHandler(s.logout))
+					r.Post("/logout", s.errorHandler(s.handleLogout))
 				})
 			})
 
 			r.Route("/environments", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
-				r.Get("/", s.errorHandler(s.listEnvironments))
-				r.Post("/", s.errorHandler(s.createEnvironment))
+				r.Get("/", s.errorHandler(s.handleListEnvironments))
+				r.Post("/", s.errorHandler(s.handleCreateEnvironment))
 
 				r.Route("/{environmentID}", func(r chi.Router) {
-					r.Get("/", s.errorHandler(s.getEnvironment))
-					r.Put("/", s.errorHandler(s.updateEnvironment))
-					r.Delete("/", s.errorHandler(s.deleteEnvironment))
+					r.Get("/", s.errorHandler(s.handleGetEnvironment))
+					r.Put("/", s.errorHandler(s.handleUpdateEnvironment))
+					r.Delete("/", s.errorHandler(s.handleDeleteEnvironment))
 				})
 			})
 
 			r.Route("/groups", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
-				r.Get("/", s.errorHandler(s.listGroups))
-				r.Post("/", s.errorHandler(s.createGroup))
+				r.Get("/", s.errorHandler(s.handleListGroups))
+				r.Post("/", s.errorHandler(s.handleCreateGroup))
 
 				r.Route("/{groupID}", func(r chi.Router) {
-					r.Get("/", s.errorHandler(s.getGroup))
-					r.Put("/", s.errorHandler(s.updateGroup))
-					r.Delete("/", s.errorHandler(s.deleteGroup))
+					r.Get("/", s.errorHandler(s.handleGetGroup))
+					r.Put("/", s.errorHandler(s.handleUpdateGroup))
+					r.Delete("/", s.errorHandler(s.handleDeleteGroup))
 				})
 			})
 
 			r.Route("/hostInstances", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
-				r.Get("/ping", s.errorHandler(s.pingHostInstance))
+				r.Get("/ping", s.errorHandler(s.handlePingHostInstance))
 			})
 
 			r.Route("/organizations", func(r chi.Router) {
 				r.Use(s.authUser)
-				r.Post("/", s.errorHandler(s.createOrganization))
-				r.Get("/checkSubdomainAvailability", s.errorHandler(s.checkOrganizationSubdomainAvailability))
+				r.Post("/", s.errorHandler(s.handleCreateOrganization))
+				r.Get("/checkSubdomainAvailability", s.errorHandler(s.handleCheckOrganizationSubdomainAvailability))
 			})
 
 			r.Route("/pages", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
-				r.Get("/", s.errorHandler(s.listPages))
+				r.Get("/", s.errorHandler(s.handleListPages))
 			})
 
 			r.Route("/users", func(r chi.Router) {
@@ -216,23 +204,23 @@ func (s *Server) installRESTHandlers(router *chi.Mux) {
 
 				// Authenticated User
 				r.Route("/me", func(r chi.Router) {
-					r.Get("/", s.errorHandler(s.getMe))
-					r.Put("/", s.errorHandler(s.updateMe))
-					r.Post("/email/instructions", s.errorHandler(s.sendUpdateMeEmailInstructions))
-					r.Put("/email", s.errorHandler(s.updateMeEmail))
+					r.Get("/", s.errorHandler(s.handleGetMe))
+					r.Put("/", s.errorHandler(s.handleUpdateMe))
+					r.Post("/email/instructions", s.errorHandler(s.handleSendUpdateMeEmailInstructions))
+					r.Put("/email", s.errorHandler(s.handleUpdateMeEmail))
 				})
 
 				// Organization Users
-				r.Get("/", s.errorHandler(s.listUsers))
+				r.Get("/", s.errorHandler(s.handleListUsers))
 				r.Route("/{userID}", func(r chi.Router) {
-					r.Put("/", s.errorHandler(s.updateUser))
-					r.Delete("/", s.errorHandler(s.deleteUser))
+					r.Put("/", s.errorHandler(s.handleUpdateUser))
+					r.Delete("/", s.errorHandler(s.handleDeleteUser))
 				})
 
 				// Organization Invitations
 				r.Route("/invitations", func(r chi.Router) {
-					r.Post("/", s.errorHandler(s.createUserInvitations))
-					r.Post("/{invitationID}/resend", s.errorHandler(s.resendUserInvitation))
+					r.Post("/", s.errorHandler(s.handleCreateUserInvitations))
+					r.Post("/{invitationID}/resend", s.errorHandler(s.handleResendUserInvitation))
 				})
 			})
 		})
@@ -391,4 +379,9 @@ func (s *Server) sendErrWebSocketMessage(ctx context.Context, conn *websocket.Co
 		logger.Logger.Error("Failed to write WS error message", zap.Error(err))
 		return
 	}
+}
+
+type statusResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
