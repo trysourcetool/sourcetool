@@ -51,7 +51,6 @@ server → {database, pubsub, mail, permission} → infra → core
   * `internal/permission/checker.go` (RBAC implementation)
   * Authorization middleware and helpers
 * **Server** keeps CE/EE variations with build‑tag files inside the same directory tree (e.g. `group_ee.go`, `websocket_ee.go`). There is **no separate `ee/internal` directory**.
-  * Request/response DTOs under `internal/server/{requests,responses}`.
   * `internal/server/middleware.go`, `validate.go`, etc.
 * **Composition root**: `cmd/server/main.go` (sets up config, DB, Redis, SMTP, WS manager, router).
 * Tests live next to code (`*_test.go`) and cross layers only via exported interfaces.

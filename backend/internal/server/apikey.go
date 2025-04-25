@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -12,11 +13,37 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) getAPIKey(w http.ResponseWriter, r *http.Request) error {
+type apiKeyResponse struct {
+	ID          string               `json:"id"`
+	Name        string               `json:"name"`
+	Key         string               `json:"key"`
+	CreatedAt   string               `json:"createdAt"`
+	UpdatedAt   string               `json:"updatedAt"`
+	Environment *environmentResponse `json:"environment,omitempty"`
+}
+
+func apiKeyFromModel(apiKey *core.APIKey, env *core.Environment) *apiKeyResponse {
+	if apiKey == nil {
+		return nil
+	}
+
+	return &apiKeyResponse{
+		ID:          apiKey.ID.String(),
+		Name:        apiKey.Name,
+		Key:         apiKey.Key,
+		CreatedAt:   strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
+		UpdatedAt:   strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
+		Environment: environmentFromModel(env),
+	}
+}
+
+type getAPIKeyResponse struct {
+	APIKey *apiKeyResponse `json:"apiKey"`
+}
+
+func (s *Server) handleGetAPIKey(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
 	if apiKeyIDReq == "" {
@@ -38,12 +65,17 @@ func (s *Server) getAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.GetAPIKeyResponse{
-		APIKey: responses.APIKeyFromModel(apiKey, env),
+	return s.renderJSON(w, http.StatusOK, getAPIKeyResponse{
+		APIKey: apiKeyFromModel(apiKey, env),
 	})
 }
 
-func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
+type listAPIKeysResponse struct {
+	DevKey   *apiKeyResponse   `json:"devKey"`
+	LiveKeys []*apiKeyResponse `json:"liveKeys"`
+}
+
+func (s *Server) handleListAPIKeys(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	currentOrg := internal.ContextOrganization(ctx)
 	ctxUser := internal.ContextUser(ctx)
@@ -87,25 +119,34 @@ func (s *Server) listAPIKeys(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	liveKeysOut := make([]*responses.APIKeyResponse, 0, len(liveKeys))
+	liveKeysOut := make([]*apiKeyResponse, 0, len(liveKeys))
 	for _, apiKey := range liveKeys {
 		env, ok := environments[apiKey.ID]
 		if !ok {
 			return errdefs.ErrEnvironmentNotFound(errors.New("environment not found"))
 		}
 
-		liveKeysOut = append(liveKeysOut, responses.APIKeyFromModel(apiKey, env))
+		liveKeysOut = append(liveKeysOut, apiKeyFromModel(apiKey, env))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListAPIKeysResponse{
-		DevKey:   responses.APIKeyFromModel(devKey, devEnv),
+	return s.renderJSON(w, http.StatusOK, listAPIKeysResponse{
+		DevKey:   apiKeyFromModel(devKey, devEnv),
 		LiveKeys: liveKeysOut,
 	})
 }
 
-func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
+type createAPIKeyRequest struct {
+	EnvironmentID string `json:"environmentId" validate:"required"`
+	Name          string `json:"name" validate:"required"`
+}
+
+type createAPIKeyResponse struct {
+	APIKey *apiKeyResponse `json:"apiKey"`
+}
+
+func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.CreateAPIKeyRequest
+	var req createAPIKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -180,19 +221,27 @@ func (s *Server) createAPIKey(w http.ResponseWriter, r *http.Request) error {
 
 	apiKey, _ = s.db.APIKey().Get(ctx, database.APIKeyByID(apiKey.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.CreateAPIKeyResponse{
-		APIKey: responses.APIKeyFromModel(apiKey, env),
+	return s.renderJSON(w, http.StatusOK, createAPIKeyResponse{
+		APIKey: apiKeyFromModel(apiKey, env),
 	})
 }
 
-func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
+type updateAPIKeyRequest struct {
+	Name *string `json:"name" validate:"-"`
+}
+
+type updateAPIKeyResponse struct {
+	APIKey *apiKeyResponse `json:"apiKey"`
+}
+
+func (s *Server) handleUpdateAPIKey(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
 	if apiKeyIDReq == "" {
 		return errdefs.ErrInvalidArgument(errors.New("apiKeyID is required"))
 	}
 
-	var req requests.UpdateAPIKeyRequest
+	var req updateAPIKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -244,12 +293,16 @@ func (s *Server) updateAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateAPIKeyResponse{
-		APIKey: responses.APIKeyFromModel(apiKey, env),
+	return s.renderJSON(w, http.StatusOK, updateAPIKeyResponse{
+		APIKey: apiKeyFromModel(apiKey, env),
 	})
 }
 
-func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
+type deleteAPIKeyResponse struct {
+	APIKey *apiKeyResponse `json:"apiKey"`
+}
+
+func (s *Server) handleDeleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	apiKeyIDReq := chi.URLParam(r, "apiKeyID")
 	if apiKeyIDReq == "" {
@@ -294,7 +347,7 @@ func (s *Server) deleteAPIKey(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.DeleteAPIKeyResponse{
-		APIKey: responses.APIKeyFromModel(apiKey, env),
+	return s.renderJSON(w, http.StatusOK, deleteAPIKeyResponse{
+		APIKey: apiKeyFromModel(apiKey, env),
 	})
 }

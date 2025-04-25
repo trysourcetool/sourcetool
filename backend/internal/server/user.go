@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"path"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid/v5"
@@ -16,9 +17,67 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
+
+type userResponse struct {
+	ID           string                `json:"id"`
+	Email        string                `json:"email"`
+	FirstName    string                `json:"firstName"`
+	LastName     string                `json:"lastName"`
+	Role         string                `json:"role"`
+	CreatedAt    string                `json:"createdAt"`
+	UpdatedAt    string                `json:"updatedAt"`
+	Organization *organizationResponse `json:"organization"`
+}
+
+func userFromModel(user *core.User, role core.UserOrganizationRole, org *core.Organization) *userResponse {
+	if user == nil {
+		return nil
+	}
+
+	return &userResponse{
+		ID:           user.ID.String(),
+		Email:        user.Email,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Role:         role.String(),
+		CreatedAt:    strconv.FormatInt(user.CreatedAt.Unix(), 10),
+		UpdatedAt:    strconv.FormatInt(user.UpdatedAt.Unix(), 10),
+		Organization: organizationFromModel(org),
+	}
+}
+
+type userInvitationResponse struct {
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+}
+
+func userInvitationFromModel(invitation *core.UserInvitation) *userInvitationResponse {
+	return &userInvitationResponse{
+		ID:        invitation.ID.String(),
+		Email:     invitation.Email,
+		CreatedAt: strconv.FormatInt(invitation.CreatedAt.Unix(), 10),
+	}
+}
+
+type userGroupResponse struct {
+	ID        string `json:"id"`
+	UserID    string `json:"userId"`
+	GroupID   string `json:"groupId"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+func userGroupFromModel(userGroup *core.UserGroup) *userGroupResponse {
+	return &userGroupResponse{
+		ID:        userGroup.ID.String(),
+		UserID:    userGroup.UserID.String(),
+		GroupID:   userGroup.GroupID.String(),
+		CreatedAt: strconv.FormatInt(userGroup.CreatedAt.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(userGroup.UpdatedAt.Unix(), 10),
+	}
+}
 
 func buildUpdateEmailURL(subdomain, token string) (string, error) {
 	return internal.BuildURL(config.Config.OrgBaseURL(subdomain), path.Join("users", "email", "update", "confirm"), map[string]string{
@@ -33,7 +92,11 @@ func buildInvitationURL(subdomain, token, email string) (string, error) {
 	})
 }
 
-func (s *Server) getMe(w http.ResponseWriter, r *http.Request) error {
+type getMeResponse struct {
+	User *userResponse `json:"user"`
+}
+
+func (s *Server) handleGetMe(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	ctxUser := internal.ContextUser(ctx)
@@ -46,15 +109,24 @@ func (s *Server) getMe(w http.ResponseWriter, r *http.Request) error {
 	}
 	role := orgAccess.Role
 
-	return s.renderJSON(w, http.StatusOK, responses.GetMeResponse{
-		User: responses.UserFromModel(ctxUser, role, ctxOrg),
+	return s.renderJSON(w, http.StatusOK, getMeResponse{
+		User: userFromModel(ctxUser, role, ctxOrg),
 	})
 }
 
-func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
+type updateMeRequest struct {
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
+}
+
+type updateMeResponse struct {
+	User *userResponse `json:"user"`
+}
+
+func (s *Server) handleUpdateMe(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.UpdateMeRequest
+	var req updateMeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -92,15 +164,20 @@ func (s *Server) updateMe(w http.ResponseWriter, r *http.Request) error {
 		role = orgAccess.Role
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateMeResponse{
-		User: responses.UserFromModel(ctxUser, role, org),
+	return s.renderJSON(w, http.StatusOK, updateMeResponse{
+		User: userFromModel(ctxUser, role, org),
 	})
 }
 
-func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Request) error {
+type sendUpdateMeEmailInstructionsRequest struct {
+	Email             string `json:"email" validate:"required,email"`
+	EmailConfirmation string `json:"emailConfirmation" validate:"required,email"`
+}
+
+func (s *Server) handleSendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.SendUpdateMeEmailInstructionsRequest
+	var req sendUpdateMeEmailInstructionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -143,16 +220,24 @@ func (s *Server) sendUpdateMeEmailInstructions(w http.ResponseWriter, r *http.Re
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.StatusResponse{
+	return s.renderJSON(w, http.StatusOK, statusResponse{
 		Code:    http.StatusOK,
 		Message: "Email update instructions sent successfully",
 	})
 }
 
-func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
+type updateMeEmailRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type updateMeEmailResponse struct {
+	User *userResponse `json:"user"`
+}
+
+func (s *Server) handleUpdateMeEmail(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.UpdateMeEmailRequest
+	var req updateMeEmailRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -206,12 +291,17 @@ func (s *Server) updateMeEmail(w http.ResponseWriter, r *http.Request) error {
 		role = orgAccess.Role
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateMeEmailResponse{
-		User: responses.UserFromModel(ctxUser, role, org),
+	return s.renderJSON(w, http.StatusOK, updateMeEmailResponse{
+		User: userFromModel(ctxUser, role, org),
 	})
 }
 
-func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) error {
+type listUsersResponse struct {
+	Users           []*userResponse           `json:"users"`
+	UserInvitations []*userInvitationResponse `json:"userInvitations"`
+}
+
+func (s *Server) handleListUsers(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	ctxOrg := internal.ContextOrganization(ctx)
@@ -235,23 +325,32 @@ func (s *Server) listUsers(w http.ResponseWriter, r *http.Request) error {
 		roleMap[oa.UserID] = oa.Role
 	}
 
-	usersOut := make([]*responses.UserResponse, 0, len(users))
+	usersOut := make([]*userResponse, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, responses.UserFromModel(u, roleMap[u.ID], ctxOrg))
+		usersOut = append(usersOut, userFromModel(u, roleMap[u.ID], ctxOrg))
 	}
 
-	userInvitationsOut := make([]*responses.UserInvitationResponse, 0, len(userInvitations))
+	userInvitationsOut := make([]*userInvitationResponse, 0, len(userInvitations))
 	for _, ui := range userInvitations {
-		userInvitationsOut = append(userInvitationsOut, responses.UserInvitationFromModel(ui))
+		userInvitationsOut = append(userInvitationsOut, userInvitationFromModel(ui))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListUsersResponse{
+	return s.renderJSON(w, http.StatusOK, listUsersResponse{
 		Users:           usersOut,
 		UserInvitations: userInvitationsOut,
 	})
 }
 
-func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
+type updateUserRequest struct {
+	Role     *string  `json:"role" validate:"oneof=admin developer member"`
+	GroupIDs []string `json:"groupIds"`
+}
+
+type updateUserResponse struct {
+	User *userResponse `json:"user"`
+}
+
+func (s *Server) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	userIDReq := chi.URLParam(r, "userID")
@@ -264,7 +363,7 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	var req requests.UpdateUserRequest
+	var req updateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -332,12 +431,16 @@ func (s *Server) updateUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.UpdateUserResponse{
-		User: responses.UserFromModel(u, orgAccess.Role, ctxOrg),
+	return s.renderJSON(w, http.StatusOK, updateUserResponse{
+		User: userFromModel(u, orgAccess.Role, ctxOrg),
 	})
 }
 
-func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
+type deleteUserResponse struct {
+	User *userResponse `json:"user"`
+}
+
+func (s *Server) handleDeleteUser(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	userIDReq := chi.URLParam(r, "userID")
@@ -422,16 +525,24 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.StatusResponse{
-		Code:    http.StatusOK,
-		Message: "Successfully deleted user",
+	return s.renderJSON(w, http.StatusOK, deleteUserResponse{
+		User: userFromModel(userToRemove, orgAccess.Role, ctxOrg),
 	})
 }
 
-func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) error {
+type createUserInvitationsRequest struct {
+	Emails []string `json:"emails" validate:"required"`
+	Role   string   `json:"role" validate:"required,oneof=admin developer member"`
+}
+
+type createUserInvitationsResponse struct {
+	UserInvitations []*userInvitationResponse `json:"userInvitations"`
+}
+
+func (s *Server) handleCreateUserInvitations(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.CreateUserInvitationsRequest
+	var req createUserInvitationsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -492,17 +603,21 @@ func (s *Server) createUserInvitations(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	usersInvitationsOut := make([]*responses.UserInvitationResponse, 0, len(invitations))
+	usersInvitationsOut := make([]*userInvitationResponse, 0, len(invitations))
 	for _, ui := range invitations {
-		usersInvitationsOut = append(usersInvitationsOut, responses.UserInvitationFromModel(ui))
+		usersInvitationsOut = append(usersInvitationsOut, userInvitationFromModel(ui))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.CreateUserInvitationsResponse{
+	return s.renderJSON(w, http.StatusOK, createUserInvitationsResponse{
 		UserInvitations: usersInvitationsOut,
 	})
 }
 
-func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) error {
+type resendUserInvitationResponse struct {
+	UserInvitation *userInvitationResponse `json:"userInvitation"`
+}
+
+func (s *Server) handleResendUserInvitation(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	invitationIDReq := chi.URLParam(r, "invitationID")
@@ -546,7 +661,7 @@ func (s *Server) resendUserInvitation(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ResendUserInvitationResponse{
-		UserInvitation: responses.UserInvitationFromModel(userInvitation),
+	return s.renderJSON(w, http.StatusOK, resendUserInvitationResponse{
+		UserInvitation: userInvitationFromModel(userInvitation),
 	})
 }

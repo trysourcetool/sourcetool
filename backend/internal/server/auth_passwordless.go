@@ -18,8 +18,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
 func buildMagicLinkURL(subdomain, token string) (string, error) {
@@ -39,9 +37,18 @@ func buildInvitationMagicLinkURL(subdomain, token string) (string, error) {
 	})
 }
 
-func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error {
+type requestMagicLinkRequest struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type requestMagicLinkResponse struct {
+	Email string `json:"email"`
+	IsNew bool   `json:"isNew"`
+}
+
+func (s *Server) handleRequestMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.RequestMagicLinkRequest
+	var req requestMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -130,7 +137,7 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 				return err
 			}
 
-			return s.renderJSON(w, http.StatusOK, &responses.RequestMagicLinkResponse{
+			return s.renderJSON(w, http.StatusOK, &requestMagicLinkResponse{
 				Email: req.Email,
 				IsNew: false,
 			})
@@ -171,15 +178,28 @@ func (s *Server) requestMagicLink(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.RequestMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, requestMagicLinkResponse{
 		Email: req.Email,
 		IsNew: isNewUser,
 	})
 }
 
-func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Request) error {
+type authenticateWithMagicLinkRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+}
+
+type authenticateWithMagicLinkResponse struct {
+	AuthURL         string `json:"authUrl"`
+	Token           string `json:"token"`
+	HasOrganization bool   `json:"hasOrganization"`
+	IsNewUser       bool   `json:"isNewUser"`
+}
+
+func (s *Server) handleAuthenticateWithMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.AuthenticateWithMagicLinkRequest
+	var req authenticateWithMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -206,7 +226,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 			return fmt.Errorf("failed to generate registration token: %w", err)
 		}
 
-		return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithMagicLinkResponse{
+		return s.renderJSON(w, http.StatusOK, authenticateWithMagicLinkResponse{
 			Token:           registrationToken,
 			IsNewUser:       true,
 			HasOrganization: false,
@@ -294,7 +314,7 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 		cookieConfig.SetTmpAuthCookie(w, token, xsrfToken, config.Config.AuthDomain())
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, authenticateWithMagicLinkResponse{
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: hasOrganization,
@@ -302,9 +322,20 @@ func (s *Server) authenticateWithMagicLink(w http.ResponseWriter, r *http.Reques
 	})
 }
 
-func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) error {
+type registerWithMagicLinkRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+}
+
+type registerWithMagicLinkResponse struct {
+	ExpiresAt       string `json:"expiresAt"`
+	HasOrganization bool   `json:"hasOrganization"`
+}
+
+func (s *Server) handleRegisterWithMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.RegisterWithMagicLinkRequest
+	var req registerWithMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -382,15 +413,23 @@ func (s *Server) registerWithMagicLink(w http.ResponseWriter, r *http.Request) e
 			config.Config.BaseDomain)
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.RegisterWithMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, registerWithMagicLinkResponse{
 		ExpiresAt:       strconv.FormatInt(now.Add(expiration).Unix(), 10),
 		HasOrganization: hasOrganization,
 	})
 }
 
-func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
+type requestInvitationMagicLinkRequest struct {
+	InvitationToken string `json:"invitationToken" validate:"required"`
+}
+
+type requestInvitationMagicLinkResponse struct {
+	Email string `json:"email"`
+}
+
+func (s *Server) handleRequestInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.RequestInvitationMagicLinkRequest
+	var req requestInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -447,14 +486,24 @@ func (s *Server) requestInvitationMagicLink(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.RequestInvitationMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, requestInvitationMagicLinkResponse{
 		Email: c.Subject,
 	})
 }
 
-func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
+type authenticateWithInvitationMagicLinkRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type authenticateWithInvitationMagicLinkResponse struct {
+	AuthURL   string `json:"authUrl"`
+	Token     string `json:"token"`
+	IsNewUser bool   `json:"isNewUser"`
+}
+
+func (s *Server) handleAuthenticateWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.AuthenticateWithInvitationMagicLinkRequest
+	var req authenticateWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -510,7 +559,7 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 			return errdefs.ErrInvalidArgument(fmt.Errorf("failed to generate registration token: %w", err))
 		}
 
-		return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithInvitationMagicLinkResponse{
+		return s.renderJSON(w, http.StatusOK, authenticateWithInvitationMagicLinkResponse{
 			Token:     registrationToken,
 			IsNewUser: true,
 		})
@@ -557,16 +606,26 @@ func (s *Server) authenticateWithInvitationMagicLink(w http.ResponseWriter, r *h
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithInvitationMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, authenticateWithInvitationMagicLinkResponse{
 		AuthURL:   config.Config.OrgBaseURL(orgSubdomain) + core.SaveAuthPath,
 		Token:     token,
 		IsNewUser: false,
 	})
 }
 
-func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
+type registerWithInvitationMagicLinkRequest struct {
+	Token     string `json:"token" validate:"required"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+}
+
+type registerWithInvitationMagicLinkResponse struct {
+	ExpiresAt string `json:"expiresAt"`
+}
+
+func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req requests.RegisterWithInvitationMagicLinkRequest
+	var req registerWithInvitationMagicLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -670,7 +729,7 @@ func (s *Server) registerWithInvitationMagicLink(w http.ResponseWriter, r *http.
 		int(core.XSRFTokenExpiration.Seconds()),
 		config.Config.OrgDomain(orgSubdomain))
 
-	return s.renderJSON(w, http.StatusOK, &responses.RegisterWithInvitationMagicLinkResponse{
+	return s.renderJSON(w, http.StatusOK, registerWithInvitationMagicLinkResponse{
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 	})
 }
