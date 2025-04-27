@@ -60,8 +60,6 @@ type authenticateWithGoogleRequest struct {
 }
 
 type authenticateWithGoogleResponse struct {
-	FirstName                string `json:"firstName,omitempty"`
-	LastName                 string `json:"lastName,omitempty"`
 	AuthURL                  string `json:"authUrl"`
 	Token                    string `json:"token"`
 	HasOrganization          bool   `json:"hasOrganization"`
@@ -151,8 +149,6 @@ func (s *Server) handleAuthenticateWithGoogle(w http.ResponseWriter, r *http.Req
 			Token:           registrationToken,
 			IsNewUser:       true,
 			HasOrganization: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
-			FirstName:       userInfo.GivenName,
-			LastName:        userInfo.FamilyName,
 		})
 	}
 
