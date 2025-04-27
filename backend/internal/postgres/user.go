@@ -147,9 +147,6 @@ func (s *userStore) Update(ctx context.Context, m *core.User) error {
 		Where(sq.Eq{`"id"`: m.ID}).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			return errdefs.ErrAlreadyExists(err)
-		}
 		return errdefs.ErrDatabase(err)
 	}
 
