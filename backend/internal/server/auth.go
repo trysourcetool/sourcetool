@@ -18,8 +18,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
 func buildSaveAuthURL(subdomain string) (string, error) {
@@ -72,7 +70,11 @@ func (s *Server) createTokens(userID uuid.UUID, expiration time.Duration) (token
 	return token, xsrfToken, plainRefreshToken, hashedRefreshToken, expiresAt, nil
 }
 
-func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
+type refreshTokenResponse struct {
+	ExpiresAt string `json:"expiresAt"`
+}
+
+func (s *Server) handleRefreshToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	xsrfTokenHeader := r.Header.Get("X-XSRF-TOKEN")
@@ -141,15 +143,24 @@ func (s *Server) refreshToken(w http.ResponseWriter, r *http.Request) error {
 		int(core.XSRFTokenExpiration.Seconds()),
 		config.Config.OrgDomain(orgSubdomain))
 
-	return s.renderJSON(w, http.StatusOK, &responses.RefreshTokenResponse{
+	return s.renderJSON(w, http.StatusOK, &refreshTokenResponse{
 		ExpiresAt: strconv.FormatInt(expiresAt.Unix(), 10),
 	})
 }
 
-func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
+type saveAuthRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type saveAuthResponse struct {
+	ExpiresAt   string `json:"expiresAt"`
+	RedirectURL string `json:"redirectUrl"`
+}
+
+func (s *Server) handleSaveAuth(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.SaveAuthRequest
+	var req saveAuthRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -228,13 +239,18 @@ func (s *Server) saveAuth(w http.ResponseWriter, r *http.Request) error {
 		int(core.XSRFTokenExpiration.Seconds()),
 		config.Config.OrgDomain(orgSubdomain))
 
-	return s.renderJSON(w, http.StatusOK, &responses.SaveAuthResponse{
+	return s.renderJSON(w, http.StatusOK, &saveAuthResponse{
 		ExpiresAt:   strconv.FormatInt(expiresAt.Unix(), 10),
 		RedirectURL: config.Config.OrgBaseURL(orgSubdomain),
 	})
 }
 
-func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
+type obtainAuthTokenResponse struct {
+	AuthURL string `json:"authUrl"`
+	Token   string `json:"token"`
+}
+
+func (s *Server) handleObtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	// Get current user from context
 	ctxUser := internal.ContextUser(ctx)
@@ -274,13 +290,13 @@ func (s *Server) obtainAuthToken(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.ObtainAuthTokenResponse{
+	return s.renderJSON(w, http.StatusOK, &obtainAuthTokenResponse{
 		AuthURL: authURL,
 		Token:   token,
 	})
 }
 
-func (s *Server) logout(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	ctxUser := internal.ContextUser(ctx)
@@ -302,7 +318,7 @@ func (s *Server) logout(w http.ResponseWriter, r *http.Request) error {
 	cookieConfig := newCookieConfig()
 	cookieConfig.DeleteAuthCookie(w, r, config.Config.OrgDomain(subdomain))
 
-	return s.renderJSON(w, http.StatusOK, &responses.StatusResponse{
+	return s.renderJSON(w, http.StatusOK, &statusResponse{
 		Code:    http.StatusOK,
 		Message: "Successfully logged out",
 	})

@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 
@@ -10,10 +11,37 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error {
+type hostInstanceResponse struct {
+	ID         string `json:"id"`
+	SDKName    string `json:"sdkName"`
+	SDKVersion string `json:"sdkVersion"`
+	Status     string `json:"status"`
+	CreatedAt  string `json:"createdAt"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+func hostInstanceFromModel(hostInstance *core.HostInstance) *hostInstanceResponse {
+	if hostInstance == nil {
+		return nil
+	}
+
+	return &hostInstanceResponse{
+		ID:         hostInstance.ID.String(),
+		SDKName:    hostInstance.SDKName,
+		SDKVersion: hostInstance.SDKVersion,
+		Status:     hostInstance.Status.String(),
+		CreatedAt:  strconv.FormatInt(hostInstance.CreatedAt.Unix(), 10),
+		UpdatedAt:  strconv.FormatInt(hostInstance.UpdatedAt.Unix(), 10),
+	}
+}
+
+type pingHostInstanceResponse struct {
+	HostInstance *hostInstanceResponse `json:"hostInstance"`
+}
+
+func (s *Server) handlePingHostInstance(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	pageIDReq := internal.StringPtr(r.URL.Query().Get("pageId"))
@@ -65,7 +93,7 @@ func (s *Server) pingHostInstance(w http.ResponseWriter, r *http.Request) error 
 		return errdefs.ErrHostInstanceStatusNotOnline(errors.New("host instance status is not online"))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.PingHostInstanceResponse{
-		HostInstance: responses.HostInstanceFromModel(onlineHostInstance),
+	return s.renderJSON(w, http.StatusOK, pingHostInstanceResponse{
+		HostInstance: hostInstanceFromModel(onlineHostInstance),
 	})
 }

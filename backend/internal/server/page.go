@@ -2,16 +2,46 @@ package server
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) listPagesBase(ctx context.Context, env *core.Environment, o *core.Organization) (
-	[]*responses.PageResponse,
-	[]*responses.UserResponse,
-	[]*responses.UserGroupResponse,
+type pageResponse struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Route     string `json:"route"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+}
+
+func pageFromModel(page *core.Page) *pageResponse {
+	if page == nil {
+		return nil
+	}
+
+	return &pageResponse{
+		ID:        page.ID.String(),
+		Name:      page.Name,
+		Route:     page.Route,
+		CreatedAt: strconv.FormatInt(page.CreatedAt.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(page.UpdatedAt.Unix(), 10),
+	}
+}
+
+type listPagesResponse struct {
+	Pages      []*pageResponse      `json:"pages"`
+	Groups     []*groupResponse     `json:"groups"`
+	GroupPages []*groupPageResponse `json:"groupPages"`
+	Users      []*userResponse      `json:"users"`
+	UserGroups []*userGroupResponse `json:"userGroups"`
+}
+
+func (s *Server) handleListPagesBase(ctx context.Context, env *core.Environment, o *core.Organization) (
+	[]*pageResponse,
+	[]*userResponse,
+	[]*userGroupResponse,
 	error,
 ) {
 	pages, err := s.db.Page().List(ctx, database.PageByOrganizationID(o.ID), database.PageByEnvironmentID(env.ID), database.PageOrderBy(`array_length(p."path", 1), "path"`))
@@ -29,19 +59,19 @@ func (s *Server) listPagesBase(ctx context.Context, env *core.Environment, o *co
 		return nil, nil, nil, err
 	}
 
-	pagesOut := make([]*responses.PageResponse, 0, len(pages))
+	pagesOut := make([]*pageResponse, 0, len(pages))
 	for _, page := range pages {
-		pagesOut = append(pagesOut, responses.PageFromModel(page))
+		pagesOut = append(pagesOut, pageFromModel(page))
 	}
 
-	usersOut := make([]*responses.UserResponse, 0, len(users))
+	usersOut := make([]*userResponse, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, responses.UserFromModel(u, core.UserOrganizationRoleUnknown, o))
+		usersOut = append(usersOut, userFromModel(u, core.UserOrganizationRoleUnknown, o))
 	}
 
-	userGroupsOut := make([]*responses.UserGroupResponse, 0, len(userGroups))
+	userGroupsOut := make([]*userGroupResponse, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, responses.UserGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, userGroupFromModel(userGroup))
 	}
 
 	return pagesOut, usersOut, userGroupsOut, nil

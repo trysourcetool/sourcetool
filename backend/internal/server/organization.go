@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 
@@ -13,14 +14,42 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) error {
+type organizationResponse struct {
+	ID                string `json:"id"`
+	Subdomain         string `json:"subdomain"`
+	WebSocketEndpoint string `json:"webSocketEndpoint"`
+	CreatedAt         string `json:"createdAt"`
+	UpdatedAt         string `json:"updatedAt"`
+}
+
+func organizationFromModel(o *core.Organization) *organizationResponse {
+	if o == nil {
+		return nil
+	}
+
+	return &organizationResponse{
+		ID:                o.ID.String(),
+		Subdomain:         internal.StringValue(o.Subdomain),
+		WebSocketEndpoint: config.Config.WebSocketOrgBaseURL(internal.StringValue(o.Subdomain)),
+		CreatedAt:         strconv.FormatInt(o.CreatedAt.Unix(), 10),
+		UpdatedAt:         strconv.FormatInt(o.UpdatedAt.Unix(), 10),
+	}
+}
+
+type createOrganizationRequest struct {
+	Subdomain string `json:"subdomain" validate:"required"`
+}
+
+type createOrganizationResponse struct {
+	Organization *organizationResponse `json:"organization"`
+}
+
+func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.CreateOrganizationRequest
+	var req createOrganizationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -114,12 +143,12 @@ func (s *Server) createOrganization(w http.ResponseWriter, r *http.Request) erro
 
 	o, _ = s.db.Organization().Get(ctx, database.OrganizationByID(o.ID))
 
-	return s.renderJSON(w, http.StatusOK, responses.CreateOrganizationResponse{
-		Organization: responses.OrganizationFromModel(o),
+	return s.renderJSON(w, http.StatusOK, createOrganizationResponse{
+		Organization: organizationFromModel(o),
 	})
 }
 
-func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) handleCheckOrganizationSubdomainAvailability(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	subdomain := r.URL.Query().Get("subdomain")
@@ -139,7 +168,7 @@ func (s *Server) checkOrganizationSubdomainAvailability(w http.ResponseWriter, r
 		return errdefs.ErrOrganizationSubdomainAlreadyExists(errors.New("subdomain is reserved"))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.StatusResponse{
+	return s.renderJSON(w, http.StatusOK, statusResponse{
 		Code:    http.StatusOK,
 		Message: "Subdomain is available",
 	})

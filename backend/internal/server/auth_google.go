@@ -17,11 +17,13 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/google"
 	"github.com/trysourcetool/sourcetool/backend/internal/jwt"
 	"github.com/trysourcetool/sourcetool/backend/internal/mail"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/requests"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) requestGoogleAuthLink(w http.ResponseWriter, r *http.Request) error {
+type requestGoogleAuthLinkResponse struct {
+	AuthURL string `json:"authUrl"`
+}
+
+func (s *Server) handleRequestGoogleAuthLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	var hostSubdomain string
@@ -47,15 +49,30 @@ func (s *Server) requestGoogleAuthLink(w http.ResponseWriter, r *http.Request) e
 		return errdefs.ErrInternal(err)
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.RequestGoogleAuthLinkResponse{
+	return s.renderJSON(w, http.StatusOK, &requestGoogleAuthLinkResponse{
 		AuthURL: url,
 	})
 }
 
-func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) error {
+type authenticateWithGoogleRequest struct {
+	Code  string `json:"code" validate:"required"`
+	State string `json:"state" validate:"required"`
+}
+
+type authenticateWithGoogleResponse struct {
+	FirstName                string `json:"firstName,omitempty"`
+	LastName                 string `json:"lastName,omitempty"`
+	AuthURL                  string `json:"authUrl"`
+	Token                    string `json:"token"`
+	HasOrganization          bool   `json:"hasOrganization"`
+	HasMultipleOrganizations bool   `json:"hasMultipleOrganizations"`
+	IsNewUser                bool   `json:"isNewUser"`
+}
+
+func (s *Server) handleAuthenticateWithGoogle(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.AuthenticateWithGoogleRequest
+	var req authenticateWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -130,7 +147,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 			cookieConfig.SetTmpAuthCookie(w, registrationToken, xsrfToken, config.Config.AuthDomain())
 		}
 
-		return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithGoogleResponse{
+		return s.renderJSON(w, http.StatusOK, &authenticateWithGoogleResponse{
 			Token:           registrationToken,
 			IsNewUser:       true,
 			HasOrganization: stateClaims.Flow == jwt.GoogleAuthFlowInvitation,
@@ -203,7 +220,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 						return errdefs.ErrInternal(err)
 					}
 
-					return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithGoogleResponse{
+					return s.renderJSON(w, http.StatusOK, &authenticateWithGoogleResponse{
 						IsNewUser:                false,
 						HasOrganization:          true,
 						HasMultipleOrganizations: true,
@@ -287,7 +304,7 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 		cookieConfig.SetTmpAuthCookie(w, token, xsrfToken, config.Config.AuthDomain())
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.AuthenticateWithGoogleResponse{
+	return s.renderJSON(w, http.StatusOK, &authenticateWithGoogleResponse{
 		AuthURL:         authURL,
 		Token:           token,
 		HasOrganization: orgAccess != nil,
@@ -295,10 +312,20 @@ func (s *Server) authenticateWithGoogle(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) error {
+type registerWithGoogleRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type registerWithGoogleResponse struct {
+	AuthURL         string `json:"authUrl"`
+	Token           string `json:"token"`
+	HasOrganization bool   `json:"hasOrganization"`
+}
+
+func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.RegisterWithGoogleRequest
+	var req registerWithGoogleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -408,17 +435,25 @@ func (s *Server) registerWithGoogle(w http.ResponseWriter, r *http.Request) erro
 	cookieConfig := newCookieConfig()
 	cookieConfig.SetTmpAuthCookie(w, token, xsrfToken, config.Config.AuthDomain())
 
-	return s.renderJSON(w, http.StatusOK, &responses.RegisterWithGoogleResponse{
+	return s.renderJSON(w, http.StatusOK, &registerWithGoogleResponse{
 		Token:           token,
 		AuthURL:         authURL,
 		HasOrganization: hasOrganization,
 	})
 }
 
-func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) error {
+type requestInvitationGoogleAuthLinkRequest struct {
+	InvitationToken string `json:"invitationToken" validate:"required"`
+}
+
+type requestInvitationGoogleAuthLinkResponse struct {
+	AuthURL string `json:"authUrl"`
+}
+
+func (s *Server) handleRequestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	var req requests.RequestInvitationGoogleAuthLinkRequest
+	var req requestInvitationGoogleAuthLinkRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return errdefs.ErrInvalidArgument(err)
 	}
@@ -476,7 +511,7 @@ func (s *Server) requestInvitationGoogleAuthLink(w http.ResponseWriter, r *http.
 		return errdefs.ErrInternal(fmt.Errorf("failed to get google auth code url: %w", err))
 	}
 
-	return s.renderJSON(w, http.StatusOK, &responses.RequestInvitationGoogleAuthLinkResponse{
+	return s.renderJSON(w, http.StatusOK, &requestInvitationGoogleAuthLinkResponse{
 		AuthURL: url,
 	})
 }

@@ -12,10 +12,9 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
-	"github.com/trysourcetool/sourcetool/backend/internal/server/responses"
 )
 
-func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) handleListPages(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	envIDReq := r.URL.Query().Get("environmentId")
 	if envIDReq == "" {
@@ -34,7 +33,7 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	pagesOut, usersOut, userGroupsOut, err := s.listPagesBase(ctx, env, ctxOrg)
+	pagesOut, usersOut, userGroupsOut, err := s.handleListPagesBase(ctx, env, ctxOrg)
 	if err != nil {
 		return err
 	}
@@ -49,17 +48,17 @@ func (s *Server) listPages(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	groupsOut := make([]*responses.GroupResponse, 0, len(groups))
+	groupsOut := make([]*groupResponse, 0, len(groups))
 	for _, group := range groups {
-		groupsOut = append(groupsOut, responses.GroupFromModel(group))
+		groupsOut = append(groupsOut, groupFromModel(group))
 	}
 
-	groupPagesOut := make([]*responses.GroupPageResponse, 0, len(groupPages))
+	groupPagesOut := make([]*groupPageResponse, 0, len(groupPages))
 	for _, groupPage := range groupPages {
-		groupPagesOut = append(groupPagesOut, responses.GroupPageFromModel(groupPage))
+		groupPagesOut = append(groupPagesOut, groupPageFromModel(groupPage))
 	}
 
-	return s.renderJSON(w, http.StatusOK, responses.ListPagesResponse{
+	return s.renderJSON(w, http.StatusOK, listPagesResponse{
 		Pages:      pagesOut,
 		Groups:     groupsOut,
 		GroupPages: groupPagesOut,
