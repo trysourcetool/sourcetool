@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Server) canAddUserToOrganization(ctx context.Context, organizationID uuid.UUID) error {
-	return s.canAddUsersToOrganization(ctx, organizationID, 1)
+	return s.canAddUsersToOrganization(ctx, organizationID, 0)
 }
 
 func (s *Server) canAddUsersToOrganization(ctx context.Context, organizationID uuid.UUID, newUserCount int) error {

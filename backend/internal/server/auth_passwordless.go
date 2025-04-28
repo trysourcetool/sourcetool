@@ -375,7 +375,6 @@ func (s *Server) handleRegisterWithMagicLink(w http.ResponseWriter, r *http.Requ
 	var token, xsrfToken string
 	var expiration time.Duration
 
-
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		// Create the user in a transaction
 		if err := tx.User().Create(ctx, u); err != nil {
