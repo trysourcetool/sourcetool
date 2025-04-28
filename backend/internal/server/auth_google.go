@@ -371,16 +371,6 @@ func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request
 		if err := s.canAddUserToOrganization(ctx, claims.InvitationOrgID); err != nil {
 			return err
 		}
-	} else if !config.Config.IsCloudEdition {
-		orgs, err := s.db.Organization().List(ctx)
-		if err != nil {
-			return err
-		}
-		if len(orgs) > 0 {
-			if err := s.canAddUserToOrganization(ctx, orgs[0].ID); err != nil {
-				return err
-			}
-		}
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
