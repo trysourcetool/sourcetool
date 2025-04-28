@@ -15,19 +15,22 @@ import { useDispatch } from '@/store';
 import { authStore } from '@/store/modules/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router';
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import { object, string } from 'zod';
 import type { z } from 'zod';
 import { usersStore } from '@/store/modules/users';
-
-export type SearchParams = {
-  token: string;
-};
+import { zodValidator } from '@tanstack/zod-adapter';
 
 export default function InvitationSignUpFollowUp() {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const search = useSearch({
+    from: '/_default/auth/invitations/signup/followup/',
+  });
+  const token = search.token;
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -73,7 +76,7 @@ export default function InvitationSignUpFollowUp() {
       )
     ) {
       await dispatch(usersStore.asyncActions.getMe());
-      navigate('/');
+      navigate({ to: '/' });
     } else {
       toast({
         title: t('routes_invitation_signup_followup_toast_error'),
@@ -145,3 +148,14 @@ export default function InvitationSignUpFollowUp() {
     </div>
   );
 }
+
+export const Route = createFileRoute(
+  '/_default/auth/invitations/signup/followup/',
+)({
+  component: InvitationSignUpFollowUp,
+  validateSearch: zodValidator(
+    object({
+      token: string(),
+    }),
+  ),
+});

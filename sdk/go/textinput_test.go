@@ -6,8 +6,8 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket/mock"
@@ -22,9 +22,9 @@ func TestConvertStateToTextInputProto(t *testing.T) {
 	textInputState := &state.TextInputState{
 		ID:           id,
 		Label:        "Test TextInput",
-		Value:        conv.NilValue("test value"),
+		Value:        ptrconv.StringPtr("test value"),
 		Placeholder:  "Enter text",
-		DefaultValue: conv.NilValue("default"),
+		DefaultValue: ptrconv.StringPtr("default"),
 		Required:     true,
 		Disabled:     false,
 		MaxLength:    &maxLength,
@@ -43,9 +43,9 @@ func TestConvertStateToTextInputProto(t *testing.T) {
 		want any
 	}{
 		{"Label", data.Label, textInputState.Label},
-		{"Value", conv.SafeValue(data.Value), conv.SafeValue(textInputState.Value)},
+		{"Value", ptrconv.StringValue(data.Value), ptrconv.StringValue(textInputState.Value)},
 		{"Placeholder", data.Placeholder, textInputState.Placeholder},
-		{"DefaultValue", conv.SafeValue(data.DefaultValue), conv.SafeValue(textInputState.DefaultValue)},
+		{"DefaultValue", ptrconv.StringValue(data.DefaultValue), ptrconv.StringValue(textInputState.DefaultValue)},
 		{"Required", data.Required, textInputState.Required},
 		{"Disabled", data.Disabled, textInputState.Disabled},
 		{"MaxLength", *data.MaxLength, *textInputState.MaxLength},
@@ -68,9 +68,9 @@ func TestConvertTextInputProtoToState(t *testing.T) {
 
 	data := &widgetv1.TextInput{
 		Label:        "Test TextInput",
-		Value:        conv.NilValue("test value"),
+		Value:        ptrconv.StringPtr("test value"),
 		Placeholder:  "Enter text",
-		DefaultValue: conv.NilValue("default"),
+		DefaultValue: ptrconv.StringPtr("default"),
 		Required:     true,
 		Disabled:     false,
 		MaxLength:    &maxLength,
@@ -90,9 +90,9 @@ func TestConvertTextInputProtoToState(t *testing.T) {
 	}{
 		{"ID", state.ID, id},
 		{"Label", state.Label, data.Label},
-		{"Value", conv.SafeValue(state.Value), conv.SafeValue(data.Value)},
+		{"Value", ptrconv.StringValue(state.Value), ptrconv.StringValue(data.Value)},
 		{"Placeholder", state.Placeholder, data.Placeholder},
-		{"DefaultValue", conv.SafeValue(state.DefaultValue), conv.SafeValue(data.DefaultValue)},
+		{"DefaultValue", ptrconv.StringValue(state.DefaultValue), ptrconv.StringValue(data.DefaultValue)},
 		{"Required", state.Required, data.Required},
 		{"Disabled", state.Disabled, data.Disabled},
 		{"MaxLength", *state.MaxLength, *data.MaxLength},
@@ -167,9 +167,9 @@ func TestTextInput(t *testing.T) {
 		want any
 	}{
 		{"Label", state.Label, label},
-		{"Value", conv.SafeValue(state.Value), defaultValue},
+		{"Value", ptrconv.StringValue(state.Value), defaultValue},
 		{"Placeholder", state.Placeholder, placeholder},
-		{"DefaultValue", conv.SafeValue(state.DefaultValue), defaultValue},
+		{"DefaultValue", ptrconv.StringValue(state.DefaultValue), defaultValue},
 		{"Required", state.Required, true},
 		{"Disabled", state.Disabled, true},
 		{"MaxLength", *state.MaxLength, maxLength},

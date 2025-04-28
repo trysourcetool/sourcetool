@@ -9,20 +9,19 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/trysourcetool/sourcetool/backend/config"
-	_ "github.com/trysourcetool/sourcetool/backend/docs"
-	"github.com/trysourcetool/sourcetool/backend/fixtures"
-	"github.com/trysourcetool/sourcetool/backend/infra"
-	"github.com/trysourcetool/sourcetool/backend/infra/mailer"
-	"github.com/trysourcetool/sourcetool/backend/infra/store"
-	"github.com/trysourcetool/sourcetool/backend/logger"
-	"github.com/trysourcetool/sourcetool/backend/postgres"
-	"github.com/trysourcetool/sourcetool/backend/server"
-	"github.com/trysourcetool/sourcetool/backend/ws"
+	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
+	"github.com/trysourcetool/sourcetool/backend/internal/permission"
+	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
+	"github.com/trysourcetool/sourcetool/backend/internal/pubsub"
+	"github.com/trysourcetool/sourcetool/backend/internal/server"
+	"github.com/trysourcetool/sourcetool/backend/internal/ws"
 )
 
 func init() {
@@ -30,25 +29,27 @@ func init() {
 	logger.Init()
 }
 
-// @title Sourcetool API
-// @version 1.0
-// @description Sourcetool's API documentation
-// @termsOfService http://swagger.io/terms/
-// @host https://api.trysourcetool.com
-// @BasePath /api/v1.
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	db, err := postgres.New()
+	pqClient, err := postgres.Open()
 	if err != nil {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
 	}
 
-	dep := infra.NewDependency(store.NewCE(db), mailer.NewCE())
+	redisClient, err := internal.OpenRedis()
+	if err != nil {
+		logger.Logger.Fatal("failed to open redis", zap.Error(err))
+	}
+
+	db := postgres.New(pqClient)
+	pubsub := pubsub.New(redisClient)
+	wsManager := ws.NewManager(ctx, db, pubsub)
+	upgrader := internal.NewUpgrader()
 
 	if config.Config.Env == config.EnvLocal {
-		if err := fixtures.Load(ctx, dep.Store); err != nil {
+		if err := internal.LoadFixtures(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
 		}
 	}
@@ -59,17 +60,19 @@ func main() {
 		logger.Logger.Info(fmt.Sprintf("Defaulting to port %s\n", port))
 	}
 
-	eg, egCtx := errgroup.WithContext(ctx)
+	handler := chi.NewRouter()
+	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader)
+	s.Install(handler)
+
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      600 * time.Second,
-		Handler:           server.New(dep),
+		Handler:           handler,
 		Addr:              fmt.Sprintf(":%s", port),
 	}
 
-	ws.InitWebSocketConns(ctx, dep.Store)
-
+	eg, egCtx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -91,16 +94,22 @@ func main() {
 			shutdownErr = fmt.Errorf("server shutdown: %v", err)
 		}
 
-		logger.Logger.Info("Closing WebSocket connections...")
-		ws.GetConnManager().Close()
+		if err := wsManager.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("WebSocket manager graceful shutdown failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("WebSocket manager gracefully stopped")
+		}
 
-		// Close the database connection regardless of server shutdown result.
-		logger.Logger.Info("Closing database connection...")
-		if db != nil {
-			if err := db.Close(); err != nil {
-				// Log DB closing error, but prioritize returning the server shutdown error if it occurred.
-				logger.Logger.Error("Failed to close database connection", zap.Error(err))
-			}
+		if err := redisClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("Redis client close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("Redis client gracefully stopped")
+		}
+
+		if err := pqClient.Close(); err != nil {
+			logger.Logger.Sugar().Errorf("DB connection close failed: %v", err)
+		} else {
+			logger.Logger.Sugar().Info("DB connection gracefully stopped")
 		}
 
 		logger.Logger.Info("Server shutdown complete")

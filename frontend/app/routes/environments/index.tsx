@@ -21,8 +21,12 @@ import { useDispatch, useSelector } from '@/store';
 import { environmentsStore } from '@/store/modules/environments';
 import { Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { $path } from 'safe-routes';
-import { Link, useNavigate } from 'react-router';
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import {
@@ -34,7 +38,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { useQueryState } from 'nuqs';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +49,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { ErrorResponse } from '@/api/instance';
 import { Input } from '@/components/ui/input';
+import { zodValidator } from '@tanstack/zod-adapter';
+import { number, object } from 'zod';
 
 export default function Environments() {
   const isInitialLoading = useRef(false);
@@ -54,6 +59,8 @@ export default function Environments() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
   const [search, setSearch] = useState('');
+  const searchParams = useSearch({ from: '/_auth/environments/' });
+  const page = searchParams.page || 1;
   const environments = useSelector(environmentsStore.selector.getEnvironments);
   const isDeleteEnvironmentWaiting = useSelector(
     (state) => state.environments.isDeleteEnvironmentWaiting,
@@ -62,10 +69,6 @@ export default function Environments() {
     null,
   );
   const navigate = useNavigate();
-  const [page, setPage] = useQueryState('page', {
-    parse: (query: string) => parseInt(query, 10),
-    serialize: (value) => value.toString(),
-  });
 
   const pageSize = 10;
 
@@ -87,7 +90,7 @@ export default function Environments() {
       (page || 1) * pageSize - pageSize,
       (page || 1) * pageSize,
     );
-  }, [environments, page]);
+  }, [filteredEnvironments, page]);
 
   const handleDeleteEnvironment = async () => {
     if (isDeleteEnvironmentWaiting || !selectEnvironmentId) {
@@ -140,7 +143,7 @@ export default function Environments() {
       <PageHeader label={t('routes_environments_page_header')} />
       <div className="flex w-screen flex-col gap-4 px-4 py-6 md:w-auto md:gap-6 md:px-6">
         <div className="flex flex-col justify-between gap-2 md:flex-row md:pt-6">
-          <p className="text-xl font-bold text-foreground">
+          <p className="text-foreground text-xl font-bold">
             {t('routes_environments_title')}
           </p>
         </div>
@@ -156,7 +159,7 @@ export default function Environments() {
           </div>
           <div>
             <Button asChild>
-              <Link to={$path('/environments/new')}>
+              <Link to={'/environments/new'}>
                 <Plus />
                 {t('routes_environments_create_new')}
               </Link>
@@ -181,11 +184,10 @@ export default function Environments() {
                   key={environment.id}
                   className="cursor-pointer"
                   onClick={() => {
-                    navigate(
-                      $path('/environments/:environmentId', {
-                        environmentId: environment.id,
-                      }),
-                    );
+                    navigate({
+                      to: '/environments/$environmentId',
+                      params: { environmentId: environment.id },
+                    });
                   }}
                 >
                   <TableCell className="truncate">{environment.name}</TableCell>
@@ -235,7 +237,7 @@ export default function Environments() {
               ))}
             </TableBody>
           </Table>
-          <div className="border-t bg-muted p-4">
+          <div className="bg-muted border-t p-4">
             <Pagination className="flex justify-end">
               <PaginationContent>
                 {page !== 1 && page !== null && (
@@ -249,7 +251,10 @@ export default function Environments() {
                         if (page === 1 || page === null) {
                           return;
                         }
-                        setPage((page || 1) - 1);
+                        navigate({
+                          to: '/environments',
+                          search: { page: (page || 1) - 1 },
+                        });
                       }}
                     />
                     <PaginationLink
@@ -257,7 +262,10 @@ export default function Environments() {
                         if (page === 1 || page === null) {
                           return;
                         }
-                        setPage((page || 1) - 1);
+                        navigate({
+                          to: '/environments',
+                          search: { page: (page || 1) - 1 },
+                        });
                       }}
                       isActive
                       className={clsx(
@@ -284,7 +292,12 @@ export default function Environments() {
                   return (
                     <PaginationItem key={index} className="hidden md:block">
                       <PaginationLink
-                        onClick={() => setPage(index + 1)}
+                        onClick={() =>
+                          navigate({
+                            to: '/environments',
+                            search: { page: index + 1 },
+                          })
+                        }
                         className={clsx(
                           page !== index + 1 && 'cursor-pointer',
                           page === index + 1 && 'pointer-events-none',
@@ -306,7 +319,10 @@ export default function Environments() {
                         if (page === pageCount) {
                           return;
                         }
-                        setPage((page || 1) + 1);
+                        navigate({
+                          to: '/environments',
+                          search: { page: (page || 1) + 1 },
+                        });
                       }}
                       className={clsx(
                         page !== pageCount && 'cursor-pointer',
@@ -318,7 +334,10 @@ export default function Environments() {
                         if (page === pageCount) {
                           return;
                         }
-                        setPage((page || 1) + 1);
+                        navigate({
+                          to: '/environments',
+                          search: { page: (page || 1) + 1 },
+                        });
                       }}
                       isActive
                       className={clsx(
@@ -390,3 +409,12 @@ export default function Environments() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/environments/')({
+  component: Environments,
+  validateSearch: zodValidator(
+    object({
+      page: number().optional(),
+    }),
+  ),
+});

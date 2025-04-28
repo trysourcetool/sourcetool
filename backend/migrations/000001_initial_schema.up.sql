@@ -207,9 +207,7 @@ CREATE UNIQUE INDEX idx_host_instance_status_name ON "host_instance_status" ("na
 INSERT INTO "host_instance_status" ("code", "name") VALUES
   (0, 'unknown'),
   (1, 'online'),
-  (2, 'unreachable'),
-  (3, 'offline'),
-  (4, 'shuttingDown');
+  (2, 'unreachable');
 
 CREATE TABLE "host_instance" (
   "id"              UUID          NOT NULL,
@@ -296,8 +294,7 @@ CREATE TRIGGER validate_page
 CREATE OR REPLACE FUNCTION validate_session()
 RETURNS TRIGGER AS $$
 DECLARE
-    api_key_org_id UUID;
-    host_instance_org_id UUID;
+    environment_org_id UUID;
 BEGIN
     IF NOT EXISTS (
         SELECT 1
@@ -308,20 +305,12 @@ BEGIN
         RAISE EXCEPTION 'User % must belong to organization % to create a session', NEW.user_id, NEW.organization_id;
     END IF;
 
-    SELECT organization_id INTO api_key_org_id
-    FROM "api_key"
-    WHERE id = NEW.api_key_id;
+    SELECT organization_id INTO environment_org_id
+    FROM "environment"
+    WHERE id = NEW.environment_id;
 
-    IF api_key_org_id != NEW.organization_id THEN
-        RAISE EXCEPTION 'API key % must belong to organization % to create a session', NEW.api_key_id, NEW.organization_id;
-    END IF;
-
-    SELECT organization_id INTO host_instance_org_id
-    FROM "host_instance"
-    WHERE id = NEW.host_instance_id;
-
-    IF host_instance_org_id != NEW.organization_id THEN
-        RAISE EXCEPTION 'Host instance % must belong to organization % to create a session', NEW.host_instance_id, NEW.organization_id;
+    IF environment_org_id != NEW.organization_id THEN
+        RAISE EXCEPTION 'Environment % must belong to organization % to create a session', NEW.environment_id, NEW.organization_id;
     END IF;
 
     RETURN NEW;
@@ -332,14 +321,12 @@ CREATE TABLE "session" (
   "id"               UUID        NOT NULL,
   "organization_id"  UUID        NOT NULL,
   "user_id"          UUID        NOT NULL,
-  "api_key_id"       UUID        NOT NULL,
-  "host_instance_id" UUID        NOT NULL,
+  "environment_id"   UUID        NOT NULL,
   "created_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE CASCADE,
   FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE,
-  FOREIGN KEY ("api_key_id") REFERENCES "api_key"("id") ON DELETE CASCADE,
-  FOREIGN KEY ("host_instance_id") REFERENCES "host_instance"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("environment_id") REFERENCES "environment"("id") ON DELETE CASCADE,
   PRIMARY KEY ("id")
 );
 
@@ -353,6 +340,52 @@ CREATE TRIGGER validate_session
     BEFORE INSERT OR UPDATE ON "session"
     FOR EACH ROW
     EXECUTE FUNCTION validate_session();
+
+-- session_host_instance table
+CREATE OR REPLACE FUNCTION validate_session_host_instance()
+RETURNS TRIGGER AS $$
+DECLARE
+    api_key_environment_id UUID;
+    session_environment_id UUID;
+BEGIN
+    SELECT environment_id INTO api_key_environment_id
+    FROM "api_key" ak
+    JOIN "host_instance" hi ON hi.api_key_id = ak.id
+    WHERE hi.id = NEW.host_instance_id;
+
+    SELECT environment_id INTO session_environment_id
+    FROM "session"
+    WHERE id = NEW.session_id;
+
+    IF api_key_environment_id != session_environment_id THEN
+        RAISE EXCEPTION 'Host instance (API key environment: %) and Session (environment: %) must belong to the same environment', api_key_environment_id, session_environment_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE "session_host_instance" (
+  "id"               UUID        NOT NULL,
+  "session_id"       UUID        NOT NULL,
+  "host_instance_id" UUID        NOT NULL,
+  "created_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at"       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("session_id") REFERENCES "session"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("host_instance_id") REFERENCES "host_instance"("id") ON DELETE CASCADE,
+  UNIQUE("session_id", "host_instance_id"),
+  PRIMARY KEY ("id")
+);
+
+CREATE TRIGGER update_session_host_instance_updated_at
+    BEFORE UPDATE ON "session_host_instance"
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER validate_session_host_instance
+    BEFORE INSERT OR UPDATE ON "session_host_instance"
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_session_host_instance();
 
 -- group table
 CREATE TABLE "group" (

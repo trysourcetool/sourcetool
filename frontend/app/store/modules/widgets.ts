@@ -291,9 +291,28 @@ const slice = createSlice({
           }
         }
       } else {
+        const widgetState =
+          state.widgetStates.entities[action.payload.widget?.id ?? ''];
+        const payloadWidget = action.payload.widget;
+        const widget =
+          state.widgets.entities[action.payload.widget?.id ?? ''].widget;
+
+        if (widget) {
+          inputWidgetTypes.forEach((type) => {
+            if (widget[type] && payloadWidget?.[type]) {
+              if (
+                payloadWidget[type].defaultValue !== widget[type].defaultValue
+              ) {
+                payloadWidget[type].value = payloadWidget[type].defaultValue;
+                widgetState.value = payloadWidget[type].defaultValue;
+              }
+            }
+          });
+        }
+
         widgetsAdapter.updateOne(state.widgets, {
           id: action.payload.widget?.id ?? '',
-          changes: action.payload,
+          changes: { ...action.payload, widget: { ...payloadWidget } },
         });
       }
     },
@@ -323,9 +342,7 @@ const slice = createSlice({
               const childWidgetType = Object.keys(childWidget.widget).filter(
                 (key) => key !== 'id',
               )[0] as WidgetType;
-              console.log({
-                childWidgetType: childWidget?.widget?.[childWidgetType],
-              });
+
               if ('value' in (childWidget?.widget?.[childWidgetType] ?? {})) {
                 (childWidget.widget[childWidgetType] as any).value = (
                   childWidget.widget[childWidgetType] as any
@@ -344,13 +361,10 @@ const slice = createSlice({
         }
       });
 
-      console.log({ hasClearOnSubmit });
-
       if (!hasClearOnSubmit) {
         state.isWidgetWaiting = false;
       } else {
-        // Update with 1 second later to avoid generating the same timestamp
-        state.updateAt = dayjs().add(1, 'second').unix();
+        state.updateAt = dayjs().valueOf();
       }
     },
     clearWidgets: (state) => {
@@ -362,16 +376,6 @@ const slice = createSlice({
     setWidgetState: (state, action: PayloadAction<SetWidgetStatePayload>) => {
       const widget = state.widgets.entities[action.payload.widgetId];
       if (widget?.widget) {
-        console.log(
-          'validateWidgetValue',
-          current(widget.widget),
-          validateWidgetValue(
-            current(widget.widget),
-            action.payload.widgetType,
-            action.payload.value,
-          ),
-        );
-
         const validateResult = validateWidgetValue(
           current(widget.widget),
           action.payload.widgetType,
@@ -393,7 +397,6 @@ const slice = createSlice({
       }
     },
     setWidgetValue: (state, action: PayloadAction<SetWidgetStatePayload>) => {
-      console.log('setWidgetValue', action.payload);
       const widget = state.widgets.entities[action.payload.widgetId];
       const widgets = state.widgets.ids.map((id) => state.widgets.entities[id]);
       if (widget.widget) {
@@ -402,7 +405,7 @@ const slice = createSlice({
             widgets,
             widget.path ?? [],
           );
-          console.log({ childFormItemWidgetIds });
+
           let hasError = false;
           childFormItemWidgetIds.forEach((id) => {
             const childWidget = state.widgets.entities[id];
@@ -435,10 +438,10 @@ const slice = createSlice({
             action.payload.widgetType,
             action.payload.value,
           );
-          console.log('validateResult', validateResult);
+
           if (validateResult.success) {
             const hasParentForm = checkParentForm(widgets, widget.path ?? []);
-            console.log({ hasParentForm });
+
             if (
               widget.widget &&
               Object.keys(widget.widget).includes(action.payload.widgetType)

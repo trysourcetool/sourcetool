@@ -4,65 +4,66 @@ sidebar_position: 5
 
 # Checkbox
 
-The Checkbox widget provides a toggleable input control that allows users to select or deselect an option.
+`Checkbox` is a single true/false toggle. It is ideal for opt‑in terms\, feature flags\, or any binary decision.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `bool` | `False` | Whether the checkbox is checked |
+```go
+checked := ui.Checkbox(label string, opts ...checkbox.Option) bool
+```
 
-## Properties
+The function returns the current checked state on *this* execution of the page.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | `""` | Text displayed next to the checkbox |
-| `default_value` | `bool` | `False` | Initial checked state of the checkbox |
-| `required` | `bool` | `False` | Whether the checkbox must be checked |
-| `disabled` | `bool` | `False` | Whether the checkbox is disabled |
+## Option helpers
+
+| Helper | Effect | Default |
+|--------|--------|---------|
+| `checkbox.WithDefaultValue(true)` | Sets the initial value for a **new** session. | `false` |
+| `checkbox.WithRequired(true)` | Marks the field as required inside a [`Form`](./form); the form will not submit until checked. | `false` |
+| `checkbox.WithDisabled(true)` | Renders the control as read‑only. | `false` |
+
+## Behaviour
+
+* The value is kept in session state (`bool`) – it does **not** reset between reruns like a Button.
+* Changing the label does **not** affect stored data; only visual text.
+* `WithDefaultValue` applies only if no previous value exists in the user’s session.
 
 ## Examples
 
-### Basic Checkbox
+### Simple checkbox
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/checkbox"
-)
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic checkbox
-        checkbox := ui.Checkbox("Subscribe to newsletter")
-    }
+subscribed := ui.Checkbox("Subscribe to newsletter")
+if subscribed {
+    sendWelcomeEmail(user)
 }
 ```
 
-### Default Checkbox
+### Pre‑checked & disabled
 
 ```go
-// Create a default checkbox
-checkbox := ui.Checkbox("Subscribe to newsletter", checkbox.DefaultValue(true))
+ui.Checkbox("Beta feature enabled",
+    checkbox.WithDefaultValue(true),
+    checkbox.WithDisabled(true),
+)
 ```
 
-### Required Checkbox
+### Required checkbox inside a form
 
 ```go
-// Create a required checkbox with description
-checkbox := ui.Checkbox("Subscribe to newsletter", checkbox.Required(true))
+form, submitted := ui.Form("Submit")
+if submitted {
+    // form validated, save data
+}
+agg := ui.Checkbox("I agree to the terms", checkbox.WithRequired(true))
+if submitted && !agg {
+    return errors.New("should never happen – form blocks submission")
+}
 ```
 
-### Disabled Checkbox
+---
 
-```go
-// Create a disabled checkbox
-checkbox := ui.Checkbox("Subscribe to newsletter", checkbox.Disabled(true))
-```
+### Related widgets
 
-## Related Components
-
-- [CheckboxGroup](./checkbox-group) - For managing multiple related checkboxes
-- [Radio](./radio) - For mutually exclusive options (unlike checkboxes)
+* [`CheckboxGroup`](./checkbox-group) – multi‑choice set of checkboxes.  
+* [`Radio`](./radio) – choose exactly one option out of many.

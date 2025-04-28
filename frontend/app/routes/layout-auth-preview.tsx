@@ -1,6 +1,6 @@
 import { AppPreviewLayout } from '@/components/layout/app-preview-layout';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Outlet } from 'react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export default function AuthLayout() {
   return (
@@ -11,3 +11,7 @@ export default function AuthLayout() {
     </SidebarProvider>
   );
 }
+
+export const Route = createFileRoute('/_preview')({
+  component: AuthLayout,
+});

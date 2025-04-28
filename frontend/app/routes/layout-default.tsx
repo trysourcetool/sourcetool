@@ -1,11 +1,14 @@
 import { PlainNavbarLayout } from '@/components/layout/plain-navbar-layout';
-import { Outlet } from 'react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
-export default function AuthLayout() {
-  console.log('AuthLayout');
+export default function DefaultLayout() {
   return (
     <PlainNavbarLayout>
       <Outlet />
     </PlainNavbarLayout>
   );
 }
+
+export const Route = createFileRoute('/_default')({
+  component: DefaultLayout,
+});

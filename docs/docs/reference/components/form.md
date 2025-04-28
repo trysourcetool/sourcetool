@@ -4,61 +4,71 @@ sidebar_position: 15
 
 # Form
 
-The Form widget provides a container for organizing form elements with built-in submission handling.
+`Form` groups several widgets, adds a submit button, and returns whether the user just pressed it.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `bool` | `False` | Current submission state of the form |
+```go
+formUI, submitted := ui.Form(buttonLabel string, opts ...form.Option)
+```
 
-## Properties
+* **`formUI`** – a *child* `UIBuilder` that you use to place the fields belonging to the form.
+* **`submitted`** – `true` only on the execution immediately *after* the user presses the submit button. It resets to `false` on the next run.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `button_label` | `string` | `"Submit"` | Text displayed on the form's submit button |
-| `button_disabled` | `bool` | `False` | Whether the submit button is disabled |
-| `clear_on_submit` | `bool` | `False` | Whether to clear form inputs after submission |
+## Option helpers
+
+| Helper | Purpose | Default |
+|--------|---------|---------|
+| `form.WithButtonDisabled(true)` | Renders the submit button as disabled. | `false` |
+| `form.WithClearOnSubmit(true)` | Clears all contained field values once the form is successfully submitted. | `false` |
+
+## Behaviour notes
+
+* Calling widgets **directly** on the parent builder after a `Form` call will render them *below* the form, not inside it. Always use `formUI` for form fields.
+* If `WithClearOnSubmit` is disabled, each field keeps its previous value between submissions (session‑scoped state).
+* The submit button label is the **first argument**; there is no separate option for it.
 
 ## Examples
 
-### Basic Form
+### Minimal form
 
 ```go
-package main
+func settingsPage(ui sourcetool.UIBuilder) error {
+    formUI, submitted := ui.Form("Save")
 
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/form"
-    "github.com/trysourcetool/sourcetool-go/textinput"
-)
+    username := formUI.TextInput("Username")
+    newsletter := formUI.Checkbox("Subscribe to newsletter")
 
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic form
-        form, submitted := ui.Form("Update", form.ClearOnSubmit(true))
-
-        // Add form elements
-        nameInput := form.TextInput("Name", textinput.Placeholder("Enter your name"), textinput.DefaultValue(defaultName), textinput.Required(true))
-        emailInput := form.TextInput("Email", textinput.Placeholder("Enter your email"), textinput.DefaultValue(defaultEmail))
-
-        if submitted {
-            user := User{
-                Name:   formName,
-                Email:  formEmail
-            }
-            if err := createUser(&user); err != nil {
-                return err
-            }
-        }
+    if submitted {
+        return saveSettings(username, newsletter)
     }
+    return nil
 }
 ```
 
-## Related Components
+### Form that resets after submit
 
-- [TextInput](./text-input) - For single-line text input
-- [TextArea](./textarea) - For multi-line text input
-- [Checkbox](./checkbox) - For boolean input
-- [Select](./select) - For selecting from predefined options
-- [DateInput](./date-input) - For date selection
+```go
+formUI, submitted := ui.Form("Create", form.WithClearOnSubmit(true))
+name  := formUI.TextInput("Name",  textinput.Required(true))
+email := formUI.TextInput("Email", textinput.Required(true))
+
+if submitted {
+    _ = createUser(name, email)
+}
+```
+
+### Disabled button until prerequisites met
+
+```go
+formUI, _ := ui.Form("Coming soon", form.WithButtonDisabled(true))
+formUI.Markdown("Feature in beta – signup closed.")
+```
+
+---
+
+### Related widgets
+
+* [`TextInput`](./text-input) – single‑line text field.
+* [`Checkbox`](./checkbox) – boolean toggle.
+* [`Table`](./table) – displaying submitted data.

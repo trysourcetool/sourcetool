@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useDispatch, useSelector } from '@/store';
 import { widgetsStore } from '@/store/modules/widgets';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router';
+import { useParams, useLocation, useNavigate } from '@tanstack/react-router';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -19,18 +19,17 @@ import {
   toBinary,
   toJson,
 } from '@bufbuild/protobuf';
-import {
-  WidgetSchema,
-  type Widget,
-} from '@/pb/ts/widget/v1/widget_pb';
+import { WidgetSchema, type Widget } from '@/pb/ts/widget/v1/widget_pb';
 import { pagesStore } from '@/store/modules/pages';
 import type { WidgetType } from '@/store/modules/widgets';
 import { hostInstancesStore } from '@/store/modules/hostInstances';
-import { $path } from 'safe-routes';
 
 const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
   const dispatch = useDispatch();
-  const { '*': path } = useParams();
+  const { _splat: path } = useParams({
+    strict: false,
+  });
+
   const currentPageId = useRef('');
   const currentSessionId = useRef('');
   const prevVisibilityStatus = useRef(!document.hidden);
@@ -171,7 +170,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
           )
         ) {
           currentSessionId.current = '';
-          navigate($path('/error/hostInstancePingError'));
+          navigate({ to: '/error/hostInstancePingError' });
           return;
         }
         if (pageId && currentPageId.current === '') {
@@ -224,9 +223,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         dispatch(pagesStore.actions.clearException());
         handleCloseSession();
         currentPageId.current = '';
-        setTimeout(() => {
-          onDisable();
-        }, 1000);
+        onDisable();
       }
       isInitialLoading.current = false;
     })();
@@ -258,8 +255,6 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
       }
     });
 
-    console.log({ states });
-
     sendMessage(
       toBinary(
         MessageSchema,
@@ -276,7 +271,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         }),
       ),
     );
-  }, [widgetUpdateAt]);
+  }, [widgetEntities, sendMessage]);
 
   useEffect(() => {
     if (widgetUpdateAt && currentPageId.current) {
@@ -310,7 +305,7 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
             )
           ) {
             currentSessionId.current = '';
-            navigate($path('/error/hostInstancePingError'));
+            navigate({ to: '/error/hostInstancePingError' });
             return;
           }
 
@@ -357,16 +352,13 @@ export const WebSocketController = () => {
   useEffect(() => {
     if (
       isAuthChecked === 'checked' &&
-      ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) || !ENVIRONMENTS.IS_CLOUD_EDITION) &&
+      ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) ||
+        !ENVIRONMENTS.IS_CLOUD_EDITION) &&
       location.pathname.match(/^\/pages\/.*$/)
     ) {
       setIsSocketReady(true);
     }
-  }, [
-    location.pathname,
-    isSubDomainMatched,
-    isAuthChecked,
-  ]);
+  }, [location.pathname, isSubDomainMatched, isAuthChecked]);
 
   return (
     <>

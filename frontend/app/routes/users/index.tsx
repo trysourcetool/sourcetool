@@ -39,9 +39,13 @@ import { useDispatch, useSelector } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { Ellipsis, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
-import { object, string } from 'zod';
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
+import { boolean, number, object, string } from 'zod';
 import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -64,7 +68,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useQueryState } from 'nuqs';
+// import { useQueryState } from 'nuqs';
 import {
   Pagination,
   PaginationContent,
@@ -75,6 +79,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import clsx from 'clsx';
+import { zodValidator } from '@tanstack/zod-adapter';
 
 const InviteForm = () => {
   const dispatch = useDispatch();
@@ -82,7 +87,9 @@ const InviteForm = () => {
   const { toast } = useToast();
   const { t } = useTranslation('common');
 
-  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
+  const isInviteWaiting = useSelector(
+    (state) => state.users.isCreateUserInvitationsWaiting,
+  );
 
   const schema = object({
     emails: string({
@@ -135,8 +142,12 @@ const InviteForm = () => {
       }),
     );
 
-    if (usersStore.asyncActions.createUserInvitations.fulfilled.match(resultAction)) {
-      navigate($path('/users'));
+    if (
+      usersStore.asyncActions.createUserInvitations.fulfilled.match(
+        resultAction,
+      )
+    ) {
+      navigate({ to: '/users', search: { invite: undefined } });
       toast({
         title: t('routes_users_toast_invited'),
         description: t('routes_users_toast_invited_description'),
@@ -168,7 +179,7 @@ const InviteForm = () => {
                   {...field}
                 />
               </FormControl>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('routes_users_invite_email_help')}
               </p>
               <FormMessage />
@@ -217,25 +228,25 @@ const InviteForm = () => {
   );
 };
 
-export default function Users() {
+function Users() {
   const isInitialLoading = useRef(false);
   const dispatch = useDispatch();
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
-  const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
-  const [page, setPage] = useQueryState('page', {
-    parse: (query: string) => parseInt(query, 10),
-    serialize: (value) => value.toString(),
-  });
+  const searchParams = useSearch({ from: '/_auth/users/' });
+  const page = searchParams.page || 1;
+  const invite = searchParams.invite || false;
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
   const me = useSelector(usersStore.selector.getUserMe);
-  const isInviteWaiting = useSelector((state) => state.users.isCreateUserInvitationsWaiting);
+  const isInviteWaiting = useSelector(
+    (state) => state.users.isCreateUserInvitationsWaiting,
+  );
   const isInvitationsResendWaiting = useSelector(
     (state) => state.users.isResendUserInvitationWaiting,
   );
@@ -326,9 +337,7 @@ export default function Users() {
       }),
     );
 
-    if (
-      usersStore.asyncActions.deleteUser.fulfilled.match(resultAction)
-    ) {
+    if (usersStore.asyncActions.deleteUser.fulfilled.match(resultAction)) {
       toast({
         title: t('routes_users_toast_user_deleted'),
         description: t('routes_users_toast_user_deleted_description', {
@@ -365,7 +374,7 @@ export default function Users() {
       <PageHeader label={t('routes_users_page_header')} />
       <div className="flex flex-col gap-4 px-4 py-6 md:gap-6 md:px-6">
         <div className="flex flex-col justify-between gap-2 md:flex-row md:pt-6">
-          <p className="text-xl font-bold text-foreground">
+          <p className="text-foreground text-xl font-bold">
             {t('routes_users_title')}
           </p>
         </div>
@@ -382,7 +391,7 @@ export default function Users() {
           </div>
           <div>
             <Button asChild>
-              <Link to={$path('/users/invite')}>
+              <Link to={'/users'} search={{ invite: true }}>
                 <Plus />
                 {t('routes_users_invite_button')}
               </Link>
@@ -406,10 +415,10 @@ export default function Users() {
                 if (user.type === 'invitation') {
                   return (
                     <TableRow key={user.id}>
-                      <TableCell className="truncate font-normal text-muted-foreground">
+                      <TableCell className="text-muted-foreground truncate font-normal">
                         {t('routes_users_invitation_sent')}
                       </TableCell>
-                      <TableCell className="truncate font-normal text-muted-foreground">
+                      <TableCell className="text-muted-foreground truncate font-normal">
                         {user.email}
                       </TableCell>
                       <TableCell></TableCell>
@@ -434,11 +443,12 @@ export default function Users() {
                       key={user.id}
                       className="cursor-pointer"
                       onClick={() => {
-                        navigate(
-                          $path('/users/:userId', {
+                        navigate({
+                          to: '/users/$userId',
+                          params: {
                             userId: user.id,
-                          }),
-                        );
+                          },
+                        });
                       }}
                     >
                       <TableCell className="truncate font-medium">
@@ -484,7 +494,7 @@ export default function Users() {
               })}
             </TableBody>
           </Table>
-          <div className="border-t bg-muted p-4">
+          <div className="bg-muted border-t p-4">
             <Pagination className="flex justify-end">
               <PaginationContent>
                 {page !== 1 && page !== null && (
@@ -498,7 +508,10 @@ export default function Users() {
                         if (page === 1 || page === null) {
                           return;
                         }
-                        setPage((page || 1) - 1);
+                        navigate({
+                          to: '.',
+                          search: { page: (page || 1) - 1 },
+                        });
                       }}
                     />
                     <PaginationLink
@@ -506,7 +519,10 @@ export default function Users() {
                         if (page === 1 || page === null) {
                           return;
                         }
-                        setPage((page || 1) - 1);
+                        navigate({
+                          to: '.',
+                          search: { page: (page || 1) - 1 },
+                        });
                       }}
                       isActive
                       className={clsx(
@@ -533,7 +549,9 @@ export default function Users() {
                   return (
                     <PaginationItem key={index} className="hidden md:block">
                       <PaginationLink
-                        onClick={() => setPage(index + 1)}
+                        onClick={() =>
+                          navigate({ to: '.', search: { page: index + 1 } })
+                        }
                         className={clsx(
                           page !== index + 1 && 'cursor-pointer',
                           page === index + 1 && 'pointer-events-none',
@@ -555,7 +573,10 @@ export default function Users() {
                         if (page === pageCount) {
                           return;
                         }
-                        setPage((page || 1) + 1);
+                        navigate({
+                          to: '.',
+                          search: { page: (page || 1) + 1 },
+                        });
                       }}
                       className={clsx(
                         page !== pageCount && 'cursor-pointer',
@@ -567,7 +588,10 @@ export default function Users() {
                         if (page === pageCount) {
                           return;
                         }
-                        setPage((page || 1) + 1);
+                        navigate({
+                          to: '.',
+                          search: { page: (page || 1) + 1 },
+                        });
                       }}
                       isActive
                       className={clsx(
@@ -585,19 +609,18 @@ export default function Users() {
           </div>
         </div>
       </div>
-      <Outlet />
 
       <Dialog
-        open={location.pathname === '/users/invite'}
+        open={invite}
         onOpenChange={(open) => {
           if (!open && !isInviteWaiting) {
-            navigate($path('/users'));
+            navigate({ to: '/users', search: { invite: undefined } });
           }
         }}
       >
         <DialogContent
           className="max-h-[calc(100svh-48px)] max-w-lg overflow-y-auto"
-          data-state={location.pathname === '/users/invite' ? 'open' : 'closed'}
+          data-state={invite ? 'open' : 'closed'}
         >
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
@@ -651,3 +674,13 @@ export default function Users() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/users/')({
+  component: Users,
+  validateSearch: zodValidator(
+    object({
+      page: number().optional(),
+      invite: boolean().optional(),
+    }),
+  ),
+});

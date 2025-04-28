@@ -2,8 +2,7 @@ import { Button } from '@/components/ui/button';
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link } from '@tanstack/react-router';
 
 export default function OnboardingComplete() {
   const { t } = useTranslation('common');
@@ -18,7 +17,7 @@ export default function OnboardingComplete() {
         </CardHeader>
         <div className="flex">
           <Button asChild>
-            <Link to={$path('/')}>
+            <Link to={'/'}>
               {t('routes_onboarding_complete_button')}
               <ArrowRight />
             </Link>
@@ -28,3 +27,7 @@ export default function OnboardingComplete() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/onboarding/complete/')({
+  component: OnboardingComplete,
+});

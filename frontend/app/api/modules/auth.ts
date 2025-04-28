@@ -93,8 +93,6 @@ export const authenticateWithGoogle = async (params: {
     hasOrganization: boolean;
     hasMultipleOrganizations: boolean;
     isNewUser: boolean;
-    firstName?: string;
-    lastName?: string;
   }>({
     path: '/auth/google/authenticate',
     data: params.data,
@@ -156,8 +154,6 @@ export const authenticateWithInvitationGoogleAuthLink = async (params: {
 export const registerWithInvitationGoogleAuthLink = async (params: {
   data: {
     token: string;
-    firstName: string;
-    lastName: string;
   };
 }) => {
   const res = await api.post<{

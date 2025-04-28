@@ -15,20 +15,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useDispatch } from '@/store';
-import { useNavigate, useSearchParams } from 'react-router';
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import { useToast } from '@/hooks/use-toast';
 import { authStore } from '@/store/modules/auth';
 import { usersStore } from '@/store/modules/users';
 import { ENVIRONMENTS } from '@/environments';
-
-export type SearchParams = {
-  token: string;
-};
+import { zodValidator } from '@tanstack/zod-adapter';
 
 export default function Followup() {
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const search = useSearch({
+    from: '/_default/signup/followup/',
+  });
+  const token = search.token;
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation('common');
@@ -66,22 +69,20 @@ export default function Followup() {
       }),
     );
     if (
-      authStore.asyncActions.registerWithMagicLink.fulfilled.match(
-        resultAction,
-      )
+      authStore.asyncActions.registerWithMagicLink.fulfilled.match(resultAction)
     ) {
       if (
         ENVIRONMENTS.IS_CLOUD_EDITION &&
         !resultAction.payload.hasOrganization
       ) {
-        navigate('/organizations/new');
+        navigate({ to: '/organizations/new' });
         toast({
           title: t('routes_signup_followup_toast_success'),
           description: t('routes_signup_followup_toast_success_description'),
         });
       } else {
         await dispatch(usersStore.asyncActions.getMe());
-        navigate('/');
+        navigate({ to: '/' });
       }
     } else {
       toast({
@@ -152,3 +153,12 @@ export default function Followup() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/signup/followup/')({
+  component: Followup,
+  validateSearch: zodValidator(
+    object({
+      token: string(),
+    }),
+  ),
+});

@@ -66,7 +66,7 @@ Sourcetool provides UI components you can use directly from Go code:
 > **Note:** While our cloud version is coming soon, you can start using Sourcetool today by deploying it in your own environment.
 
 1. **Deploy Sourcetool**
-   - Follow our [Deployment Guide](docs/docs/getting-started/deployment.md) to set up Sourcetool in your environment
+   - Follow our [Deployment Guide](https://docs.trysourcetool.com/docs/getting-started/deployment) to set up Sourcetool in your environment
    - Use Docker for quick and easy deployment
 
 2. **Install the Sourcetool SDK**
@@ -88,15 +88,16 @@ Sourcetool provides UI components you can use directly from Go code:
        ui.Markdown("## Users")
 
        // Search form
-       name := ui.TextInput("Name", textinput.Placeholder("Enter name to search"))
+       name := ui.TextInput("Name", textinput.WithPlaceholder("Enter name to search"))
        
-       // Display users table
+       // Fetch users from the database
        users, err := listUsers(name)
        if err != nil {
            return err
        }
-       
-       ui.Table(users, table.Header("Users List"))
+
+       // Display users in a table
+       ui.Table(users, table.WithHeader("Users List"))
        
        return nil
    }
@@ -124,7 +125,7 @@ Sourcetool can be easily deployed using Docker in your environment. We provide c
 - Environment variables setup
 - Production best practices
 
-For detailed instructions, check out our [Deployment Guide](docs/docs/getting-started/deployment.md).
+For detailed instructions, check out our [Deployment Guide](https://docs.trysourcetool.com/docs/getting-started/deployment).
 
 ## ❓ FAQ
 

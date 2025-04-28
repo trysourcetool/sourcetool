@@ -28,9 +28,12 @@ import { groupsStore } from '@/store/modules/groups';
 import dayjs from 'dayjs';
 import { Ellipsis, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
-import { useQueryState } from 'nuqs';
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Pagination,
@@ -43,6 +46,8 @@ import {
 } from '@/components/ui/pagination';
 import clsx from 'clsx';
 import { Input } from '@/components/ui/input';
+import { zodValidator } from '@tanstack/zod-adapter';
+import { number, object } from 'zod';
 
 export default function Groups() {
   const isInitialLoading = useRef(false);
@@ -53,16 +58,13 @@ export default function Groups() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
   const [search, setSearch] = useState('');
+  const searchParams = useSearch({ from: '/_auth/groups/' });
+  const page = searchParams.page || 1;
   const groups = useSelector(groupsStore.selector.getGroups);
   const userGroups = useSelector(groupsStore.selector.getUserGroups);
   const isDeleteGroupWaiting = useSelector(
     (state) => state.groups.isDeleteGroupWaiting,
   );
-
-  const [page, setPage] = useQueryState('page', {
-    parse: (query: string) => parseInt(query, 10),
-    serialize: (value) => value.toString(),
-  });
 
   const pageSize = 10;
 
@@ -130,12 +132,12 @@ export default function Groups() {
       <PageHeader label={t('routes_groups_page_header')} />
       <div className="flex w-screen flex-col gap-4 px-4 py-6 md:w-auto md:gap-6 md:px-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:pt-6">
-          <p className="text-xl font-bold text-foreground">
+          <p className="text-foreground text-xl font-bold">
             {t('routes_groups_title')}
           </p>
           {groups.length === 0 && (
             <Button asChild>
-              <Link to={$path('/groups/new')}>
+              <Link to={'/groups/new'}>
                 <Plus />
                 {t('routes_groups_create_new')}
               </Link>
@@ -156,7 +158,7 @@ export default function Groups() {
             </div>
             <div>
               <Button asChild>
-                <Link to={$path('/groups/new')}>
+                <Link to={'/groups/new'}>
                   <Plus />
                   {t('routes_groups_create_new')}
                 </Link>
@@ -167,10 +169,10 @@ export default function Groups() {
 
         {groups.length === 0 && (
           <div className="flex flex-col gap-1 rounded-md border p-6">
-            <h3 className="text-lg leading-7 font-bold">
+            <h3 className="text-lg font-bold leading-7">
               {t('routes_groups_no_groups_title')}
             </h3>
-            <p className="text-sm font-normal text-muted-foreground">
+            <p className="text-muted-foreground text-sm font-normal">
               {t('routes_groups_no_groups_description')}
             </p>
           </div>
@@ -194,7 +196,10 @@ export default function Groups() {
                     key={group.id}
                     className="cursor-pointer"
                     onClick={() =>
-                      navigate($path('/groups/:groupId', { groupId: group.id }))
+                      navigate({
+                        to: '/groups/$groupId',
+                        params: { groupId: group.id },
+                      })
                     }
                   >
                     <TableCell className="font-medium">{group.name}</TableCell>
@@ -245,7 +250,7 @@ export default function Groups() {
                 ))}
               </TableBody>
             </Table>
-            <div className="border-t bg-muted p-4">
+            <div className="bg-muted border-t p-4">
               <Pagination className="flex justify-end">
                 <PaginationContent>
                   {page !== 1 && page !== null && (
@@ -259,7 +264,10 @@ export default function Groups() {
                           if (page === 1 || page === null) {
                             return;
                           }
-                          setPage((page || 1) - 1);
+                          navigate({
+                            to: '/groups',
+                            search: { page: (page || 1) - 1 },
+                          });
                         }}
                       />
                       <PaginationLink
@@ -267,7 +275,10 @@ export default function Groups() {
                           if (page === 1 || page === null) {
                             return;
                           }
-                          setPage((page || 1) - 1);
+                          navigate({
+                            to: '/groups',
+                            search: { page: (page || 1) - 1 },
+                          });
                         }}
                         isActive
                         className={clsx(
@@ -297,7 +308,12 @@ export default function Groups() {
                     return (
                       <PaginationItem key={index} className="hidden md:block">
                         <PaginationLink
-                          onClick={() => setPage(index + 1)}
+                          onClick={() =>
+                            navigate({
+                              to: '/groups',
+                              search: { page: index + 1 },
+                            })
+                          }
                           className={clsx(
                             page !== index + 1 && 'cursor-pointer',
                             page === index + 1 && 'pointer-events-none',
@@ -319,7 +335,10 @@ export default function Groups() {
                           if (page === pageCount) {
                             return;
                           }
-                          setPage((page || 1) + 1);
+                          navigate({
+                            to: '/groups',
+                            search: { page: (page || 1) + 1 },
+                          });
                         }}
                         className={clsx(
                           page !== pageCount && 'cursor-pointer',
@@ -331,7 +350,10 @@ export default function Groups() {
                           if (page === pageCount) {
                             return;
                           }
-                          setPage((page || 1) + 1);
+                          navigate({
+                            to: '/groups',
+                            search: { page: (page || 1) + 1 },
+                          });
                         }}
                         isActive
                         className={clsx(
@@ -353,3 +375,12 @@ export default function Groups() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/groups/')({
+  component: Groups,
+  validateSearch: zodValidator(
+    object({
+      page: number().optional(),
+    }),
+  ),
+});

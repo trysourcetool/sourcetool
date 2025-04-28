@@ -7,10 +7,10 @@ import (
 	"github.com/gofrs/uuid/v5"
 
 	"github.com/trysourcetool/sourcetool-go/dateinput"
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 )
 
@@ -98,12 +98,12 @@ func convertDateInputProtoToState(id uuid.UUID, data *widgetv1.DateInput, locati
 		return &t, nil
 	}
 
-	value, err := parseDate(conv.SafeValue(data.Value))
+	value, err := parseDate(ptrconv.StringValue(data.Value))
 	if err != nil {
 		return nil, err
 	}
 
-	defaultValue, err := parseDate(conv.SafeValue(data.DefaultValue))
+	defaultValue, err := parseDate(ptrconv.StringValue(data.DefaultValue))
 	if err != nil {
 		return nil, err
 	}
@@ -151,10 +151,10 @@ func convertStateToDateInputProto(state *state.DateInputState) *widgetv1.DateInp
 		minValue = state.MinValue.Format(time.DateOnly)
 	}
 	return &widgetv1.DateInput{
-		Value:        conv.NilValue(value),
+		Value:        ptrconv.StringPtr(value),
 		Label:        state.Label,
 		Placeholder:  state.Placeholder,
-		DefaultValue: conv.NilValue(defaultValue),
+		DefaultValue: ptrconv.StringPtr(defaultValue),
 		Required:     state.Required,
 		Disabled:     state.Disabled,
 		Format:       state.Format,

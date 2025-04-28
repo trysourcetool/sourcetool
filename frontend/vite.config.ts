@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { reactRouter } from '@react-router/dev/vite';
+import react from '@vitejs/plugin-react';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 
 export default defineConfig(({ mode }) => {
   console.log({ mode });
@@ -10,7 +11,17 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       allowedHosts: true,
     },
-    plugins: [reactRouter(), tsconfigPaths()],
+    plugins: [
+      TanStackRouterVite({
+        target: 'react',
+        autoCodeSplitting: true,
+        virtualRouteConfig: './app/routes.ts',
+        generatedRouteTree: './app/routeTree.gen.ts',
+        routesDirectory: './app/routes/',
+      }),
+      react(),
+      tsconfigPaths(),
+    ],
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : [],
     },

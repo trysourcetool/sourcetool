@@ -44,7 +44,7 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
     ui.Markdown("## Users")
 
     // Search form
-    name := ui.TextInput("Name", textinput.Placeholder("Enter name to search"))
+    name := ui.TextInput("Name", textinput.WithPlaceholder("Enter name to search"))
     
     // Display users table
     users, err := listUsers(name)
@@ -52,18 +52,21 @@ func listUsersPage(ui sourcetool.UIBuilder) error {
         return err
     }
     
-    ui.Table(users, table.Header("Users List"))
+    ui.Table(users, table.WithHeader("Users List"))
     
     return nil
 }
 
 func main() {
-    st := sourcetool.New("your-api-key")
+    s := sourcetool.New(&sourcetool.Config{
+        APIKey:   "your_api_key",
+        Endpoint: "wss://your-sourcetool-instance"  // Your self-hosted Sourcetool endpoint
+    })
     
     // Register pages
-    st.Page("/users", "Users List", listUsersPage)
+    s.Page("/users", "Users List", listUsersPage)
     
-    if err := st.Listen(); err != nil {
+    if err := s.Listen(); err != nil {
         log.Fatal(err)
     }
 }
@@ -106,16 +109,16 @@ Each component supports various options for customization:
 ```go
 // TextInput with options
 ui.TextInput("Username",
-    textinput.Placeholder("Enter username"),
-    textinput.Required(true),
-    textinput.MaxLength(50),
+    textinput.WithPlaceholder("Enter username"),
+    textinput.WithRequired(true),
+    textinput.WithMaxLength(50),
 )
 
 // Table with options
 ui.Table(data,
-    table.Header("Users"),
-    table.OnSelect(table.SelectionBehaviorRerun),
-    table.RowSelection(table.SelectionModeSingle),
+    table.WithHeader("Users"),
+    table.WithOnSelect(table.SelectionBehaviorRerun),
+    table.WithRowSelection(table.SelectionModeSingle),
 )
 ```
 
@@ -145,22 +148,22 @@ Example of a form with multiple fields and validation:
 
 ```go
 func createUserPage(ui sourcetool.UIBuilder) error {
-    form, submitted := ui.Form("Create User", form.ClearOnSubmit(true))
+    form, submitted := ui.Form("Create User", form.WithClearOnSubmit(true))
     
     name := form.TextInput("Name", 
-        textinput.Required(true),
-        textinput.MinLength(2),
-        textinput.MaxLength(50),
+        textinput.WithRequired(true),
+        textinput.WithMinLength(2),
+        textinput.WithMaxLength(50),
     )
     
     email := form.TextInput("Email",
-        textinput.Required(true),
-        textinput.Placeholder("user@example.com"),
+        textinput.WithRequired(true),
+        textinput.WithPlaceholder("user@example.com"),
     )
     
     role := form.Selectbox("Role",
-        selectbox.Options("Admin", "User", "Guest"),
-        selectbox.Required(true),
+        selectbox.WithOptions("Admin", "User", "Guest"),
+        selectbox.WithRequired(true),
     )
     
     if submitted {

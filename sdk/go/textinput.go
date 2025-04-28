@@ -3,21 +3,13 @@ package sourcetool
 import (
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/textinput"
 )
-
-func convertPathToInt32Slice(p path) []int32 {
-	result := make([]int32, len(p))
-	for i, v := range p {
-		result[i] = int32(v)
-	}
-	return result
-}
 
 func (b *uiBuilder) TextInput(label string, opts ...textinput.Option) string {
 	textInputOpts := &options.TextInputOptions{
@@ -80,7 +72,7 @@ func (b *uiBuilder) TextInput(label string, opts ...textinput.Option) string {
 
 	cursor.next()
 
-	return conv.SafeValue(textInputState.Value)
+	return ptrconv.StringValue(textInputState.Value)
 }
 
 func convertStateToTextInputProto(state *state.TextInputState) *widgetv1.TextInput {

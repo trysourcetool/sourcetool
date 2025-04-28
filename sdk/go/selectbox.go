@@ -3,10 +3,10 @@ package sourcetool
 import (
 	"github.com/gofrs/uuid/v5"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/options"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session/state"
 	"github.com/trysourcetool/sourcetool-go/selectbox"
 )
@@ -42,7 +42,7 @@ func (b *uiBuilder) Selectbox(label string, opts ...selectbox.Option) *selectbox
 	var defaultVal *int32
 	if selectboxOpts.DefaultValue != nil {
 		for i, o := range selectboxOpts.Options {
-			if conv.SafeValue(selectboxOpts.DefaultValue) == o {
+			if ptrconv.StringValue(selectboxOpts.DefaultValue) == o {
 				v := int32(i)
 				defaultVal = &v
 				break
@@ -98,7 +98,7 @@ func (b *uiBuilder) Selectbox(label string, opts ...selectbox.Option) *selectbox
 	if selectboxState.Value != nil {
 		value = &selectbox.Value{
 			Value: selectboxOpts.Options[*selectboxState.Value],
-			Index: int(conv.SafeValue(selectboxState.Value)),
+			Index: int(*selectboxState.Value),
 		}
 	}
 

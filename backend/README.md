@@ -18,28 +18,33 @@ The backend provides the API for the Sourcetool application, handling:
 
 ## Technology
 
-- Go 1.22
+- Go 1.24
 - PostgreSQL 15
 - Redis 7
 - Docker
 
 ## Directory Structure
 
-- `/apikey` - API key management
-- `/authz` - Authorization logic
-- `/cmd` - Application entry points
-- `/config` - Configuration handling
-- `/devtools` - Development tools
-- `/docs` - API documentation (Swagger)
-- `/dto` - Data transfer objects
-- `/environment` - Environment management
-- `/group` - Group management
-- `/hostinstance` - Host instance management
-- `/infra` - Infrastructure components
-- `/migrations` - Database migrations
-- `/organization` - Organization management
-- `/page` - Page management
-- `/server` - HTTP server implementation
-- `/session` - Session management
-- `/user` - User management
-- `/ws` - WebSocket implementation
+```
+backend/
+├── cmd/                # entry points
+│   ├── server/         # main.go – wires everything + graceful shutdown
+│   └── internal/       # helpers only needed by binaries (redis/smtp/upgrader/fixtures)
+├── devtools/           # CLI & scripts (migrations, etc.)
+├── internal/           # all import‑able code lives here (go’s internal visibility)
+│   ├── config/         # env parsing, URL helpers
+│   ├── core/           # *domain* models – NO I/O
+│   ├── postgres/       # SQL repos (`*_query.go`) + db logger
+│   ├── pubsub/         # Redis adapter (fan‑out)
+│   ├── mail/           # SMTP adapter
+│   ├── ws/             # WebSocket manager / ping loop
+│   ├── server/         # HTTP & WS handlers, DTOs, middleware, CORS (CE/EE split via build‑tags)
+│   ├── jwt/            # generic JWT helpers & claim structs
+│   ├── google/         # OAuth client
+│   ├── permission/     # RBAC checker
+│   ├── errdefs/        # error taxonomy (maps → HTTP status)
+│   ├── logger/         # zap wrapper
+│   └── pb/             # generated Protobuf (widget, page, websocket, …)
+├── migrations/         # SQL schema
+└── go.mod
+```

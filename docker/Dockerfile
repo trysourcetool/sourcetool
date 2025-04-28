@@ -11,7 +11,7 @@ RUN pnpm install --frozen-lockfile
 COPY frontend/ ./frontend/
 RUN pnpm build:frontend
 
-FROM golang:1.23 AS backend-builder
+FROM golang:1.24 AS backend-builder
 WORKDIR /go/src/github.com/trysourcetool/sourcetool
 COPY backend/ ./backend/
 WORKDIR /go/src/github.com/trysourcetool/sourcetool/backend
@@ -27,8 +27,8 @@ WORKDIR /app
 COPY --from=backend-builder /go/bin/server /app/
 COPY --from=backend-builder /go/bin/migrate /app/
 COPY backend/migrations /app/migrations
-COPY --from=frontend-builder /app/frontend/build /app/static-full
-RUN ln -s /app/static-full/client /app/static
+COPY --from=frontend-builder /app/frontend/dist /app/static-full
+RUN ln -s /app/static-full /app/static
 ENV STATIC_FILES_DIR=/app/static
 EXPOSE 8080
 

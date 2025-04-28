@@ -23,7 +23,7 @@ import {
   BreadcrumbSeparator,
 } from '../ui/breadcrumb';
 import { ModeToggle } from '../common/mode-toggle';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import {
   CheckCheck,
   ChevronsUpDown,
@@ -35,7 +35,6 @@ import {
   Split,
   Users,
 } from 'lucide-react';
-import { $path } from 'safe-routes';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
 import {
@@ -57,11 +56,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
   const { pathname } = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
   const { breadcrumbsState } = useBreadcrumbs();
-  const {
-    isSubDomainMatched,
-    isAuthChecked,
-    handleNoAuthRoute,
-  } = useAuth();
+  const { isSubDomainMatched, isAuthChecked, handleNoAuthRoute } = useAuth();
   const user = useSelector(usersStore.selector.getUserMe);
   const { t } = useTranslation('common');
 
@@ -83,7 +78,11 @@ export function AppExternalLayout(props: PropsWithChildren) {
       !isSubDomainMatched
     ) {
       handleNoAuthRoute();
-    } else if (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && !user) {
+    } else if (
+      isAuthChecked === 'checked' &&
+      !ENVIRONMENTS.IS_CLOUD_EDITION &&
+      !user
+    ) {
       handleNoAuthRoute();
     }
   }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute]);
@@ -99,11 +98,11 @@ export function AppExternalLayout(props: PropsWithChildren) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 size="lg"
-                className="w-full cursor-default data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground w-full cursor-default"
               >
                 <div className="flex flex-1 items-center gap-2 data-[state=open]:px-2 data-[state=open]:py-1">
                   <Link
-                    to={$path('/')}
+                    to={'/'}
                     className="size-8"
                     onClick={handleSidebarClose}
                   >
@@ -114,10 +113,10 @@ export function AppExternalLayout(props: PropsWithChildren) {
                     />
                   </Link>
                   <div className="flex flex-1 flex-col gap-0.5">
-                    <p className="text-sm font-semibold text-sidebar-foreground">
+                    <p className="text-sidebar-foreground text-sm font-semibold">
                       {t('components_layout_app_name')}
                     </p>
-                    <p className="text-xs font-normal text-sidebar-foreground">
+                    <p className="text-sidebar-foreground text-xs font-normal">
                       {t('components_layout_app_version')}
                     </p>
                   </div>
@@ -131,7 +130,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuButton asChild isActive={pathname === '/'}>
-                <Link to={$path('/')} onClick={handleSidebarClose}>
+                <Link to={'/'} onClick={handleSidebarClose}>
                   <FileText />
                   <span>{t('components_layout_sidebar_pages')}</span>
                 </Link>
@@ -139,7 +138,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
             </SidebarMenu>
             <SidebarMenu>
               <SidebarMenuButton asChild isActive={pathname.includes('/users')}>
-                <Link to={$path('/users')} onClick={handleSidebarClose}>
+                <Link to={'/users'} onClick={handleSidebarClose}>
                   <Users />
                   <span>{t('components_layout_sidebar_users')}</span>
                 </Link>
@@ -150,7 +149,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 asChild
                 isActive={pathname.includes('/environments')}
               >
-                <Link to={$path('/environments')} onClick={handleSidebarClose}>
+                <Link to={'/environments'} onClick={handleSidebarClose}>
                   <Split />
                   <span>{t('components_layout_sidebar_environments')}</span>
                 </Link>
@@ -161,7 +160,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 asChild
                 isActive={pathname.includes('/apiKeys')}
               >
-                <Link to={$path('/apiKeys')} onClick={handleSidebarClose}>
+                <Link to={'/apiKeys'} onClick={handleSidebarClose}>
                   <KeyRound />
                   <span>{t('components_layout_sidebar_api_keys')}</span>
                 </Link>
@@ -172,7 +171,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 asChild
                 isActive={pathname.includes('/groups')}
               >
-                <Link to={$path('/groups')} onClick={handleSidebarClose}>
+                <Link to={'/groups'} onClick={handleSidebarClose}>
                   <CheckCheck />
                   <span>{t('components_layout_sidebar_permissions')}</span>
                 </Link>
@@ -183,7 +182,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 asChild
                 isActive={pathname.includes('/settings')}
               >
-                <Link to={$path('/settings')} onClick={handleSidebarClose}>
+                <Link to={'/settings'} onClick={handleSidebarClose}>
                   <Settings2 />
                   <span>{t('components_layout_sidebar_settings')}</span>
                 </Link>
@@ -252,7 +251,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="bg-background group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />

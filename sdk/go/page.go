@@ -1,6 +1,7 @@
 package sourcetool
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/gofrs/uuid/v5"
@@ -27,11 +28,9 @@ func (p *page) hasAccess(userGroups []string) bool {
 		return true
 	}
 
-	for _, userGroup := range userGroups {
-		for _, requiredGroup := range p.accessGroups {
-			if userGroup == requiredGroup {
-				return true
-			}
+	for _, requiredGroup := range p.accessGroups {
+		if slices.Contains(userGroups, requiredGroup) {
+			return true
 		}
 	}
 	return false

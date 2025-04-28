@@ -9,13 +9,13 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"go.uber.org/zap"
 
-	"github.com/trysourcetool/sourcetool-go/internal/conv"
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
 	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/pb/exception/v1"
 	pagev1 "github.com/trysourcetool/sourcetool-go/internal/pb/page/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
 	widgetv1 "github.com/trysourcetool/sourcetool-go/internal/pb/widget/v1"
+	"github.com/trysourcetool/sourcetool-go/internal/ptrconv"
 	"github.com/trysourcetool/sourcetool-go/internal/session"
 	"github.com/trysourcetool/sourcetool-go/internal/websocket"
 )
@@ -85,7 +85,7 @@ func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
 			Id:     page.id.String(),
 			Name:   page.name,
 			Route:  page.route,
-			Path:   conv.PathToInt32Slice(page.path),
+			Path:   convertPathToInt32Slice(page.path),
 			Groups: page.accessGroups,
 		})
 	}
@@ -113,7 +113,7 @@ func (r *runtime) handleInitializeClient(msg *websocketv1.InitializeClient) erro
 	if msg.SessionId == nil {
 		return errdefs.ErrInvalidParameter(errors.New("session id is required"))
 	}
-	sessionID, err := uuid.FromString(conv.SafeValue(msg.SessionId))
+	sessionID, err := uuid.FromString(ptrconv.StringValue(msg.SessionId))
 	if err != nil {
 		return errdefs.ErrInvalidParameter(err)
 	}

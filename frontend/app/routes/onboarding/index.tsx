@@ -14,8 +14,7 @@ import { useDispatch, useSelector } from '@/store';
 import { apiKeysStore } from '@/store/modules/apiKeys';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { usersStore } from '@/store/modules/users';
 
 export default function Onboarding() {
@@ -32,7 +31,7 @@ export default function Onboarding() {
     setIsCheckingConnection(true);
     try {
       await api.hostInstances.getHostInstancePing();
-      navigate($path('/onboarding/complete'));
+      navigate({ to: '/onboarding/complete' });
     } catch (error: any) {
       toast({
         title: t('routes_onboarding_toast_error_title'),
@@ -136,10 +135,10 @@ export default function Onboarding() {
           </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t bg-background px-6 py-4">
+        <div className="bg-background fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t px-6 py-4">
           <Link
-            to={$path('/')}
-            className="text-sm font-normal text-muted-foreground underline"
+            to={'/'}
+            className="text-muted-foreground text-sm font-normal underline"
           >
             {t('routes_onboarding_skip_button')}
           </Link>
@@ -154,3 +153,7 @@ export default function Onboarding() {
     )
   );
 }
+
+export const Route = createFileRoute('/_default/onboarding/')({
+  component: Onboarding,
+});

@@ -25,8 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router';
-import { $path } from 'safe-routes';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { apiKeysStore } from '@/store/modules/apiKeys';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -69,11 +68,10 @@ export default function ApiKeysNew() {
       apiKeysStore.asyncActions.createApiKey(data),
     );
     if (apiKeysStore.asyncActions.createApiKey.fulfilled.match(resultAction)) {
-      navigate(
-        $path('/apiKeys/:apiKeyId', {
-          apiKeyId: resultAction.payload.apiKey.id,
-        }),
-      );
+      navigate({
+        to: '/apiKeys/$apiKeyId',
+        params: { apiKeyId: resultAction.payload.apiKey.id },
+      });
     } else {
       toast({
         title: t('routes_apikeys_new_toast_create_failed'),
@@ -84,7 +82,7 @@ export default function ApiKeysNew() {
 
   useEffect(() => {
     setBreadcrumbsState?.([
-      { label: t('breadcrumbs_api_keys'), to: $path('/apiKeys') },
+      { label: t('breadcrumbs_api_keys'), to: '/apiKeys' },
       { label: t('breadcrumbs_create_new') },
     ]);
   }, [setBreadcrumbsState, t]);
@@ -163,7 +161,7 @@ export default function ApiKeysNew() {
               {t('routes_apikeys_new_create_button')}
             </Button>
             <Button variant="outline" asChild disabled={isCreateApiKeyWaiting}>
-              <Link to={$path('/apiKeys')}>
+              <Link to={'/apiKeys'}>
                 {t('routes_apikeys_new_cancel_button')}
               </Link>
             </Button>
@@ -173,3 +171,7 @@ export default function ApiKeysNew() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/apiKeys/new/')({
+  component: ApiKeysNew,
+});

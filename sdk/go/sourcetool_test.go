@@ -8,7 +8,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	apiKey := "test_api_key"
+	apiKey := "test_apikey"
 	endpoint := "ws://test.trysourcetool.com"
 	config := &Config{
 		APIKey:   apiKey,
@@ -44,7 +44,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Public page", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -66,7 +66,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Page with direct access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -85,7 +85,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Group with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -112,7 +112,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Nested groups with access groups", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -167,7 +167,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Complex group structure", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)
@@ -231,7 +231,7 @@ func TestPage(t *testing.T) {
 
 	t.Run("Error handling", func(t *testing.T) {
 		config := &Config{
-			APIKey:   "test_api_key",
+			APIKey:   "test_apikey",
 			Endpoint: "ws://test.trysourcetool.com",
 		}
 		st := New(config)

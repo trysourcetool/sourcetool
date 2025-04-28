@@ -1,0 +1,37 @@
+name: Feature Request
+description: Suggest an idea or improvement for this project.
+title: "feat: [short description]"
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for your idea!
+        Please share as much or as little as you like — even a sentence is helpful.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like to see?
+      description: Describe your idea or the feature you want. What would make your experience better?
+      placeholder: I wish I could...
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is this useful?
+      description: If this solves a problem or makes something easier, let us know!
+      placeholder: This would help because...
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Links, sketches, or any other info (optional)
+      placeholder: Add more details if you want, or leave blank!
+    validations:
+      required: false 

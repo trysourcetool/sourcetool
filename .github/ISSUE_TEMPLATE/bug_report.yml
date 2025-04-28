@@ -1,0 +1,66 @@
+name: Bug Report
+description: Quickly report a bug to help us improve.
+title: "bug: [short description]"
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for reporting a bug!
+        Please fill in what you can — the simpler, the better.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Tell us what went wrong. What did you expect to happen?
+      placeholder: Describe the bug in a few sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we see the bug? (Simple steps or a short example)
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Videos
+      description: If applicable, add screenshots or videos to help explain your problem.
+      placeholder: Drag and drop images or videos here.
+    validations:
+      required: false
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser/Platform Information
+      description: Which browser, OS, or platform are you using? (Include version if relevant)
+      placeholder: e.g. Chrome 120.0.0.0, macOS 14.4.0
+    validations:
+      required: false
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Application Version
+      description: Which version of the application are you using?
+      placeholder: e.g. v1.2.3
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, error logs, or information that might help us understand the problem.
+      placeholder: Any other details...
+    validations:
+      required: false 

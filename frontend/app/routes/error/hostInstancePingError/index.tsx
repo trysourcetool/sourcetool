@@ -1,7 +1,7 @@
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 
 export default function HostInstancePingError() {
@@ -18,7 +18,7 @@ export default function HostInstancePingError() {
           </CardDescription>
         </CardHeader>
         <div className="flex justify-center gap-3">
-          <Button variant="outline" onClick={() => navigate('/')}>
+          <Button variant="outline" onClick={() => navigate({ to: '/' })}>
             <ArrowLeft className="size-4" />
             {t('routes_error_host_instance_ping_back_button')}
           </Button>
@@ -32,3 +32,7 @@ export default function HostInstancePingError() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/error/hostInstancePingError/')({
+  component: HostInstancePingError,
+});

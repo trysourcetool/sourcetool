@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from '@/store';
 import { pagesStore } from '@/store/modules/pages';
 import { AlertCircle, File } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { CodeBlock } from '@/components/common/code-block';
 import { usersStore } from '@/store/modules/users';
@@ -25,7 +25,6 @@ import {
 import { SelectValue } from '@radix-ui/react-select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { $path } from 'safe-routes';
 
 export default function Pages() {
   const isInitialLoading = useRef(false);
@@ -177,7 +176,7 @@ export default function Pages() {
             <h2 className="text-xl font-bold">
               {t('routes_pages_placeholder_title')}
             </h2>
-            <p className="font-normal text-sidebar-foreground">
+            <p className="text-sidebar-foreground font-normal">
               {t('routes_pages_placeholder_description')}
             </p>
             {!selectedApiKey?.key && (
@@ -193,7 +192,7 @@ export default function Pages() {
                     code and get started with your integration.
                   </p>
                   <Button variant="destructive" asChild>
-                    <Link to={$path('/apiKeys/new')}>Edit API Key</Link>
+                    <Link to={'/apiKeys/new'}>Edit API Key</Link>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -229,13 +228,13 @@ export default function Pages() {
               language="go"
             />
 
-            <p className="font-normal text-sidebar-foreground">
+            <p className="text-sidebar-foreground font-normal">
               {t('routes_pages_placeholder_restart_server')}
             </p>
-            <p className="font-normal text-sidebar-foreground">
+            <p className="text-sidebar-foreground font-normal">
               {t('routes_pages_placeholder_page_added')}
             </p>
-            <p className="font-normal text-sidebar-foreground">
+            <p className="text-sidebar-foreground font-normal">
               {t('routes_pages_placeholder_documentation')}
             </p>
           </div>
@@ -259,7 +258,7 @@ export default function Pages() {
               {pages.map((page) => (
                 <SidebarMenuItem key={page.id}>
                   <SidebarMenuButton asChild>
-                    <Link to={`/pages${page.route}`}>
+                    <Link to={`/pages/$`} params={{ _splat: page.route }}>
                       <File className="size-4" />
                       {page.name}
                     </Link>
@@ -273,3 +272,7 @@ export default function Pages() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_auth/')({
+  component: Pages,
+});

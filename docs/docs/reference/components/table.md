@@ -4,82 +4,85 @@ sidebar_position: 11
 
 # Table
 
-The Table widget provides a way to display and interact with tabular data, supporting features like sorting, pagination, and row selection.
+`Table` renders arbitrary slice/array data in a scrollable grid. It supports column re‑ordering, paging (via `Height`) and row selection.
 
-## States
+## Signature
 
-| State | Type | Default | Description |
-|-------|------|---------|-------------|
-| `value` | `TableValue` | `None` | Current selection state of the table |
+```go
+result := ui.Table(data any, opts ...table.Option) table.Value
+```
 
-## Properties
+* **`data`** can be a slice of structs, maps, or any value encodable by `encoding/json`.
+* **`result`** contains the user’s selection (if any).
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `data` | `bytes` | `""` | Table data as base64 encoded JSON string |
-| `header` | `string` | `""` | Optional header text displayed above the table |
-| `description` | `string` | `""` | Optional description text displayed below the header |
-| `height` | `int32` | `None` | Number of rows to display per page |
-| `column_order` | `[]string` | `[]` | Custom order for columns |
-| `on_select` | `string` | `""` | Event handler for selection |
-| `row_selection` | `string` | `""` | Row selection mode: "single", "multiple", or empty string |
+### Return type
+
+```go
+// package table
+
+type Value struct {
+    Selection *Selection // nil if no row selected
+}
+
+type Selection struct {
+    Row  int   // first selected row (for single‑mode)
+    Rows []int // all selected rows (for multiple‑mode)
+}
+```
+
+## Option helpers
+
+| Helper | Purpose | Default |
+|--------|---------|---------|
+| `table.WithHeader("Users")` | Title above the table. | empty |
+| `table.WithDescription("Active accounts")` | Text below the header. | empty |
+| `table.WithHeight(10)` | Visible rows before the grid scrolls. | auto (all rows) |
+| `table.WithColumnOrder("ID", "Name", "Email")` | Re‑arrange columns by field name / map key. | natural order |
+| `table.WithOnSelect(table.OnSelectRerun)` | Behaviour when a row is clicked: `OnSelectRerun` = rerun page; `OnSelectIgnore` = do nothing. | `OnSelectIgnore` |
+| `table.WithRowSelection(table.RowSelectionMultiple)` | Selection mode: `Single` or `Multiple`. | `Single` |
+
+## Behaviour notes
+
+* **Data encoding** – the builder marshals `data` to JSON; unsupported types will panic. Make sure the slice elements are serialisable.
+* **Selection persistence** – `Selection` is stored in the session. Changing `RowSelection` between runs resets it.
+* **No built‑in sorting** – client handles sorting; it sends the same `data` back, so keep row order deterministic for correct index mapping.
 
 ## Examples
 
-### Basic Table
+### Basic users table
 
 ```go
-package main
-
-import (
-    "github.com/trysourcetool/sourcetool-go"
-    "github.com/trysourcetool/sourcetool-go/table"
-)
-
 type User struct {
-	ID        string
-	Name      string
-	Email     string
-	Age       int
-	Gender    string
-	CreatedAt time.Time
+    ID    string
+    Name  string
+    Email string
 }
 
-baseTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-users := []User{
-    {ID: "1", Name: "John Doe 001", Email: "john.doe+001@acme.com", Age: 25, Gender: "male", CreatedAt: baseTime.Add(24 * time.Hour * 0)},
-    {ID: "2", Name: "John Doe 002", Email: "john.doe+002@acme.com", Age: 30, Gender: "male", CreatedAt: baseTime.Add(24 * time.Hour * 1)},
-    {ID: "3", Name: "Jane Doe 003", Email: "jane.doe+003@acme.com", Age: 35, Gender: "female", CreatedAt: baseTime.Add(24 * time.Hour * 2)}
-}
-
-func main() {
-    func page(ui sourcetool.UIBuilder) error {
-        // Create a basic table
-        table := ui.Table(
-            users,
-            table.Header("Users"),
-            table.Height(10),
-            table.ColumnOrder("ID", "Name", "Email", "Age", "Gender", "CreatedAt"),
-		    table.OnSelect(table.SelectionBehaviorRerun),
-	    )
-	}
+users := []User{...}
+res := ui.Table(users,
+    table.WithHeader("Users"),
+    table.WithHeight(15),
+)
+if res.Selection != nil {
+    fmt.Println("Clicked row:", res.Selection.Row)
 }
 ```
 
-### Table with Row Selection
+### Multiple selection & rerun
 
 ```go
-// Create a table with multiple row selection
-table := baseCols[0].Table(
-    users,
-    table.Header("Users"),
-    table.Height(10),
-    table.ColumnOrder("ID", "Name", "Email", "Age", "Gender", "CreatedAt"),
-    table.RowSelection(table.SelectionModeMultiple),
+res := ui.Table(items,
+    table.WithRowSelection(table.RowSelectionMultiple),
+    table.WithOnSelect(table.OnSelectRerun),
 )
+if res.Selection != nil {
+    fmt.Println("Rows:", res.Selection.Rows)
+}
 ```
 
-## Related Components
+---
 
-- [Form](./form) - Container for organizing form elements
-- [TextInput](./text-input) - For filtering table data
+### Related widgets
+
+* [`Form`](./form) – embed a table inside a larger data‑entry flow.
+* [`TextInput`](./text-input) – implement client‑side filters.

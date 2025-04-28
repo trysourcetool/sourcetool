@@ -3,22 +3,23 @@ import { useDispatch } from '@/store';
 import { usersStore } from '@/store/modules/users';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { $path } from 'safe-routes';
-
-export type SearchParams = {
-  token: string;
-};
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
+import { zodValidator } from '@tanstack/zod-adapter';
+import { object, string } from 'zod';
 
 export default function UsersEmailUpdateConfirm() {
   const isInitialLoading = useRef(false);
   const dispatch = useDispatch();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const search = useSearch({ from: '/_default/users/email/update/confirm/' });
+  const token = search.token;
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  console.log({ token, searchParams });
+  console.log({ token, search });
 
   useEffect(() => {
     if (isInitialLoading.current) {
@@ -48,7 +49,7 @@ export default function UsersEmailUpdateConfirm() {
             description: 'Please try again',
             variant: 'destructive',
           });
-          navigate($path('/'));
+          navigate({ to: '/' });
         }
       } else {
         toast({
@@ -56,7 +57,7 @@ export default function UsersEmailUpdateConfirm() {
           description: 'Please try again',
           variant: 'destructive',
         });
-        navigate($path('/'));
+        navigate({ to: '/' });
       }
     })();
   }, [token]);
@@ -67,3 +68,12 @@ export default function UsersEmailUpdateConfirm() {
     </div>
   );
 }
+
+export const Route = createFileRoute('/_default/users/email/update/confirm/')({
+  component: UsersEmailUpdateConfirm,
+  validateSearch: zodValidator(
+    object({
+      token: string(),
+    }),
+  ),
+});
