@@ -20,7 +20,7 @@ var rolesAllowedByOperation = map[Operation][]UserOrganizationRole{
 	OperationEditLiveModeAPIKey: {UserOrganizationRoleAdmin},
 	OperationEditDevModeAPIKey:  {UserOrganizationRoleAdmin, UserOrganizationRoleDeveloper},
 	OperationEditEnvironment:    {UserOrganizationRoleAdmin},
-	OperationEditGroup:          {UserOrganizationRoleAdmin},
+	OperationEditGroup:          {UserOrganizationRoleAdmin, UserOrganizationRoleDeveloper},
 	OperationEditUser:           {UserOrganizationRoleAdmin},
 }
 
