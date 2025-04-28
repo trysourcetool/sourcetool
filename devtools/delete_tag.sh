@@ -20,15 +20,15 @@ git tag -d $TAG || echo "Local tag $TAG not found"
 echo "Deleting remote tag $TAG from origin..."
 git push origin :refs/tags/$TAG || echo "Remote tag $TAG not found or already deleted"
 
-# Delete SDK tag if it exists
-echo "Deleting SDK tag sdk/go/$TAG..."
-git tag -d "sdk/go/$TAG" || echo "Local SDK tag sdk/go/$TAG not found"
-git push origin :refs/tags/sdk/go/$TAG || echo "Remote SDK tag sdk/go/$TAG not found or already deleted"
+PREFIXES=("sdk/go" "mcp/docs-mcp-server")
 
-# Delete Docs MCP tag if it exists
-echo "Deleting Docs MCP tag mcp/docs-mcp-server/$TAG..."
-git tag -d "mcp/docs-mcp-server/$TAG" || echo "Local Docs MCP tag mcp/docs-mcp-server/$TAG not found"
-git push origin :refs/tags/mcp/docs-mcp-server/$TAG || echo "Remote Docs MCP tag mcp/docs-mcp-server/$TAG not found or already deleted"
+# Delete additional tags
+for PREFIX in "${PREFIXES[@]}"; do
+  ADDITIONAL_TAG="$PREFIX/$TAG"
+  echo "Deleting additional tag $ADDITIONAL_TAG..."
+  git tag -d "$ADDITIONAL_TAG" || echo "Local tag $ADDITIONAL_TAG not found"
+  git push origin ":refs/tags/$ADDITIONAL_TAG" || echo "Remote tag $ADDITIONAL_TAG not found or already deleted"
+done
 
 # If SDK repo exists, delete tag there too
 if [ -d "../sourcetool-go" ]; then

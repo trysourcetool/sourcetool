@@ -26,7 +26,17 @@ if ! git diff-index --quiet HEAD --; then
   exit 1
 fi
 
-# Create and push tag
+PREFIXES=("sdk/go" "mcp/docs-mcp-server")
+
+# Create and push additional tags
+for PREFIX in "${PREFIXES[@]}"; do
+  ADDITIONAL_TAG="$PREFIX/$TAG"
+  echo "Creating tag $ADDITIONAL_TAG..."
+  git tag $ADDITIONAL_TAG
+  git push origin $ADDITIONAL_TAG
+done
+
+# Create and push main tag
 echo "Creating tag $TAG..."
 git tag $TAG
 git push origin $TAG
