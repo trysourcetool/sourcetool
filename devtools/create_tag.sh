@@ -26,6 +26,9 @@ if ! git diff-index --quiet HEAD --; then
   exit 1
 fi
 
+# Pull latest changes
+git pull origin main
+
 PREFIXES=("sdk/go" "mcp/docs-mcp-server")
 
 # Create and push additional tags
