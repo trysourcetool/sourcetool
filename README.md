@@ -1,8 +1,10 @@
 # Sourcetool
 
-**Build Internal Tools with Just Backend Code**
+**Backend logic seamlessly becomes reality.**
 
-Sourcetool is an open-source internal tool builder that enables you to create full-featured applications without writing any frontend code.
+Sourcetool transforms your backend code into powerful internal tools. No frontend skills required.
+
+[📚 Documentation](https://docs.trysourcetool.com) | [💬 Discord Community](https://discord.gg/SwZ56mrh)
 
 ## 🌟 About Sourcetool
 
@@ -147,6 +149,7 @@ Check out the [Sourcetool website](https://trysourcetool.com/) for pricing infor
 ## 📚 Resources
 
 - [Documentation](https://docs.trysourcetool.com)
+- [Discord Community](https://discord.gg/SwZ56mrh)
 - [GitHub Repository](https://github.com/trysourcetool/sourcetool)
 - [Security Policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
