@@ -8,8 +8,8 @@
   "type": "module",
   "module": "dist/esm/index.js",
   "scripts": {
-    "build": "npx tsx build/build.ts",
-    "build:watch": "npx tsx build/build.ts --watch",
+    "build": "npx tsx scripts/build.ts",
+    "build:watch": "npx tsx scripts/build.ts --watch",
     "test": "vitest watch",
     "test:ci": "vitest run"
   },
