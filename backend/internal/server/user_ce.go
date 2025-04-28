@@ -16,6 +16,10 @@ import (
 const maxUsersInCE = 5
 
 func (s *Server) canAddUserToOrganization(ctx context.Context, organizationID uuid.UUID) error {
+	return s.canAddUsersToOrganization(ctx, organizationID, 1)
+}
+
+func (s *Server) canAddUsersToOrganization(ctx context.Context, organizationID uuid.UUID, newUserCount int) error {
 	users, err := s.db.User().List(ctx, database.UserByOrganizationID(organizationID))
 	if err != nil {
 		return err
@@ -28,7 +32,7 @@ func (s *Server) canAddUserToOrganization(ctx context.Context, organizationID uu
 
 	totalUserCount := len(users) + len(invitations)
 
-	if totalUserCount >= maxUsersInCE {
+	if totalUserCount + newUserCount > maxUsersInCE {
 		return errdefs.ErrUserLimitReached(
 			fmt.Errorf("CE version is limited to %d users", maxUsersInCE),
 		)
