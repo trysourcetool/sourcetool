@@ -375,6 +375,20 @@ func (s *Server) handleRegisterWithMagicLink(w http.ResponseWriter, r *http.Requ
 	var token, xsrfToken string
 	var expiration time.Duration
 
+	// For self-hosted mode, check if we can add users to the organization (CE limit check)
+	if !config.Config.IsCloudEdition {
+		// Get the organization ID for self-hosted mode
+		orgs, err := s.db.Organization().List(ctx)
+		if err != nil {
+			return err
+		}
+		if len(orgs) > 0 {
+			if err := s.canAddUserToOrganization(ctx, orgs[0].ID); err != nil {
+				return err
+			}
+		}
+	}
+
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		// Create the user in a transaction
 		if err := tx.User().Create(ctx, u); err != nil {
@@ -672,6 +686,11 @@ func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r 
 	plainRefreshToken, hashedRefreshToken, err := core.GenerateRefreshToken()
 	if err != nil {
 		return errdefs.ErrInternal(err)
+	}
+
+	// Check if we can add users to the organization (CE limit check)
+	if err := s.canAddUserToOrganization(ctx, invitedOrg.ID); err != nil {
+		return err
 	}
 
 	// Create new user
