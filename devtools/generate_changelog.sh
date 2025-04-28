@@ -17,17 +17,14 @@ fi
 PATH_FILTER=$2
 
 # Get the current tag and date
-CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "Initial Release")
-RELEASE_DATE=$(date +"%Y-%m-%d")
-
-# Format the title based on the path
-if [ "$PATH_FILTER" = "sdk/go" ]; then
-  TITLE="## sdk/go/${CURRENT_TAG} - ${RELEASE_DATE}"
-elif [ "$PATH_FILTER" = "mcp/docs-mcp-server" ]; then
-  TITLE="## mcp/docs-mcp-server/${CURRENT_TAG} - ${RELEASE_DATE}"
+if [ -n "$PATH_FILTER" ]; then
+  CURRENT_TAG=$(git tag --list "$PATH_FILTER/v*" --sort=-v:refname | head -n1)
+  TITLE="## $PATH_FILTER/${CURRENT_TAG} - ${RELEASE_DATE}"
 else
+  CURRENT_TAG=$(git tag --list "v*" --sort=-v:refname | head -n1)
   TITLE="## ${CURRENT_TAG} - ${RELEASE_DATE}"
 fi
+RELEASE_DATE=$(date +"%Y-%m-%d")
 
 # Generate changelog content
 {
