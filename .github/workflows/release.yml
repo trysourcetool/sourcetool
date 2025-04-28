@@ -216,3 +216,30 @@ jobs:
           body: ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
+          
+  deploy-to-render:
+    needs: [create-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Website to Render
+        env:
+          RENDER_DEPLOY_HOOK_WEBSITE: ${{ secrets.RENDER_DEPLOY_HOOK_WEBSITE }}
+        if: env.RENDER_DEPLOY_HOOK_WEBSITE != ''
+        run: |
+          echo "Deploying website to Render..."
+          curl -X POST "$RENDER_DEPLOY_HOOK_WEBSITE" \
+            -H "Content-Type: application/json" \
+            -d '{"publishDir": "website", "clear": true}'
+
+      - name: Deploy Docs to Render
+        env:
+          RENDER_DEPLOY_HOOK_DOCS: ${{ secrets.RENDER_DEPLOY_HOOK_DOCS }}
+        if: env.RENDER_DEPLOY_HOOK_DOCS != ''
+        run: |
+          echo "Deploying docs to Render..."
+          curl -X POST "$RENDER_DEPLOY_HOOK_DOCS" \
+            -H "Content-Type: application/json" \
+            -d '{"buildCommand": "pnpm build:docs", "publishDir": "docs/build", "clear": true}'
