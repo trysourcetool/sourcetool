@@ -558,6 +558,11 @@ func (s *Server) handleCreateUserInvitations(w http.ResponseWriter, r *http.Requ
 	ctxOrg := internal.ContextOrganization(ctx)
 	ctxUser := internal.ContextUser(ctx)
 
+	// Check if we can add users to the organization (CE limit check)
+	if err := s.canAddUserToOrganization(ctx, ctxOrg.ID); err != nil {
+		return err
+	}
+
 	invitations := make([]*core.UserInvitation, 0)
 	emailURLs := make(map[string]string)
 	for _, email := range req.Emails {

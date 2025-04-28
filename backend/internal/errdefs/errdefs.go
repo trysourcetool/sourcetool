@@ -39,6 +39,7 @@ var (
 	ErrUserGroupNotFound                  = Status("user_group_not_found", 404)
 	ErrUserMultipleOrganizations          = Status("user_multiple_organizations", 422)
 	ErrEnvironmentLimitReached            = Status("environment_limit_reached", 403)
+	ErrUserLimitReached                   = Status("user_limit_reached", 403)
 )
 
 type Meta []any
@@ -259,4 +260,12 @@ func IsEnvironmentLimitReached(err error) bool {
 		return false
 	}
 	return val.Title == "environment_limit_reached"
+}
+
+func IsUserLimitReached(err error) bool {
+	val, ok := err.(*Error)
+	if !ok {
+		return false
+	}
+	return val.Title == "user_limit_reached"
 }
