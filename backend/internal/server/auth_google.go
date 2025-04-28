@@ -365,6 +365,14 @@ func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request
 	var authURL string
 	var hasOrganization bool
 
+	// Check if we can add users to the organization (CE limit check)
+	if claims.Flow == jwt.GoogleAuthFlowInvitation {
+		// For invitation flow, check organization limit
+		if err := s.canAddUserToOrganization(ctx, claims.InvitationOrgID); err != nil {
+			return err
+		}
+	}
+
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if err := tx.User().Create(ctx, u); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to create user: %w", err))

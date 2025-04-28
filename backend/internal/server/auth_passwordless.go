@@ -674,6 +674,11 @@ func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r 
 		return errdefs.ErrInternal(err)
 	}
 
+	// Check if we can add users to the organization (CE limit check)
+	if err := s.canAddUserToOrganization(ctx, invitedOrg.ID); err != nil {
+		return err
+	}
+
 	// Create new user
 	now := time.Now()
 	expiresAt := now.Add(core.TokenExpiration())
