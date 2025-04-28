@@ -165,7 +165,7 @@ The application will automatically run necessary database migrations on startup.
 docker run --rm \
   --env-file /path/to/your/production.env \
   ghcr.io/trysourcetool/sourcetool:latest \
-  /app/migrate
+  /app/migrate migrate /app/migrations
 ```
 
 This can be useful in scenarios such as:
