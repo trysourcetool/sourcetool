@@ -145,8 +145,38 @@ jobs:
           echo "Module did not become available in proxy"
           exit 1
 
+  create-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get the version
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Docs MCP Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
+          git push origin mcp/docs-mcp-server/${{ steps.get_version.outputs.VERSION }}
+
+      - name: Create Go SDK Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag sdk/go/${{ steps.get_version.outputs.VERSION }}
+          git push origin sdk/go/${{ steps.get_version.outputs.VERSION }}
+
   create-release:
-    needs: [build-and-push, build-and-push-mcp, release-go-sdk]
+    needs: [build-and-push, build-and-push-mcp, release-go-sdk, create-tags]
     runs-on: ubuntu-latest
     permissions:
       contents: write
