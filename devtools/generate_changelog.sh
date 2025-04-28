@@ -20,7 +20,7 @@ PATH_FILTER=$2
 RELEASE_DATE=$(date +"%Y-%m-%d")
 if [ -n "$PATH_FILTER" ]; then
   CURRENT_TAG=$(git tag --list "$PATH_FILTER/v*" --sort=-v:refname | head -n1)
-  TITLE="## $PATH_FILTER/${CURRENT_TAG} - ${RELEASE_DATE}"
+  TITLE="## ${CURRENT_TAG} - ${RELEASE_DATE}"
 else
   CURRENT_TAG=$(git tag --list "v*" --sort=-v:refname | head -n1)
   TITLE="## ${CURRENT_TAG} - ${RELEASE_DATE}"
