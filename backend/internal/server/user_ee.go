@@ -1,3 +1,6 @@
+//go:build ee
+// +build ee
+
 package server
 
 import (
@@ -7,5 +10,6 @@ import (
 )
 
 func (s *Server) canAddUserToOrganization(ctx context.Context, organizationID uuid.UUID) error {
+	// No limit in EE version
 	return nil
 }
