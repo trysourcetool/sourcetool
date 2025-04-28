@@ -221,6 +221,7 @@ func (s *Server) installRESTHandlers(router *chi.Mux) {
 				r.Route("/invitations", func(r chi.Router) {
 					r.Post("/", s.errorHandler(s.handleCreateUserInvitations))
 					r.Post("/{invitationID}/resend", s.errorHandler(s.handleResendUserInvitation))
+					r.Delete("/{invitationID}", s.errorHandler(s.handleDeleteUserInvitation))
 				})
 			})
 		})

@@ -240,6 +240,7 @@ function Users() {
   const page = searchParams.page || 1;
   const invite = searchParams.invite || false;
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [invitationToDelete, setInvitationToDelete] = useState<UserInvitation | null>(null);
 
   const users = useSelector(usersStore.selector.getUsers);
   const userInvitations = useSelector(usersStore.selector.getUserInvitations);
@@ -252,6 +253,9 @@ function Users() {
   );
   const isDeleteUserWaiting = useSelector(
     (state) => state.users.isDeleteUserWaiting,
+  );
+  const isDeleteUserInvitationWaiting = useSelector(
+    (state) => state.users.isDeleteUserInvitationWaiting,
   );
 
   const filteredUsers = useMemo(() => {
@@ -355,6 +359,34 @@ function Users() {
     setUserToDelete(null); // Close dialog
   };
 
+  const handleDeleteUserInvitation = async () => {
+    if (!invitationToDelete || isDeleteUserInvitationWaiting) {
+      return;
+    }
+    const resultAction = await dispatch(
+      usersStore.asyncActions.deleteUserInvitation({
+        invitationId: invitationToDelete.id,
+      }),
+    );
+
+    if (usersStore.asyncActions.deleteUserInvitation.fulfilled.match(resultAction)) {
+      toast({
+        title: t('routes_users_toast_invitation_deleted'),
+        description: t('routes_users_toast_invitation_deleted_description', {
+          email: invitationToDelete.email,
+        }),
+      });
+      dispatch(usersStore.asyncActions.listUsers()); // Refresh the list
+    } else {
+      toast({
+        title: t('routes_users_toast_invitation_delete_failed'),
+        description: t('routes_users_toast_invitation_delete_failed_description'),
+        variant: 'destructive',
+      });
+    }
+    setInvitationToDelete(null); // Close dialog
+  };
+
   useEffect(() => {
     setBreadcrumbsState?.([{ label: t('breadcrumbs_users') }]);
   }, [setBreadcrumbsState, t]);
@@ -433,7 +465,27 @@ function Users() {
                           {t('routes_users_resend_invitation')}
                         </Button>
                       </TableCell>
-                      <TableCell></TableCell>
+                      <TableCell>
+                        {me?.role === 'admin' && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Ellipsis className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  setInvitationToDelete(user);
+                                }}
+                              >
+                                {t('routes_users_delete_invitation')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
                 }
@@ -667,6 +719,43 @@ function Users() {
                 <Loader2 className="mr-2 size-4 animate-spin" />
               )}
               {t('routes_users_delete_confirm_button')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog
+        open={!!invitationToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setInvitationToDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('routes_users_delete_invitation_confirm_title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('routes_users_delete_invitation_confirm_description', {
+                email: invitationToDelete?.email,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleteUserInvitationWaiting}>
+              {t('common_cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUserInvitation}
+              disabled={isDeleteUserInvitationWaiting}
+              className="bg-foreground text-background hover:bg-foreground/90"
+            >
+              {isDeleteUserInvitationWaiting && (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              )}
+              {t('routes_users_delete_invitation_confirm_button')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -148,3 +148,16 @@ export const deleteUser = async (params: {
 
   return res;
 };
+
+export const deleteUserInvitation = async (params: {
+  invitationId: string;
+}) => {
+  const res = await api.del<{
+    userInvitation: UserInvitation;
+  }>({
+    path: `/users/invitations/${params.invitationId}`,
+    auth: true,
+  });
+
+  return res;
+};

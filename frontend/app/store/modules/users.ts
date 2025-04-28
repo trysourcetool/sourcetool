@@ -135,6 +135,18 @@ const deleteUser = createAsyncThunk(
   },
 );
 
+const deleteUserInvitation = createAsyncThunk(
+  'users/deleteUserInvitation',
+  async (params: { invitationId: string }, { rejectWithValue }) => {
+    try {
+      const res = await api.users.deleteUserInvitation(params);
+      return res;
+    } catch (error: any) {
+      return rejectWithValue(error as ErrorResponse);
+    }
+  },
+);
+
 const createUserInvitations = createAsyncThunk(
   'users/createUserInvitations',
   async (
@@ -189,6 +201,7 @@ export type State = {
   isListUsersWaiting: boolean;
   isUpdateUserWaiting: boolean;
   isDeleteUserWaiting: boolean;
+  isDeleteUserInvitationWaiting: boolean;
   isCreateUserInvitationsWaiting: boolean;
   isResendUserInvitationWaiting: boolean;
 };
@@ -204,6 +217,7 @@ const initialState: State = {
   isListUsersWaiting: false,
   isUpdateUserWaiting: false,
   isDeleteUserWaiting: false,
+  isDeleteUserInvitationWaiting: false,
   isCreateUserInvitationsWaiting: false,
   isResendUserInvitationWaiting: false,
 };
@@ -328,6 +342,17 @@ export const slice = createSlice({
       .addCase(deleteUser.rejected, (state) => {
         state.isDeleteUserWaiting = false;
       })
+      
+      // deleteUserInvitation
+      .addCase(deleteUserInvitation.pending, (state) => {
+        state.isDeleteUserInvitationWaiting = true;
+      })
+      .addCase(deleteUserInvitation.fulfilled, (state) => {
+        state.isDeleteUserInvitationWaiting = false;
+      })
+      .addCase(deleteUserInvitation.rejected, (state) => {
+        state.isDeleteUserInvitationWaiting = false;
+      })
 
       // getUserGroups
       .addCase(groupsStore.asyncActions.listGroups.pending, () => {})
@@ -420,6 +445,7 @@ export const usersStore = {
     updateMeEmail,
     sendUpdateMeEmailInstructions,
     deleteUser,
+    deleteUserInvitation,
   },
   reducer: slice.reducer,
   selector: {
