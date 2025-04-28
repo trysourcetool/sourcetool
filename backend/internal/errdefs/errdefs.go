@@ -38,6 +38,7 @@ var (
 	ErrUserOrganizationAccessNotFound     = Status("user_organization_access_not_found", 404)
 	ErrUserGroupNotFound                  = Status("user_group_not_found", 404)
 	ErrUserMultipleOrganizations          = Status("user_multiple_organizations", 422)
+	ErrEnvironmentLimitReached            = Status("environment_limit_reached", 403)
 )
 
 type Meta []any
@@ -250,4 +251,12 @@ func IsUserGoogleAuthRequestNotFound(err error) bool {
 		return false
 	}
 	return val.Title == "user_google_auth_request_not_found"
+}
+
+func IsEnvironmentLimitReached(err error) bool {
+	val, ok := err.(*Error)
+	if !ok {
+		return false
+	}
+	return val.Title == "environment_limit_reached"
 }

@@ -137,6 +137,10 @@ func (s *Server) handleCreateEnvironment(w http.ResponseWriter, r *http.Request)
 		Color:          req.Color,
 	}
 
+	if err := s.canCreateEnvironment(ctx, ctxOrg.ID); err != nil {
+		return err
+	}
+
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
 		if err := tx.Environment().Create(ctx, env); err != nil {
 			return err
