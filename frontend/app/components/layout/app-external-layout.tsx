@@ -25,6 +25,7 @@ import {
 import { ModeToggle } from '../common/mode-toggle';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
+  BookOpen,
   CheckCheck,
   ChevronsUpDown,
   FileText,
@@ -50,6 +51,7 @@ import { usersStore } from '@/store/modules/users';
 import { useDispatch, useSelector } from '@/store';
 import { ENVIRONMENTS } from '@/environments';
 import { authStore } from '@/store/modules/auth';
+import { Button } from '../ui/button';
 
 export function AppExternalLayout(props: PropsWithChildren) {
   const dispatch = useDispatch();
@@ -251,7 +253,7 @@ export function AppExternalLayout(props: PropsWithChildren) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="bg-background group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
+        <header className="bg-background group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b transition-[width,height] ease-linear">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
@@ -273,6 +275,17 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+
+          <div className="flex items-center gap-2 px-4">
+            <Button variant="ghost" size="icon" asChild>
+              <a
+                href="https://docs.trysourcetool.com/docs/getting-started"
+                target="_blank"
+              >
+                <BookOpen />
+              </a>
+            </Button>
           </div>
         </header>
         <main>{props.children}</main>
