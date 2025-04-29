@@ -36,14 +36,13 @@ export default function ApiKeysNew() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setBreadcrumbsState } = useBreadcrumbs();
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
   const account = useSelector(usersStore.selector.getUserMe);
   const environments = useSelector(environmentsStore.selector.getEnvironments);
+  const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const isCreateApiKeyWaiting = useSelector(
     (state) => state.apiKeys.isCreateApiKeyWaiting,
   );
-
-  console.log(i18n);
 
   const schema = object({
     name: string({
@@ -51,6 +50,13 @@ export default function ApiKeysNew() {
     }),
     environmentId: string({
       required_error: t('zod_errors_environment_required'),
+    }).superRefine((value, ctx) => {
+      if (apiKeys.some((apiKey) => apiKey.environment.id === value)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('zod_errors_environment_used'),
+        });
+      }
     }),
   });
 
@@ -89,6 +95,7 @@ export default function ApiKeysNew() {
 
   useEffect(() => {
     dispatch(environmentsStore.asyncActions.listEnvironments());
+    dispatch(apiKeysStore.asyncActions.listApiKeys());
   }, [dispatch]);
 
   return (
@@ -124,7 +131,12 @@ export default function ApiKeysNew() {
                   {t('routes_apikeys_new_environment_label')}
                 </FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.trigger('environmentId');
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={t(
