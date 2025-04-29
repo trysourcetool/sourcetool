@@ -347,6 +347,15 @@
   "routes_users_toast_invitation_resent_description": "The invitation has been resent to the user",
   "routes_users_toast_invitation_resend_failed": "Failed to resend invitation",
   "routes_users_toast_invitation_resend_failed_description": "Please try again",
+  
+  "routes_users_delete_invitation": "Delete invitation",
+  "routes_users_delete_invitation_confirm_title": "Delete invitation",
+  "routes_users_delete_invitation_confirm_description": "Are you sure you want to delete the invitation for {{email}}? This action cannot be undone.",
+  "routes_users_delete_invitation_confirm_button": "Delete",
+  "routes_users_toast_invitation_deleted": "Invitation deleted",
+  "routes_users_toast_invitation_deleted_description": "The invitation for {{email}} has been deleted",
+  "routes_users_toast_invitation_delete_failed": "Failed to delete invitation",
+  "routes_users_toast_invitation_delete_failed_description": "An error occurred while trying to delete the invitation. Please try again.",
 
   "routes_signup_invitation_title": "Welcome to the team.",
   "routes_signup_invitation_description": "Complete your registration below",

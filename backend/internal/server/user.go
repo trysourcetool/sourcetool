@@ -673,3 +673,43 @@ func (s *Server) handleResendUserInvitation(w http.ResponseWriter, r *http.Reque
 		UserInvitation: userInvitationFromModel(userInvitation),
 	})
 }
+
+type deleteUserInvitationResponse struct {
+	UserInvitation *userInvitationResponse `json:"userInvitation"`
+}
+
+func (s *Server) handleDeleteUserInvitation(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	invitationIDReq := chi.URLParam(r, "invitationID")
+	if invitationIDReq == "" {
+		return errdefs.ErrInvalidArgument(errors.New("invitationID is required"))
+	}
+
+	invitationID, err := uuid.FromString(invitationIDReq)
+	if err != nil {
+		return errdefs.ErrInvalidArgument(err)
+	}
+
+	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
+		return err
+	}
+
+	userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByID(invitationID))
+	if err != nil {
+		return err
+	}
+
+	ctxOrg := internal.ContextOrganization(ctx)
+	if userInvitation.OrganizationID != ctxOrg.ID {
+		return errdefs.ErrUnauthenticated(errors.New("invalid organization"))
+	}
+
+	if err := s.db.User().DeleteInvitation(ctx, userInvitation); err != nil {
+		return err
+	}
+
+	return s.renderJSON(w, http.StatusOK, deleteUserInvitationResponse{
+		UserInvitation: userInvitationFromModel(userInvitation),
+	})
+}
