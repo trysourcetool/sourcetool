@@ -58,6 +58,8 @@ import type { ErrorResponse } from '@/api/instance';
 import { Input } from '@/components/ui/input';
 import { zodValidator } from '@tanstack/zod-adapter';
 import { number, object } from 'zod';
+import { Card } from '@/components/ui/card';
+import { usersStore } from '@/store/modules/users';
 
 export default function ApiKeys() {
   const isInitialLoading = useRef(false);
@@ -72,6 +74,7 @@ export default function ApiKeys() {
   const page = searchParams.page || 1;
   const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
   const devKey = useSelector(apiKeysStore.selector.getDevKey);
+  const user = useSelector(usersStore.selector.getUserMe);
   const [selectApiKeyId, setSelectApiKeyId] = useState<string | null>(null);
   const isDeleteApiKeyWaiting = useSelector(
     (state) => state.apiKeys.isDeleteApiKeyWaiting,
@@ -99,15 +102,21 @@ export default function ApiKeys() {
     );
   }, [filteredApiKeys, page]);
 
-  const onCopy = async (apiKey: string) => {
+  const onCopy = async (value: string, type: 'apiKey' | 'endpoint') => {
     try {
-      await navigator.clipboard.writeText(apiKey);
+      await navigator.clipboard.writeText(value);
       toast({
-        title: t('routes_apikeys_toast_copied'),
+        title:
+          type === 'apiKey'
+            ? t('routes_apikeys_toast_copied_api_key')
+            : t('routes_apikeys_toast_copied_endpoint'),
       });
     } catch (error) {
       toast({
-        title: t('routes_apikeys_toast_copy_failed'),
+        title:
+          type === 'apiKey'
+            ? t('routes_apikeys_toast_copy_failed_api_key')
+            : t('routes_apikeys_toast_copy_failed_endpoint'),
         description: (error as any)?.message ?? '',
         variant: 'destructive',
       });
@@ -154,6 +163,26 @@ export default function ApiKeys() {
     <div>
       <PageHeader label={t('routes_apikeys_page_header')} />
       <div className="flex w-screen flex-col gap-6 px-4 py-6 md:w-auto md:gap-6 md:px-6">
+        <Card className="bg-muted flex flex-col gap-4 p-4 pt-6">
+          <p className="text-sm font-semibold">
+            {t('routes_apikeys_organization_endpoint_title')}
+          </p>
+          <div className="bg-background flex items-center gap-2 overflow-auto px-4 py-1">
+            <div className="text-sm">
+              {user?.organization?.webSocketEndpoint}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                onCopy(user?.organization?.webSocketEndpoint ?? '', 'endpoint')
+              }
+            >
+              <Copy className="size-4" />
+            </Button>
+          </div>
+        </Card>
+
         <div className="flex flex-col justify-between gap-2 md:pt-6">
           <p className="text-foreground text-xl font-bold">
             {t('routes_apikeys_personal_key_title')}
@@ -189,7 +218,7 @@ export default function ApiKeys() {
                       variant="ghost"
                       size="icon"
                       className="cursor-pointer"
-                      onClick={() => onCopy(devKey.key)}
+                      onClick={() => onCopy(devKey.key, 'apiKey')}
                     >
                       <Copy className="size-4" />
                     </Button>
@@ -301,7 +330,7 @@ export default function ApiKeys() {
                         className="cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onCopy(apiKey.key);
+                          onCopy(apiKey.key, 'apiKey');
                         }}
                       >
                         <Copy className="size-4" />
