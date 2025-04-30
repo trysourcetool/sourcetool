@@ -337,6 +337,7 @@
   "components_layout_sidebar_api_keys": "API keys",
   "components_layout_sidebar_permissions": "Permissions",
   "components_layout_sidebar_settings": "Settings",
+  "components_layout_sidebar_documentation": "Documentation",
   "components_layout_sidebar_logout": "Log out",
 
   "routes_error_host_instance_ping_title": "Something went wrong",

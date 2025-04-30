@@ -25,6 +25,7 @@ import {
 import { ModeToggle } from '../common/mode-toggle';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
+  BookOpen,
   CheckCheck,
   ChevronsUpDown,
   FileText,
@@ -191,6 +192,17 @@ export function AppExternalLayout(props: PropsWithChildren) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuButton asChild>
+              <a
+                href="https://docs.trysourcetool.com/docs/getting-started"
+                target="_blank"
+              >
+                <BookOpen />
+                <span>{t('components_layout_sidebar_documentation')}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenu>
           <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
