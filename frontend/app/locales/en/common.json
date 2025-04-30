@@ -27,6 +27,7 @@
   "zod_errors_invalid_role": "Invalid role",
   "zod_errors_slug_required": "Slug is required",
   "zod_errors_environment_required": "Environment is required",
+  "zod_errors_environment_used": "Environment already has an API key",
   "zod_errors_color_required": "Color is required",
   "zod_errors_color_format": "Please enter in hex format",
   "zod_errors_subdomain_required": "Subdomain is required",
