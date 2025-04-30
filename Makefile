@@ -1,4 +1,4 @@
-.PHONY: help up up-ee down down-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
+.PHONY: help start start-ee stop stop-ee build build-ee clean clean-ee logs logs-ee ps ps-ee \
 	gen-keys gen-encryption-key gen-jwt-key \
 	backend-lint frontend-lint go-sdk-lint remove-docker-images remove-docker-builder \
 	db-migrate create-migrate connect-ce-db connect-ee-db \
@@ -10,10 +10,10 @@ help:
 	@echo "Available commands:"
 	@echo ""
 	@echo "Docker Compose Commands:"
-	@echo "  make up              - Start the Community Edition (CE) services"
-	@echo "  make up-ee           - Start the Enterprise Edition (EE) services"
-	@echo "  make down            - Stop the CE services"
-	@echo "  make down-ee         - Stop the EE services"
+	@echo "  make start           - Start the Community Edition (CE) services"
+	@echo "  make start-ee        - Start the Enterprise Edition (EE) services"
+	@echo "  make stop            - Stop the CE services"
+	@echo "  make stop-ee         - Stop the EE services"
 	@echo "  make build           - Build the CE services"
 	@echo "  make build-ee        - Build the EE services"
 	@echo "  make clean           - Stop and remove CE containers, networks, volumes"
@@ -51,10 +51,10 @@ help:
 	@echo "  make remove-docker-builder - Prune Docker builder cache"
 
 # Community Edition (CE) commands
-up:
+start:
 	docker compose up -d
 
-down:
+stop:
 	docker compose down
 
 build:
@@ -70,10 +70,10 @@ ps:
 	docker compose ps
 
 # Enterprise Edition (EE) commands
-up-ee:
+start-ee:
 	docker compose -f ee/compose.yaml up -d
 
-down-ee:
+stop-ee:
 	docker compose -f ee/compose.yaml down
 
 build-ee:
