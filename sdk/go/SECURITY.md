@@ -13,7 +13,7 @@ We take the security of sourcetool-go seriously. If you believe you have found a
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to security@trysourcetool.com (if this email address is not yet set up, please report via private discussion in GitHub Security tab).
+Instead, please report them via email to a.yoshida@trysourcetool.com (if this email address is not yet set up, please report via private discussion in GitHub Security tab).
 
 When reporting a vulnerability, please include:
 * Description of the issue
@@ -31,7 +31,7 @@ Security updates will be released as soon as possible after a vulnerability is c
 4. Credit the reporter (if desired)
 
 ## Contact
-For any security-related questions or concerns, please contact us at security@trysourcetool.com.
+For any security-related questions or concerns, please contact us at a.yoshida@trysourcetool.com.
 
 ## Preferred Languages
 

@@ -4,7 +4,7 @@
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to security@trysourcetool.com.
+Instead, please report them via email to a.yoshida@trysourcetool.com.
 
 When reporting a vulnerability, please include:
 * Description of the issue
@@ -24,4 +24,4 @@ Security updates will be released as soon as possible after a vulnerability is c
 
 ## Contact
 
-For any security-related questions or concerns, please contact us at security@trysourcetool.com. 
+For any security-related questions or concerns, please contact us at a.yoshida@trysourcetool.com. 
