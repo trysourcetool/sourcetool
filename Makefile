@@ -92,8 +92,8 @@ ps-ee:
 gen-keys: gen-encryption-key gen-jwt-key
 
 gen-encryption-key:
-	@echo "Generating encryption key..."
-	@cat /dev/urandom | base64 | head -c 32
+	@echo "Generating 256-bit encryption key..."
+	@head -c 32 /dev/urandom | base64 | tr -d '\n'
 	@echo ""
 
 gen-jwt-key:

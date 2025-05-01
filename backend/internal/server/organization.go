@@ -106,7 +106,7 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 		devEnv,
 	}
 
-	key, err := devEnv.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -116,7 +116,9 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 		EnvironmentID:  devEnv.ID,
 		UserID:         ctxUser.ID,
 		Name:           "",
-		Key:            key,
+		KeyHash:        hashedKey,
+		KeyCiphertext:  ciphertext,
+		KeyNonce:       nonce,
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -228,7 +230,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		return err
 	}
 
-	key, err := devEnv.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
 	if err != nil {
 		return err
 	}
@@ -238,7 +240,9 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		EnvironmentID:  devEnv.ID,
 		UserID:         u.ID,
 		Name:           "",
-		Key:            key,
+		KeyHash:        hashedKey,
+		KeyCiphertext:  ciphertext,
+		KeyNonce:       nonce,
 	}
 	if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 		return err

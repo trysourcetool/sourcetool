@@ -71,8 +71,8 @@ func (s *apiKeyStore) applyQueries(b sq.SelectBuilder, queries ...database.APIKe
 			b = b.Where(sq.Eq{`ak."environment_id"`: q.EnvironmentIDs})
 		case database.APIKeyByUserIDQuery:
 			b = b.Where(sq.Eq{`ak."user_id"`: q.UserID})
-		case database.APIKeyByKeyQuery:
-			b = b.Where(sq.Eq{`ak."key"`: q.Key})
+		case database.APIKeyByKeyHashQuery:
+			b = b.Where(sq.Eq{`ak."key_hash"`: q.KeyHash})
 		}
 	}
 	return b
@@ -85,7 +85,9 @@ func (s *apiKeyStore) buildQuery(ctx context.Context, queries ...database.APIKey
 		`ak."environment_id"`,
 		`ak."user_id"`,
 		`ak."name"`,
-		`ak."key"`,
+		`ak."key_hash"`,
+		`ak."key_ciphertext"`,
+		`ak."key_nonce"`,
 		`ak."created_at"`,
 		`ak."updated_at"`,
 	).
@@ -110,7 +112,9 @@ func (s *apiKeyStore) Create(ctx context.Context, m *core.APIKey) error {
 			`"environment_id"`,
 			`"user_id"`,
 			`"name"`,
-			`"key"`,
+			`"key_hash"`,
+			`"key_ciphertext"`,
+			`"key_nonce"`,
 		).
 		Values(
 			m.ID,
@@ -118,7 +122,9 @@ func (s *apiKeyStore) Create(ctx context.Context, m *core.APIKey) error {
 			m.EnvironmentID,
 			m.UserID,
 			m.Name,
-			m.Key,
+			m.KeyHash,
+			m.KeyCiphertext,
+			m.KeyNonce,
 		).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {
@@ -136,7 +142,9 @@ func (s *apiKeyStore) Update(ctx context.Context, m *core.APIKey) error {
 		Update(`"api_key"`).
 		Set(`"user_id"`, m.UserID).
 		Set(`"name"`, m.Name).
-		Set(`"key"`, m.Key).
+		Set(`"key_hash"`, m.KeyHash).
+		Set(`"key_ciphertext"`, m.KeyCiphertext).
+		Set(`"key_nonce"`, m.KeyNonce).
 		Where(sq.Eq{`"id"`: m.ID}).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {

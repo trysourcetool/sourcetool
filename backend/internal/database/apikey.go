@@ -48,11 +48,11 @@ func APIKeyByUserID(userID uuid.UUID) APIKeyQuery {
 	return APIKeyByUserIDQuery{UserID: userID}
 }
 
-type APIKeyByKeyQuery struct{ Key string }
+type APIKeyByKeyHashQuery struct{ KeyHash string }
 
-func (APIKeyByKeyQuery) isAPIKeyQuery() {}
+func (APIKeyByKeyHashQuery) isAPIKeyQuery() {}
 
-func APIKeyByKey(key string) APIKeyQuery { return APIKeyByKeyQuery{Key: key} }
+func APIKeyByKeyHash(keyHash string) APIKeyQuery { return APIKeyByKeyHashQuery{KeyHash: keyHash} }
 
 type APIKeyStore interface {
 	Get(ctx context.Context, queries ...APIKeyQuery) (*core.APIKey, error)

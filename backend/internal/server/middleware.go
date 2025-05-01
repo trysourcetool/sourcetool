@@ -285,7 +285,8 @@ func (s *Server) authWebSocketUser(next http.Handler) http.Handler {
 				return
 			}
 
-			apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKey(apikeyVal))
+			hashedAPIKey := core.HashAPIKey(apikeyVal)
+			apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKeyHash(hashedAPIKey))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
