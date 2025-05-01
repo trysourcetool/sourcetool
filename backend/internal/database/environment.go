@@ -30,6 +30,14 @@ func (EnvironmentBySlugQuery) isEnvironmentQuery() {}
 
 func EnvironmentBySlug(slug string) EnvironmentQuery { return EnvironmentBySlugQuery{Slug: slug} }
 
+type EnvironmentByAPIKeyIDsQuery struct{ APIKeyIDs []uuid.UUID }
+
+func (EnvironmentByAPIKeyIDsQuery) isEnvironmentQuery() {}
+
+func EnvironmentByAPIKeyIDs(ids []uuid.UUID) EnvironmentQuery {
+	return EnvironmentByAPIKeyIDsQuery{APIKeyIDs: ids}
+}
+
 type EnvironmentStore interface {
 	Get(ctx context.Context, queries ...EnvironmentQuery) (*core.Environment, error)
 	List(ctx context.Context, queries ...EnvironmentQuery) ([]*core.Environment, error)
