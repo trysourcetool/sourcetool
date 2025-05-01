@@ -67,13 +67,22 @@ func (s *environmentStore) applyQueries(b sq.SelectBuilder, queries ...database.
 			b = b.Where(sq.Eq{`e."organization_id"`: q.OrganizationID})
 		case database.EnvironmentBySlugQuery:
 			b = b.Where(sq.Eq{`e."slug"`: q.Slug})
+		case database.EnvironmentByAPIKeyIDsQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."environment_id" = e."id"`).
+				Where(sq.Eq{`ak."id"`: q.APIKeyIDs})
 		}
 	}
 	return b
 }
 
-func (s *environmentStore) buildQuery(ctx context.Context, queries ...database.EnvironmentQuery) (string, []any, error) {
-	q := s.builder.Select(s.columns()...).
+func (s *environmentStore) buildQueryWithColumns(ctx context.Context, extraCols []string, queries ...database.EnvironmentQuery) (string, []any, error) {
+	cols := s.columns()
+	if len(extraCols) > 0 {
+		cols = append(cols, extraCols...)
+	}
+
+	q := s.builder.Select(cols...).
 		From(`"environment" e`)
 
 	q = s.applyQueries(q, queries...)
@@ -84,6 +93,10 @@ func (s *environmentStore) buildQuery(ctx context.Context, queries ...database.E
 	}
 
 	return query, args, err
+}
+
+func (s *environmentStore) buildQuery(ctx context.Context, queries ...database.EnvironmentQuery) (string, []any, error) {
+	return s.buildQueryWithColumns(ctx, nil, queries...)
 }
 
 func (s *environmentStore) Create(ctx context.Context, m *core.Environment) error {
@@ -172,13 +185,9 @@ func (s *environmentStore) BulkInsert(ctx context.Context, m []*core.Environment
 	return nil
 }
 
-func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]*core.Environment, error) {
-	cols := append(s.columns(), `ak."id" AS "api_key_id"`)
-	query, args, err := s.builder.Select(cols...).
-		From(`"environment" e`).
-		InnerJoin(`"api_key" ak ON ak."environment_id" = e."id"`).
-		Where(sq.Eq{`ak."id"`: ids}).
-		ToSql()
+func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, apiKeyIDs []uuid.UUID) (map[uuid.UUID]*core.Environment, error) {
+	extraCols := []string{`ak."id" AS "api_key_id"`}
+	query, args, err := s.buildQueryWithColumns(ctx, extraCols, database.EnvironmentByAPIKeyIDs(apiKeyIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -189,18 +198,19 @@ func (s *environmentStore) MapByAPIKeyIDs(ctx context.Context, ids []uuid.UUID) 
 	}
 	defer rows.Close()
 
-	type EnvironmentEmbedded struct {
+	type environmentWithAPIKeyID struct {
 		*core.Environment
 		APIKeyID uuid.UUID `db:"api_key_id"`
 	}
+
 	m := make(map[uuid.UUID]*core.Environment)
 	for rows.Next() {
-		ee := EnvironmentEmbedded{}
-		if err := rows.StructScan(&ee); err != nil {
+		e := environmentWithAPIKeyID{}
+		if err := rows.StructScan(&e); err != nil {
 			return nil, errdefs.ErrDatabase(err)
 		}
 
-		m[ee.APIKeyID] = ee.Environment
+		m[e.APIKeyID] = e.Environment
 	}
 
 	return m, nil
