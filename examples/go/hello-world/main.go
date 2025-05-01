@@ -61,7 +61,7 @@ func main() {
 	}
 	s := sourcetool.New(config)
 
-	s.Page("/", "Hello", helloPage)
+	s.Page("/hello", "Hello", helloPage)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
