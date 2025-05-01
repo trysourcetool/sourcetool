@@ -70,7 +70,7 @@ Sourcetool handles routing automatically based on the routes you define:
 
 ```go
 // Basic routes
-st.Page("/", "Home", homePageHandler)
+st.Page("/home", "Home", homePageHandler)
 st.Page("/users", "Users", usersPageHandler)
 st.Page("/settings", "Settings", settingsPageHandler)
 
@@ -241,7 +241,7 @@ For larger applications, you can organize pages into sections:
 
 ```go
 // Main pages
-st.Page("/", "Home", homePageHandler)
+st.Page("/home", "Home", homePageHandler)
 st.Page("/dashboard", "Dashboard", dashboardPageHandler)
 
 // User management pages
