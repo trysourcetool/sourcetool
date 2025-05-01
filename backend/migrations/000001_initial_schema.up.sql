@@ -156,7 +156,9 @@ CREATE TABLE "api_key" (
   "environment_id"  UUID          NOT NULL,
   "user_id"         UUID          NOT NULL,
   "name"            VARCHAR(255)  NOT NULL,
-  "key"             TEXT          NOT NULL,
+  "key_hash"        VARCHAR(255)  NOT NULL,
+  "key_ciphertext"  BYTEA         NOT NULL,
+  "key_nonce"       BYTEA         NOT NULL,
   "created_at"      TIMESTAMPTZ   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updated_at"      TIMESTAMPTZ   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY ("organization_id") REFERENCES "organization"("id") ON DELETE CASCADE,
@@ -165,7 +167,8 @@ CREATE TABLE "api_key" (
   PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX idx_api_key_key ON "api_key" ("key");
+CREATE UNIQUE INDEX idx_api_key_key_hash ON "api_key" ("key_hash");
+CREATE UNIQUE INDEX idx_api_key_key_ciphertext_nonce ON "api_key" ("key_ciphertext", "key_nonce");
 
 CREATE TRIGGER update_api_key_updated_at
     BEFORE UPDATE ON "api_key"

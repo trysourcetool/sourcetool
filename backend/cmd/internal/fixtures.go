@@ -81,7 +81,7 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 			return err
 		}
 
-		key, err := devEnv.GenerateAPIKey()
+		_, hashedKey, ciphertext, nonce, err := devEnv.GenerateAPIKey()
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,9 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 			EnvironmentID:  devEnv.ID,
 			UserID:         u.ID,
 			Name:           "",
-			Key:            key,
+			KeyHash:        hashedKey,
+			KeyCiphertext:  ciphertext,
+			KeyNonce:       nonce,
 		}
 
 		if err := tx.APIKey().Create(ctx, apiKey); err != nil {

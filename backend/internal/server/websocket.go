@@ -421,7 +421,8 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 		return nil, false, nil, nil, nil, nil, errors.New("invalid message")
 	}
 
-	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKey(in.ApiKey))
+	hashedAPIKey := core.HashAPIKey(in.ApiKey)
+	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKeyHash(hashedAPIKey))
 	if err != nil {
 		return nil, false, nil, nil, nil, nil, err
 	}
