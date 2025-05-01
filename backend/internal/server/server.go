@@ -19,6 +19,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
+	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	exceptionv1 "github.com/trysourcetool/sourcetool/backend/internal/pb/go/exception/v1"
@@ -34,6 +35,7 @@ type Server struct {
 	wsManager *ws.Manager
 	checker   *permission.Checker
 	upgrader  websocket.Upgrader
+	encryptor *encrypt.Encryptor
 }
 
 func New(
@@ -42,8 +44,9 @@ func New(
 	wsManager *ws.Manager,
 	checker *permission.Checker,
 	upgrader websocket.Upgrader,
+	encryptor *encrypt.Encryptor,
 ) *Server {
-	return &Server{db, pubsub, wsManager, checker, upgrader}
+	return &Server{db, pubsub, wsManager, checker, upgrader, encryptor}
 }
 
 func (s *Server) installDefaultMiddlewares(router *chi.Mux) {

@@ -22,7 +22,7 @@ type hostInstanceResponse struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-func hostInstanceFromModel(hostInstance *core.HostInstance) *hostInstanceResponse {
+func (s *Server) hostInstanceFromModel(hostInstance *core.HostInstance) *hostInstanceResponse {
 	if hostInstance == nil {
 		return nil
 	}
@@ -94,6 +94,6 @@ func (s *Server) handlePingHostInstance(w http.ResponseWriter, r *http.Request) 
 	}
 
 	return s.renderJSON(w, http.StatusOK, pingHostInstanceResponse{
-		HostInstance: hostInstanceFromModel(onlineHostInstance),
+		HostInstance: s.hostInstanceFromModel(onlineHostInstance),
 	})
 }

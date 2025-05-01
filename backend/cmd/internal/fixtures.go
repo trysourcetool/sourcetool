@@ -9,6 +9,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
+	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
 )
 
 func LoadFixtures(ctx context.Context, db database.DB) error {
@@ -81,7 +82,12 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 			return err
 		}
 
-		_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
+		key, err := core.GenerateAPIKey(devEnv.Slug)
+		if err != nil {
+			return err
+		}
+
+		keyHash, keyCiphertext, keyNonce, err := hashAndEncryptAPIKey(key)
 		if err != nil {
 			return err
 		}
@@ -91,9 +97,9 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 			EnvironmentID:  devEnv.ID,
 			UserID:         u.ID,
 			Name:           "",
-			KeyHash:        hashedKey,
-			KeyCiphertext:  ciphertext,
-			KeyNonce:       nonce,
+			KeyHash:        keyHash,
+			KeyCiphertext:  keyCiphertext,
+			KeyNonce:       keyNonce,
 		}
 
 		if err := tx.APIKey().Create(ctx, apiKey); err != nil {
@@ -106,4 +112,20 @@ func LoadFixtures(ctx context.Context, db database.DB) error {
 	}
 
 	return nil
+}
+
+func hashAndEncryptAPIKey(plainAPIKey string) (keyHash string, keyCiphertext, keyNonce []byte, err error) {
+	keyHash = core.HashAPIKey(plainAPIKey)
+
+	encryptor, err := encrypt.NewEncryptor()
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	keyCiphertext, keyNonce, err = encryptor.Encrypt([]byte(plainAPIKey))
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	return keyHash, keyCiphertext, keyNonce, nil
 }
