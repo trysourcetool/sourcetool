@@ -206,7 +206,7 @@ func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) erro
 		return errdefs.ErrInvalidArgument(errors.New("cannot create more than one API key for this environment"))
 	}
 
-	_, hashedKey, ciphertext, nonce, err := env.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(env.Slug)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}

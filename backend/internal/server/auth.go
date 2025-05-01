@@ -34,7 +34,7 @@ func (s *Server) createPersonalAPIKey(ctx context.Context, tx database.Tx, u *co
 		return err
 	}
 
-	_, hashedKey, ciphertext, nonce, err := devEnv.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
 	if err != nil {
 		return err
 	}

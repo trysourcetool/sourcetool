@@ -106,7 +106,7 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 		devEnv,
 	}
 
-	_, hashedKey, ciphertext, nonce, err := devEnv.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -230,7 +230,7 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		return err
 	}
 
-	_, hashedKey, ciphertext, nonce, err := devEnv.GenerateAPIKey()
+	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
 	if err != nil {
 		return err
 	}
