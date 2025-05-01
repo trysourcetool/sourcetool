@@ -24,7 +24,7 @@ type environmentResponse struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
-func environmentFromModel(env *core.Environment) *environmentResponse {
+func (s *Server) environmentFromModel(env *core.Environment) *environmentResponse {
 	if env == nil {
 		return nil
 	}
@@ -63,7 +63,7 @@ func (s *Server) handleGetEnvironment(w http.ResponseWriter, r *http.Request) er
 	}
 
 	return s.renderJSON(w, http.StatusOK, getEnvironmentResponse{
-		Environment: environmentFromModel(env),
+		Environment: s.environmentFromModel(env),
 	})
 }
 
@@ -81,7 +81,7 @@ func (s *Server) handleListEnvironments(w http.ResponseWriter, r *http.Request) 
 
 	envsOut := make([]*environmentResponse, 0, len(envs))
 	for _, env := range envs {
-		envsOut = append(envsOut, environmentFromModel(env))
+		envsOut = append(envsOut, s.environmentFromModel(env))
 	}
 
 	return s.renderJSON(w, http.StatusOK, listEnvironmentsResponse{
@@ -154,7 +154,7 @@ func (s *Server) handleCreateEnvironment(w http.ResponseWriter, r *http.Request)
 	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
 	return s.renderJSON(w, http.StatusOK, createEnvironmentResponse{
-		Environment: environmentFromModel(env),
+		Environment: s.environmentFromModel(env),
 	})
 }
 
@@ -219,7 +219,7 @@ func (s *Server) handleUpdateEnvironment(w http.ResponseWriter, r *http.Request)
 	env, _ = s.db.Environment().Get(ctx, database.EnvironmentByID(env.ID))
 
 	return s.renderJSON(w, http.StatusOK, updateEnvironmentResponse{
-		Environment: environmentFromModel(env),
+		Environment: s.environmentFromModel(env),
 	})
 }
 
@@ -274,6 +274,6 @@ func (s *Server) handleDeleteEnvironment(w http.ResponseWriter, r *http.Request)
 	}
 
 	return s.renderJSON(w, http.StatusOK, deleteEnvironmentResponse{
-		Environment: environmentFromModel(env),
+		Environment: s.environmentFromModel(env),
 	})
 }

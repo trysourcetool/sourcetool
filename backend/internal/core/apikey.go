@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-
-	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
 )
 
 type APIKey struct {
@@ -25,10 +23,10 @@ type APIKey struct {
 	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-func GenerateAPIKey(slug string) (plainAPIKey, hashedAPIKey string, ciphertext, nonce []byte, err error) {
+func GenerateAPIKey(slug string) (plainAPIKey string, err error) {
 	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
-		return "", "", nil, nil, err
+		return "", err
 	}
 
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -38,19 +36,8 @@ func GenerateAPIKey(slug string) (plainAPIKey, hashedAPIKey string, ciphertext, 
 	}
 
 	plainAPIKey = fmt.Sprintf("%s_%s", slug, string(randomStr))
-	hashedAPIKey = HashAPIKey(plainAPIKey)
 
-	encryptor, err := encrypt.NewEncryptor()
-	if err != nil {
-		return "", "", nil, nil, err
-	}
-
-	ciphertext, nonce, err = encryptor.Encrypt([]byte(plainAPIKey))
-	if err != nil {
-		return "", "", nil, nil, err
-	}
-
-	return plainAPIKey, hashedAPIKey, ciphertext, nonce, nil
+	return plainAPIKey, nil
 }
 
 func HashAPIKey(plainAPIKey string) string {

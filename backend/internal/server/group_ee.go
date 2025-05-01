@@ -18,7 +18,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
-func groupFromModel(g *core.Group) *groupResponse {
+func (s *Server) groupFromModel(g *core.Group) *groupResponse {
 	if g == nil {
 		return nil
 	}
@@ -32,7 +32,7 @@ func groupFromModel(g *core.Group) *groupResponse {
 	}
 }
 
-func groupPageFromModel(g *core.GroupPage) *groupPageResponse {
+func (s *Server) groupPageFromModel(g *core.GroupPage) *groupPageResponse {
 	if g == nil {
 		return nil
 	}
@@ -70,7 +70,7 @@ func (s *Server) handleGetGroup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, getGroupResponse{
-		Group: groupFromModel(group),
+		Group: s.groupFromModel(group),
 	})
 }
 
@@ -116,7 +116,7 @@ func (s *Server) handleListGroups(w http.ResponseWriter, r *http.Request) error 
 
 	groupsOut := make([]*groupResponse, 0, len(groups))
 	for _, group := range groups {
-		groupsOut = append(groupsOut, groupFromModel(group))
+		groupsOut = append(groupsOut, s.groupFromModel(group))
 	}
 
 	usersOut := make([]*userResponse, 0, len(users))
@@ -126,12 +126,12 @@ func (s *Server) handleListGroups(w http.ResponseWriter, r *http.Request) error 
 		if ok {
 			role = orgAccess.Role
 		}
-		usersOut = append(usersOut, userFromModel(u, role, ctxOrg))
+		usersOut = append(usersOut, s.userFromModel(u, role, ctxOrg))
 	}
 
 	userGroupsOut := make([]*userGroupResponse, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, userGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, s.userGroupFromModel(userGroup))
 	}
 
 	return s.renderJSON(w, http.StatusOK, listGroupsResponse{
@@ -223,7 +223,7 @@ func (s *Server) handleCreateGroup(w http.ResponseWriter, r *http.Request) error
 	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
 	return s.renderJSON(w, http.StatusOK, createGroupResponse{
-		Group: groupFromModel(g),
+		Group: s.groupFromModel(g),
 	})
 }
 
@@ -312,7 +312,7 @@ func (s *Server) handleUpdateGroup(w http.ResponseWriter, r *http.Request) error
 	g, _ = s.db.Group().Get(ctx, database.GroupByID(g.ID))
 
 	return s.renderJSON(w, http.StatusOK, updateGroupResponse{
-		Group: groupFromModel(g),
+		Group: s.groupFromModel(g),
 	})
 }
 
@@ -351,6 +351,6 @@ func (s *Server) handleDeleteGroup(w http.ResponseWriter, r *http.Request) error
 	}
 
 	return s.renderJSON(w, http.StatusOK, deleteGroupResponse{
-		Group: groupFromModel(g),
+		Group: s.groupFromModel(g),
 	})
 }

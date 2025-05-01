@@ -24,7 +24,7 @@ type organizationResponse struct {
 	UpdatedAt         string `json:"updatedAt"`
 }
 
-func organizationFromModel(o *core.Organization) *organizationResponse {
+func (s *Server) organizationFromModel(o *core.Organization) *organizationResponse {
 	if o == nil {
 		return nil
 	}
@@ -106,7 +106,12 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 		devEnv,
 	}
 
-	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
+	key, err := core.GenerateAPIKey(devEnv.Slug)
+	if err != nil {
+		return errdefs.ErrInternal(err)
+	}
+
+	keyHash, keyNonce, keyCiphertext, err := s.hashAndEncryptAPIKey(key)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -116,9 +121,9 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 		EnvironmentID:  devEnv.ID,
 		UserID:         ctxUser.ID,
 		Name:           "",
-		KeyHash:        hashedKey,
-		KeyCiphertext:  ciphertext,
-		KeyNonce:       nonce,
+		KeyHash:        keyHash,
+		KeyCiphertext:  keyCiphertext,
+		KeyNonce:       keyNonce,
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -146,7 +151,7 @@ func (s *Server) handleCreateOrganization(w http.ResponseWriter, r *http.Request
 	o, _ = s.db.Organization().Get(ctx, database.OrganizationByID(o.ID))
 
 	return s.renderJSON(w, http.StatusOK, createOrganizationResponse{
-		Organization: organizationFromModel(o),
+		Organization: s.organizationFromModel(o),
 	})
 }
 
@@ -230,7 +235,12 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		return err
 	}
 
-	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
+	key, err := core.GenerateAPIKey(devEnv.Slug)
+	if err != nil {
+		return err
+	}
+
+	keyHash, keyNonce, keyCiphertext, err := s.hashAndEncryptAPIKey(key)
 	if err != nil {
 		return err
 	}
@@ -240,9 +250,9 @@ func (s *Server) createInitialOrganizationForSelfHosted(ctx context.Context, tx 
 		EnvironmentID:  devEnv.ID,
 		UserID:         u.ID,
 		Name:           "",
-		KeyHash:        hashedKey,
-		KeyCiphertext:  ciphertext,
-		KeyNonce:       nonce,
+		KeyHash:        keyHash,
+		KeyCiphertext:  keyCiphertext,
+		KeyNonce:       keyNonce,
 	}
 	if err := tx.APIKey().Create(ctx, apiKey); err != nil {
 		return err

@@ -30,7 +30,7 @@ type userResponse struct {
 	Organization *organizationResponse `json:"organization"`
 }
 
-func userFromModel(user *core.User, role core.UserOrganizationRole, org *core.Organization) *userResponse {
+func (s *Server) userFromModel(user *core.User, role core.UserOrganizationRole, org *core.Organization) *userResponse {
 	if user == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func userFromModel(user *core.User, role core.UserOrganizationRole, org *core.Or
 		Role:         role.String(),
 		CreatedAt:    strconv.FormatInt(user.CreatedAt.Unix(), 10),
 		UpdatedAt:    strconv.FormatInt(user.UpdatedAt.Unix(), 10),
-		Organization: organizationFromModel(org),
+		Organization: s.organizationFromModel(org),
 	}
 }
 
@@ -53,7 +53,7 @@ type userInvitationResponse struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-func userInvitationFromModel(invitation *core.UserInvitation) *userInvitationResponse {
+func (s *Server) userInvitationFromModel(invitation *core.UserInvitation) *userInvitationResponse {
 	return &userInvitationResponse{
 		ID:        invitation.ID.String(),
 		Email:     invitation.Email,
@@ -69,7 +69,7 @@ type userGroupResponse struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
-func userGroupFromModel(userGroup *core.UserGroup) *userGroupResponse {
+func (s *Server) userGroupFromModel(userGroup *core.UserGroup) *userGroupResponse {
 	return &userGroupResponse{
 		ID:        userGroup.ID.String(),
 		UserID:    userGroup.UserID.String(),
@@ -110,7 +110,7 @@ func (s *Server) handleGetMe(w http.ResponseWriter, r *http.Request) error {
 	role := orgAccess.Role
 
 	return s.renderJSON(w, http.StatusOK, getMeResponse{
-		User: userFromModel(ctxUser, role, ctxOrg),
+		User: s.userFromModel(ctxUser, role, ctxOrg),
 	})
 }
 
@@ -165,7 +165,7 @@ func (s *Server) handleUpdateMe(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, updateMeResponse{
-		User: userFromModel(ctxUser, role, org),
+		User: s.userFromModel(ctxUser, role, org),
 	})
 }
 
@@ -292,7 +292,7 @@ func (s *Server) handleUpdateMeEmail(w http.ResponseWriter, r *http.Request) err
 	}
 
 	return s.renderJSON(w, http.StatusOK, updateMeEmailResponse{
-		User: userFromModel(ctxUser, role, org),
+		User: s.userFromModel(ctxUser, role, org),
 	})
 }
 
@@ -327,12 +327,12 @@ func (s *Server) handleListUsers(w http.ResponseWriter, r *http.Request) error {
 
 	usersOut := make([]*userResponse, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, userFromModel(u, roleMap[u.ID], ctxOrg))
+		usersOut = append(usersOut, s.userFromModel(u, roleMap[u.ID], ctxOrg))
 	}
 
 	userInvitationsOut := make([]*userInvitationResponse, 0, len(userInvitations))
 	for _, ui := range userInvitations {
-		userInvitationsOut = append(userInvitationsOut, userInvitationFromModel(ui))
+		userInvitationsOut = append(userInvitationsOut, s.userInvitationFromModel(ui))
 	}
 
 	return s.renderJSON(w, http.StatusOK, listUsersResponse{
@@ -432,7 +432,7 @@ func (s *Server) handleUpdateUser(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	return s.renderJSON(w, http.StatusOK, updateUserResponse{
-		User: userFromModel(u, orgAccess.Role, ctxOrg),
+		User: s.userFromModel(u, orgAccess.Role, ctxOrg),
 	})
 }
 
@@ -526,7 +526,7 @@ func (s *Server) handleDeleteUser(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	return s.renderJSON(w, http.StatusOK, deleteUserResponse{
-		User: userFromModel(userToRemove, orgAccess.Role, ctxOrg),
+		User: s.userFromModel(userToRemove, orgAccess.Role, ctxOrg),
 	})
 }
 
@@ -613,7 +613,7 @@ func (s *Server) handleCreateUserInvitations(w http.ResponseWriter, r *http.Requ
 
 	usersInvitationsOut := make([]*userInvitationResponse, 0, len(invitations))
 	for _, ui := range invitations {
-		usersInvitationsOut = append(usersInvitationsOut, userInvitationFromModel(ui))
+		usersInvitationsOut = append(usersInvitationsOut, s.userInvitationFromModel(ui))
 	}
 
 	return s.renderJSON(w, http.StatusOK, createUserInvitationsResponse{
@@ -670,7 +670,7 @@ func (s *Server) handleResendUserInvitation(w http.ResponseWriter, r *http.Reque
 	}
 
 	return s.renderJSON(w, http.StatusOK, resendUserInvitationResponse{
-		UserInvitation: userInvitationFromModel(userInvitation),
+		UserInvitation: s.userInvitationFromModel(userInvitation),
 	})
 }
 
@@ -710,6 +710,6 @@ func (s *Server) handleDeleteUserInvitation(w http.ResponseWriter, r *http.Reque
 	}
 
 	return s.renderJSON(w, http.StatusOK, deleteUserInvitationResponse{
-		UserInvitation: userInvitationFromModel(userInvitation),
+		UserInvitation: s.userInvitationFromModel(userInvitation),
 	})
 }

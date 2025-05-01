@@ -34,7 +34,12 @@ func (s *Server) createPersonalAPIKey(ctx context.Context, tx database.Tx, u *co
 		return err
 	}
 
-	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(devEnv.Slug)
+	key, err := core.GenerateAPIKey(devEnv.Slug)
+	if err != nil {
+		return err
+	}
+
+	keyHash, keyNonce, keyCiphertext, err := s.hashAndEncryptAPIKey(key)
 	if err != nil {
 		return err
 	}
@@ -45,9 +50,9 @@ func (s *Server) createPersonalAPIKey(ctx context.Context, tx database.Tx, u *co
 		EnvironmentID:  devEnv.ID,
 		UserID:         u.ID,
 		Name:           "",
-		KeyHash:        hashedKey,
-		KeyCiphertext:  ciphertext,
-		KeyNonce:       nonce,
+		KeyHash:        keyHash,
+		KeyCiphertext:  keyCiphertext,
+		KeyNonce:       keyNonce,
 	}
 
 	return tx.APIKey().Create(ctx, apiKey)

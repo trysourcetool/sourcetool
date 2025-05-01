@@ -12,7 +12,6 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/core"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
-	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
 	"github.com/trysourcetool/sourcetool/backend/internal/errdefs"
 )
 
@@ -25,17 +24,12 @@ type apiKeyResponse struct {
 	Environment *environmentResponse `json:"environment,omitempty"`
 }
 
-func apiKeyFromModel(apiKey *core.APIKey, env *core.Environment) *apiKeyResponse {
+func (s *Server) apiKeyFromModel(apiKey *core.APIKey, env *core.Environment) *apiKeyResponse {
 	if apiKey == nil {
 		return nil
 	}
 
-	encryptor, err := encrypt.NewEncryptor()
-	if err != nil {
-		return nil
-	}
-
-	plainKey, err := encryptor.Decrypt(apiKey.KeyCiphertext, apiKey.KeyNonce)
+	plainKey, err := s.encryptor.Decrypt(apiKey.KeyNonce, apiKey.KeyCiphertext)
 	if err != nil {
 		return nil
 	}
@@ -46,8 +40,18 @@ func apiKeyFromModel(apiKey *core.APIKey, env *core.Environment) *apiKeyResponse
 		Key:         string(plainKey),
 		CreatedAt:   strconv.FormatInt(apiKey.CreatedAt.Unix(), 10),
 		UpdatedAt:   strconv.FormatInt(apiKey.UpdatedAt.Unix(), 10),
-		Environment: environmentFromModel(env),
+		Environment: s.environmentFromModel(env),
 	}
+}
+
+func (s *Server) hashAndEncryptAPIKey(plainAPIKey string) (keyHash string, keyNonce, keyCiphertext []byte, err error) {
+	keyHash = core.HashAPIKey(plainAPIKey)
+	keyNonce, keyCiphertext, err = s.encryptor.Encrypt([]byte(plainAPIKey))
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	return keyHash, keyNonce, keyCiphertext, nil
 }
 
 type getAPIKeyResponse struct {
@@ -77,7 +81,7 @@ func (s *Server) handleGetAPIKey(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return s.renderJSON(w, http.StatusOK, getAPIKeyResponse{
-		APIKey: apiKeyFromModel(apiKey, env),
+		APIKey: s.apiKeyFromModel(apiKey, env),
 	})
 }
 
@@ -137,11 +141,11 @@ func (s *Server) handleListAPIKeys(w http.ResponseWriter, r *http.Request) error
 			return errdefs.ErrEnvironmentNotFound(errors.New("environment not found"))
 		}
 
-		liveKeysOut = append(liveKeysOut, apiKeyFromModel(apiKey, env))
+		liveKeysOut = append(liveKeysOut, s.apiKeyFromModel(apiKey, env))
 	}
 
 	return s.renderJSON(w, http.StatusOK, listAPIKeysResponse{
-		DevKey:   apiKeyFromModel(devKey, devEnv),
+		DevKey:   s.apiKeyFromModel(devKey, devEnv),
 		LiveKeys: liveKeysOut,
 	})
 }
@@ -206,7 +210,12 @@ func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) erro
 		return errdefs.ErrInvalidArgument(errors.New("cannot create more than one API key for this environment"))
 	}
 
-	_, hashedKey, ciphertext, nonce, err := core.GenerateAPIKey(env.Slug)
+	key, err := core.GenerateAPIKey(env.Slug)
+	if err != nil {
+		return errdefs.ErrInternal(err)
+	}
+
+	keyHash, keyNonce, keyCiphertext, err := s.hashAndEncryptAPIKey(key)
 	if err != nil {
 		return errdefs.ErrInternal(err)
 	}
@@ -218,9 +227,9 @@ func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) erro
 		EnvironmentID:  env.ID,
 		UserID:         ctxUser.ID,
 		Name:           req.Name,
-		KeyHash:        hashedKey,
-		KeyCiphertext:  ciphertext,
-		KeyNonce:       nonce,
+		KeyHash:        keyHash,
+		KeyCiphertext:  keyCiphertext,
+		KeyNonce:       keyNonce,
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -235,7 +244,7 @@ func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) erro
 	apiKey, _ = s.db.APIKey().Get(ctx, database.APIKeyByID(apiKey.ID))
 
 	return s.renderJSON(w, http.StatusOK, createAPIKeyResponse{
-		APIKey: apiKeyFromModel(apiKey, env),
+		APIKey: s.apiKeyFromModel(apiKey, env),
 	})
 }
 
@@ -307,7 +316,7 @@ func (s *Server) handleUpdateAPIKey(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	return s.renderJSON(w, http.StatusOK, updateAPIKeyResponse{
-		APIKey: apiKeyFromModel(apiKey, env),
+		APIKey: s.apiKeyFromModel(apiKey, env),
 	})
 }
 
@@ -361,6 +370,6 @@ func (s *Server) handleDeleteAPIKey(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	return s.renderJSON(w, http.StatusOK, deleteAPIKeyResponse{
-		APIKey: apiKeyFromModel(apiKey, env),
+		APIKey: s.apiKeyFromModel(apiKey, env),
 	})
 }

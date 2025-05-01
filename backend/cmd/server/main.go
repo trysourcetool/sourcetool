@@ -16,6 +16,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
+	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
@@ -47,6 +48,10 @@ func main() {
 	pubsub := pubsub.New(redisClient)
 	wsManager := ws.NewManager(ctx, db, pubsub)
 	upgrader := internal.NewUpgrader()
+	encryptor, err := encrypt.NewEncryptor()
+	if err != nil {
+		logger.Logger.Fatal("failed to create encryptor", zap.Error(err))
+	}
 
 	if config.Config.Env == config.EnvLocal {
 		if err := internal.LoadFixtures(ctx, db); err != nil {
@@ -61,7 +66,7 @@ func main() {
 	}
 
 	handler := chi.NewRouter()
-	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader)
+	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader, encryptor)
 	s.Install(handler)
 
 	srv := &http.Server{

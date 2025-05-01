@@ -16,7 +16,7 @@ type pageResponse struct {
 	UpdatedAt string `json:"updatedAt"`
 }
 
-func pageFromModel(page *core.Page) *pageResponse {
+func (s *Server) pageFromModel(page *core.Page) *pageResponse {
 	if page == nil {
 		return nil
 	}
@@ -61,17 +61,17 @@ func (s *Server) handleListPagesBase(ctx context.Context, env *core.Environment,
 
 	pagesOut := make([]*pageResponse, 0, len(pages))
 	for _, page := range pages {
-		pagesOut = append(pagesOut, pageFromModel(page))
+		pagesOut = append(pagesOut, s.pageFromModel(page))
 	}
 
 	usersOut := make([]*userResponse, 0, len(users))
 	for _, u := range users {
-		usersOut = append(usersOut, userFromModel(u, core.UserOrganizationRoleUnknown, o))
+		usersOut = append(usersOut, s.userFromModel(u, core.UserOrganizationRoleUnknown, o))
 	}
 
 	userGroupsOut := make([]*userGroupResponse, 0, len(userGroups))
 	for _, userGroup := range userGroups {
-		userGroupsOut = append(userGroupsOut, userGroupFromModel(userGroup))
+		userGroupsOut = append(userGroupsOut, s.userGroupFromModel(userGroup))
 	}
 
 	return pagesOut, usersOut, userGroupsOut, nil

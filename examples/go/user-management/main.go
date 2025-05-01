@@ -95,7 +95,7 @@ func createUserPage(ui sourcetool.UIBuilder) error {
 
 func main() {
 	s := sourcetool.New(&sourcetool.Config{
-		APIKey:   "your_api_key",
+		APIKey:   "development_fpPDS81xOd0xbNEpC449kzJYhAz0kDa2fpPDS81xOd0xbNEpC44",
 		Endpoint: "ws://localhost:3000",
 	})
 

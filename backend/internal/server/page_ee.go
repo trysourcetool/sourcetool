@@ -50,12 +50,12 @@ func (s *Server) handleListPages(w http.ResponseWriter, r *http.Request) error {
 
 	groupsOut := make([]*groupResponse, 0, len(groups))
 	for _, group := range groups {
-		groupsOut = append(groupsOut, groupFromModel(group))
+		groupsOut = append(groupsOut, s.groupFromModel(group))
 	}
 
 	groupPagesOut := make([]*groupPageResponse, 0, len(groupPages))
 	for _, groupPage := range groupPages {
-		groupPagesOut = append(groupPagesOut, groupPageFromModel(groupPage))
+		groupPagesOut = append(groupPagesOut, s.groupPageFromModel(groupPage))
 	}
 
 	return s.renderJSON(w, http.StatusOK, listPagesResponse{
