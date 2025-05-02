@@ -93,7 +93,7 @@ func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
 	msg := &websocketv1.InitializeHost{
 		ApiKey:     apiKey,
 		SdkName:    "sourcetool-go",
-		SdkVersion: "0.1.0",
+		SdkVersion: "0.1.11",
 		Pages:      pagesPayload,
 	}
 
