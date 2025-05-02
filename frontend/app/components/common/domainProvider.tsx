@@ -46,8 +46,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
     if (account?.organization) {
       if (
         pathname.startsWith('/login') ||
-        pathname.startsWith('/users/invitation') ||
-        pathname.startsWith('/resetPassword')
+        pathname.startsWith('/auth/invitations')
       ) {
         navigate({ to: '/' });
         checkComplete();
@@ -56,7 +55,7 @@ export const DomainProvider: FC<{ children: ReactNode }> = (props) => {
       if (
         account?.role === 'member' &&
         ((pathname.startsWith('/users') &&
-          !pathname.startsWith('/users/oauth/google')) ||
+          !pathname.startsWith('/users/email/update/confirm')) ||
           pathname.startsWith('/apiKeys') ||
           pathname.startsWith('/environments'))
       ) {
