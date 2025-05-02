@@ -331,7 +331,7 @@
   "routes_settings_toast_email_send_failed": "Failed to send email",
 
   "components_layout_app_name": "Sourcetool",
-  "components_layout_app_version": "v0.1.10",
+  "components_layout_app_version": "v0.1.11",
   "components_layout_sidebar_pages": "Pages",
   "components_layout_sidebar_users": "Users",
   "components_layout_sidebar_environments": "Environments",
