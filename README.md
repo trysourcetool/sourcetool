@@ -146,6 +146,9 @@ Yes, Sourcetool is designed with security in mind. You deploy and run Sourcetool
 ### Is Sourcetool free to use?
 Check out the [Sourcetool website](https://trysourcetool.com/) for pricing information.
 
+### How does Sourcetool differ from Retool?
+Retool uses a GUI-based drag-and-drop approach, while Sourcetool is **code-first**, making it a strong **Retool alternative**. This makes Sourcetool ideal for the AI era where code can be easily understood and modified by AI tools. With type-safe backend code, your applications are Git version-controllable and integrate seamlessly with AI-assisted development workflows.
+
 ## 📚 Resources
 
 - [Documentation](https://docs.trysourcetool.com)
