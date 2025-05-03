@@ -4,7 +4,7 @@
 
 Sourcetool transforms your backend code into powerful internal tools. No frontend skills required.
 
-[📚 Documentation](https://docs.trysourcetool.com) | [💬 Discord Community](https://discord.gg/SwZ56mrh)
+[📚 Documentation](https://docs.trysourcetool.com) | [💬 Discord Community](https://discord.com/invite/K76agfQQKP)
 
 ## 🌟 About Sourcetool
 
@@ -149,7 +149,7 @@ Check out the [Sourcetool website](https://trysourcetool.com/) for pricing infor
 ## 📚 Resources
 
 - [Documentation](https://docs.trysourcetool.com)
-- [Discord Community](https://discord.gg/SwZ56mrh)
+- [Discord Community](https://discord.com/invite/K76agfQQKP)
 - [GitHub Repository](https://github.com/trysourcetool/sourcetool)
 - [Security Policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
