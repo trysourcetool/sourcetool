@@ -12,6 +12,29 @@ fi
 
 TAG=$1
 
+# Extract version number without 'v'
+VERSION_NO_V=${TAG#v}
+
+# Validate that the version is present in the relevant files
+INDEX_TS="mcp/docs-mcp-server/src/index.ts"
+COMMON_JSON="frontend/app/locales/en/common.json"
+RUNTIME_GO="sdk/go/runtime.go"
+
+if ! grep -q "version: '${VERSION_NO_V}'" "$INDEX_TS"; then
+  echo "Error: $INDEX_TS does not contain version: '${VERSION_NO_V}'"
+  exit 1
+fi
+
+if ! grep -q "\"components_layout_app_version\": \"${TAG}\"" "$COMMON_JSON"; then
+  echo "Error: $COMMON_JSON does not contain components_layout_app_version: ${TAG}"
+  exit 1
+fi
+
+if ! grep -q "SdkVersion: \"${VERSION_NO_V}\"" "$RUNTIME_GO"; then
+  echo "Error: $RUNTIME_GO does not contain SdkVersion: \"${VERSION_NO_V}\""
+  exit 1
+fi
+
 # Validate tag format
 if ! echo "$TAG" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$"; then
   echo "Error: Invalid version format: $TAG"
