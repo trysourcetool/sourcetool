@@ -2,6 +2,23 @@ import WebSocket from 'ws';
 import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import { Message, MessageSchema } from '../pb/websocket/v1/message_pb';
 
+// WebSocket constants
+const MIN_PING_INTERVAL = 100; // ms
+const MAX_PING_INTERVAL = 30000; // ms
+const MIN_RECONNECT_DELAY = 100; // ms
+const MAX_RECONNECT_DELAY = 30000; // ms
+const DEFAULT_PING_INTERVAL = 1000; // ms
+const DEFAULT_RECONNECT_DELAY = 1000; // ms
+const DEFAULT_QUEUE_SIZE = 250;
+const MIN_QUEUE_SIZE = 50;
+const MAX_QUEUE_SIZE = 1000;
+const MAX_MESSAGE_RETRIES = 3;
+const MESSAGE_RETRY_DELAY = 100; // ms
+const BATCH_INTERVAL = 10; // ms
+const SHUTDOWN_TIMEOUT = 5000; // ms
+const INITIAL_RECONNECT_DELAY = 500; // ms
+const MAX_RECONNECT_ATTEMPTS = 26;
+
 /**
  * WebSocket client configuration
  */
@@ -76,11 +93,44 @@ function newMessage(
   return create(MessageSchema, msg);
 }
 
+function setConfigDefaults(config: WebSocketClientConfig & { queueSize?: number }): void {
+  if (!config.pingInterval || config.pingInterval < MIN_PING_INTERVAL) {
+    config.pingInterval = DEFAULT_PING_INTERVAL;
+  }
+  if (!config.reconnectDelay || config.reconnectDelay < MIN_RECONNECT_DELAY) {
+    config.reconnectDelay = DEFAULT_RECONNECT_DELAY;
+  }
+  if (!config.queueSize || config.queueSize < MIN_QUEUE_SIZE) {
+    config.queueSize = DEFAULT_QUEUE_SIZE;
+  }
+}
+
+function validateConfig(config: WebSocketClientConfig & { queueSize?: number }): void {
+  if (config.pingInterval < MIN_PING_INTERVAL) {
+    throw new Error(`pingInterval must be at least ${MIN_PING_INTERVAL}ms`);
+  }
+  if (config.pingInterval > MAX_PING_INTERVAL) {
+    throw new Error(`pingInterval must not exceed ${MAX_PING_INTERVAL}ms`);
+  }
+  if (config.reconnectDelay < MIN_RECONNECT_DELAY) {
+    throw new Error(`reconnectDelay must be at least ${MIN_RECONNECT_DELAY}ms`);
+  }
+  if (config.reconnectDelay > MAX_RECONNECT_DELAY) {
+    throw new Error(`reconnectDelay must not exceed ${MAX_RECONNECT_DELAY}ms`);
+  }
+  if (config.queueSize && config.queueSize < MIN_QUEUE_SIZE) {
+    throw new Error(`queueSize must be at least ${MIN_QUEUE_SIZE}`);
+  }
+  if (config.queueSize && config.queueSize > MAX_QUEUE_SIZE) {
+    throw new Error(`queueSize must not exceed ${MAX_QUEUE_SIZE}`);
+  }
+}
+
 /**
  * WebSocket client implementation
  */
 export class Client implements WebSocketClient {
-  private config: WebSocketClientConfig;
+  private config: WebSocketClientConfig & { queueSize?: number };
   private conn: WebSocket | null = null;
   private messageQueue: any[] = [];
   private done: Promise<void>;
@@ -90,21 +140,23 @@ export class Client implements WebSocketClient {
     { resolve: (value: any) => void; reject: (reason: any) => void }
   > = new Map();
   private handler: MessageHandlerFunc | null = null;
+  private isShutdown = false;
+  private pingIntervalId: NodeJS.Timeout | null = null;
+  private pongTimeoutId: NodeJS.Timeout | null = null;
+  private sendIntervalId: NodeJS.Timeout | null = null;
+  private isSending = false;
+  private shutdownOnce = false;
+  private sendingDone: Promise<void> | null = null;
+  private sendingDoneResolve: (() => void) | null = null;
 
   /**
    * Constructor
    * @param config WebSocket client configuration
    */
-  constructor(config: WebSocketClientConfig) {
+  constructor(config: WebSocketClientConfig & { queueSize?: number }) {
+    setConfigDefaults(config);
+    validateConfig(config);
     this.config = config;
-
-    // Set default values
-    if (!this.config.pingInterval) {
-      this.config.pingInterval = 1000; // 1 second
-    }
-    if (!this.config.reconnectDelay) {
-      this.config.reconnectDelay = 1000; // 1 second
-    }
 
     // Initialize done promise
     this.done = new Promise<void>((resolve) => {
@@ -179,18 +231,47 @@ export class Client implements WebSocketClient {
       this.config.onReconnecting();
     }
 
+    let attempt = 0;
+    let lastSuccessTime = Date.now();
+
     while (true) {
+      // Calculate delay with exponential backoff, capped
+      let delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, attempt), MAX_RECONNECT_DELAY);
+      // Add jitter (up to 1/4 of delay)
+      const maxJitter = Math.floor(delay / 4);
+      if (maxJitter > 0) {
+        delay += Math.floor(Math.random() * maxJitter);
+      }
+
+      console.info(`[INFO] Attempting to reconnect (attempt ${attempt + 1}, delay ${delay}ms)`);
+
       try {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        if (this.isShutdown) {
+          console.info('[INFO] Reconnection canceled during shutdown');
+          return;
+        }
         await this.connect();
+        console.info(`[INFO] Reconnection successful (attempts: ${attempt + 1})`);
         if (this.config.onReconnected) {
           this.config.onReconnected();
         }
+        lastSuccessTime = Date.now();
         return;
       } catch (err) {
-        console.error('[ERROR] Reconnection failed, retrying', err);
-        await new Promise((resolve) =>
-          setTimeout(resolve, this.config.reconnectDelay),
-        );
+        attempt++;
+        console.error('[ERROR] Reconnection failed', err);
+        // If max attempts reached within an hour, stop
+        if (attempt >= MAX_RECONNECT_ATTEMPTS) {
+          if (Date.now() - lastSuccessTime < 60 * 60 * 1000) {
+            console.error('[ERROR] Max reconnection attempts reached within an hour');
+            return;
+          } else {
+            // More than an hour has passed, reset counter
+            console.warn('[WARN] Continuing reconnection attempts after an hour');
+            attempt = 0;
+          }
+        }
       }
     }
   }
@@ -199,45 +280,59 @@ export class Client implements WebSocketClient {
    * Start the ping-pong loop
    */
   private startPingPongLoop(): void {
-    const pingInterval = setInterval(() => {
+    if (this.pingIntervalId) {
+      clearInterval(this.pingIntervalId);
+    }
+    if (this.pongTimeoutId) {
+      clearTimeout(this.pongTimeoutId);
+    }
+    if (!this.conn) return;
+
+    // Set up pong handler
+    this.conn.removeAllListeners('pong');
+    this.conn.on('pong', () => {
+      // On pong, reset the pong timeout
+      if (this.pongTimeoutId) {
+        clearTimeout(this.pongTimeoutId);
+      }
+      this.pongTimeoutId = setTimeout(() => {
+        console.error('[ERROR] Pong timeout: no pong received');
+        if (this.conn) {
+          this.conn.close();
+          this.conn = null;
+        }
+        this.reconnect();
+      }, this.config.pingInterval * 2);
+    });
+
+    // Immediately set the first pong timeout
+    this.pongTimeoutId = setTimeout(() => {
+      console.error('[ERROR] Pong timeout: no pong received');
+      if (this.conn) {
+        this.conn.close();
+        this.conn = null;
+      }
+      this.reconnect();
+    }, this.config.pingInterval * 2);
+
+    // Start ping interval
+    this.pingIntervalId = setInterval(() => {
       if (!this.conn) {
-        clearInterval(pingInterval);
+        if (this.pingIntervalId) clearInterval(this.pingIntervalId);
+        if (this.pongTimeoutId) clearTimeout(this.pongTimeoutId);
         return;
       }
-
       try {
         this.conn.ping();
       } catch (err) {
         console.error('[ERROR] Ping failed', err);
         this.conn.close();
         this.conn = null;
-        clearInterval(pingInterval);
+        if (this.pingIntervalId) clearInterval(this.pingIntervalId);
+        if (this.pongTimeoutId) clearTimeout(this.pongTimeoutId);
         this.reconnect();
       }
     }, this.config.pingInterval);
-  }
-
-  /**
-   * Start the send enqueued messages loop
-   */
-  private startSendEnqueuedMessagesLoop(): void {
-    const sendInterval = setInterval(() => {
-      if (!this.conn) {
-        clearInterval(sendInterval);
-        return;
-      }
-
-      if (this.messageQueue.length > 0) {
-        const msg = this.messageQueue.shift();
-
-        try {
-          this.send(msg);
-        } catch (err) {
-          console.error('[ERROR] Error sending message', err);
-          this.messageQueue.unshift(msg);
-        }
-      }
-    }, 10); // 10ms
   }
 
   /**
@@ -248,10 +343,62 @@ export class Client implements WebSocketClient {
     if (!this.conn) {
       throw new Error('WebSocket connection not established');
     }
-
     const bytes = toBinary(MessageSchema, msg);
-
     this.conn.send(bytes);
+  }
+
+  /**
+   * Start the send enqueued messages loop
+   */
+  private startSendEnqueuedMessagesLoop(): void {
+    if (this.sendIntervalId) {
+      clearInterval(this.sendIntervalId);
+    }
+    this.isSending = false;
+    this.sendingDone = new Promise<void>((resolve) => {
+      this.sendingDoneResolve = resolve;
+    });
+
+    const processQueue = async () => {
+      if (this.isSending) return;
+      this.isSending = true;
+      let messageBuffer: Message[] = [];
+      while (!this.isShutdown) {
+        if (!this.conn) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+        // Fill buffer
+        while (this.messageQueue.length > 0) {
+          messageBuffer.push(this.messageQueue.shift()!);
+        }
+        if (messageBuffer.length === 0) {
+          await new Promise((resolve) => setTimeout(resolve, BATCH_INTERVAL));
+          continue;
+        }
+        // Send messages with retry
+        const remainingMessages: Message[] = [];
+        for (const msg of messageBuffer) {
+          try {
+            await this.sendWithRetry(msg);
+          } catch {
+            remainingMessages.push(msg);
+            break; // Stop batch on first hard failure
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1));
+        }
+        messageBuffer = remainingMessages;
+        if (remainingMessages.length === 0) {
+          await new Promise((resolve) => setTimeout(resolve, BATCH_INTERVAL));
+        }
+      }
+      this.isSending = false;
+      if (this.sendingDoneResolve) {
+        this.sendingDoneResolve();
+        this.sendingDoneResolve = null;
+      }
+    };
+    processQueue();
   }
 
   /**
@@ -310,36 +457,125 @@ export class Client implements WebSocketClient {
   public enqueueWithResponse(
     id: string,
     payload: Message['type']['value'],
-  ): Promise<any> {
+  ): Promise<Message> {
     return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout | null = null;
+      let handled = false;
       try {
         const msg = newMessage(id, payload);
-
-        this.responses.set(id, { resolve, reject });
-        this.messageQueue.push(msg);
-
-        // Set a timeout to reject the promise if no response is received
-        setTimeout(() => {
-          if (this.responses.has(id)) {
+        this.responses.set(id, {
+          resolve: (resp: Message) => {
+            if (handled) return;
+            handled = true;
+            if (timeoutId) clearTimeout(timeoutId);
             this.responses.delete(id);
-            reject(new Error('Timeout waiting for response'));
-          }
+            resolve(resp);
+          },
+          reject: (err: any) => {
+            if (handled) return;
+            handled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            this.responses.delete(id);
+            reject(err);
+          },
+        });
+        this.messageQueue.push(msg);
+        // Set a timeout to reject the promise if no response is received
+        timeoutId = setTimeout(() => {
+          if (handled) return;
+          handled = true;
+          this.responses.delete(id);
+          reject(new Error('Timeout waiting for response'));
         }, 30000); // 30 seconds
       } catch (err) {
-        reject(err);
+        if (!handled) {
+          handled = true;
+          this.responses.delete(id);
+          reject(err);
+        }
       }
     });
+  }
+
+  private async sendWithRetry(msg: Message): Promise<void> {
+    let lastErr: any = null;
+    for (let attempt = 0; attempt < MAX_MESSAGE_RETRIES; attempt++) {
+      try {
+        this.send(msg);
+        return;
+      } catch (err) {
+        lastErr = err;
+        const delay = MESSAGE_RETRY_DELAY * Math.pow(2, attempt);
+        console.warn(`[WARN] Message send failed (attempt ${attempt + 1}), retrying in ${delay}ms`, err);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+    console.error('[ERROR] Failed to send message after retries', lastErr);
+    throw lastErr;
   }
 
   /**
    * Close the WebSocket connection
    */
-  public close(): void {
+  public async close(): Promise<void> {
+    if (this.shutdownOnce) return;
+    this.shutdownOnce = true;
+    this.isShutdown = true;
+
+    // 1. Stop all intervals/timers
+    if (this.sendIntervalId) {
+      clearInterval(this.sendIntervalId);
+      this.sendIntervalId = null;
+    }
+    if (this.pingIntervalId) {
+      clearInterval(this.pingIntervalId);
+      this.pingIntervalId = null;
+    }
+    if (this.pongTimeoutId) {
+      clearTimeout(this.pongTimeoutId);
+      this.pongTimeoutId = null;
+    }
+
+    // 2. Wait for message sending loop to finish (with timeout)
+    if (this.sendingDone) {
+      await Promise.race([
+        this.sendingDone,
+        new Promise((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT)),
+      ]);
+      this.sendingDone = null;
+    }
+
+    // 3. Try to send remaining messages with retry and timeout
+    if (this.messageQueue.length > 0 && this.conn) {
+      const sendAll = async () => {
+        for (const msg of this.messageQueue) {
+          try {
+            await this.sendWithRetry(msg);
+          } catch {
+            // Already logged in sendWithRetry
+          }
+        }
+        this.messageQueue = [];
+      };
+      await Promise.race([
+        sendAll(),
+        new Promise((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT)),
+      ]);
+    }
+
+    // 4. Close the WebSocket connection
     if (this.conn) {
       this.conn.close();
       this.conn = null;
     }
 
+    // 5. Clean up response promises
+    for (const [id, { reject }] of this.responses.entries()) {
+      reject(new Error('WebSocket client closed'));
+      this.responses.delete(id);
+    }
+
+    // 6. Resolve the done promise
     this.doneResolve();
   }
 
