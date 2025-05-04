@@ -117,8 +117,8 @@ ui.TextInput("Username",
 // Table with options
 ui.Table(data,
     table.WithHeader("Users"),
-    table.WithOnSelect(table.SelectionBehaviorRerun),
-    table.WithRowSelection(table.SelectionModeSingle),
+    table.WithOnSelect(table.OnSelectRerun),
+    table.WithRowSelection(table.RowSelectionSingle),
 )
 ```
 
