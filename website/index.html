@@ -387,15 +387,27 @@
         </div>
         <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-primary/10">
           <div class="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent"></div>
-          <div class="relative aspect-video w-full">
-            <iframe
-              class="w-full h-full"
-              src="https://www.youtube.com/embed/D8tjaP6LnlA"
-              title="Sourcetool Demo"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
+          <div class="relative aspect-auto w-full flex items-center justify-center bg-muted/30" id="video-area">
+            <!-- TODO: Consider moving this video to a CDN for better performance and scalability in the future -->
+            <video id="sourcetool-demo-video" class="w-full h-full object-cover bg-black" src="./assets/videos/sourcetool-demo-compressed.mp4" preload="metadata" tabindex="0"></video>
+            <button id="center-play" class="absolute inset-0 flex items-center justify-center z-10 focus:outline-none" style="pointer-events: none;">
+              <span class="inline-flex items-center justify-center gap-2 w-44 h-12 sm:gap-3 sm:w-56 sm:h-14 rounded-md bg-background/95 border-2 border-primary shadow-lg cursor-pointer group opacity-95 ring-2 ring-primary/30 hover:ring-primary/80 transition-all duration-200 font-mono select-none" style="pointer-events: auto;">
+                <i data-lucide="play" class="w-6 h-6 sm:w-7 sm:h-7 text-primary group-hover:scale-125 transition-transform"></i>
+                <span class="text-primary font-mono text-base sm:text-xl tracking-tight group-hover:text-primary-foreground transition-colors">watchDemo()</span>
+              </span>
+            </button>
+            <div id="video-controls" class="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-2 flex flex-col gap-2 bg-gradient-to-t from-black/70 via-black/30 to-transparent dark:from-black/80 dark:via-black/40 dark:to-transparent">
+              <div class="flex items-center gap-3">
+                <button id="play-pause" class="flex items-center justify-center w-9 h-9 rounded bg-background/80 hover:bg-primary/20 transition-colors border border-border shadow" aria-label="Play/Pause">
+                  <i id="play-icon" data-lucide="play" class="w-5 h-5 text-primary"></i>
+                  <i id="pause-icon" data-lucide="pause" class="w-5 h-5 text-primary hidden"></i>
+                </button>
+                <div class="flex-1 flex items-center">
+                  <input id="progress-bar" type="range" min="0" value="0" step="0.01" class="w-full h-2 accent-primary bg-border rounded-lg appearance-none cursor-pointer" />
+                </div>
+                <span id="time-display" class="ml-3 text-xs text-muted-foreground font-mono min-w-[60px] text-right">0:00 / 0:00</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -837,6 +849,93 @@
             mobileMenu.classList.add('hidden');
           });
         });
+      });
+
+      // Video player custom controls
+      document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('sourcetool-demo-video');
+        // Video controls
+        const playPauseBtn = document.getElementById('play-pause');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const progressBar = document.getElementById('progress-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const centerPlayBtn = document.getElementById('center-play');
+        const videoArea = document.getElementById('video-area');
+        const videoControls = document.getElementById('video-controls');
+
+        function formatTime(sec) {
+          if (isNaN(sec)) return '0:00';
+          const m = Math.floor(sec / 60);
+          const s = Math.floor(sec % 60);
+          return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updatePlayPause() {
+          if (video.paused) {
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+            centerPlayBtn.classList.remove('hidden');
+          } else {
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            centerPlayBtn.classList.add('hidden');
+          }
+        }
+
+        function updateProgress() {
+          progressBar.value = video.currentTime;
+          progressBar.max = video.duration || 0;
+          timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        });
+
+        centerPlayBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          video.play();
+        });
+
+        videoArea.addEventListener('click', (e) => {
+          if (
+            videoControls.contains(e.target) ||
+            playPauseBtn.contains(e.target) ||
+            progressBar.contains(e.target) ||
+            centerPlayBtn.contains(e.target)
+          ) {
+            return;
+          }
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        });
+
+        video.addEventListener('play', updatePlayPause);
+        video.addEventListener('pause', updatePlayPause);
+        video.addEventListener('timeupdate', updateProgress);
+        video.addEventListener('loadedmetadata', updateProgress);
+
+        progressBar.addEventListener('input', (e) => {
+          video.currentTime = parseFloat(e.target.value);
+        });
+
+        // Keyboard: space to play/pause
+        video.addEventListener('keydown', (e) => {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            playPauseBtn.click();
+          }
+        });
+
+        updatePlayPause();
       });
     </script>
     <script>
