@@ -1,5 +1,5 @@
 import {
-  SelectionBehavior,
+  TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
   UIBuilder,
@@ -22,7 +22,7 @@ const listUsersPage = async (ui: UIBuilder) => {
   const table = baseCols[0].table(users, {
     height: 10,
     columnOrder: ['ID', 'Name', 'Email', 'Age', 'Gender', 'CreatedAt'],
-    onSelect: SelectionBehavior.Rerun,
+    onSelect: TableOnSelect.Rerun,
   });
 
   let defaultName: string = '';

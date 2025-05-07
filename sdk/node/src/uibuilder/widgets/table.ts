@@ -4,8 +4,8 @@ import {
   TableState,
   TableValue,
   WidgetTypeTable,
-  SelectionBehavior,
-  SelectionMode,
+  TableOnSelect,
+  TableRowSelection,
   TableStateValue,
   TableStateValueSelection,
   TableSelection,
@@ -45,15 +45,15 @@ export interface TableComponentOptions {
 
   /**
    * Selection behavior
-   * @default SelectionBehavior.Ignore
+   * @default TableOnSelect.Ignore
    */
-  onSelect?: SelectionBehavior;
+  onSelect?: TableOnSelect;
 
   /**
    * Row selection mode
-   * @default SelectionMode.Single
+   * @default TableRowSelection.Single
    */
-  rowSelection?: SelectionMode;
+  rowSelection?: TableRowSelection;
 }
 
 /**
@@ -101,7 +101,7 @@ export class Table {
    * @param behavior Selection behavior
    * @returns Table options
    */
-  static onSelect(behavior: SelectionBehavior): TableComponentOptions {
+  static onSelect(behavior: TableOnSelect): TableComponentOptions {
     return { onSelect: behavior };
   }
 
@@ -110,7 +110,7 @@ export class Table {
    * @param mode Row selection mode
    * @returns Table options
    */
-  static rowSelection(mode: SelectionMode): TableComponentOptions {
+  static rowSelection(mode: TableRowSelection): TableComponentOptions {
     return { rowSelection: mode };
   }
 }
@@ -144,11 +144,11 @@ export function table(
     onSelect:
       options.onSelect !== undefined
         ? options.onSelect.toString()
-        : SelectionBehavior.Ignore.toString(),
+        : TableOnSelect.Ignore.toString(),
     rowSelection:
       options.rowSelection !== undefined
         ? options.rowSelection.toString()
-        : SelectionMode.Single.toString(),
+        : TableRowSelection.Single.toString(),
   };
 
   const path = cursor.getPath();
@@ -293,4 +293,4 @@ export function convertPathToInt32Array(path: number[]): number[] {
 }
 
 // Re-export types from table state
-export { SelectionBehavior, SelectionMode, TableValue, TableSelection };
+export { TableOnSelect, TableRowSelection, TableValue, TableSelection };

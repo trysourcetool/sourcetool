@@ -15,8 +15,8 @@ import { CheckboxGroupComponentOptions } from './uibuilder/widgets/checkboxgroup
 import { TextAreaComponentOptions } from './uibuilder/widgets/textarea';
 import {
   TableComponentOptions,
-  SelectionBehavior,
-  SelectionMode,
+  TableOnSelect,
+  TableRowSelection,
 } from './uibuilder/widgets/table';
 import { FormComponentOptions } from './uibuilder/widgets/form';
 import { ColumnsComponentOptions } from './uibuilder/widgets/columns';
@@ -26,8 +26,8 @@ import { Sourcetool, SourcetoolConfig } from './sourcetool';
 // Export all components and types
 export {
   // Enums
-  SelectionBehavior,
-  SelectionMode,
+  TableOnSelect,
+  TableRowSelection,
 
   // Sourcetool
   Sourcetool,

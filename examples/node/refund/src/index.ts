@@ -1,5 +1,5 @@
 import {
-  SelectionBehavior,
+  TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
   UIBuilder,
@@ -20,7 +20,7 @@ const refundPage = async (ui: UIBuilder) => {
   const tableWidget = ui.table(users, {
     height: 10,
     columnOrder: ['ID', 'Name', 'Email', 'CreatedAt'],
-    onSelect: SelectionBehavior.Rerun,
+    onSelect: TableOnSelect.Rerun,
   });
 
   const selectedUser =
