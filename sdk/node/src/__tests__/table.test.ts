@@ -2,8 +2,8 @@ import { expect, test } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
 import {
   TableState,
-  SelectionBehavior,
-  SelectionMode,
+  TableOnSelect,
+  TableRowSelection,
   TableStateValue,
 } from '../session/state/table';
 import {
@@ -28,8 +28,8 @@ test('convertStateToTableProto', () => {
   const description = 'Test Description';
   const height = 30;
   const columnOrder = ['ID', 'Name'];
-  const onSelect = SelectionBehavior.Rerun;
-  const rowSelection = SelectionMode.Multiple;
+  const onSelect = TableOnSelect.Rerun;
+  const rowSelection = TableRowSelection.Multiple;
   const value: TableStateValue = { selection: { row: 0, rows: [0, 1] } };
 
   const state = new TableState(
@@ -66,8 +66,8 @@ test('convertTableProtoToState', () => {
   const description = 'Test Description';
   const height = 30;
   const columnOrder = ['ID', 'Name'];
-  const onSelect = SelectionBehavior.Ignore.toString();
-  const rowSelection = SelectionMode.Single.toString();
+  const onSelect = TableOnSelect.Ignore.toString();
+  const rowSelection = TableRowSelection.Single.toString();
   const value: TableStateValue = { selection: { row: 0, rows: [0, 1] } };
 
   const tempState = new TableState(
@@ -137,8 +137,8 @@ test('table interaction', () => {
     description: 'Test Description',
     height: 30,
     columnOrder: ['ID', 'Name'],
-    onSelect: SelectionBehavior.Rerun,
-    rowSelection: SelectionMode.Single,
+    onSelect: TableOnSelect.Rerun,
+    rowSelection: TableRowSelection.Single,
   };
 
   table(builder, tableData, options);

@@ -1,5 +1,5 @@
 import {
-  SelectionBehavior,
+  TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
   UIBuilder,
@@ -64,7 +64,7 @@ const listTicketsPage = async (ui: UIBuilder) => {
       'Assignee',
       'CreatedAt',
     ],
-    onSelect: SelectionBehavior.Rerun,
+    onSelect: TableOnSelect.Rerun,
   });
 
   let defaultTitle: string = '';

@@ -43,12 +43,19 @@ export interface TableValue {
   selection?: TableSelection;
 }
 
-export enum SelectionBehavior {
-  Ignore = 'ignore',
-  Rerun = 'rerun',
-}
+export const TableOnSelect = {
+  Ignore: 'ignore',
+  Rerun: 'rerun',
+} as const;
 
-export enum SelectionMode {
-  Single = 'single',
-  Multiple = 'multiple',
-}
+export type TableOnSelect =
+  (typeof TableOnSelect)[keyof typeof TableOnSelect];
+
+export const TableRowSelection = {
+  Single: 'single',
+  Multiple: 'multiple',
+} as const;
+
+export type TableRowSelection =
+  (typeof TableRowSelection)[keyof typeof TableRowSelection];
+
