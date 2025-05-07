@@ -1,0 +1,32 @@
+name: Node SDK Test
+
+on:
+  pull_request:
+    paths:
+      - 'sdk/node/**'
+      - '.github/workflows/node-sdk-test.yml'
+      - '!sdk/node/README.md'
+
+jobs:
+  test:
+    name: Run Node SDK tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          check-latest: true
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.8.0
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Node SDK tests
+        run: pnpm --filter @sourcetool/node test:ci
