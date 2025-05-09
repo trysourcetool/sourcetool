@@ -6,6 +6,8 @@ Sourcetool transforms your backend code into powerful internal tools. No fronten
 
 [📚 Documentation](https://docs.trysourcetool.com) | [💬 Discord Community](https://discord.com/invite/K76agfQQKP)
 
+![sourcetool_image](https://github.com/user-attachments/assets/7ab3ddeb-cb12-4153-8b26-974693c67866)
+
 ## 🌟 About Sourcetool
 
 We develop Sourcetool, an open-source internal tool builder that handles frontend complexities automatically, allowing developers to focus on implementing business logic in backend code only.
@@ -16,52 +18,9 @@ Focus on your business logic while we handle the UI. Build complete internal too
 ### Type-Safe & Flexible
 Built with Go's type system for reliability. Create robust applications with type-safe APIs and seamless integration.
 
-## ✨ Features
+*Watch our demo video and see Sourcetool in action!*
 
-| Feature | Description |
-|---------|-------------|
-| 💻 Backend-only, Code-first development | Build full-featured internal tools using only backend code with type-safe APIs, Git version control, and seamless integration with development workflows |
-| 🎨 Rich UI components | Pre-built components (forms, tables, inputs, etc.) |
-| 🔐 Granular permissions | Manage access to your internal tools with flexible group-based permissions |
-| 🌐 Multiple environment support | Easily switch between different environments (development, staging, production) |
-
-## 🏗️ Architecture
-
-Sourcetool uses a three-tier architecture to connect your backend code directly to web browsers:
-
-1. **Your Backend**
-   - Contains your business logic and UI definitions
-   - Written in Go using Sourcetool SDK
-
-2. **Sourcetool Server**
-   - Handles authentication and authorization
-   - Manages WebSocket connections
-   - Secures communication between components
-
-3. **Web Browser**
-   - Automatically generates the UI
-   - Provides real-time interaction
-   - No frontend code required
-
-All components communicate bidirectionally in real-time through secure WebSocket connections.
-
-### How It Works:
-1. You define UI components in your backend code
-2. Sourcetool Server handles auth & permissions
-3. UI is automatically rendered in browser
-4. User interactions return to your backend code
-
-## 🎯 Components
-
-Sourcetool provides UI components you can use directly from Go code:
-
-| Component Type | Available Components |
-|---------------|---------------------|
-| 📝 Input Components | TextInput, TextArea, NumberInput, DateInput, DateTimeInput, TimeInput |
-| 📋 Selection Components | Selectbox, MultiSelect, Radio, Checkbox, CheckboxGroup |
-| 🔳 Layout Components | Columns, Form |
-| 📊 Display Components | Markdown, Table |
-| 🔘 Interactive Components | Button |
+https://github.com/user-attachments/assets/6c96ac38-8150-4d3d-a4ad-abab083cb77c
 
 ## 🚀 Get Started
 
