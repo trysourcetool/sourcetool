@@ -10,7 +10,7 @@ func TestHostInstanceStatus_String(t *testing.T) {
 		{HostInstanceStatusUnknown, "unknown"},
 		{HostInstanceStatusOnline, "online"},
 		{HostInstanceStatusUnreachable, "unreachable"},
-		{HostInstanceStatus(100), "unknown"}, // 範囲外
+		{HostInstanceStatus(100), "unknown"},
 	}
 	for _, c := range cases {
 		if got := c.status.String(); got != c.expected {
@@ -27,7 +27,7 @@ func TestHostInstanceStatusFromString(t *testing.T) {
 		{"unknown", HostInstanceStatusUnknown},
 		{"online", HostInstanceStatusOnline},
 		{"unreachable", HostInstanceStatusUnreachable},
-		{"invalid", HostInstanceStatusUnknown}, // 未知の文字列
+		{"invalid", HostInstanceStatusUnknown},
 	}
 	for _, c := range cases {
 		if got := HostInstanceStatusFromString(c.input); got != c.expected {

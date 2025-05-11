@@ -11,7 +11,7 @@ func TestUserOrganizationRole_String(t *testing.T) {
 		{UserOrganizationRoleAdmin, "admin"},
 		{UserOrganizationRoleDeveloper, "developer"},
 		{UserOrganizationRoleMember, "member"},
-		{UserOrganizationRole(100), "unknown"}, // 範囲外
+		{UserOrganizationRole(100), "unknown"},
 	}
 	for _, c := range cases {
 		if got := c.role.String(); got != c.expected {
@@ -29,7 +29,7 @@ func TestUserOrganizationRoleFromString(t *testing.T) {
 		{"admin", UserOrganizationRoleAdmin},
 		{"developer", UserOrganizationRoleDeveloper},
 		{"member", UserOrganizationRoleMember},
-		{"invalid", UserOrganizationRoleUnknown}, // 未知の文字列
+		{"invalid", UserOrganizationRoleUnknown},
 	}
 	for _, c := range cases {
 		if got := UserOrganizationRoleFromString(c.input); got != c.expected {
