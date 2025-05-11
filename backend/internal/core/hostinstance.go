@@ -24,6 +24,11 @@ func (s HostInstanceStatus) String() string {
 		hostInstanceStatusOnline,
 		hostInstanceStatusUnreachable,
 	}
+
+	if int(s) < 0 || int(s) >= len(statuses) {
+		return hostInstanceStatusUnknown
+	}
+
 	return statuses[s]
 }
 

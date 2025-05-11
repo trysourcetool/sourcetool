@@ -29,6 +29,10 @@ func (r UserOrganizationRole) String() string {
 		userOrganizationRoleMember,
 	}
 
+	if int(r) < 0 || int(r) >= len(roles) {
+		return userOrganizationRoleUnknown
+	}
+
 	return roles[r]
 }
 
