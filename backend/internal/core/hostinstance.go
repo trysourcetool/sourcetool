@@ -19,25 +19,29 @@ const (
 )
 
 func (s HostInstanceStatus) String() string {
-	switch s {
-	case HostInstanceStatusOnline:
-		return hostInstanceStatusOnline
-	case HostInstanceStatusUnreachable:
-		return hostInstanceStatusUnreachable
-	default:
+	statuses := []string{
+		hostInstanceStatusUnknown,
+		hostInstanceStatusOnline,
+		hostInstanceStatusUnreachable,
+	}
+
+	if int(s) < 0 || int(s) >= len(statuses) {
 		return hostInstanceStatusUnknown
 	}
+
+	return statuses[s]
 }
 
 func HostInstanceStatusFromString(s string) HostInstanceStatus {
-	switch s {
-	case hostInstanceStatusOnline:
-		return HostInstanceStatusOnline
-	case hostInstanceStatusUnreachable:
-		return HostInstanceStatusUnreachable
-	default:
-		return HostInstanceStatusUnknown
+	statusMap := map[string]HostInstanceStatus{
+		hostInstanceStatusOnline:      HostInstanceStatusOnline,
+		hostInstanceStatusUnreachable: HostInstanceStatusUnreachable,
 	}
+
+	if status, ok := statusMap[s]; ok {
+		return status
+	}
+	return HostInstanceStatusUnknown
 }
 
 type HostInstance struct {
