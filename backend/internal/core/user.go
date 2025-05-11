@@ -22,25 +22,25 @@ const (
 )
 
 func (r UserOrganizationRole) String() string {
-	switch r {
-	case UserOrganizationRoleAdmin:
-		return userOrganizationRoleAdmin
-	case UserOrganizationRoleDeveloper:
-		return userOrganizationRoleDeveloper
-	case UserOrganizationRoleMember:
-		return userOrganizationRoleMember
+	roles := []string{
+		userOrganizationRoleUnknown,
+		userOrganizationRoleAdmin,
+		userOrganizationRoleDeveloper,
+		userOrganizationRoleMember,
 	}
-	return userOrganizationRoleUnknown
+
+	return roles[r]
 }
 
 func UserOrganizationRoleFromString(s string) UserOrganizationRole {
-	switch s {
-	case userOrganizationRoleAdmin:
-		return UserOrganizationRoleAdmin
-	case userOrganizationRoleDeveloper:
-		return UserOrganizationRoleDeveloper
-	case userOrganizationRoleMember:
-		return UserOrganizationRoleMember
+	roleMap := map[string]UserOrganizationRole{
+		userOrganizationRoleAdmin:     UserOrganizationRoleAdmin,
+		userOrganizationRoleDeveloper: UserOrganizationRoleDeveloper,
+		userOrganizationRoleMember:    UserOrganizationRoleMember,
+	}
+
+	if role, ok := roleMap[s]; ok {
+		return role
 	}
 	return UserOrganizationRoleUnknown
 }
