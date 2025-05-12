@@ -31,25 +31,25 @@ import (
 )
 
 type Server struct {
-	db             database.DB
-	pubsub         *pubsub.PubSub
-	wsManager      *ws.Manager
-	checker        *permission.Checker
-	upgrader       websocket.Upgrader
-	encryptor      *encrypt.Encryptor
-	licenseChecker *license.Checker
+	db                database.DB
+	pubsub            *pubsub.PubSub
+	wsManager         *ws.Manager
+	upgrader          websocket.Upgrader
+	encryptor         *encrypt.Encryptor
+	permissionChecker *permission.Checker
+	licenseChecker    *license.Checker
 }
 
 func New(
 	db database.DB,
 	pubsub *pubsub.PubSub,
 	wsManager *ws.Manager,
-	checker *permission.Checker,
 	upgrader websocket.Upgrader,
 	encryptor *encrypt.Encryptor,
+	permissionChecker *permission.Checker,
 	licenseChecker *license.Checker,
 ) *Server {
-	return &Server{db, pubsub, wsManager, checker, upgrader, encryptor, licenseChecker}
+	return &Server{db, pubsub, wsManager, upgrader, encryptor, permissionChecker, licenseChecker}
 }
 
 func (s *Server) installDefaultMiddlewares(router *chi.Mux) {
