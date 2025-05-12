@@ -44,6 +44,10 @@ func main() {
 		}
 	}
 
+	if err := internal.CheckLicense(); err != nil {
+		logger.Logger.Fatal("license check failed", zap.Error(err))
+	}
+
 	pqClient, err := postgres.Open()
 	if err != nil {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
