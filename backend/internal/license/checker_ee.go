@@ -1,14 +1,16 @@
 //go:build ee
 
-package internal
+package license
 
 import (
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"os"
+	"regexp"
 	"time"
+
+	"github.com/trysourcetool/sourcetool/backend/internal/config"
 )
 
 type SubscriptionResponse struct {
@@ -30,24 +32,36 @@ type LicenseValidityResponse struct {
 	Subscription *SubscriptionResponse `json:"subscription,omitempty"`
 }
 
-func CheckLicense() error {
-	baseURL := os.Getenv("LICENSE_SERVER_BASE_URL")
+func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, error) {
 	if baseURL == "" {
 		baseURL = "http://host.docker.internal:8082"
 	}
-	endpoint := baseURL + "/v1/validate"
-	licenseKey := os.Getenv("LICENSE_KEY")
-	if licenseKey == "" {
-		return errors.New("LICENSE_KEY is not set")
+	if config.Config.Env != config.EnvLocal {
+		matched, err := regexp.MatchString(`^https?://(?:[a-zA-Z0-9-]+\.)?license\.trysourcetool\.com$`, baseURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid license server URL: %v", err)
+		}
+		if !matched {
+			return nil, fmt.Errorf("license server URL must be a *.license.trysourcetool.com domain")
+		}
 	}
+	return &Checker{BaseURL: baseURL, LicenseKey: licenseKey, Timeout: timeout}, nil
+}
 
-	req, err := http.NewRequest("GET", endpoint, nil)
+func (c *Checker) Check(ctx context.Context) error {
+	endpoint := c.BaseURL + "/v1/validate"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Sourcetool-License-Key", licenseKey)
+	req.Header.Set("Sourcetool-License-Key", c.LicenseKey)
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	timeout := c.Timeout
+	if timeout == 0 {
+		timeout = 10 * time.Second
+	}
+	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
