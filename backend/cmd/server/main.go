@@ -91,7 +91,7 @@ func main() {
 	}
 
 	handler := chi.NewRouter()
-	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader, encryptor, licenseChecker)
+	s := server.New(db, pubsub, wsManager, upgrader, encryptor, permission.NewChecker(db), licenseChecker)
 	s.Install(handler)
 
 	srv := &http.Server{

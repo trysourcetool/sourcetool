@@ -448,7 +448,7 @@ func (s *Server) handleDeleteUser(w http.ResponseWriter, r *http.Request) error 
 		return errdefs.ErrInvalidArgument(errors.New("userID is required"))
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -551,7 +551,7 @@ func (s *Server) handleCreateUserInvitations(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -638,7 +638,7 @@ func (s *Server) handleResendUserInvitation(w http.ResponseWriter, r *http.Reque
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
@@ -691,7 +691,7 @@ func (s *Server) handleDeleteUserInvitation(w http.ResponseWriter, r *http.Reque
 		return errdefs.ErrInvalidArgument(err)
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditUser); err != nil {
 		return err
 	}
 
