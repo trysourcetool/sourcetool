@@ -17,6 +17,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
+	"github.com/trysourcetool/sourcetool/backend/internal/license"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
@@ -33,10 +34,6 @@ func init() {
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-
-	if err := internal.CheckLicense(); err != nil {
-		logger.Logger.Fatal("license check failed", zap.Error(err))
-	}
 
 	pqClient, err := postgres.Open()
 	if err != nil {
@@ -57,6 +54,20 @@ func main() {
 		logger.Logger.Fatal("failed to create encryptor", zap.Error(err))
 	}
 
+	baseURL := os.Getenv("LICENSE_SERVER_BASE_URL")
+	if baseURL == "" {
+		baseURL = "http://host.docker.internal:8082"
+	}
+	licenseKey := os.Getenv("LICENSE_KEY")
+	licenseChecker, err := license.NewChecker(baseURL, licenseKey, 10*time.Second)
+	if err != nil {
+		logger.Logger.Fatal("failed to create license checker", zap.Error(err))
+	}
+
+	if err := licenseChecker.Check(ctx); err != nil {
+		logger.Logger.Fatal("license check failed", zap.Error(err))
+	}
+
 	if config.Config.Env == config.EnvLocal {
 		if err := internal.LoadFixtures(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
@@ -70,7 +81,7 @@ func main() {
 	}
 
 	handler := chi.NewRouter()
-	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader, encryptor)
+	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader, encryptor, licenseChecker)
 	s.Install(handler)
 
 	srv := &http.Server{
