@@ -34,6 +34,10 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	if err := internal.CheckLicense(); err != nil {
+		logger.Logger.Fatal("license check failed", zap.Error(err))
+	}
+
 	pqClient, err := postgres.Open()
 	if err != nil {
 		logger.Logger.Fatal("failed to open postgres", zap.Error(err))
