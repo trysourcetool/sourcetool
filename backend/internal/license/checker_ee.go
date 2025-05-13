@@ -3,6 +3,7 @@
 package license
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -48,7 +49,7 @@ func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, er
 	return &Checker{BaseURL: baseURL, LicenseKey: licenseKey, Timeout: timeout}, nil
 }
 
-func (c *Checker) Check(ctx context.Context) error {
+func (c *Checker) Validate(ctx context.Context) error {
 	endpoint := c.BaseURL + "/v1/validate"
 
 	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
@@ -78,6 +79,38 @@ func (c *Checker) Check(ctx context.Context) error {
 	}
 	if !result.Valid {
 		return fmt.Errorf("license invalid: %s", result.Status)
+	}
+	return nil
+}
+
+func (c *Checker) UpdateSeats(ctx context.Context, seats int64) error {
+	endpoint := c.BaseURL + "/v1/seats"
+
+	body, err := json.Marshal(map[string]int64{"seats": seats})
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Sourcetool-License-Key", c.LicenseKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	timeout := c.Timeout
+	if timeout == 0 {
+		timeout = 10 * time.Second
+	}
+	client := &http.Client{Timeout: timeout}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("license server returned status: %s", resp.Status)
 	}
 	return nil
 }

@@ -290,6 +290,12 @@ func (s *Server) handleAuthenticateWithGoogle(w http.ResponseWriter, r *http.Req
 			return err
 		}
 
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return err
@@ -427,6 +433,12 @@ func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request
 		if hasOrganization {
 			authURL, err = buildSaveAuthURL(orgSubdomain)
 			if err != nil {
+				return err
+			}
+		}
+
+		if claims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
 				return err
 			}
 		}
