@@ -41,9 +41,8 @@ The image exposes the following:
 - Health check endpoint: `/api/health`
 - WebSocket endpoint: `/ws`
 
-You can also use specific version tags instead of `latest` for better stability:
 ```
-ghcr.io/trysourcetool/sourcetool:v1.0.0
+ghcr.io/trysourcetool/sourcetool:latest
 ```
 
 ## Deployment Options
