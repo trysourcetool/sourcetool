@@ -74,8 +74,8 @@ func main() {
 		logger.Logger.Fatal("failed to create license checker", zap.Error(err))
 	}
 
-	if err := licenseChecker.Check(ctx); err != nil {
-		logger.Logger.Fatal("license check failed", zap.Error(err))
+	if err := licenseChecker.Validate(ctx); err != nil {
+		logger.Logger.Fatal("license validation failed", zap.Error(err))
 	}
 
 	if config.Config.Env == config.EnvLocal {

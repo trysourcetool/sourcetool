@@ -11,6 +11,10 @@ func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, er
 	return &Checker{}, nil
 }
 
-func (c *Checker) Check(ctx context.Context) error {
+func (c *Checker) Validate(ctx context.Context) error {
+	return nil
+}
+
+func (c *Checker) UpdateSeats(ctx context.Context, seats int64) error {
 	return nil
 }
