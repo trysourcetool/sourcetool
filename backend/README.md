@@ -31,7 +31,7 @@ backend/
 │   ├── server/         # main.go – wires everything + graceful shutdown
 │   └── internal/       # helpers only needed by binaries (redis/smtp/upgrader/fixtures)
 ├── devtools/           # CLI & scripts (migrations, etc.)
-├── internal/           # all import‑able code lives here (go’s internal visibility)
+├── internal/           # all import‑able code lives here (go's internal visibility)
 │   ├── config/         # env parsing, URL helpers
 │   ├── core/           # *domain* models – NO I/O
 │   ├── postgres/       # SQL repos (`*_query.go`) + db logger

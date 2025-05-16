@@ -168,10 +168,20 @@ docker run --rm \
   /app/migrate migrate /app/migrations
 ```
 
-This can be useful in scenarios such as:
-- Running migrations before deploying a new version
-- Verifying database schema changes
-- Troubleshooting database issues
+#### Running Migrations Automatically on Server Startup
+
+You can also have the server automatically run migrations before starting by passing the `--auto-migrate` flag to the container command:
+
+```bash
+docker run -d \
+  --name sourcetool \
+  --env-file /path/to/your/production.env \
+  -p 8080:8080 \
+  ghcr.io/trysourcetool/sourcetool:latest \
+  --auto-migrate
+```
+
+This will ensure that all pending migrations are applied before the server begins accepting requests.
 
 ### 5. Verifying the Deployment
 

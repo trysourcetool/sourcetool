@@ -14,6 +14,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/database"
+	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 )
 
 var _ database.DB = (*db)(nil)
@@ -169,6 +170,8 @@ func Migrate(dir string) error {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return err
 	}
+
+	logger.Logger.Info("Migrations applied successfully")
 
 	return nil
 }
