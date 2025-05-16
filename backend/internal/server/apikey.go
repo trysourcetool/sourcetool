@@ -186,11 +186,11 @@ func (s *Server) handleCreateAPIKey(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}
@@ -293,11 +293,11 @@ func (s *Server) handleUpdateAPIKey(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}
@@ -351,11 +351,11 @@ func (s *Server) handleDeleteAPIKey(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	if env.Slug == core.EnvironmentSlugDevelopment {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditDevModeAPIKey); err != nil {
 			return err
 		}
 	} else {
-		if err := s.checker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
+		if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditLiveModeAPIKey); err != nil {
 			return err
 		}
 	}

@@ -111,7 +111,7 @@ func (s *Server) handleCreateEnvironment(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 
@@ -184,7 +184,7 @@ func (s *Server) handleUpdateEnvironment(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 
@@ -235,7 +235,7 @@ func (s *Server) handleDeleteEnvironment(w http.ResponseWriter, r *http.Request)
 		return errdefs.ErrInvalidArgument(errors.New("environmentID is required"))
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditEnvironment); err != nil {
 		return err
 	}
 

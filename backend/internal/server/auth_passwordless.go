@@ -601,6 +601,12 @@ func (s *Server) handleAuthenticateWithInvitationMagicLink(w http.ResponseWriter
 			return err
 		}
 
+		if !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return err
@@ -720,6 +726,12 @@ func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r 
 
 		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
 			return err
+		}
+
+		if !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
 		}
 
 		return nil

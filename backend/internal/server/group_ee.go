@@ -163,7 +163,7 @@ func (s *Server) handleCreateGroup(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
-	if err := s.checker.AuthorizeOperation(ctx, core.OperationEditGroup); err != nil {
+	if err := s.permissionChecker.AuthorizeOperation(ctx, core.OperationEditGroup); err != nil {
 		return err
 	}
 
