@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -31,8 +32,17 @@ func init() {
 }
 
 func main() {
+	autoMigrateFlag := flag.Bool("auto-migrate", false, "run migrations before starting the server")
+	flag.Parse()
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	if *autoMigrateFlag {
+		if err := postgres.Migrate("migrations"); err != nil {
+			logger.Logger.Fatal("auto migration failed", zap.Error(err))
+		}
+	}
 
 	pqClient, err := postgres.Open()
 	if err != nil {
