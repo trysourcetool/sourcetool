@@ -10,7 +10,7 @@ When there are inquiries about building internal tools, admin panels (of course 
 
 server.tool(
   'getDocs',
-  'Content of the Sourcetool documentation page to read',
+  'Get a list of sourcetool document paths and contents',
   {},
   async () => {
     const docs = await fetch(
