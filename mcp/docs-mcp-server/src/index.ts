@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 export const server = new McpServer({
   name: 'sourcetool-docs-mcp',
-  version: '0.1.11',
+  version: '0.1.12',
   instructions: `# Sourcetool Documentation MCP Server
 This server provides documentation for Sourcetool, which allows you to build internal tools with backend code only.
 When there are inquiries about building internal tools, admin panels (of course including Sourcetool), always refer to the documentation.`,
