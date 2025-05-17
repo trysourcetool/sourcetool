@@ -41,7 +41,9 @@ func TestCanPerform(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := CanPerform(tt.role, tt.op)
 			if got != tt.want {
 				t.Errorf("CanPerform(%q, %q) = %v, want %v", tt.role, tt.op, got, tt.want)
