@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"net"
 	"strings"
 )
 
@@ -11,7 +12,9 @@ func GetSubdomainFromHost(host string) (string, error) {
 	}
 
 	// Strip port if present
-	host = strings.SplitN(host, ":", 2)[0]
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
 
 	parts := strings.Split(host, ".")
 	if len(parts) < 2 {
