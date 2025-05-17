@@ -14,9 +14,13 @@ func TestUserOrganizationRole_String(t *testing.T) {
 		{UserOrganizationRole(100), "unknown"},
 	}
 	for _, c := range cases {
-		if got := c.role.String(); got != c.expected {
-			t.Errorf("UserOrganizationRole(%d).String() = %q, want %q", c.role, got, c.expected)
-		}
+		c := c
+		t.Run(c.expected, func(t *testing.T) {
+			t.Parallel()
+			if got := c.role.String(); got != c.expected {
+				t.Errorf("UserOrganizationRole(%d).String() = %q, want %q", c.role, got, c.expected)
+			}
+		})
 	}
 }
 
@@ -32,8 +36,12 @@ func TestUserOrganizationRoleFromString(t *testing.T) {
 		{"invalid", UserOrganizationRoleUnknown},
 	}
 	for _, c := range cases {
-		if got := UserOrganizationRoleFromString(c.input); got != c.expected {
-			t.Errorf("UserOrganizationRoleFromString(%q) = %v, want %v", c.input, got, c.expected)
-		}
+		c := c
+		t.Run(c.input, func(t *testing.T) {
+			t.Parallel()
+			if got := UserOrganizationRoleFromString(c.input); got != c.expected {
+				t.Errorf("UserOrganizationRoleFromString(%q) = %v, want %v", c.input, got, c.expected)
+			}
+		})
 	}
 }
