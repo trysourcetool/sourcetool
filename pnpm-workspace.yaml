@@ -1,9 +1,11 @@
 packages:
-  - 'frontend'
-  - 'docs'
-  - 'mcp/docs-mcp-server'
+  - frontend
+  - docs
+  - mcp/docs-mcp-server
+  - sdk/node
+  - examples/node/*
+
 catalogs:
-  # Can be referenced through "catalog:react19"
   react19:
     react: ^19.0.0
     react-dom: ^19.0.0
@@ -18,3 +20,6 @@ catalog:
 
 publicHoistPattern:
   - '*eslint*'
+
+overrides:
+  '@sourcetool/node': link:sdk/node
