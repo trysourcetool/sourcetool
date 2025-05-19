@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 type Stores interface {
@@ -18,6 +19,7 @@ type Stores interface {
 type DB interface {
 	Stores
 	WithTx(ctx context.Context, fn func(tx Tx) error) error
+	WithTxOptions(ctx context.Context, opts *sql.TxOptions, fn func(tx Tx) error) error
 }
 
 type Tx interface {

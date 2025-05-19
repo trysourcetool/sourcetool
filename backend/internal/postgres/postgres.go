@@ -56,7 +56,18 @@ func (db *db) User() database.UserStore {
 }
 
 func (db *db) WithTx(ctx context.Context, fn func(tx database.Tx) error) error {
-	sqlxTx, err := db.db.Beginx()
+	return db.WithTxOptions(ctx, nil, fn)
+}
+
+func (db *db) WithTxOptions(ctx context.Context, opts *sql.TxOptions, fn func(tx database.Tx) error) error {
+	if opts == nil {
+		opts = &sql.TxOptions{
+			Isolation: sql.LevelDefault,
+			ReadOnly:  false,
+		}
+	}
+
+	sqlxTx, err := db.db.BeginTxx(ctx, opts)
 	if err != nil {
 		return err
 	}
