@@ -168,8 +168,8 @@
   "routes_apikeys_toast_copy_failed_endpoint": "Failed to copy endpoint",
   "routes_apikeys_toast_deleted": "API key deleted",
   "routes_apikeys_toast_delete_failed": "Failed to delete API key",
-  "routes_apikeys_no_keys_title": "No Live mode keys",
-  "routes_apikeys_no_keys_description": "You haven't created any Live mode keys yet. Create your first Live mode keys to get started.",
+  "routes_apikeys_no_keys_title": "No live mode keys",
+  "routes_apikeys_no_keys_description": "You haven't created any live mode keys yet. Create your first live mode keys to get started.",
 
   "routes_apikeys_new_page_header": "Create New API key",
   "routes_apikeys_new_name_label": "API Key Name",
