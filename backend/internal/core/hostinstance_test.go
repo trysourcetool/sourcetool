@@ -13,7 +13,6 @@ func TestHostInstanceStatus_String(t *testing.T) {
 		{HostInstanceStatus(100), "unknown"},
 	}
 	for _, c := range cases {
-		c := c
 		t.Run(c.expected, func(t *testing.T) {
 			t.Parallel()
 			if got := c.status.String(); got != c.expected {
@@ -34,7 +33,6 @@ func TestHostInstanceStatusFromString(t *testing.T) {
 		{"invalid", HostInstanceStatusUnknown},
 	}
 	for _, c := range cases {
-		c := c
 		t.Run(c.input, func(t *testing.T) {
 			t.Parallel()
 			if got := HostInstanceStatusFromString(c.input); got != c.expected {
