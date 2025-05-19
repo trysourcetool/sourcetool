@@ -9,7 +9,7 @@ import {
   convertStateToColumnItemProto,
 } from '../uibuilder/widgets/columns';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -103,7 +103,7 @@ test('columns', () => {
     );
   }
 
-  const widgetId = builder.generatePageID('columns', [0]);
+  const widgetId = uiBuilderGeneratePageID(page.id, 'columns', [0]);
   const state = session.state.get(widgetId) as ColumnsState;
 
   if (!state) {
@@ -113,7 +113,7 @@ test('columns', () => {
 
   for (let i = 0; i < cols; i++) {
     const columnPath = [0, i];
-    const columnId = builder.generatePageID('columnItem', columnPath);
+    const columnId = uiBuilderGeneratePageID(page.id, 'columnItem', columnPath);
 
     const columnState = session.state.get(columnId) as ColumnItemState;
 
@@ -162,7 +162,7 @@ test('columns with weight', () => {
 
   for (let i = 0; i < cols; i++) {
     const columnPath = [0, i];
-    const columnId = builder.generatePageID('columnItem', columnPath);
+    const columnId = uiBuilderGeneratePageID(page.id, 'columnItem', columnPath);
 
     const columnState = session.state.get(columnId) as ColumnItemState;
 
@@ -216,7 +216,9 @@ describe('columns invalid input', () => {
 
     test(name, () => {
       builder.columns(cols, options);
-      const columns = session.state.get(builder.generatePageID('columns', [i]));
+      const columns = session.state.get(
+        uiBuilderGeneratePageID(page.id, 'columns', [i]),
+      );
 
       expect(columns).toBeUndefined();
     });

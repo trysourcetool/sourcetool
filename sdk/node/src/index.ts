@@ -1,5 +1,4 @@
-import { UIBuilder, Cursor } from './uibuilder';
-import { Page } from './page';
+import { UIBuilderType } from './uibuilder';
 import { RouterInterface } from './router';
 import { ButtonComponentOptions } from './uibuilder/widgets/button';
 import { CheckboxComponentOptions } from './uibuilder/widgets/checkbox';
@@ -52,11 +51,7 @@ export type {
   ColumnsComponentOptions,
 
   // Builder type
-  UIBuilder,
-  Cursor,
-
-  // Page
-  Page,
+  UIBuilderType,
 
   // Router
   RouterInterface,

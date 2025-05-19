@@ -7,7 +7,7 @@ import {
   markdown,
 } from '../uibuilder/widgets/markdown';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -71,7 +71,7 @@ test('markdown', () => {
 
   markdown(builder, bodyContent);
 
-  const widgetId = builder.generatePageID('markdown', [0]);
+  const widgetId = uiBuilderGeneratePageID(page.id, 'markdown', [0]);
   const state = session.state.getMarkdown(widgetId);
 
   if (!state) {

@@ -20,7 +20,8 @@
     "test:mcp-docs": "pnpm --filter docs-mcp-server test",
     "build:sdk-node": "pnpm --filter @sourcetool/node build",
     "dev:sdk-node": "pnpm --filter @sourcetool/node build:watch",
-    "test:sdk-node": "pnpm --filter @sourcetool/node test"
+    "test:sdk-node": "pnpm --filter @sourcetool/node test",
+    "typecheck:sdk-node": "pnpm --filter @sourcetool/node typecheck"
   },
   "engines": {
     "npm": "use pnpm please!",

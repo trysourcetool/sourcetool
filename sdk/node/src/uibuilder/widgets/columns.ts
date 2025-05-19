@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor } from '../';
+import { UIBuilder, Cursor, uiBuilderGeneratePageID } from '../';
 import { ColumnsState, WidgetTypeColumns } from '../../session/state/columns';
 import {
   ColumnItemState,
@@ -72,7 +72,7 @@ export function columns(
   };
 
   const path = cursor.getPath();
-  const widgetID = builder.generatePageID(WidgetTypeColumns, path);
+  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeColumns, path);
 
   // Calculate weights
   let weights = columnsOpts.weight || [];
@@ -124,7 +124,8 @@ export function columns(
     const columnPath = [...path, i];
 
     // Create column item state
-    const columnItemID = builder.generatePageID(
+    const columnItemID = uiBuilderGeneratePageID(
+      page.id,
       WidgetTypeColumnItem,
       columnPath,
     );

@@ -7,7 +7,7 @@ import {
   textArea,
 } from '../uibuilder/widgets/textarea';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -147,7 +147,7 @@ test('textArea', () => {
 
   textArea(builder, label, options);
 
-  const widgetId = builder.generatePageID('textArea', [0]);
+  const widgetId = uiBuilderGeneratePageID(page.id, 'textArea', [0]);
   const state = session.state.getTextArea(widgetId);
 
   if (!state) {

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from '../';
+import { UIBuilder, uiBuilderGeneratePageID } from '../';
 import {
   CheckboxGroupState,
   CheckboxGroupValue,
@@ -142,7 +142,11 @@ export function checkboxGroup(
   }
 
   const path = cursor.getPath();
-  const widgetID = builder.generatePageID(WidgetTypeCheckboxGroup, path);
+  const widgetID = uiBuilderGeneratePageID(
+    page.id,
+    WidgetTypeCheckboxGroup,
+    path,
+  );
 
   let checkboxGroupState = session.state.getCheckboxGroup(widgetID);
   const formatFunc = checkboxGroupOpts.formatFunc || ((v: string) => v);

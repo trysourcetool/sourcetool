@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from '../';
+import { UIBuilder, uiBuilderGeneratePageID } from '../';
 import {
   TimeInputState,
   WidgetTypeTimeInput,
@@ -126,7 +126,7 @@ export function timeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = builder.generatePageID(WidgetTypeTimeInput, path);
+  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTimeInput, path);
 
   let timeInputState = session.state.getTimeInput(widgetID);
   if (!timeInputState) {

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from '../';
+import { UIBuilder, uiBuilderGeneratePageID } from '../';
 import {
   DateTimeInputState,
   WidgetTypeDateTimeInput,
@@ -173,7 +173,11 @@ export function dateTimeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = builder.generatePageID(WidgetTypeDateTimeInput, path);
+  const widgetID = uiBuilderGeneratePageID(
+    page.id,
+    WidgetTypeDateTimeInput,
+    path,
+  );
 
   let dateTimeInputState = session.state.getDateTimeInput(widgetID);
   if (!dateTimeInputState) {

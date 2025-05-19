@@ -2,11 +2,11 @@ import {
   TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
-  UIBuilder,
+  UIBuilderType,
 } from '@sourcetool/node';
 import { createUser, listUsers } from './users';
 
-const listUsersPage = async (ui: UIBuilder) => {
+const listUsersPage = async (ui: UIBuilderType) => {
   const searchCols = ui.columns(2);
   const name = searchCols[0].textInput('Name', {
     placeholder: 'Enter name to filter',
@@ -81,7 +81,7 @@ const listUsersPage = async (ui: UIBuilder) => {
   }
 };
 
-const createUserPage = async (ui: UIBuilder) => {
+const createUserPage = async (ui: UIBuilderType) => {
   const [form, submitted] = ui.form('Create User', {
     clearOnSubmit: true,
   });

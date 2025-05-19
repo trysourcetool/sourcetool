@@ -1,7 +1,7 @@
-import { Sourcetool, SourcetoolConfig, UIBuilder } from '@sourcetool/node';
+import { Sourcetool, SourcetoolConfig, UIBuilderType } from '@sourcetool/node';
 import { createUser } from './users';
 
-const createUserPage = async (ui: UIBuilder) => {
+const createUserPage = async (ui: UIBuilderType) => {
   const [form, submitted] = ui.form('Create User', {
     clearOnSubmit: true,
   });

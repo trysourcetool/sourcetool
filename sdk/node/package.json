@@ -11,7 +11,8 @@
     "build": "npx tsx scripts/build.ts",
     "build:watch": "npx tsx scripts/build.ts --watch",
     "test": "vitest watch",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "typecheck": "tsc --noEmit -w"
   },
   "exports": {
     "./package.json": "./package.json",

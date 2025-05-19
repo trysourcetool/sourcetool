@@ -6,7 +6,7 @@ import {
   convertStateToButtonProto,
 } from '../uibuilder/widgets/button';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -74,7 +74,7 @@ test('button', () => {
 
   builder.button('Test Button');
 
-  const widgetId = builder.generatePageID('button', [0]);
+  const widgetId = uiBuilderGeneratePageID(page.id, 'button', [0]);
 
   const state = session.state.getButton(widgetId);
 

@@ -1,6 +1,6 @@
-import { Sourcetool, SourcetoolConfig, UIBuilder } from '@sourcetool/node';
+import { Sourcetool, SourcetoolConfig, UIBuilderType } from '@sourcetool/node';
 
-const helloPage = async (ui: UIBuilder) => {
+const helloPage = async (ui: UIBuilderType) => {
   ui.markdown('# Hello, Sourcetool!');
   ui.markdown(
     'This is a simple example demonstrating the basic usage of the Sourcetool Go SDK.',

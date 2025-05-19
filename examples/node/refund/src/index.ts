@@ -2,11 +2,11 @@ import {
   TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
-  UIBuilder,
+  UIBuilderType,
 } from '@sourcetool/node';
 import { listUsers, RefundRequest, refundStripe } from './user.ts';
 
-const refundPage = async (ui: UIBuilder) => {
+const refundPage = async (ui: UIBuilderType) => {
   const searchCols = ui.columns(2);
   const name = searchCols[0].textInput('Name', {
     placeholder: 'Enter user name to filter',

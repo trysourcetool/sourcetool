@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from '../';
+import { UIBuilder, uiBuilderGeneratePageID } from '../';
 import {
   CheckboxState,
   WidgetTypeCheckbox,
@@ -96,7 +96,7 @@ export function checkbox(
   };
 
   const path = cursor.getPath();
-  const widgetID = builder.generatePageID(WidgetTypeCheckbox, path);
+  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeCheckbox, path);
 
   let checkboxState = session.state.getCheckbox(widgetID);
   if (!checkboxState) {

@@ -1,4 +1,4 @@
-import { v5 as uuidv5, NIL as uuidNil } from 'uuid';
+import { v5 as uuidv5 } from 'uuid';
 import { button, ButtonComponentOptions } from './widgets/button';
 import { checkbox, CheckboxComponentOptions } from './widgets/checkbox';
 import { markdown } from './widgets/markdown';
@@ -68,6 +68,15 @@ export type UIBuilderType = {
   button(label: string, options?: ButtonComponentOptions): boolean;
   form(label: string, options?: FormComponentOptions): [UIBuilderType, boolean];
   columns(count: number, options?: ColumnsComponentOptions): UIBuilderType[];
+};
+
+export const uiBuilderGeneratePageID = (
+  pageId: string,
+  widgetType: WidgetType,
+  path: number[],
+): string => {
+  const strPath = path.map((v) => v.toString()).join('_');
+  return uuidv5(`${widgetType}-${strPath}`, pageId);
 };
 
 export class UIBuilder implements UIBuilderType {
@@ -172,14 +181,6 @@ export class UIBuilder implements UIBuilderType {
     options: ColumnsComponentOptions = {},
   ): UIBuilderType[] {
     return columns(this, count, options);
-  }
-
-  generatePageID(widgetType: WidgetType, path: number[]): string {
-    if (!this.page) {
-      return uuidNil;
-    }
-    const strPath = path.map((v) => v.toString()).join('_');
-    return uuidv5(`${widgetType}-${strPath}`, this.page.id);
   }
 }
 
