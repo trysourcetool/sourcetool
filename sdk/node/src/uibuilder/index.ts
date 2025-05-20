@@ -80,107 +80,120 @@ export const uiBuilderGeneratePageID = (
 };
 
 export class UIBuilder implements UIBuilderType {
-  runtime: Runtime;
-  cursor: Cursor;
-  session: Session;
-  page: Page;
+  private runtime: Runtime;
+  private cursor: Cursor;
+  private session: Session;
+  private page: Page;
 
-  constructor(runtime: Runtime, session: Session, page: Page) {
+  constructor(runtime: Runtime, session: Session, page: Page, cursor?: Cursor) {
     this.runtime = runtime;
-    this.cursor = new Cursor();
+    this.cursor = cursor ?? new Cursor();
     this.session = session;
     this.page = page;
   }
 
+  private getContext(): {
+    runtime: Runtime;
+    cursor: Cursor;
+    session: Session;
+    page: Page;
+  } {
+    return {
+      runtime: this.runtime,
+      cursor: this.cursor,
+      session: this.session,
+      page: this.page,
+    };
+  }
   markdown(content: string): void {
-    markdown(this, content);
+    markdown(this.getContext(), content);
   }
 
   textInput(label: string, options: TextInputComponentOptions = {}): string {
-    return textInput(this, label, options);
+    return textInput(this.getContext(), label, options);
   }
 
   numberInput(
     label: string,
     options: NumberInputComponentOptions = {},
   ): number | null {
-    return numberInput(this, label, options);
+    return numberInput(this.getContext(), label, options);
   }
 
   dateInput(
     label: string,
     options: DateInputComponentOptions = {},
   ): Date | null {
-    return dateInput(this, label, options);
+    return dateInput(this.getContext(), label, options);
   }
 
   dateTimeInput(
     label: string,
     options: DateTimeInputComponentOptions = {},
   ): Date | null {
-    return dateTimeInput(this, label, options);
+    return dateTimeInput(this.getContext(), label, options);
   }
 
   timeInput(
     label: string,
     options: TimeInputComponentOptions = {},
   ): Date | null {
-    return timeInput(this, label, options);
+    return timeInput(this.getContext(), label, options);
   }
 
   selectbox(
     label: string,
     options: SelectboxComponentOptions = {},
   ): SelectboxValue | null {
-    return selectbox(this, label, options);
+    return selectbox(this.getContext(), label, options);
   }
 
   multiSelect(
     label: string,
     options: MultiSelectComponentOptions = {},
   ): MultiSelectValue | null {
-    return multiSelect(this, label, options);
+    return multiSelect(this.getContext(), label, options);
   }
 
   radio(label: string, options: RadioComponentOptions = {}): RadioValue | null {
-    return radio(this, label, options);
+    return radio(this.getContext(), label, options);
   }
 
   checkbox(label: string, options: CheckboxComponentOptions = {}): boolean {
-    return checkbox(this, label, options);
+    return checkbox(this.getContext(), label, options);
   }
 
   checkboxGroup(
     label: string,
     options: CheckboxGroupComponentOptions = {},
   ): CheckboxGroupValue | null {
-    return checkboxGroup(this, label, options);
+    return checkboxGroup(this.getContext(), label, options);
   }
 
   textArea(label: string, options: TextAreaComponentOptions = {}): string {
-    return textArea(this, label, options);
+    return textArea(this.getContext(), label, options);
   }
 
   table(data: any, options: TableComponentOptions = {}): TableValue | null {
-    return table(this, data, options);
+    return table(this.getContext(), data, options);
   }
 
   button(label: string, options: ButtonComponentOptions = {}): boolean {
-    return button(this, label, options);
+    return button(this.getContext(), label, options);
   }
 
   form(
     label: string,
     options: FormComponentOptions = {},
   ): [UIBuilderType, boolean] {
-    return form(this, label, options);
+    return form(this.getContext(), label, options);
   }
 
   columns(
     count: number,
     options: ColumnsComponentOptions = {},
   ): UIBuilderType[] {
-    return columns(this, count, options);
+    return columns(this.getContext(), count, options);
   }
 }
 

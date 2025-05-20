@@ -1,4 +1,4 @@
-import { UIBuilderType } from './uibuilder';
+import { UIBuilder } from './uibuilder';
 import { RouterInterface } from './router';
 import { ButtonComponentOptions } from './uibuilder/widgets/button';
 import { CheckboxComponentOptions } from './uibuilder/widgets/checkbox';
@@ -51,7 +51,7 @@ export type {
   ColumnsComponentOptions,
 
   // Builder type
-  UIBuilderType,
+  UIBuilder,
 
   // Router
   RouterInterface,

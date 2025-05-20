@@ -1,7 +1,7 @@
-import { Sourcetool, SourcetoolConfig, UIBuilderType } from '@sourcetool/node';
+import { Sourcetool, SourcetoolConfig, UIBuilder } from '@sourcetool/node';
 import { listUsers } from './users';
 
-const listUsersPage = async (ui: UIBuilderType) => {
+const listUsersPage = async (ui: UIBuilder) => {
   const searchCols = ui.columns(2);
   const name = searchCols[0].textInput('Name', {
     placeholder: 'Enter name to filter',

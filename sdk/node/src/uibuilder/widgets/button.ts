@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageID } from '../';
 import { ButtonState, WidgetTypeButton } from '../../session/state/button';
 import { ButtonOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
@@ -9,6 +9,9 @@ import {
   WidgetSchema,
 } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 
 /**
  * Button component options
@@ -43,14 +46,16 @@ export class Button {
  * @returns Whether the button was clicked
  */
 export function button(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   label: string,
   options: ButtonComponentOptions = {},
 ): boolean {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return false;

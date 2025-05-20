@@ -8,7 +8,7 @@ import {
 } from '../uibuilder/widgets/multiselect';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -106,8 +106,6 @@ test('multiSelect', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const label = 'Test MultiSelect';
   const initialOptions = ['Option 1', 'Option 2', 'Option 3'];
   const options = {
@@ -119,7 +117,9 @@ test('multiSelect', () => {
     formatFunc: (val: string) => `Option: ${val}`,
   };
 
-  multiSelect(builder, label, options);
+  const cursor = new Cursor();
+
+  multiSelect({ runtime, session, page, cursor }, label, options);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'multiselect', [0]);
   const state = session.state.getMultiSelect(widgetId);

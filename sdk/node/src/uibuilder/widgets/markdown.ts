@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageID } from '../';
 import {
   MarkdownState,
   WidgetTypeMarkdown,
@@ -12,16 +12,24 @@ import {
   WidgetSchema,
 } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 /**
  * Add markdown content to the UI
  * @param builder The UI builder
  * @param body The markdown content
  */
-export function markdown(builder: UIBuilder, body: string): void {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+export function markdown(
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
+  body: string,
+): void {
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return;

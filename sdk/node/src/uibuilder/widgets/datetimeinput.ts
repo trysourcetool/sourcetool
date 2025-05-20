@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageID } from '../';
 import {
   DateTimeInputState,
   WidgetTypeDateTimeInput,
@@ -12,6 +12,9 @@ import {
   WidgetSchema,
 } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 
 /**
  * DateTimeInput component options
@@ -147,14 +150,16 @@ export class DateTimeInput {
  * @returns The input value
  */
 export function dateTimeInput(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   label: string,
   options: DateTimeInputComponentOptions = {},
 ): Date | null {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return null;

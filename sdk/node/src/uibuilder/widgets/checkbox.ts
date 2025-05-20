@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageID } from '../';
 import {
   CheckboxState,
   WidgetTypeCheckbox,
@@ -12,6 +12,9 @@ import {
 } from '../../pb/widget/v1/widget_pb';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 /**
  * Checkbox component options
  */
@@ -75,14 +78,16 @@ export class Checkbox {
  * @returns Whether the checkbox is checked
  */
 export function checkbox(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   label: string,
   options: CheckboxComponentOptions = {},
 ): boolean {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return false;

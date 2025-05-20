@@ -12,7 +12,7 @@ import {
   table,
 } from '../uibuilder/widgets/table';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { Table as TableProto } from '../pb/widget/v1/widget_pb';
@@ -126,8 +126,6 @@ test('table interaction', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const tableData = [
     { ID: 1, Name: 'Test 1' },
     { ID: 2, Name: 'Test 2' },
@@ -141,7 +139,9 @@ test('table interaction', () => {
     rowSelection: TableRowSelection.Single,
   };
 
-  table(builder, tableData, options);
+  const cursor = new Cursor();
+
+  table({ runtime, session, page, cursor }, tableData, options);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'table', [0]);
   const state = session.state.getTable(widgetId);

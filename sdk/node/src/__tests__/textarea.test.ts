@@ -7,7 +7,7 @@ import {
   textArea,
 } from '../uibuilder/widgets/textarea';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -130,8 +130,6 @@ test('textArea', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const label = 'Test TextArea';
   const options = {
     placeholder: 'Enter text',
@@ -145,7 +143,9 @@ test('textArea', () => {
     autoResize: false,
   };
 
-  textArea(builder, label, options);
+  const cursor = new Cursor();
+
+  textArea({ runtime, session, page, cursor }, label, options);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'textArea', [0]);
   const state = session.state.getTextArea(widgetId);

@@ -7,7 +7,7 @@ import {
   markdown,
 } from '../uibuilder/widgets/markdown';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -65,11 +65,11 @@ test('markdown', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const bodyContent = '# Test Markdown';
 
-  markdown(builder, bodyContent);
+  const cursor = new Cursor();
+
+  markdown({ runtime, session, page, cursor }, bodyContent);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'markdown', [0]);
   const state = session.state.getMarkdown(widgetId);

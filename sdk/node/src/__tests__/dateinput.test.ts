@@ -7,7 +7,7 @@ import {
   dateInput,
 } from '../uibuilder/widgets/dateinput';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -140,8 +140,6 @@ test('dateInput', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const label = 'Test DateInput';
   const now = new Date(Date.UTC(2024, 0, 0));
   const options = {
@@ -155,7 +153,9 @@ test('dateInput', () => {
     format: 'YYYY-MM-DD',
   };
 
-  dateInput(builder, label, options);
+  const cursor = new Cursor();
+
+  dateInput({ runtime, session, page, cursor }, label, options);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'dateInput', [0]);
   const state = session.state.getDateInput(widgetId);

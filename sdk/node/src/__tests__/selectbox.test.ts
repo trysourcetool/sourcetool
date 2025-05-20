@@ -8,7 +8,7 @@ import {
 } from '../uibuilder/widgets/selectbox';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -106,8 +106,6 @@ test('selectbox', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
-
   const label = 'Test Selectbox';
   const initialOptions = ['Option 1', 'Option 2'];
   const options = {
@@ -119,7 +117,9 @@ test('selectbox', () => {
     formatFunc: (val: string) => val.toLowerCase(),
   };
 
-  selectbox(builder, label, options);
+  const cursor = new Cursor();
+
+  selectbox({ runtime, session, page, cursor }, label, options);
 
   const widgetId = uiBuilderGeneratePageID(page.id, 'selectbox', [0]);
   const state = session.state.getSelectbox(widgetId);

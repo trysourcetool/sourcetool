@@ -9,6 +9,9 @@ import {
   WidgetSchema,
 } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 /**
  * Form component options
  */
@@ -57,17 +60,19 @@ export class Form {
  * @returns A tuple containing the form builder and whether the form was submitted
  */
 export function form(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   buttonLabel: string,
   options: FormComponentOptions = {},
 ): [UIBuilder, boolean] {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
-    return [builder, false];
+    return [new UIBuilder(runtime, session, page), false];
   }
 
   const formOpts: FormOptions = {
@@ -118,8 +123,7 @@ export function form(
   const childCursor = new Cursor();
   childCursor.parentPath = path;
 
-  const childBuilder = new UIBuilder(runtime, session, page);
-  childBuilder.cursor = childCursor;
+  const childBuilder = new UIBuilder(runtime, session, page, childCursor);
 
   return [childBuilder, formState.value];
 }

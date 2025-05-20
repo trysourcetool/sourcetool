@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageID } from '../';
 import {
   RadioState,
   RadioValue,
@@ -9,6 +9,9 @@ import { RadioOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import { Radio as RadioProto, RadioSchema } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 /**
  * Radio component options
  */
@@ -101,14 +104,16 @@ export class Radio {
  * @returns The selected radio value
  */
 export function radio(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   label: string,
   options: RadioComponentOptions = {},
 ): RadioValue | null {
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return null;

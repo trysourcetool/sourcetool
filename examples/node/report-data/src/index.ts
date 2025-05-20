@@ -1,4 +1,4 @@
-import { Sourcetool, SourcetoolConfig, UIBuilderType } from '@sourcetool/node';
+import { Sourcetool, SourcetoolConfig, UIBuilder } from '@sourcetool/node';
 import {
   analysisCategory,
   analysisCorrelation,
@@ -13,7 +13,7 @@ import {
   ReportSection,
 } from './report';
 
-const createReportPage = async (ui: UIBuilderType) => {
+const createReportPage = async (ui: UIBuilder) => {
   // Data Source Selection
   const [form, submitted] = ui.form('Generate Report', { clearOnSubmit: true });
   form.markdown('### 1. Select data source');

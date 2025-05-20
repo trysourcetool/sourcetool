@@ -15,6 +15,9 @@ import {
   WidgetSchema,
 } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
+import { Runtime } from '../../runtime';
+import { Session } from '../../session';
+import { Page } from '../../page';
 
 /**
  * Columns component options
@@ -49,7 +52,12 @@ export class Columns {
  * @returns Array of UI builders for each column
  */
 export function columns(
-  builder: UIBuilder,
+  context: {
+    runtime: Runtime;
+    session: Session;
+    page: Page;
+    cursor: Cursor;
+  },
   cols: number,
   options: ColumnsComponentOptions = {},
 ): UIBuilder[] {
@@ -57,10 +65,7 @@ export function columns(
     return [];
   }
 
-  const runtime = builder.runtime;
-  const session = builder.session;
-  const page = builder.page;
-  const cursor = builder.cursor;
+  const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
     return [];
@@ -156,8 +161,7 @@ export function columns(
     runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
     // Create builder for this column
-    const columnBuilder = new UIBuilder(runtime, session, page);
-    columnBuilder.cursor = columnCursor;
+    const columnBuilder = new UIBuilder(runtime, session, page, columnCursor);
     builders.push(columnBuilder);
   }
 
