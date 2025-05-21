@@ -6,7 +6,7 @@ import {
   convertStateToButtonProto,
 } from '../uibuilder/widgets/button';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageId } from '../uibuilder';
+import { uiBuilderGeneratePageId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -70,7 +70,7 @@ test('button', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   builder.button('Test Button');
 

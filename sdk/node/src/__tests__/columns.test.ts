@@ -9,7 +9,7 @@ import {
   convertStateToColumnItemProto,
 } from '../uibuilder/widgets/columns';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageId } from '../uibuilder';
+import { uiBuilderGeneratePageId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -87,7 +87,7 @@ test('columns', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const cols = 3;
 
@@ -152,7 +152,7 @@ test('columns with weight', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const cols = 3;
   const options = { weight: [2, 1, 1] };
@@ -201,7 +201,7 @@ describe('columns invalid input', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const testInputs = [
     ['Zero columns', 0, undefined],

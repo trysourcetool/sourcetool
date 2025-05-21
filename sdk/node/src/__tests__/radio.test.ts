@@ -7,7 +7,7 @@ import {
 } from '../uibuilder/widgets/radio';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { UIBuilder, uiBuilderGeneratePageId } from '../uibuilder';
+import { uiBuilderGeneratePageId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -100,7 +100,7 @@ test('radio', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const label = 'Test Radio';
   const initialOptions = ['Option 1', 'Option 2'];
