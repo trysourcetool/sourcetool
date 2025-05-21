@@ -5,7 +5,7 @@ import {
   SelectboxValue,
   WidgetTypeSelectbox,
 } from '../../session/state/selectbox';
-import { SelectboxOptions } from '../../types/options';
+import { SelectboxInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   Selectbox as SelectboxProto,
@@ -17,9 +17,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Selectbox component options
+ * Selectbox options
  */
-export interface SelectboxComponentOptions {
+export interface SelectboxOptions {
   /**
    * Selectbox options
    */
@@ -54,67 +54,6 @@ export interface SelectboxComponentOptions {
 }
 
 /**
- * Selectbox component class
- */
-export class Selectbox {
-  /**
-   * Set the selectbox options
-   * @param options Selectbox options
-   * @returns Selectbox options
-   */
-  static options(...options: string[]): SelectboxComponentOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns Selectbox options
-   */
-  static defaultValue(value: string): SelectboxComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns Selectbox options
-   */
-  static placeholder(placeholder: string): SelectboxComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns Selectbox options
-   */
-  static required(required: boolean): SelectboxComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns Selectbox options
-   */
-  static disabled(disabled: boolean): SelectboxComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns Selectbox options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): SelectboxComponentOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a selectbox to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -129,7 +68,7 @@ export function selectbox(
     cursor: Cursor;
   },
   label: string,
-  options: SelectboxComponentOptions = {},
+  options: SelectboxOptions = {},
 ): SelectboxValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -137,7 +76,7 @@ export function selectbox(
     return null;
   }
 
-  const selectboxOpts: SelectboxOptions = {
+  const selectboxOpts: SelectboxInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,

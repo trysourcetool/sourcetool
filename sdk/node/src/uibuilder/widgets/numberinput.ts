@@ -4,7 +4,7 @@ import {
   NumberInputState,
   WidgetTypeNumberInput,
 } from '../../session/state/numberinput';
-import { NumberInputOptions } from '../../types/options';
+import { NumberInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   NumberInput as NumberInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * NumberInput component options
+ * NumberInput options
  */
-export interface NumberInputComponentOptions {
+export interface NumberInputOptions {
   /**
    * Placeholder text
    */
@@ -61,7 +61,7 @@ export class NumberInput {
    * @param placeholder Placeholder text
    * @returns NumberInput options
    */
-  static placeholder(placeholder: string): NumberInputComponentOptions {
+  static placeholder(placeholder: string): NumberInputOptions {
     return { placeholder };
   }
 
@@ -70,7 +70,7 @@ export class NumberInput {
    * @param value Default value
    * @returns NumberInput options
    */
-  static defaultValue(value: number): NumberInputComponentOptions {
+  static defaultValue(value: number): NumberInputOptions {
     return { defaultValue: value };
   }
 
@@ -79,7 +79,7 @@ export class NumberInput {
    * @param required Whether the input is required
    * @returns NumberInput options
    */
-  static required(required: boolean): NumberInputComponentOptions {
+  static required(required: boolean): NumberInputOptions {
     return { required };
   }
 
@@ -88,7 +88,7 @@ export class NumberInput {
    * @param disabled Whether the input is disabled
    * @returns NumberInput options
    */
-  static disabled(disabled: boolean): NumberInputComponentOptions {
+  static disabled(disabled: boolean): NumberInputOptions {
     return { disabled };
   }
 
@@ -97,7 +97,7 @@ export class NumberInput {
    * @param value Maximum value
    * @returns NumberInput options
    */
-  static maxValue(value: number): NumberInputComponentOptions {
+  static maxValue(value: number): NumberInputOptions {
     return { maxValue: value };
   }
 
@@ -106,7 +106,7 @@ export class NumberInput {
    * @param value Minimum value
    * @returns NumberInput options
    */
-  static minValue(value: number): NumberInputComponentOptions {
+  static minValue(value: number): NumberInputOptions {
     return { minValue: value };
   }
 }
@@ -126,7 +126,7 @@ export function numberInput(
     cursor: Cursor;
   },
   label: string,
-  options: NumberInputComponentOptions = {},
+  options: NumberInputOptions = {},
 ): number | null {
   const { runtime, session, page, cursor } = context;
 
@@ -134,7 +134,7 @@ export function numberInput(
     return null;
   }
 
-  const numberInputOpts: NumberInputOptions = {
+  const numberInputOpts: NumberInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue:

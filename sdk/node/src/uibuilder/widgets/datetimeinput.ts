@@ -4,7 +4,7 @@ import {
   DateTimeInputState,
   WidgetTypeDateTimeInput,
 } from '../../session/state/datetimeinput';
-import { DateTimeInputOptions } from '../../types/options';
+import { DateTimeInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   DateTimeInput as DateTimeInputProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * DateTimeInput component options
+ * DateTimeInput options
  */
-export interface DateTimeInputComponentOptions {
+export interface DateTimeInputOptions {
   /**
    * Placeholder text
    */
@@ -74,7 +74,7 @@ export class DateTimeInput {
    * @param placeholder Placeholder text
    * @returns DateTimeInput options
    */
-  static placeholder(placeholder: string): DateTimeInputComponentOptions {
+  static placeholder(placeholder: string): DateTimeInputOptions {
     return { placeholder };
   }
 
@@ -83,7 +83,7 @@ export class DateTimeInput {
    * @param value Default value
    * @returns DateTimeInput options
    */
-  static defaultValue(value: Date): DateTimeInputComponentOptions {
+  static defaultValue(value: Date): DateTimeInputOptions {
     return { defaultValue: value };
   }
 
@@ -92,7 +92,7 @@ export class DateTimeInput {
    * @param required Whether the input is required
    * @returns DateTimeInput options
    */
-  static required(required: boolean): DateTimeInputComponentOptions {
+  static required(required: boolean): DateTimeInputOptions {
     return { required };
   }
 
@@ -101,7 +101,7 @@ export class DateTimeInput {
    * @param disabled Whether the input is disabled
    * @returns DateTimeInput options
    */
-  static disabled(disabled: boolean): DateTimeInputComponentOptions {
+  static disabled(disabled: boolean): DateTimeInputOptions {
     return { disabled };
   }
 
@@ -110,7 +110,7 @@ export class DateTimeInput {
    * @param format Date and time format
    * @returns DateTimeInput options
    */
-  static format(format: string): DateTimeInputComponentOptions {
+  static format(format: string): DateTimeInputOptions {
     return { format };
   }
 
@@ -119,7 +119,7 @@ export class DateTimeInput {
    * @param value Maximum date and time
    * @returns DateTimeInput options
    */
-  static maxValue(value: Date): DateTimeInputComponentOptions {
+  static maxValue(value: Date): DateTimeInputOptions {
     return { maxValue: value };
   }
 
@@ -128,7 +128,7 @@ export class DateTimeInput {
    * @param value Minimum date and time
    * @returns DateTimeInput options
    */
-  static minValue(value: Date): DateTimeInputComponentOptions {
+  static minValue(value: Date): DateTimeInputOptions {
     return { minValue: value };
   }
 
@@ -137,7 +137,7 @@ export class DateTimeInput {
    * @param location Timezone location
    * @returns DateTimeInput options
    */
-  static location(location: string): DateTimeInputComponentOptions {
+  static location(location: string): DateTimeInputOptions {
     return { location };
   }
 }
@@ -157,7 +157,7 @@ export function dateTimeInput(
     cursor: Cursor;
   },
   label: string,
-  options: DateTimeInputComponentOptions = {},
+  options: DateTimeInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -165,7 +165,7 @@ export function dateTimeInput(
     return null;
   }
 
-  const dateTimeInputOpts: DateTimeInputOptions = {
+  const dateTimeInputOpts: DateTimeInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,

@@ -5,7 +5,7 @@ import {
   MultiSelectValue,
   WidgetTypeMultiSelect,
 } from '../../session/state/multiselect';
-import { MultiSelectOptions } from '../../types/options';
+import { MultiSelectInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   MultiSelect as MultiSelectProto,
@@ -17,9 +17,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * MultiSelect component options
+ * MultiSelect options
  */
-export interface MultiSelectComponentOptions {
+export interface MultiSelectOptions {
   /**
    * MultiSelect options
    */
@@ -62,7 +62,7 @@ export class MultiSelect {
    * @param options MultiSelect options
    * @returns MultiSelect options
    */
-  static options(...options: string[]): MultiSelectComponentOptions {
+  static options(...options: string[]): MultiSelectOptions {
     return { options };
   }
 
@@ -71,7 +71,7 @@ export class MultiSelect {
    * @param values Default values
    * @returns MultiSelect options
    */
-  static defaultValue(...values: string[]): MultiSelectComponentOptions {
+  static defaultValue(...values: string[]): MultiSelectOptions {
     return { defaultValue: values };
   }
 
@@ -80,7 +80,7 @@ export class MultiSelect {
    * @param placeholder Placeholder text
    * @returns MultiSelect options
    */
-  static placeholder(placeholder: string): MultiSelectComponentOptions {
+  static placeholder(placeholder: string): MultiSelectOptions {
     return { placeholder };
   }
 
@@ -89,7 +89,7 @@ export class MultiSelect {
    * @param required Whether the input is required
    * @returns MultiSelect options
    */
-  static required(required: boolean): MultiSelectComponentOptions {
+  static required(required: boolean): MultiSelectOptions {
     return { required };
   }
 
@@ -98,7 +98,7 @@ export class MultiSelect {
    * @param disabled Whether the input is disabled
    * @returns MultiSelect options
    */
-  static disabled(disabled: boolean): MultiSelectComponentOptions {
+  static disabled(disabled: boolean): MultiSelectOptions {
     return { disabled };
   }
 
@@ -109,7 +109,7 @@ export class MultiSelect {
    */
   static formatFunc(
     formatFunc: (value: string, index: number) => string,
-  ): MultiSelectComponentOptions {
+  ): MultiSelectOptions {
     return { formatFunc };
   }
 }
@@ -129,7 +129,7 @@ export function multiSelect(
     cursor: Cursor;
   },
   label: string,
-  options: MultiSelectComponentOptions = {},
+  options: MultiSelectOptions = {},
 ): MultiSelectValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -137,7 +137,7 @@ export function multiSelect(
     return null;
   }
 
-  const multiSelectOpts: MultiSelectOptions = {
+  const multiSelectOpts: MultiSelectInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,

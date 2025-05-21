@@ -4,7 +4,7 @@ import {
   TextInputState,
   WidgetTypeTextInput,
 } from '../../session/state/textinput';
-import { TextInputOptions } from '../../types/options';
+import { TextInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TextInput as TextInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * TextInput component options
+ * TextInput options
  */
-export interface TextInputComponentOptions {
+export interface TextInputOptions {
   /**
    * Placeholder text
    */
@@ -61,7 +61,7 @@ export class TextInput {
    * @param placeholder Placeholder text
    * @returns TextInput options
    */
-  static placeholder(placeholder: string): TextInputComponentOptions {
+  static placeholder(placeholder: string): TextInputOptions {
     return { placeholder };
   }
 
@@ -70,7 +70,7 @@ export class TextInput {
    * @param value Default value
    * @returns TextInput options
    */
-  static defaultValue(value: string): TextInputComponentOptions {
+  static defaultValue(value: string): TextInputOptions {
     return { defaultValue: value };
   }
 
@@ -79,7 +79,7 @@ export class TextInput {
    * @param required Whether the input is required
    * @returns TextInput options
    */
-  static required(required: boolean): TextInputComponentOptions {
+  static required(required: boolean): TextInputOptions {
     return { required };
   }
 
@@ -88,7 +88,7 @@ export class TextInput {
    * @param disabled Whether the input is disabled
    * @returns TextInput options
    */
-  static disabled(disabled: boolean): TextInputComponentOptions {
+  static disabled(disabled: boolean): TextInputOptions {
     return { disabled };
   }
 
@@ -97,7 +97,7 @@ export class TextInput {
    * @param length Maximum length
    * @returns TextInput options
    */
-  static maxLength(length: number): TextInputComponentOptions {
+  static maxLength(length: number): TextInputOptions {
     return { maxLength: length };
   }
 
@@ -106,7 +106,7 @@ export class TextInput {
    * @param length Minimum length
    * @returns TextInput options
    */
-  static minLength(length: number): TextInputComponentOptions {
+  static minLength(length: number): TextInputOptions {
     return { minLength: length };
   }
 }
@@ -126,7 +126,7 @@ export function textInput(
     cursor: Cursor;
   },
   label: string,
-  options: TextInputComponentOptions = {},
+  options: TextInputOptions = {},
 ): string {
   const { runtime, session, page, cursor } = context;
 
@@ -134,7 +134,7 @@ export function textInput(
     return '';
   }
 
-  const textInputOpts: TextInputOptions = {
+  const textInputOpts: TextInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue:

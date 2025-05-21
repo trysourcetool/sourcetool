@@ -10,7 +10,7 @@ import {
   ColumnItemState,
   WidgetTypeColumnItem,
 } from '../../session/state/columnitem';
-import { ColumnsOptions } from '../../types/options';
+import { ColumnsInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   ColumnItem,
@@ -25,9 +25,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * Columns component options
+ * Columns options
  */
-export interface ColumnsComponentOptions {
+export interface ColumnsOptions {
   /**
    * Column weights
    * @description Relative weights for each column
@@ -44,7 +44,7 @@ export class Columns {
    * @param weights Column weights
    * @returns Columns options
    */
-  static weight(...weights: number[]): ColumnsComponentOptions {
+  static weight(...weights: number[]): ColumnsOptions {
     return { weight: weights };
   }
 }
@@ -64,7 +64,7 @@ export function columns(
     cursor: Cursor;
   },
   cols: number,
-  options: ColumnsComponentOptions = {},
+  options: ColumnsOptions = {},
 ): UIBuilder[] {
   if (cols < 1) {
     return [];
@@ -76,7 +76,7 @@ export function columns(
     return [];
   }
 
-  const columnsOpts: ColumnsOptions = {
+  const columnsOpts: ColumnsInternalOptions = {
     columns: cols,
     weight: options.weight,
   };

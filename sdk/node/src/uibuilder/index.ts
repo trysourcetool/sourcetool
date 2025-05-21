@@ -1,32 +1,20 @@
 import { v5 as uuidv5 } from 'uuid';
-import { button, ButtonComponentOptions } from './widgets/button';
-import { checkbox, CheckboxComponentOptions } from './widgets/checkbox';
+import { button, ButtonOptions } from './widgets/button';
+import { checkbox, CheckboxOptions } from './widgets/checkbox';
 import { markdown } from './widgets/markdown';
-import { textInput, TextInputComponentOptions } from './widgets/textinput';
-import {
-  numberInput,
-  NumberInputComponentOptions,
-} from './widgets/numberinput';
-import { dateInput, DateInputComponentOptions } from './widgets/dateinput';
-import {
-  dateTimeInput,
-  DateTimeInputComponentOptions,
-} from './widgets/datetimeinput';
-import { timeInput, TimeInputComponentOptions } from './widgets/timeinput';
-import { radio, RadioComponentOptions } from './widgets/radio';
-import { selectbox, SelectboxComponentOptions } from './widgets/selectbox';
-import {
-  multiSelect,
-  MultiSelectComponentOptions,
-} from './widgets/multiselect';
-import {
-  checkboxGroup,
-  CheckboxGroupComponentOptions,
-} from './widgets/checkboxgroup';
-import { textArea, TextAreaComponentOptions } from './widgets/textarea';
-import { table, TableComponentOptions, TableValue } from './widgets/table';
-import { form, FormComponentOptions } from './widgets/form';
-import { columns, ColumnsComponentOptions } from './widgets/columns';
+import { textInput, TextInputOptions } from './widgets/textinput';
+import { numberInput, NumberInputOptions } from './widgets/numberinput';
+import { dateInput, DateInputOptions } from './widgets/dateinput';
+import { dateTimeInput, DateTimeInputOptions } from './widgets/datetimeinput';
+import { timeInput, TimeInputOptions } from './widgets/timeinput';
+import { radio, RadioOptions } from './widgets/radio';
+import { selectbox, SelectboxOptions } from './widgets/selectbox';
+import { multiSelect, MultiSelectOptions } from './widgets/multiselect';
+import { checkboxGroup, CheckboxGroupOptions } from './widgets/checkboxgroup';
+import { textArea, TextAreaOptions } from './widgets/textarea';
+import { table, TableOptions, TableValue } from './widgets/table';
+import { form, FormOptions } from './widgets/form';
+import { columns, ColumnsOptions } from './widgets/columns';
 import { Page } from '../page';
 import { Session } from '../session';
 import { Runtime } from '../runtime';
@@ -38,36 +26,27 @@ import { CheckboxGroupValue } from '../session/state/checkboxgroup';
 
 export interface UIBuilder {
   markdown(content: string): void;
-  textInput(label: string, options?: TextInputComponentOptions): string;
-  numberInput(
-    label: string,
-    options?: NumberInputComponentOptions,
-  ): number | null;
-  dateInput(label: string, options?: DateInputComponentOptions): Date | null;
-  dateTimeInput(
-    label: string,
-    options?: DateTimeInputComponentOptions,
-  ): Date | null;
-  timeInput(label: string, options?: TimeInputComponentOptions): Date | null;
-  selectbox(
-    label: string,
-    options?: SelectboxComponentOptions,
-  ): SelectboxValue | null;
+  textInput(label: string, options?: TextInputOptions): string;
+  numberInput(label: string, options?: NumberInputOptions): number | null;
+  dateInput(label: string, options?: DateInputOptions): Date | null;
+  dateTimeInput(label: string, options?: DateTimeInputOptions): Date | null;
+  timeInput(label: string, options?: TimeInputOptions): Date | null;
+  selectbox(label: string, options?: SelectboxOptions): SelectboxValue | null;
   multiSelect(
     label: string,
-    options?: MultiSelectComponentOptions,
+    options?: MultiSelectOptions,
   ): MultiSelectValue | null;
-  radio(label: string, options?: RadioComponentOptions): RadioValue | null;
-  checkbox(label: string, options?: CheckboxComponentOptions): boolean;
+  radio(label: string, options?: RadioOptions): RadioValue | null;
+  checkbox(label: string, options?: CheckboxOptions): boolean;
   checkboxGroup(
     label: string,
-    options?: CheckboxGroupComponentOptions,
+    options?: CheckboxGroupOptions,
   ): CheckboxGroupValue | null;
-  textArea(label: string, options?: TextAreaComponentOptions): string;
-  table(data: any, options?: TableComponentOptions): TableValue | null;
-  button(label: string, options?: ButtonComponentOptions): boolean;
-  form(label: string, options?: FormComponentOptions): [UIBuilder, boolean];
-  columns(count: number, options?: ColumnsComponentOptions): UIBuilder[];
+  textArea(label: string, options?: TextAreaOptions): string;
+  table(data: any, options?: TableOptions): TableValue | null;
+  button(label: string, options?: ButtonOptions): boolean;
+  form(label: string, options?: FormOptions): [UIBuilder, boolean];
+  columns(count: number, options?: ColumnsOptions): UIBuilder[];
 }
 
 export const uiBuilderGeneratePageId = (
@@ -109,87 +88,75 @@ export class UIBuilderImpl implements UIBuilder {
     markdown(this.getContext(), content);
   }
 
-  textInput(label: string, options: TextInputComponentOptions = {}): string {
+  textInput(label: string, options: TextInputOptions = {}): string {
     return textInput(this.getContext(), label, options);
   }
 
-  numberInput(
-    label: string,
-    options: NumberInputComponentOptions = {},
-  ): number | null {
+  numberInput(label: string, options: NumberInputOptions = {}): number | null {
     return numberInput(this.getContext(), label, options);
   }
 
-  dateInput(
-    label: string,
-    options: DateInputComponentOptions = {},
-  ): Date | null {
+  dateInput(label: string, options: DateInputOptions = {}): Date | null {
     return dateInput(this.getContext(), label, options);
   }
 
   dateTimeInput(
     label: string,
-    options: DateTimeInputComponentOptions = {},
+    options: DateTimeInputOptions = {},
   ): Date | null {
     return dateTimeInput(this.getContext(), label, options);
   }
 
-  timeInput(
-    label: string,
-    options: TimeInputComponentOptions = {},
-  ): Date | null {
+  timeInput(label: string, options: TimeInputOptions = {}): Date | null {
     return timeInput(this.getContext(), label, options);
   }
 
   selectbox(
     label: string,
-    options: SelectboxComponentOptions = {},
+    options: SelectboxOptions = {},
   ): SelectboxValue | null {
     return selectbox(this.getContext(), label, options);
   }
 
   multiSelect(
     label: string,
-    options: MultiSelectComponentOptions = {},
+    options: MultiSelectOptions = {},
   ): MultiSelectValue | null {
     return multiSelect(this.getContext(), label, options);
   }
 
-  radio(label: string, options: RadioComponentOptions = {}): RadioValue | null {
+  radio(label: string, options: RadioOptions = {}): RadioValue | null {
     return radio(this.getContext(), label, options);
   }
 
-  checkbox(label: string, options: CheckboxComponentOptions = {}): boolean {
+  checkbox(label: string, options: CheckboxOptions = {}): boolean {
     return checkbox(this.getContext(), label, options);
   }
 
   checkboxGroup(
     label: string,
-    options: CheckboxGroupComponentOptions = {},
+    options: CheckboxGroupOptions = {},
   ): CheckboxGroupValue | null {
     return checkboxGroup(this.getContext(), label, options);
   }
 
-  textArea(label: string, options: TextAreaComponentOptions = {}): string {
+  textArea(label: string, options: TextAreaOptions = {}): string {
     return textArea(this.getContext(), label, options);
   }
 
-  table(data: any, options: TableComponentOptions = {}): TableValue | null {
+  table(data: any, options: TableOptions = {}): TableValue | null {
     return table(this.getContext(), data, options);
   }
 
-  button(label: string, options: ButtonComponentOptions = {}): boolean {
+  button(label: string, options: ButtonOptions = {}): boolean {
     return button(this.getContext(), label, options);
   }
 
-  form(
-    label: string,
-    options: FormComponentOptions = {},
-  ): [UIBuilder, boolean] {
+  form(label: string, options: FormOptions = {}): [UIBuilder, boolean] {
     return form(this.getContext(), label, options);
   }
 
-  columns(count: number, options: ColumnsComponentOptions = {}): UIBuilder[] {
+  columns(count: number, options: ColumnsOptions = {}): UIBuilder[] {
     return columns(this.getContext(), count, options);
   }
 }

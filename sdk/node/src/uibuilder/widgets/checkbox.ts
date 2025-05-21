@@ -4,7 +4,7 @@ import {
   CheckboxState,
   WidgetTypeCheckbox,
 } from '../../session/state/checkbox';
-import { CheckboxOptions } from '../../types/options';
+import { CheckboxInternalOptions } from '../../types/options';
 import {
   Checkbox as CheckboxProto,
   CheckboxSchema,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Checkbox component options
+ * Checkbox options
  */
-export interface CheckboxComponentOptions {
+export interface CheckboxOptions {
   /**
    * Default value of the checkbox
    * @default false
@@ -47,7 +47,7 @@ export class Checkbox {
    * @param value Default value
    * @returns Checkbox options
    */
-  static defaultValue(value: boolean): CheckboxComponentOptions {
+  static defaultValue(value: boolean): CheckboxOptions {
     return { defaultValue: value };
   }
 
@@ -56,7 +56,7 @@ export class Checkbox {
    * @param required Whether the checkbox is required
    * @returns Checkbox options
    */
-  static required(required: boolean): CheckboxComponentOptions {
+  static required(required: boolean): CheckboxOptions {
     return { required };
   }
 
@@ -65,7 +65,7 @@ export class Checkbox {
    * @param disabled Whether the checkbox is disabled
    * @returns Checkbox options
    */
-  static disabled(disabled: boolean): CheckboxComponentOptions {
+  static disabled(disabled: boolean): CheckboxOptions {
     return { disabled };
   }
 }
@@ -85,7 +85,7 @@ export function checkbox(
     cursor: Cursor;
   },
   label: string,
-  options: CheckboxComponentOptions = {},
+  options: CheckboxOptions = {},
 ): boolean {
   const { runtime, session, page, cursor } = context;
 
@@ -93,7 +93,7 @@ export function checkbox(
     return false;
   }
 
-  const checkboxOpts: CheckboxOptions = {
+  const checkboxOpts: CheckboxInternalOptions = {
     label,
     defaultValue: options.defaultValue ?? false,
     required: options.required ?? false,

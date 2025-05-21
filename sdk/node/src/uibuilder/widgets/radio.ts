@@ -5,7 +5,7 @@ import {
   RadioValue,
   WidgetTypeRadio,
 } from '../../session/state/radio';
-import { RadioOptions } from '../../types/options';
+import { RadioInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import { Radio as RadioProto, RadioSchema } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
@@ -13,9 +13,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Radio component options
+ * Radio options
  */
-export interface RadioComponentOptions {
+export interface RadioOptions {
   /**
    * Radio options
    */
@@ -53,7 +53,7 @@ export class Radio {
    * @param options Radio options
    * @returns Radio options
    */
-  static options(...options: string[]): RadioComponentOptions {
+  static options(...options: string[]): RadioOptions {
     return { options };
   }
 
@@ -62,7 +62,7 @@ export class Radio {
    * @param value Default value
    * @returns Radio options
    */
-  static defaultValue(value: string): RadioComponentOptions {
+  static defaultValue(value: string): RadioOptions {
     return { defaultValue: value };
   }
 
@@ -71,7 +71,7 @@ export class Radio {
    * @param required Whether the input is required
    * @returns Radio options
    */
-  static required(required: boolean): RadioComponentOptions {
+  static required(required: boolean): RadioOptions {
     return { required };
   }
 
@@ -80,7 +80,7 @@ export class Radio {
    * @param disabled Whether the input is disabled
    * @returns Radio options
    */
-  static disabled(disabled: boolean): RadioComponentOptions {
+  static disabled(disabled: boolean): RadioOptions {
     return { disabled };
   }
 
@@ -91,7 +91,7 @@ export class Radio {
    */
   static formatFunc(
     formatFunc: (value: string, index: number) => string,
-  ): RadioComponentOptions {
+  ): RadioOptions {
     return { formatFunc };
   }
 }
@@ -111,7 +111,7 @@ export function radio(
     cursor: Cursor;
   },
   label: string,
-  options: RadioComponentOptions = {},
+  options: RadioOptions = {},
 ): RadioValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -119,7 +119,7 @@ export function radio(
     return null;
   }
 
-  const radioOpts: RadioOptions = {
+  const radioOpts: RadioInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,

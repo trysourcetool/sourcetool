@@ -4,7 +4,7 @@ import {
   DateInputState,
   WidgetTypeDateInput,
 } from '../../session/state/dateinput';
-import { DateInputOptions } from '../../types/options';
+import { DateInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   DateInput as DateInputProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * DateInput component options
+ * DateInput options
  */
-export interface DateInputComponentOptions {
+export interface DateInputOptions {
   /**
    * Placeholder text
    */
@@ -74,7 +74,7 @@ export class DateInput {
    * @param placeholder Placeholder text
    * @returns DateInput options
    */
-  static placeholder(placeholder: string): DateInputComponentOptions {
+  static placeholder(placeholder: string): DateInputOptions {
     return { placeholder };
   }
 
@@ -83,7 +83,7 @@ export class DateInput {
    * @param value Default value
    * @returns DateInput options
    */
-  static defaultValue(value: Date): DateInputComponentOptions {
+  static defaultValue(value: Date): DateInputOptions {
     return { defaultValue: value };
   }
 
@@ -92,7 +92,7 @@ export class DateInput {
    * @param required Whether the input is required
    * @returns DateInput options
    */
-  static required(required: boolean): DateInputComponentOptions {
+  static required(required: boolean): DateInputOptions {
     return { required };
   }
 
@@ -101,7 +101,7 @@ export class DateInput {
    * @param disabled Whether the input is disabled
    * @returns DateInput options
    */
-  static disabled(disabled: boolean): DateInputComponentOptions {
+  static disabled(disabled: boolean): DateInputOptions {
     return { disabled };
   }
 
@@ -110,7 +110,7 @@ export class DateInput {
    * @param format Date format
    * @returns DateInput options
    */
-  static format(format: string): DateInputComponentOptions {
+  static format(format: string): DateInputOptions {
     return { format };
   }
 
@@ -119,7 +119,7 @@ export class DateInput {
    * @param value Maximum date
    * @returns DateInput options
    */
-  static maxValue(value: Date): DateInputComponentOptions {
+  static maxValue(value: Date): DateInputOptions {
     return { maxValue: value };
   }
 
@@ -128,7 +128,7 @@ export class DateInput {
    * @param value Minimum date
    * @returns DateInput options
    */
-  static minValue(value: Date): DateInputComponentOptions {
+  static minValue(value: Date): DateInputOptions {
     return { minValue: value };
   }
 
@@ -137,7 +137,7 @@ export class DateInput {
    * @param location Timezone location
    * @returns DateInput options
    */
-  static location(location: string): DateInputComponentOptions {
+  static location(location: string): DateInputOptions {
     return { location };
   }
 }
@@ -157,7 +157,7 @@ export function dateInput(
     cursor: Cursor;
   },
   label: string,
-  options: DateInputComponentOptions = {},
+  options: DateInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -165,7 +165,7 @@ export function dateInput(
     return null;
   }
 
-  const dateInputOpts: DateInputOptions = {
+  const dateInputOpts: DateInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,

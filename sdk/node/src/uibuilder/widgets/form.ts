@@ -6,7 +6,7 @@ import {
   UIBuilderImpl,
 } from '../index';
 import { FormState, WidgetTypeForm } from '../../session/state/form';
-import { FormOptions } from '../../types/options';
+import { FormInternalOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
 import {
   Form as FormProto,
@@ -18,9 +18,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Form component options
+ * Form options
  */
-export interface FormComponentOptions {
+export interface FormOptions {
   /**
    * Whether the button is disabled
    * @default false
@@ -43,7 +43,7 @@ export class Form {
    * @param disabled Whether the button is disabled
    * @returns Form options
    */
-  static buttonDisabled(disabled: boolean): FormComponentOptions {
+  static buttonDisabled(disabled: boolean): FormOptions {
     return { buttonDisabled: disabled };
   }
 
@@ -52,7 +52,7 @@ export class Form {
    * @param clear Whether to clear the form on submit
    * @returns Form options
    */
-  static clearOnSubmit(clear: boolean): FormComponentOptions {
+  static clearOnSubmit(clear: boolean): FormOptions {
     return { clearOnSubmit: clear };
   }
 }
@@ -72,7 +72,7 @@ export function form(
     cursor: Cursor;
   },
   buttonLabel: string,
-  options: FormComponentOptions = {},
+  options: FormOptions = {},
 ): [UIBuilder, boolean] {
   const { runtime, session, page, cursor } = context;
 
@@ -80,7 +80,7 @@ export function form(
     return [new UIBuilderImpl(runtime, session, page), false];
   }
 
-  const formOpts: FormOptions = {
+  const formOpts: FormInternalOptions = {
     buttonLabel,
     buttonDisabled: options.buttonDisabled || false,
     clearOnSubmit: options.clearOnSubmit || false,

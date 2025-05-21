@@ -1,24 +1,24 @@
 import { UIBuilder } from './uibuilder';
 import { RouterInterface } from './router';
-import { ButtonComponentOptions } from './uibuilder/widgets/button';
-import { CheckboxComponentOptions } from './uibuilder/widgets/checkbox';
-import { TextInputComponentOptions } from './uibuilder/widgets/textinput';
-import { NumberInputComponentOptions } from './uibuilder/widgets/numberinput';
-import { DateInputComponentOptions } from './uibuilder/widgets/dateinput';
-import { DateTimeInputComponentOptions } from './uibuilder/widgets/datetimeinput';
-import { TimeInputComponentOptions } from './uibuilder/widgets/timeinput';
-import { RadioComponentOptions } from './uibuilder/widgets/radio';
-import { SelectboxComponentOptions } from './uibuilder/widgets/selectbox';
-import { MultiSelectComponentOptions } from './uibuilder/widgets/multiselect';
-import { CheckboxGroupComponentOptions } from './uibuilder/widgets/checkboxgroup';
-import { TextAreaComponentOptions } from './uibuilder/widgets/textarea';
+import { ButtonOptions } from './uibuilder/widgets/button';
+import { CheckboxOptions } from './uibuilder/widgets/checkbox';
+import { TextInputOptions } from './uibuilder/widgets/textinput';
+import { NumberInputOptions } from './uibuilder/widgets/numberinput';
+import { DateInputOptions } from './uibuilder/widgets/dateinput';
+import { DateTimeInputOptions } from './uibuilder/widgets/datetimeinput';
+import { TimeInputOptions } from './uibuilder/widgets/timeinput';
+import { RadioOptions } from './uibuilder/widgets/radio';
+import { SelectboxOptions } from './uibuilder/widgets/selectbox';
+import { MultiSelectOptions } from './uibuilder/widgets/multiselect';
+import { CheckboxGroupOptions } from './uibuilder/widgets/checkboxgroup';
+import { TextAreaOptions } from './uibuilder/widgets/textarea';
 import {
-  TableComponentOptions,
+  TableOptions,
   TableOnSelect,
   TableRowSelection,
 } from './uibuilder/widgets/table';
-import { FormComponentOptions } from './uibuilder/widgets/form';
-import { ColumnsComponentOptions } from './uibuilder/widgets/columns';
+import { FormOptions } from './uibuilder/widgets/form';
+import { ColumnsOptions } from './uibuilder/widgets/columns';
 
 import { Sourcetool, SourcetoolConfig } from './sourcetool';
 
@@ -34,21 +34,21 @@ export {
 
 export type {
   // Component options
-  ButtonComponentOptions,
-  CheckboxComponentOptions,
-  TextInputComponentOptions,
-  NumberInputComponentOptions,
-  DateInputComponentOptions,
-  DateTimeInputComponentOptions,
-  TimeInputComponentOptions,
-  RadioComponentOptions,
-  SelectboxComponentOptions,
-  MultiSelectComponentOptions,
-  CheckboxGroupComponentOptions,
-  TextAreaComponentOptions,
-  TableComponentOptions,
-  FormComponentOptions,
-  ColumnsComponentOptions,
+  ButtonOptions,
+  CheckboxOptions,
+  TextInputOptions,
+  NumberInputOptions,
+  DateInputOptions,
+  DateTimeInputOptions,
+  TimeInputOptions,
+  RadioOptions,
+  SelectboxOptions,
+  MultiSelectOptions,
+  CheckboxGroupOptions,
+  TextAreaOptions,
+  TableOptions,
+  FormOptions,
+  ColumnsOptions,
 
   // Builder type
   UIBuilder,

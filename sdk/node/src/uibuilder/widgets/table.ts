@@ -10,7 +10,7 @@ import {
   TableStateValueSelection,
   TableSelection,
 } from '../../session/state/table';
-import { TableOptions } from '../../types/options';
+import { TableInternalOptions } from '../../types/options';
 import { create, toJson } from '@bufbuild/protobuf';
 import {
   Table as TableProto,
@@ -23,9 +23,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * Table component options
+ * Table options
  */
-export interface TableComponentOptions {
+export interface TableOptions {
   /**
    * Table header
    */
@@ -68,7 +68,7 @@ export class Table {
    * @param header Table header
    * @returns Table options
    */
-  static header(header: string): TableComponentOptions {
+  static header(header: string): TableOptions {
     return { header };
   }
 
@@ -77,7 +77,7 @@ export class Table {
    * @param description Table description
    * @returns Table options
    */
-  static description(description: string): TableComponentOptions {
+  static description(description: string): TableOptions {
     return { description };
   }
 
@@ -86,7 +86,7 @@ export class Table {
    * @param height Table height
    * @returns Table options
    */
-  static height(height: number): TableComponentOptions {
+  static height(height: number): TableOptions {
     return { height };
   }
 
@@ -95,7 +95,7 @@ export class Table {
    * @param columns Column order
    * @returns Table options
    */
-  static columnOrder(...columns: string[]): TableComponentOptions {
+  static columnOrder(...columns: string[]): TableOptions {
     return { columnOrder: columns };
   }
 
@@ -104,7 +104,7 @@ export class Table {
    * @param behavior Selection behavior
    * @returns Table options
    */
-  static onSelect(behavior: TableOnSelect): TableComponentOptions {
+  static onSelect(behavior: TableOnSelect): TableOptions {
     return { onSelect: behavior };
   }
 
@@ -113,7 +113,7 @@ export class Table {
    * @param mode Row selection mode
    * @returns Table options
    */
-  static rowSelection(mode: TableRowSelection): TableComponentOptions {
+  static rowSelection(mode: TableRowSelection): TableOptions {
     return { rowSelection: mode };
   }
 }
@@ -133,7 +133,7 @@ export function table(
     cursor: Cursor;
   },
   data: any,
-  options: TableComponentOptions = {},
+  options: TableOptions = {},
 ): TableValue {
   const { runtime, session, page, cursor } = context;
 
@@ -141,7 +141,7 @@ export function table(
     return {};
   }
 
-  const tableOpts: TableOptions = {
+  const tableOpts: TableInternalOptions = {
     header: options.header || '',
     description: options.description || '',
     height: options.height !== undefined ? options.height : null,

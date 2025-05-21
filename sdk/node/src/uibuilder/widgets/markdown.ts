@@ -4,7 +4,7 @@ import {
   MarkdownState,
   WidgetTypeMarkdown,
 } from '../../session/state/markdown';
-import { MarkdownOptions } from '../../types/options';
+import { MarkdownInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   Markdown as MarkdownProto,
@@ -35,7 +35,7 @@ export function markdown(
     return;
   }
 
-  const markdownOpts: MarkdownOptions = {
+  const markdownOpts: MarkdownInternalOptions = {
     body,
   };
 

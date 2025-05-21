@@ -5,7 +5,7 @@ import {
   CheckboxGroupValue,
   WidgetTypeCheckboxGroup,
 } from '../../session/state/checkboxgroup';
-import { CheckboxGroupOptions } from '../../types/options';
+import { CheckboxGroupInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   CheckboxGroup as CheckboxGroupProto,
@@ -18,9 +18,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * CheckboxGroup component options
+ * CheckboxGroup options
  */
-export interface CheckboxGroupComponentOptions {
+export interface CheckboxGroupOptions {
   /**
    * CheckboxGroup options
    */
@@ -58,7 +58,7 @@ export class CheckboxGroup {
    * @param options CheckboxGroup options
    * @returns CheckboxGroup options
    */
-  static options(...options: string[]): CheckboxGroupComponentOptions {
+  static options(...options: string[]): CheckboxGroupOptions {
     return { options };
   }
 
@@ -67,7 +67,7 @@ export class CheckboxGroup {
    * @param values Default values
    * @returns CheckboxGroup options
    */
-  static defaultValue(...values: string[]): CheckboxGroupComponentOptions {
+  static defaultValue(...values: string[]): CheckboxGroupOptions {
     return { defaultValue: values };
   }
 
@@ -76,7 +76,7 @@ export class CheckboxGroup {
    * @param required Whether the input is required
    * @returns CheckboxGroup options
    */
-  static required(required: boolean): CheckboxGroupComponentOptions {
+  static required(required: boolean): CheckboxGroupOptions {
     return { required };
   }
 
@@ -85,7 +85,7 @@ export class CheckboxGroup {
    * @param disabled Whether the input is disabled
    * @returns CheckboxGroup options
    */
-  static disabled(disabled: boolean): CheckboxGroupComponentOptions {
+  static disabled(disabled: boolean): CheckboxGroupOptions {
     return { disabled };
   }
 
@@ -96,7 +96,7 @@ export class CheckboxGroup {
    */
   static formatFunc(
     formatFunc: (value: string, index: number) => string,
-  ): CheckboxGroupComponentOptions {
+  ): CheckboxGroupOptions {
     return { formatFunc };
   }
 }
@@ -116,7 +116,7 @@ export function checkboxGroup(
     cursor: Cursor;
   },
   label: string,
-  options: CheckboxGroupComponentOptions = {},
+  options: CheckboxGroupOptions = {},
 ): CheckboxGroupValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -124,7 +124,7 @@ export function checkboxGroup(
     return null;
   }
 
-  const checkboxGroupOpts: CheckboxGroupOptions = {
+  const checkboxGroupOpts: CheckboxGroupInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,

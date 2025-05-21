@@ -4,7 +4,7 @@ import {
   TimeInputState,
   WidgetTypeTimeInput,
 } from '../../session/state/timeinput';
-import { TimeInputOptions } from '../../types/options';
+import { TimeInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TimeInput as TimeInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * TimeInput component options
+ * TimeInput options
  */
-export interface TimeInputComponentOptions {
+export interface TimeInputOptions {
   /**
    * Placeholder text
    */
@@ -57,7 +57,7 @@ export class TimeInput {
    * @param placeholder Placeholder text
    * @returns TimeInput options
    */
-  static placeholder(placeholder: string): TimeInputComponentOptions {
+  static placeholder(placeholder: string): TimeInputOptions {
     return { placeholder };
   }
 
@@ -66,7 +66,7 @@ export class TimeInput {
    * @param value Default value
    * @returns TimeInput options
    */
-  static defaultValue(value: Date): TimeInputComponentOptions {
+  static defaultValue(value: Date): TimeInputOptions {
     return { defaultValue: value };
   }
 
@@ -75,7 +75,7 @@ export class TimeInput {
    * @param required Whether the input is required
    * @returns TimeInput options
    */
-  static required(required: boolean): TimeInputComponentOptions {
+  static required(required: boolean): TimeInputOptions {
     return { required };
   }
 
@@ -84,7 +84,7 @@ export class TimeInput {
    * @param disabled Whether the input is disabled
    * @returns TimeInput options
    */
-  static disabled(disabled: boolean): TimeInputComponentOptions {
+  static disabled(disabled: boolean): TimeInputOptions {
     return { disabled };
   }
 
@@ -93,7 +93,7 @@ export class TimeInput {
    * @param location Timezone location
    * @returns TimeInput options
    */
-  static location(location: string): TimeInputComponentOptions {
+  static location(location: string): TimeInputOptions {
     return { location };
   }
 }
@@ -113,7 +113,7 @@ export function timeInput(
     cursor: Cursor;
   },
   label: string,
-  options: TimeInputComponentOptions = {},
+  options: TimeInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -121,7 +121,7 @@ export function timeInput(
     return null;
   }
 
-  const timeInputOpts: TimeInputOptions = {
+  const timeInputOpts: TimeInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,

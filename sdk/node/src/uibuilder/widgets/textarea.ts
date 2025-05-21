@@ -4,7 +4,7 @@ import {
   TextAreaState,
   WidgetTypeTextArea,
 } from '../../session/state/textarea';
-import { TextAreaOptions } from '../../types/options';
+import { TextAreaInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TextArea as TextAreaProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * TextArea component options
+ * TextArea options
  */
-export interface TextAreaComponentOptions {
+export interface TextAreaOptions {
   /**
    * Placeholder text
    */
@@ -79,7 +79,7 @@ export class TextArea {
    * @param placeholder Placeholder text
    * @returns TextArea options
    */
-  static placeholder(placeholder: string): TextAreaComponentOptions {
+  static placeholder(placeholder: string): TextAreaOptions {
     return { placeholder };
   }
 
@@ -88,7 +88,7 @@ export class TextArea {
    * @param value Default value
    * @returns TextArea options
    */
-  static defaultValue(value: string): TextAreaComponentOptions {
+  static defaultValue(value: string): TextAreaOptions {
     return { defaultValue: value };
   }
 
@@ -97,7 +97,7 @@ export class TextArea {
    * @param required Whether the input is required
    * @returns TextArea options
    */
-  static required(required: boolean): TextAreaComponentOptions {
+  static required(required: boolean): TextAreaOptions {
     return { required };
   }
 
@@ -106,7 +106,7 @@ export class TextArea {
    * @param disabled Whether the input is disabled
    * @returns TextArea options
    */
-  static disabled(disabled: boolean): TextAreaComponentOptions {
+  static disabled(disabled: boolean): TextAreaOptions {
     return { disabled };
   }
 
@@ -115,7 +115,7 @@ export class TextArea {
    * @param length Maximum length
    * @returns TextArea options
    */
-  static maxLength(length: number): TextAreaComponentOptions {
+  static maxLength(length: number): TextAreaOptions {
     return { maxLength: length };
   }
 
@@ -124,7 +124,7 @@ export class TextArea {
    * @param length Minimum length
    * @returns TextArea options
    */
-  static minLength(length: number): TextAreaComponentOptions {
+  static minLength(length: number): TextAreaOptions {
     return { minLength: length };
   }
 
@@ -133,7 +133,7 @@ export class TextArea {
    * @param lines Maximum number of lines
    * @returns TextArea options
    */
-  static maxLines(lines: number): TextAreaComponentOptions {
+  static maxLines(lines: number): TextAreaOptions {
     return { maxLines: lines };
   }
 
@@ -142,7 +142,7 @@ export class TextArea {
    * @param lines Minimum number of lines
    * @returns TextArea options
    */
-  static minLines(lines: number): TextAreaComponentOptions {
+  static minLines(lines: number): TextAreaOptions {
     return { minLines: lines };
   }
 
@@ -151,7 +151,7 @@ export class TextArea {
    * @param autoResize Whether to auto-resize
    * @returns TextArea options
    */
-  static autoResize(autoResize: boolean): TextAreaComponentOptions {
+  static autoResize(autoResize: boolean): TextAreaOptions {
     return { autoResize };
   }
 }
@@ -171,7 +171,7 @@ export function textArea(
     cursor: Cursor;
   },
   label: string,
-  options: TextAreaComponentOptions = {},
+  options: TextAreaOptions = {},
 ): string {
   const { runtime, session, page, cursor } = context;
 
@@ -182,7 +182,7 @@ export function textArea(
   // Set default minLines
   const defaultMinLines = 2;
 
-  const textAreaOpts: TextAreaOptions = {
+  const textAreaOpts: TextAreaInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,
