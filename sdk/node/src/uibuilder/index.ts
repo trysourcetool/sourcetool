@@ -36,7 +36,7 @@ import { MultiSelectValue } from '../session/state/multiselect';
 import { RadioValue } from '../session/state/radio';
 import { CheckboxGroupValue } from '../session/state/checkboxgroup';
 
-export type UIBuilder = {
+export interface UIBuilder {
   markdown(content: string): void;
   textInput(label: string, options?: TextInputComponentOptions): string;
   numberInput(
@@ -68,7 +68,7 @@ export type UIBuilder = {
   button(label: string, options?: ButtonComponentOptions): boolean;
   form(label: string, options?: FormComponentOptions): [UIBuilder, boolean];
   columns(count: number, options?: ColumnsComponentOptions): UIBuilder[];
-};
+}
 
 export const uiBuilderGeneratePageId = (
   pageId: string,
