@@ -1,7 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
 import { UIBuilder } from './uibuilder';
 import { Page } from './page';
-import { Sourcetool } from './sourcetool';
 
 export function removeDuplicates(groups: string[]): string[] {
   return [...new Set(groups)];
@@ -38,33 +37,39 @@ export interface RouterInterface {
   group(relativePath: string): RouterInterface;
 }
 
+type RouterContext = {
+  environment: string;
+  pages: Record<string, Page>;
+  addPage: (id: string, page: Page) => void;
+};
+
 /**
  * Router class
  */
 export class Router implements RouterInterface {
   private parent: Router | null;
-  private sourcetool: Sourcetool | null;
+  private context: RouterContext | null;
   private basePath: string;
   private namespaceDNS: string;
   private groups: string[];
 
   /**
    * Constructor
-   * @param sourcetool Sourcetool instance
+   * @param context Context
    * @param namespaceDNS Namespace DNS
    * @param parent Parent router
    * @param basePath Base path
    * @param groups Access groups
    */
   constructor(
-    sourcetool: Sourcetool | null = null,
+    context: RouterContext | null,
     namespaceDNS: string,
     parent: Router | null = null,
     basePath: string = '',
     groups: string[] = [],
   ) {
     this.parent = parent;
-    this.sourcetool = sourcetool;
+    this.context = context;
     this.basePath = basePath;
     this.namespaceDNS = namespaceDNS;
     this.groups = groups;
@@ -77,7 +82,7 @@ export class Router implements RouterInterface {
    */
   generatePageID(fullPath: string): string {
     const ns = uuidv5(this.namespaceDNS, uuidv5.DNS);
-    return uuidv5(`${fullPath}-${this.sourcetool?.environment}`, ns);
+    return uuidv5(`${fullPath}-${this.context?.environment}`, ns);
   }
 
   /**
@@ -172,7 +177,7 @@ export class Router implements RouterInterface {
 
     const pageID = this.generatePageID(fullPath);
 
-    if (this.sourcetool === null) {
+    if (this.context === null) {
       throw new Error('Sourcetool is not set');
     }
 
@@ -180,12 +185,12 @@ export class Router implements RouterInterface {
       pageID,
       name,
       fullPath,
-      [Object.keys(this.sourcetool.pages).length],
+      [Object.keys(this.context.pages).length],
       handler,
       this.removeDuplicates(this.collectGroups()),
     );
 
-    this.sourcetool.addPage(pageID, page);
+    this.context.addPage(pageID, page);
   }
 
   /**
@@ -206,8 +211,11 @@ export class Router implements RouterInterface {
    * @returns Router
    */
   group(relativePath: string): RouterInterface {
+    if (this.context === null) {
+      throw new Error('Sourcetool is not set');
+    }
     return new Router(
-      this.sourcetool,
+      this.context,
       this.namespaceDNS,
       this,
       this.joinPath(relativePath),

@@ -1,5 +1,5 @@
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './page';
+import { Page } from './page';
 import { Router, RouterInterface } from './router';
 import { Runtime, startRuntime } from './runtime';
 
@@ -25,37 +25,32 @@ export class Sourcetool implements RouterInterface {
   /**
    * API key
    */
-  apiKey: string;
+  private apiKey: string;
 
   /**
    * Endpoint URL
    */
-  endpoint: string;
+  private endpoint: string;
 
   /**
    * Router
    */
-  router: RouterInterface;
+  private router: RouterInterface;
 
   /**
    * Pages
    */
-  pages: Record<string, Page>;
-
-  /**
-   * Page manager
-   */
-  pageManager: PageManager;
+  private pages: Record<string, Page>;
 
   /**
    * Runtime
    */
-  runtime: Runtime | null = null;
+  private runtime: Runtime | null = null;
 
   /**
    * Environment
    */
-  environment: string = '';
+  private environment: string = '';
 
   /**
    * Constructor
@@ -86,10 +81,14 @@ export class Sourcetool implements RouterInterface {
     this.pages = {};
 
     // Initialize router
-    this.router = new Router(this, namespaceDNS);
-
-    // Initialize page manager
-    this.pageManager = new PageManager();
+    this.router = new Router(
+      {
+        environment: this.environment,
+        pages: this.pages,
+        addPage: this.addPage.bind(this),
+      },
+      namespaceDNS,
+    );
   }
 
   /**
@@ -97,7 +96,7 @@ export class Sourcetool implements RouterInterface {
    * @param id Page ID
    * @param page Page
    */
-  addPage(id: string, page: Page): void {
+  private addPage(id: string, page: Page): void {
     this.pages[id] = page;
   }
 
