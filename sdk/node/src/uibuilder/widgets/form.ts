@@ -1,5 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageId } from '../';
+import {
+  UIBuilder,
+  Cursor,
+  uiBuilderGeneratePageId,
+  UIBuilderImpl,
+} from '../index';
 import { FormState, WidgetTypeForm } from '../../session/state/form';
 import { FormOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
@@ -72,7 +77,7 @@ export function form(
   const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
-    return [new UIBuilder(runtime, session, page), false];
+    return [new UIBuilderImpl(runtime, session, page), false];
   }
 
   const formOpts: FormOptions = {
@@ -123,7 +128,7 @@ export function form(
   const childCursor = new Cursor();
   childCursor.parentPath = path;
 
-  const childBuilder = new UIBuilder(runtime, session, page, childCursor);
+  const childBuilder = new UIBuilderImpl(runtime, session, page, childCursor);
 
   return [childBuilder, formState.value];
 }

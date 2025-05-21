@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilderImpl } from './uibuilder';
 import { Page, PageManager } from './page';
 import {
   createSessionManager,
@@ -138,7 +138,7 @@ export class Runtime {
     }
 
     // Create UI builder
-    const ui = new UIBuilder(this, session, page);
+    const ui = new UIBuilderImpl(this, session, page);
 
     try {
       // Run page
@@ -368,7 +368,7 @@ export class Runtime {
     session.state.setStates(newWidgetStates);
 
     // Create UI builder
-    const ui = new UIBuilder(this, session, page);
+    const ui = new UIBuilderImpl(this, session, page);
 
     try {
       // Run page

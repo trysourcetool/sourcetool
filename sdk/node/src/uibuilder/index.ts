@@ -36,7 +36,7 @@ import { MultiSelectValue } from '../session/state/multiselect';
 import { RadioValue } from '../session/state/radio';
 import { CheckboxGroupValue } from '../session/state/checkboxgroup';
 
-export type UIBuilderType = {
+export type UIBuilder = {
   markdown(content: string): void;
   textInput(label: string, options?: TextInputComponentOptions): string;
   numberInput(
@@ -66,8 +66,8 @@ export type UIBuilderType = {
   textArea(label: string, options?: TextAreaComponentOptions): string;
   table(data: any, options?: TableComponentOptions): TableValue | null;
   button(label: string, options?: ButtonComponentOptions): boolean;
-  form(label: string, options?: FormComponentOptions): [UIBuilderType, boolean];
-  columns(count: number, options?: ColumnsComponentOptions): UIBuilderType[];
+  form(label: string, options?: FormComponentOptions): [UIBuilder, boolean];
+  columns(count: number, options?: ColumnsComponentOptions): UIBuilder[];
 };
 
 export const uiBuilderGeneratePageId = (
@@ -79,7 +79,7 @@ export const uiBuilderGeneratePageId = (
   return uuidv5(`${widgetType}-${strPath}`, pageId);
 };
 
-export class UIBuilder implements UIBuilderType {
+export class UIBuilderImpl implements UIBuilder {
   private runtime: Runtime;
   private cursor: Cursor;
   private session: Session;
@@ -185,14 +185,11 @@ export class UIBuilder implements UIBuilderType {
   form(
     label: string,
     options: FormComponentOptions = {},
-  ): [UIBuilderType, boolean] {
+  ): [UIBuilder, boolean] {
     return form(this.getContext(), label, options);
   }
 
-  columns(
-    count: number,
-    options: ColumnsComponentOptions = {},
-  ): UIBuilderType[] {
+  columns(count: number, options: ColumnsComponentOptions = {}): UIBuilder[] {
     return columns(this.getContext(), count, options);
   }
 }

@@ -1,5 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageId } from '../';
+import {
+  UIBuilder,
+  Cursor,
+  uiBuilderGeneratePageId,
+  UIBuilderImpl,
+} from '../index';
 import { ColumnsState, WidgetTypeColumns } from '../../session/state/columns';
 import {
   ColumnItemState,
@@ -161,7 +166,12 @@ export function columns(
     runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
     // Create builder for this column
-    const columnBuilder = new UIBuilder(runtime, session, page, columnCursor);
+    const columnBuilder = new UIBuilderImpl(
+      runtime,
+      session,
+      page,
+      columnCursor,
+    );
     builders.push(columnBuilder);
   }
 
