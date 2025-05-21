@@ -212,7 +212,7 @@ describe('router access groups', () => {
 
     for (const t of tests) {
       test(t.path, () => {
-        const result = findPageByPath(sourcetool.pages, t.path);
+        const result = findPageByPath((sourcetool as any).pages, t.path);
         if (!result) {
           throw new Error(`Page not found: ${t.path}`);
         }
@@ -265,7 +265,7 @@ describe('router access groups', () => {
 
     for (const t of tests) {
       test(t.path, () => {
-        const result = findPageByPath(sourcetool.pages, t.path);
+        const result = findPageByPath((sourcetool as any).pages, t.path);
         if (!result) {
           throw new Error(`Page not found: ${t.path}`);
         }
@@ -309,7 +309,7 @@ describe('router access groups', () => {
 
     for (const t of tests) {
       test(t.path, () => {
-        const result = findPageByPath(sourcetool.pages, t.path);
+        const result = findPageByPath((sourcetool as any).pages, t.path);
         if (!result) {
           throw new Error(`Page not found: ${t.path}`);
         }
@@ -346,7 +346,7 @@ describe('router access groups', () => {
     settings.page('/profile', 'Profile Settings', pageHandler);
 
     const page = findPageByPath(
-      sourcetool.pages,
+      (sourcetool as any).pages,
       '/api/v1/users/settings/profile',
     );
 
@@ -404,7 +404,7 @@ describe('router access groups', () => {
 
     for (const t of tests) {
       test(t.path, () => {
-        const result = findPageByPath(sourcetool.pages, t.path);
+        const result = findPageByPath((sourcetool as any).pages, t.path);
         if (!result) {
           throw new Error(`Page not found: ${t.path}`);
         }
@@ -433,7 +433,10 @@ describe('router groups', () => {
     const settings = admin.group('/settings');
     settings.page('/users', 'User Settings', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/admin/settings/users');
+    const page = findPageByPath(
+      (sourcetool as any).pages,
+      '/admin/settings/users',
+    );
     if (!page) {
       throw new Error('Page not found');
     }
@@ -453,7 +456,10 @@ describe('router groups', () => {
 
     users.page('/list', 'Users List', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/api/v1/users/list');
+    const page = findPageByPath(
+      (sourcetool as any).pages,
+      '/api/v1/users/list',
+    );
     if (!page) {
       throw new Error('Page not found');
     }
@@ -473,7 +479,7 @@ describe('router page', () => {
     const sourcetool = new Sourcetool(config);
     sourcetool.page('/test', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/test');
+    const page = findPageByPath((sourcetool as any).pages, '/test');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -490,11 +496,11 @@ describe('router page', () => {
 
     sourcetool.page('/', 'Root Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/');
+    const page = findPageByPath((sourcetool as any).pages, '/');
     expect(page).toBe(null);
 
     sourcetool.page('/other', 'Other Page', pageHandler);
-    const otherPage = findPageByPath(sourcetool.pages, '/other');
+    const otherPage = findPageByPath((sourcetool as any).pages, '/other');
     if (!otherPage) {
       throw new Error('Page not found');
     }
@@ -511,7 +517,7 @@ describe('router page', () => {
     const users = sourcetool.group('/users');
     users.page('/', 'Users List', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/users');
+    const page = findPageByPath((sourcetool as any).pages, '/users');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -521,7 +527,10 @@ describe('router page', () => {
     const settings = admin.group('/settings');
     settings.page('/', 'Settings Home', pageHandler);
 
-    const settingsPage = findPageByPath(sourcetool.pages, '/admin/settings');
+    const settingsPage = findPageByPath(
+      (sourcetool as any).pages,
+      '/admin/settings',
+    );
     if (!settingsPage) {
       throw new Error('Page not found');
     }
@@ -538,7 +547,7 @@ describe('router page', () => {
     sourcetool.accessGroups('admin');
     sourcetool.page('/admin', 'Admin Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/admin');
+    const page = findPageByPath((sourcetool as any).pages, '/admin');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -558,7 +567,7 @@ describe('router page', () => {
       throw new Error('Test error');
     });
 
-    const page = findPageByPath(sourcetool.pages, '/error');
+    const page = findPageByPath((sourcetool as any).pages, '/error');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -581,7 +590,7 @@ describe('router page', () => {
     const sourcetool = new Sourcetool(config);
     sourcetool.page('', 'Root Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/');
+    const page = findPageByPath((sourcetool as any).pages, '/');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -598,7 +607,7 @@ describe('router page', () => {
     sourcetool.page('/duplicate', 'First Page', pageHandler);
     sourcetool.page('/duplicate', 'Second Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/duplicate');
+    const page = findPageByPath((sourcetool as any).pages, '/duplicate');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -620,7 +629,7 @@ describe('router group', () => {
 
     group.page('/page', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/test/page');
+    const page = findPageByPath((sourcetool as any).pages, '/test/page');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -638,7 +647,7 @@ describe('router group', () => {
     group.accessGroups('admin');
     group.page('/dashboard', 'Admin Dashboard', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/admin/dashboard');
+    const page = findPageByPath((sourcetool as any).pages, '/admin/dashboard');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -658,7 +667,10 @@ describe('router group', () => {
     const child = parent.group('/child');
     child.page('/page', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/parent/child/page');
+    const page = findPageByPath(
+      (sourcetool as any).pages,
+      '/parent/child/page',
+    );
     if (!page) {
       throw new Error('Page not found');
     }
@@ -675,7 +687,7 @@ describe('router group', () => {
     const group = sourcetool.group('');
     group.page('/page', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/page');
+    const page = findPageByPath((sourcetool as any).pages, '/page');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -695,7 +707,7 @@ describe('router access groups', () => {
     sourcetool.accessGroups('admin', 'user');
     sourcetool.page('/test', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/test');
+    const page = findPageByPath((sourcetool as any).pages, '/test');
     if (!page) {
       throw new Error('Page not found');
     }
@@ -717,7 +729,7 @@ describe('router access groups', () => {
 
     sourcetool.page('/test', 'Test Page', pageHandler);
 
-    const page = findPageByPath(sourcetool.pages, '/test');
+    const page = findPageByPath((sourcetool as any).pages, '/test');
     if (!page) {
       throw new Error('Page not found');
     }

@@ -1,5 +1,5 @@
 import { UIBuilder } from './uibuilder';
-import { Page, PageManager } from './page';
+import { Page } from './page';
 import { Router, RouterInterface } from './router';
 import { Runtime, startRuntime } from './runtime';
 
@@ -40,12 +40,7 @@ export class Sourcetool implements RouterInterface {
   /**
    * Pages
    */
-  pages: Record<string, Page>;
-
-  /**
-   * Page manager
-   */
-  private pageManager: PageManager;
+  private pages: Record<string, Page>;
 
   /**
    * Runtime
@@ -94,9 +89,6 @@ export class Sourcetool implements RouterInterface {
       },
       namespaceDNS,
     );
-
-    // Initialize page manager
-    this.pageManager = new PageManager();
   }
 
   /**
