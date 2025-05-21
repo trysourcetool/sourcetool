@@ -62,7 +62,7 @@ export class Router implements RouterInterface {
    * @param groups Access groups
    */
   constructor(
-    context: RouterContext,
+    context: RouterContext | null,
     namespaceDNS: string,
     parent: Router | null = null,
     basePath: string = '',
