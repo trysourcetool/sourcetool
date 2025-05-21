@@ -69,7 +69,11 @@ describe('join path', () => {
 
       const sourcetool = new Sourcetool(config);
       const router = new Router(
-        sourcetool,
+        {
+          environment: (sourcetool as any).environment,
+          pages: (sourcetool as any).pages,
+          addPage: (sourcetool as any).addPage.bind(sourcetool),
+        },
         'test.trysourcetool.com',
         null,
         t.basePath,
@@ -125,8 +129,15 @@ describe('generate page id', () => {
 
   const sourcetool = new Sourcetool(config);
 
-  const router = new Router(sourcetool, 'test.trysourcetool.com', null);
-
+  const router = new Router(
+    {
+      environment: (sourcetool as any).environment,
+      pages: (sourcetool as any).pages,
+      addPage: (sourcetool as any).addPage.bind(sourcetool),
+    },
+    'test.trysourcetool.com',
+    null,
+  );
   const tests = [
     {
       name: 'Simple path',

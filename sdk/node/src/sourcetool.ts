@@ -25,17 +25,17 @@ export class Sourcetool implements RouterInterface {
   /**
    * API key
    */
-  apiKey: string;
+  private apiKey: string;
 
   /**
    * Endpoint URL
    */
-  endpoint: string;
+  private endpoint: string;
 
   /**
    * Router
    */
-  router: RouterInterface;
+  private router: RouterInterface;
 
   /**
    * Pages
@@ -45,17 +45,17 @@ export class Sourcetool implements RouterInterface {
   /**
    * Page manager
    */
-  pageManager: PageManager;
+  private pageManager: PageManager;
 
   /**
    * Runtime
    */
-  runtime: Runtime | null = null;
+  private runtime: Runtime | null = null;
 
   /**
    * Environment
    */
-  environment: string = '';
+  private environment: string = '';
 
   /**
    * Constructor
@@ -86,7 +86,14 @@ export class Sourcetool implements RouterInterface {
     this.pages = {};
 
     // Initialize router
-    this.router = new Router(this, namespaceDNS);
+    this.router = new Router(
+      {
+        environment: this.environment,
+        pages: this.pages,
+        addPage: this.addPage.bind(this),
+      },
+      namespaceDNS,
+    );
 
     // Initialize page manager
     this.pageManager = new PageManager();
@@ -97,7 +104,7 @@ export class Sourcetool implements RouterInterface {
    * @param id Page ID
    * @param page Page
    */
-  addPage(id: string, page: Page): void {
+  private addPage(id: string, page: Page): void {
     this.pages[id] = page;
   }
 
