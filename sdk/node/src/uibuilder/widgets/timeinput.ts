@@ -49,56 +49,6 @@ export interface TimeInputOptions {
 }
 
 /**
- * TimeInput component class
- */
-export class TimeInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns TimeInput options
-   */
-  static placeholder(placeholder: string): TimeInputOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns TimeInput options
-   */
-  static defaultValue(value: Date): TimeInputOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns TimeInput options
-   */
-  static required(required: boolean): TimeInputOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns TimeInput options
-   */
-  static disabled(disabled: boolean): TimeInputOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the timezone location
-   * @param location Timezone location
-   * @returns TimeInput options
-   */
-  static location(location: string): TimeInputOptions {
-    return { location };
-  }
-}
-
-/**
  * Add a time input to the UI
  * @param builder The UI builder
  * @param label The input label

@@ -25,20 +25,6 @@ export interface ButtonOptions {
 }
 
 /**
- * Button component class
- */
-export class Button {
-  /**
-   * Create a disabled button
-   * @param disabled Whether the button is disabled
-   * @returns Button options
-   */
-  static disabled(disabled: boolean): ButtonOptions {
-    return { disabled };
-  }
-}
-
-/**
  * Add a button to the UI
  * @param builder The UI builder
  * @param label The button label

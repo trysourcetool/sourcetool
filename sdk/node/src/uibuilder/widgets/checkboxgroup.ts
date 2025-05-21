@@ -50,58 +50,6 @@ export interface CheckboxGroupOptions {
 }
 
 /**
- * CheckboxGroup component class
- */
-export class CheckboxGroup {
-  /**
-   * Set the checkboxgroup options
-   * @param options CheckboxGroup options
-   * @returns CheckboxGroup options
-   */
-  static options(...options: string[]): CheckboxGroupOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default values
-   * @param values Default values
-   * @returns CheckboxGroup options
-   */
-  static defaultValue(...values: string[]): CheckboxGroupOptions {
-    return { defaultValue: values };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns CheckboxGroup options
-   */
-  static required(required: boolean): CheckboxGroupOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns CheckboxGroup options
-   */
-  static disabled(disabled: boolean): CheckboxGroupOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns CheckboxGroup options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): CheckboxGroupOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a checkboxgroup to the UI
  * @param builder The UI builder
  * @param label The input label

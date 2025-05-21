@@ -36,20 +36,6 @@ export interface ColumnsOptions {
 }
 
 /**
- * Columns component class
- */
-export class Columns {
-  /**
-   * Set column weights
-   * @param weights Column weights
-   * @returns Columns options
-   */
-  static weight(...weights: number[]): ColumnsOptions {
-    return { weight: weights };
-  }
-}
-
-/**
  * Add columns to the UI
  * @param builder The UI builder
  * @param cols Number of columns

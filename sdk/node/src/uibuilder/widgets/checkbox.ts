@@ -39,38 +39,6 @@ export interface CheckboxOptions {
 }
 
 /**
- * Checkbox component class
- */
-export class Checkbox {
-  /**
-   * Set the default value of the checkbox
-   * @param value Default value
-   * @returns Checkbox options
-   */
-  static defaultValue(value: boolean): CheckboxOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the checkbox required
-   * @param required Whether the checkbox is required
-   * @returns Checkbox options
-   */
-  static required(required: boolean): CheckboxOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the checkbox
-   * @param disabled Whether the checkbox is disabled
-   * @returns Checkbox options
-   */
-  static disabled(disabled: boolean): CheckboxOptions {
-    return { disabled };
-  }
-}
-
-/**
  * Add a checkbox to the UI
  * @param builder The UI builder
  * @param label The checkbox label

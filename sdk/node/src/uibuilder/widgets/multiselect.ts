@@ -54,67 +54,6 @@ export interface MultiSelectOptions {
 }
 
 /**
- * MultiSelect component class
- */
-export class MultiSelect {
-  /**
-   * Set the multiselect options
-   * @param options MultiSelect options
-   * @returns MultiSelect options
-   */
-  static options(...options: string[]): MultiSelectOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default values
-   * @param values Default values
-   * @returns MultiSelect options
-   */
-  static defaultValue(...values: string[]): MultiSelectOptions {
-    return { defaultValue: values };
-  }
-
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns MultiSelect options
-   */
-  static placeholder(placeholder: string): MultiSelectOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns MultiSelect options
-   */
-  static required(required: boolean): MultiSelectOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns MultiSelect options
-   */
-  static disabled(disabled: boolean): MultiSelectOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns MultiSelect options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): MultiSelectOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a multiselect to the UI
  * @param builder The UI builder
  * @param label The input label

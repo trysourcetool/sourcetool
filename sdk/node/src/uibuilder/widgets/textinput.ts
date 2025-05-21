@@ -53,65 +53,6 @@ export interface TextInputOptions {
 }
 
 /**
- * TextInput component class
- */
-export class TextInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns TextInput options
-   */
-  static placeholder(placeholder: string): TextInputOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns TextInput options
-   */
-  static defaultValue(value: string): TextInputOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns TextInput options
-   */
-  static required(required: boolean): TextInputOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns TextInput options
-   */
-  static disabled(disabled: boolean): TextInputOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the maximum length
-   * @param length Maximum length
-   * @returns TextInput options
-   */
-  static maxLength(length: number): TextInputOptions {
-    return { maxLength: length };
-  }
-
-  /**
-   * Set the minimum length
-   * @param length Minimum length
-   * @returns TextInput options
-   */
-  static minLength(length: number): TextInputOptions {
-    return { minLength: length };
-  }
-}
-
-/**
  * Add a text input to the UI
  * @param builder The UI builder
  * @param label The input label

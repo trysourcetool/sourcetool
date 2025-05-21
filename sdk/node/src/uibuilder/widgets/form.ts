@@ -35,29 +35,6 @@ export interface FormOptions {
 }
 
 /**
- * Form component class
- */
-export class Form {
-  /**
-   * Disable the button
-   * @param disabled Whether the button is disabled
-   * @returns Form options
-   */
-  static buttonDisabled(disabled: boolean): FormOptions {
-    return { buttonDisabled: disabled };
-  }
-
-  /**
-   * Clear the form on submit
-   * @param clear Whether to clear the form on submit
-   * @returns Form options
-   */
-  static clearOnSubmit(clear: boolean): FormOptions {
-    return { clearOnSubmit: clear };
-  }
-}
-
-/**
  * Add a form to the UI
  * @param builder The UI builder
  * @param buttonLabel The button label

@@ -45,58 +45,6 @@ export interface RadioOptions {
 }
 
 /**
- * Radio component class
- */
-export class Radio {
-  /**
-   * Set the radio options
-   * @param options Radio options
-   * @returns Radio options
-   */
-  static options(...options: string[]): RadioOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns Radio options
-   */
-  static defaultValue(value: string): RadioOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns Radio options
-   */
-  static required(required: boolean): RadioOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns Radio options
-   */
-  static disabled(disabled: boolean): RadioOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns Radio options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): RadioOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a radio input to the UI
  * @param builder The UI builder
  * @param label The input label

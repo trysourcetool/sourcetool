@@ -53,65 +53,6 @@ export interface NumberInputOptions {
 }
 
 /**
- * NumberInput component class
- */
-export class NumberInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns NumberInput options
-   */
-  static placeholder(placeholder: string): NumberInputOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns NumberInput options
-   */
-  static defaultValue(value: number): NumberInputOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns NumberInput options
-   */
-  static required(required: boolean): NumberInputOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns NumberInput options
-   */
-  static disabled(disabled: boolean): NumberInputOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the maximum value
-   * @param value Maximum value
-   * @returns NumberInput options
-   */
-  static maxValue(value: number): NumberInputOptions {
-    return { maxValue: value };
-  }
-
-  /**
-   * Set the minimum value
-   * @param value Minimum value
-   * @returns NumberInput options
-   */
-  static minValue(value: number): NumberInputOptions {
-    return { minValue: value };
-  }
-}
-
-/**
  * Add a number input to the UI
  * @param builder The UI builder
  * @param label The input label

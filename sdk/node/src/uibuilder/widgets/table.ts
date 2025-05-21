@@ -60,65 +60,6 @@ export interface TableOptions {
 }
 
 /**
- * Table component class
- */
-export class Table {
-  /**
-   * Set the table header
-   * @param header Table header
-   * @returns Table options
-   */
-  static header(header: string): TableOptions {
-    return { header };
-  }
-
-  /**
-   * Set the table description
-   * @param description Table description
-   * @returns Table options
-   */
-  static description(description: string): TableOptions {
-    return { description };
-  }
-
-  /**
-   * Set the table height
-   * @param height Table height
-   * @returns Table options
-   */
-  static height(height: number): TableOptions {
-    return { height };
-  }
-
-  /**
-   * Set the column order
-   * @param columns Column order
-   * @returns Table options
-   */
-  static columnOrder(...columns: string[]): TableOptions {
-    return { columnOrder: columns };
-  }
-
-  /**
-   * Set the selection behavior
-   * @param behavior Selection behavior
-   * @returns Table options
-   */
-  static onSelect(behavior: TableOnSelect): TableOptions {
-    return { onSelect: behavior };
-  }
-
-  /**
-   * Set the row selection mode
-   * @param mode Row selection mode
-   * @returns Table options
-   */
-  static rowSelection(mode: TableRowSelection): TableOptions {
-    return { rowSelection: mode };
-  }
-}
-
-/**
  * Add a table to the UI
  * @param builder The UI builder
  * @param data The table data
