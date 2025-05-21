@@ -8,7 +8,7 @@ import {
 } from '../uibuilder/widgets/selectbox';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { Cursor, uiBuilderGeneratePageId } from '../uibuilder';
+import { Cursor, generateWidgetId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -121,7 +121,7 @@ test('selectbox', () => {
 
   selectbox({ runtime, session, page, cursor }, label, options);
 
-  const widgetId = uiBuilderGeneratePageId(page.id, 'selectbox', [0]);
+  const widgetId = generateWidgetId(page.id, 'selectbox', [0]);
   const state = session.state.getSelectbox(widgetId);
 
   const expectedDefaultIndex = initialOptions.indexOf(options.defaultValue);

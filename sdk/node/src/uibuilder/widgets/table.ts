@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TableState,
   TableValue,
@@ -98,7 +98,7 @@ export function table(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTable, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTable, path);
 
   let tableState = session.state.getTable(widgetId);
   if (!tableState) {

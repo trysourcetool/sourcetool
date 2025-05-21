@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   SelectboxState,
   SelectboxValue,
@@ -98,7 +98,7 @@ export function selectbox(
   }
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeSelectbox, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeSelectbox, path);
 
   let selectboxState = session.state.getSelectbox(widgetId);
   const formatFunc = selectboxOpts.formatFunc || ((v: string) => v);

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TextAreaState,
   WidgetTypeTextArea,
@@ -111,7 +111,7 @@ export function textArea(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTextArea, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTextArea, path);
 
   let textAreaState = session.state.getTextArea(widgetId);
   if (!textAreaState) {

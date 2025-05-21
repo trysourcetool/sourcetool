@@ -49,7 +49,7 @@ export interface UIBuilder {
   columns(count: number, options?: ColumnsOptions): UIBuilder[];
 }
 
-export const uiBuilderGeneratePageId = (
+export const generateWidgetId = (
   pageId: string,
   widgetType: WidgetType,
   path: number[],

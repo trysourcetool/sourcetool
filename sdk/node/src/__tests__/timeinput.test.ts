@@ -8,7 +8,7 @@ import {
 } from '../uibuilder/widgets/timeinput';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { Cursor, uiBuilderGeneratePageId } from '../uibuilder';
+import { Cursor, generateWidgetId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -144,7 +144,7 @@ test('timeInput', () => {
     options,
   );
 
-  const widgetId = uiBuilderGeneratePageId(page.id, 'timeInput', [0]);
+  const widgetId = generateWidgetId(page.id, 'timeInput', [0]);
   const state = session.state.getTimeInput(widgetId);
 
   if (!state) {

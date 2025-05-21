@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import { ButtonState, WidgetTypeButton } from '../../session/state/button';
 import { ButtonInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
@@ -53,7 +53,7 @@ export function button(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeButton, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeButton, path);
 
   let buttonState = session.state.getButton(widgetId);
   if (!buttonState) {

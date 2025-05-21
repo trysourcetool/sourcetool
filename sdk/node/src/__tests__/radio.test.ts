@@ -7,7 +7,7 @@ import {
 } from '../uibuilder/widgets/radio';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { uiBuilderGeneratePageId, UIBuilderImpl } from '../uibuilder';
+import { generateWidgetId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -114,7 +114,7 @@ test('radio', () => {
 
   builder.radio(label, options);
 
-  const widgetId = uiBuilderGeneratePageId(page.id, 'radio', [0]);
+  const widgetId = generateWidgetId(page.id, 'radio', [0]);
   const state = session.state.getRadio(widgetId);
 
   const expectedDefaultIndex = initialOptions.indexOf(options.defaultValue);

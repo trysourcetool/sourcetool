@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TextInputState,
   WidgetTypeTextInput,
@@ -87,7 +87,7 @@ export function textInput(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTextInput, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTextInput, path);
 
   let textInputState = session.state.getTextInput(widgetId);
   if (!textInputState) {

@@ -1,10 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import {
-  UIBuilder,
-  Cursor,
-  uiBuilderGeneratePageId,
-  UIBuilderImpl,
-} from '../index';
+import { UIBuilder, Cursor, generateWidgetId, UIBuilderImpl } from '../index';
 import { FormState, WidgetTypeForm } from '../../session/state/form';
 import { FormInternalOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
@@ -64,7 +59,7 @@ export function form(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeForm, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeForm, path);
 
   let formState = session.state.getForm(widgetId);
   if (!formState) {

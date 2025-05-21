@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   RadioState,
   RadioValue,
@@ -88,7 +88,7 @@ export function radio(
   }
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeRadio, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeRadio, path);
 
   let radioState = session.state.getRadio(widgetId);
   const formatFunc = radioOpts.formatFunc || ((v: string) => v);

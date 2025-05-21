@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   MarkdownState,
   WidgetTypeMarkdown,
@@ -40,7 +40,7 @@ export function markdown(
   };
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeMarkdown, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeMarkdown, path);
 
   let markdownState = session.state.getMarkdown(widgetId);
   if (!markdownState) {

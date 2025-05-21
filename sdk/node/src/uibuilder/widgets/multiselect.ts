@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageId } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   MultiSelectState,
   MultiSelectValue,
@@ -100,11 +100,7 @@ export function multiSelect(
   }
 
   const path = cursor.getPath();
-  const widgetId = uiBuilderGeneratePageId(
-    page.id,
-    WidgetTypeMultiSelect,
-    path,
-  );
+  const widgetId = generateWidgetId(page.id, WidgetTypeMultiSelect, path);
 
   let multiSelectState = session.state.getMultiSelect(widgetId);
   const formatFunc = multiSelectOpts.formatFunc || ((v: string) => v);
