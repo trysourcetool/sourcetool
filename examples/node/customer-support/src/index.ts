@@ -2,7 +2,7 @@ import {
   TableOnSelect,
   Sourcetool,
   SourcetoolConfig,
-  UIBuilderType,
+  UIBuilder,
 } from '@sourcetool/node';
 import {
   createTicket,
@@ -21,7 +21,7 @@ import {
   updateTicket,
 } from './ticket';
 
-const listTicketsPage = async (ui: UIBuilderType) => {
+const listTicketsPage = async (ui: UIBuilder) => {
   const searchCols = ui.columns(3);
   const title = searchCols[0].textInput('Title', {
     placeholder: 'Enter title to filter',
@@ -139,7 +139,7 @@ const listTicketsPage = async (ui: UIBuilderType) => {
   }
 };
 
-const createTicketPage = async (ui: UIBuilderType) => {
+const createTicketPage = async (ui: UIBuilder) => {
   const [form, submitted] = ui.form('Create Ticket', {
     clearOnSubmit: true,
   });
