@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   MultiSelectState,
   MultiSelectValue,
@@ -161,17 +161,17 @@ export function multiSelect(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
+  const widgetId = uiBuilderGeneratePageId(
     page.id,
     WidgetTypeMultiSelect,
     path,
   );
 
-  let multiSelectState = session.state.getMultiSelect(widgetID);
+  let multiSelectState = session.state.getMultiSelect(widgetId);
   const formatFunc = multiSelectOpts.formatFunc || ((v: string) => v);
   if (!multiSelectState) {
     multiSelectState = new MultiSelectState(
-      widgetID,
+      widgetId,
       defaultVal,
       multiSelectOpts.label,
       multiSelectOpts.options.map(formatFunc),
@@ -190,7 +190,7 @@ export function multiSelect(
     multiSelectState.required = multiSelectOpts.required;
     multiSelectState.disabled = multiSelectOpts.disabled;
   }
-  session.state.set(widgetID, multiSelectState);
+  session.state.set(widgetId, multiSelectState);
 
   const multiSelectProto = convertStateToMultiSelectProto(
     multiSelectState as MultiSelectState,
@@ -201,7 +201,7 @@ export function multiSelect(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'multiSelect',
         value: multiSelectProto,

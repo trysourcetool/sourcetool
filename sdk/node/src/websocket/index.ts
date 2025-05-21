@@ -25,7 +25,7 @@ const MAX_RECONNECT_ATTEMPTS = 26;
 export interface WebSocketClientConfig {
   url: string;
   apiKey: string;
-  instanceID: string;
+  instanceId: string;
   pingInterval: number;
   reconnectDelay: number;
   onReconnecting?: () => void;
@@ -93,7 +93,9 @@ function newMessage(
   return create(MessageSchema, msg);
 }
 
-function setConfigDefaults(config: WebSocketClientConfig & { queueSize?: number }): void {
+function setConfigDefaults(
+  config: WebSocketClientConfig & { queueSize?: number },
+): void {
   if (!config.pingInterval || config.pingInterval < MIN_PING_INTERVAL) {
     config.pingInterval = DEFAULT_PING_INTERVAL;
   }
@@ -105,7 +107,9 @@ function setConfigDefaults(config: WebSocketClientConfig & { queueSize?: number 
   }
 }
 
-function validateConfig(config: WebSocketClientConfig & { queueSize?: number }): void {
+function validateConfig(
+  config: WebSocketClientConfig & { queueSize?: number },
+): void {
   if (config.pingInterval < MIN_PING_INTERVAL) {
     throw new Error(`pingInterval must be at least ${MIN_PING_INTERVAL}ms`);
   }
@@ -183,7 +187,7 @@ export class Client implements WebSocketClient {
       // Create headers
       const headers = {
         Authorization: `Bearer ${this.config.apiKey}`,
-        'X-Instance-Id': this.config.instanceID,
+        'X-Instance-Id': this.config.instanceId,
       };
 
       // Connect to the WebSocket server
@@ -236,14 +240,19 @@ export class Client implements WebSocketClient {
 
     while (true) {
       // Calculate delay with exponential backoff, capped
-      let delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, attempt), MAX_RECONNECT_DELAY);
+      let delay = Math.min(
+        INITIAL_RECONNECT_DELAY * Math.pow(2, attempt),
+        MAX_RECONNECT_DELAY,
+      );
       // Add jitter (up to 1/4 of delay)
       const maxJitter = Math.floor(delay / 4);
       if (maxJitter > 0) {
         delay += Math.floor(Math.random() * maxJitter);
       }
 
-      console.info(`[INFO] Attempting to reconnect (attempt ${attempt + 1}, delay ${delay}ms)`);
+      console.info(
+        `[INFO] Attempting to reconnect (attempt ${attempt + 1}, delay ${delay}ms)`,
+      );
 
       try {
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -252,7 +261,9 @@ export class Client implements WebSocketClient {
           return;
         }
         await this.connect();
-        console.info(`[INFO] Reconnection successful (attempts: ${attempt + 1})`);
+        console.info(
+          `[INFO] Reconnection successful (attempts: ${attempt + 1})`,
+        );
         if (this.config.onReconnected) {
           this.config.onReconnected();
         }
@@ -264,11 +275,15 @@ export class Client implements WebSocketClient {
         // If max attempts reached within an hour, stop
         if (attempt >= MAX_RECONNECT_ATTEMPTS) {
           if (Date.now() - lastSuccessTime < 60 * 60 * 1000) {
-            console.error('[ERROR] Max reconnection attempts reached within an hour');
+            console.error(
+              '[ERROR] Max reconnection attempts reached within an hour',
+            );
             return;
           } else {
             // More than an hour has passed, reset counter
-            console.warn('[WARN] Continuing reconnection attempts after an hour');
+            console.warn(
+              '[WARN] Continuing reconnection attempts after an hour',
+            );
             attempt = 0;
           }
         }
@@ -506,7 +521,10 @@ export class Client implements WebSocketClient {
       } catch (err) {
         lastErr = err;
         const delay = MESSAGE_RETRY_DELAY * Math.pow(2, attempt);
-        console.warn(`[WARN] Message send failed (attempt ${attempt + 1}), retrying in ${delay}ms`, err);
+        console.warn(
+          `[WARN] Message send failed (attempt ${attempt + 1}), retrying in ${delay}ms`,
+          err,
+        );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }

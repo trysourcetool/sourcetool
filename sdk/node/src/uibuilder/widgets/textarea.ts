@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   TextAreaState,
   WidgetTypeTextArea,
@@ -197,12 +197,12 @@ export function textArea(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTextArea, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTextArea, path);
 
-  let textAreaState = session.state.getTextArea(widgetID);
+  let textAreaState = session.state.getTextArea(widgetId);
   if (!textAreaState) {
     textAreaState = new TextAreaState(
-      widgetID,
+      widgetId,
       textAreaOpts.defaultValue,
       textAreaOpts.label,
       textAreaOpts.placeholder,
@@ -228,7 +228,7 @@ export function textArea(
     textAreaState.autoResize = textAreaOpts.autoResize;
   }
 
-  session.state.set(widgetID, textAreaState);
+  session.state.set(widgetId, textAreaState);
 
   const textAreaProto = convertStateToTextAreaProto(
     textAreaState as TextAreaState,
@@ -239,7 +239,7 @@ export function textArea(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'textArea',
         value: textAreaProto,

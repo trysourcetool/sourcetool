@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageID } from '../';
+import { UIBuilder, Cursor, uiBuilderGeneratePageId } from '../';
 import { FormState, WidgetTypeForm } from '../../session/state/form';
 import { FormOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
@@ -82,12 +82,12 @@ export function form(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeForm, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeForm, path);
 
-  let formState = session.state.getForm(widgetID);
+  let formState = session.state.getForm(widgetId);
   if (!formState) {
     formState = new FormState(
-      widgetID,
+      widgetId,
       false,
       formOpts.buttonLabel,
       formOpts.buttonDisabled,
@@ -98,7 +98,7 @@ export function form(
     formState.buttonDisabled = formOpts.buttonDisabled;
     formState.clearOnSubmit = formOpts.clearOnSubmit;
   }
-  session.state.set(widgetID, formState);
+  session.state.set(widgetId, formState);
 
   const formProto = convertStateToFormProto(formState as FormState);
 
@@ -107,7 +107,7 @@ export function form(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'form',
         value: formProto,

@@ -158,12 +158,12 @@ describe('generate page id', () => {
 
   for (const t of tests) {
     test(t.name, () => {
-      const id1 = router.generatePageID(t.path);
-      const id2 = router.generatePageID(t.path);
+      const id1 = router.generatePageId(t.path);
+      const id2 = router.generatePageId(t.path);
       expect(id1).toBe(id2);
 
       const differentPath = t.path + '/different';
-      const id3 = router.generatePageID(differentPath);
+      const id3 = router.generatePageId(differentPath);
       expect(id3).not.toBe(id1);
     });
   }

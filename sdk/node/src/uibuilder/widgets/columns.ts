@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageID } from '../';
+import { UIBuilder, Cursor, uiBuilderGeneratePageId } from '../';
 import { ColumnsState, WidgetTypeColumns } from '../../session/state/columns';
 import {
   ColumnItemState,
@@ -77,7 +77,7 @@ export function columns(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeColumns, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeColumns, path);
 
   // Calculate weights
   let weights = columnsOpts.weight || [];
@@ -97,8 +97,8 @@ export function columns(
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
   // Create columns state
-  const columnsState = new ColumnsState(widgetID, cols);
-  session.state.set(widgetID, columnsState);
+  const columnsState = new ColumnsState(widgetId, cols);
+  session.state.set(widgetId, columnsState);
 
   // Send columns widget
   const columnsProto = convertStateToColumnsProto(columnsState);
@@ -109,7 +109,7 @@ export function columns(
       pageId: page.id,
       path: convertPathToInt32Array(path),
       widget: create(WidgetSchema, {
-        id: widgetID,
+        id: widgetId,
         type: {
           case: 'columns',
           value: columnsProto,
@@ -129,16 +129,16 @@ export function columns(
     const columnPath = [...path, i];
 
     // Create column item state
-    const columnItemID = uiBuilderGeneratePageID(
+    const columnItemId = uiBuilderGeneratePageId(
       page.id,
       WidgetTypeColumnItem,
       columnPath,
     );
     const columnItemState = new ColumnItemState(
-      columnItemID,
+      columnItemId,
       weights[i] / totalWeight,
     );
-    session.state.set(columnItemID, columnItemState);
+    session.state.set(columnItemId, columnItemState);
 
     // Send column item widget
     const columnItemProto = convertStateToColumnItemProto(
@@ -150,7 +150,7 @@ export function columns(
       pageId: page.id,
       path: convertPathToInt32Array(columnPath),
       widget: create(WidgetSchema, {
-        id: columnItemID,
+        id: columnItemId,
         type: {
           case: 'columnItem',
           value: columnItemProto,

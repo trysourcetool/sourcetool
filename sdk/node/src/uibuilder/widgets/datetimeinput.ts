@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   DateTimeInputState,
   WidgetTypeDateTimeInput,
@@ -178,16 +178,16 @@ export function dateTimeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
+  const widgetId = uiBuilderGeneratePageId(
     page.id,
     WidgetTypeDateTimeInput,
     path,
   );
 
-  let dateTimeInputState = session.state.getDateTimeInput(widgetID);
+  let dateTimeInputState = session.state.getDateTimeInput(widgetId);
   if (!dateTimeInputState) {
     dateTimeInputState = new DateTimeInputState(
-      widgetID,
+      widgetId,
       dateTimeInputOpts.defaultValue,
       dateTimeInputOpts.label,
       dateTimeInputOpts.placeholder,
@@ -210,7 +210,7 @@ export function dateTimeInput(
     dateTimeInputState.minValue = dateTimeInputOpts.minValue;
     dateTimeInputState.location = dateTimeInputOpts.location;
   }
-  session.state.set(widgetID, dateTimeInputState);
+  session.state.set(widgetId, dateTimeInputState);
 
   const dateTimeInputProto = convertStateToDateTimeInputProto(
     dateTimeInputState as DateTimeInputState,
@@ -221,7 +221,7 @@ export function dateTimeInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'dateTimeInput',
         value: dateTimeInputProto,

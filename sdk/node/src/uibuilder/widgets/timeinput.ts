@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   TimeInputState,
   WidgetTypeTimeInput,
@@ -131,12 +131,12 @@ export function timeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTimeInput, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTimeInput, path);
 
-  let timeInputState = session.state.getTimeInput(widgetID);
+  let timeInputState = session.state.getTimeInput(widgetId);
   if (!timeInputState) {
     timeInputState = new TimeInputState(
-      widgetID,
+      widgetId,
       timeInputOpts.defaultValue,
       timeInputOpts.label,
       timeInputOpts.placeholder,
@@ -145,7 +145,7 @@ export function timeInput(
       timeInputOpts.disabled,
       timeInputOpts.location,
     );
-    session.state.set(widgetID, timeInputState);
+    session.state.set(widgetId, timeInputState);
   } else {
     timeInputState.label = timeInputOpts.label;
     timeInputState.placeholder = timeInputOpts.placeholder;
@@ -153,7 +153,7 @@ export function timeInput(
     timeInputState.required = timeInputOpts.required;
     timeInputState.disabled = timeInputOpts.disabled;
     timeInputState.location = timeInputOpts.location;
-    session.state.set(widgetID, timeInputState);
+    session.state.set(widgetId, timeInputState);
   }
 
   const timeInputProto = convertStateToTimeInputProto(
@@ -165,7 +165,7 @@ export function timeInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'timeInput',
         value: timeInputProto,

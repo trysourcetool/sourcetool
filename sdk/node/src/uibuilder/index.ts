@@ -70,7 +70,7 @@ export type UIBuilderType = {
   columns(count: number, options?: ColumnsComponentOptions): UIBuilderType[];
 };
 
-export const uiBuilderGeneratePageID = (
+export const uiBuilderGeneratePageId = (
   pageId: string,
   widgetType: WidgetType,
   path: number[],

@@ -7,7 +7,7 @@ import {
   dateTimeInput,
 } from '../uibuilder/widgets/datetimeinput';
 import { createSessionManager, newSession } from '../session';
-import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -155,7 +155,7 @@ test('dateTimeInput', () => {
 
   dateTimeInput({ runtime, session, page, cursor }, label, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'datetimeInput', [0]);
+  const widgetId = uiBuilderGeneratePageId(page.id, 'datetimeInput', [0]);
   const state = session.state.getDateTimeInput(widgetId);
 
   if (!state) {

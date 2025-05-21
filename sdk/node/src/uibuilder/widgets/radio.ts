@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   RadioState,
   RadioValue,
@@ -140,14 +140,14 @@ export function radio(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeRadio, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeRadio, path);
 
-  let radioState = session.state.getRadio(widgetID);
+  let radioState = session.state.getRadio(widgetId);
   const formatFunc = radioOpts.formatFunc || ((v: string) => v);
 
   if (!radioState) {
     radioState = new RadioState(
-      widgetID,
+      widgetId,
       defaultVal,
       radioOpts.label,
       radioOpts.options.map(formatFunc),
@@ -165,7 +165,7 @@ export function radio(
     radioState.disabled = radioOpts.disabled;
   }
 
-  session.state.set(widgetID, radioState);
+  session.state.set(widgetId, radioState);
 
   const radioProto = convertStateToRadioProto(radioState as RadioState);
 
@@ -174,7 +174,7 @@ export function radio(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'radio',
         value: radioProto,

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   SelectboxState,
   SelectboxValue,
@@ -159,14 +159,14 @@ export function selectbox(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeSelectbox, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeSelectbox, path);
 
-  let selectboxState = session.state.getSelectbox(widgetID);
+  let selectboxState = session.state.getSelectbox(widgetId);
   const formatFunc = selectboxOpts.formatFunc || ((v: string) => v);
 
   if (!selectboxState) {
     selectboxState = new SelectboxState(
-      widgetID,
+      widgetId,
       defaultVal,
       selectboxOpts.label,
       selectboxOpts.options.map(formatFunc),
@@ -186,7 +186,7 @@ export function selectbox(
     selectboxState.disabled = selectboxOpts.disabled;
   }
 
-  session.state.set(widgetID, selectboxState);
+  session.state.set(widgetId, selectboxState);
 
   const selectboxProto = convertStateToSelectboxProto(
     selectboxState as SelectboxState,
@@ -197,7 +197,7 @@ export function selectbox(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'selectbox',
         value: selectboxProto,

@@ -80,7 +80,7 @@ export class Router implements RouterInterface {
    * @param fullPath Full path
    * @returns Page ID
    */
-  generatePageID(fullPath: string): string {
+  generatePageId(fullPath: string): string {
     const ns = uuidv5(this.namespaceDNS, uuidv5.DNS);
     return uuidv5(`${fullPath}-${this.context?.environment}`, ns);
   }
@@ -175,14 +175,14 @@ export class Router implements RouterInterface {
       fullPath = this.joinPath(relativePath);
     }
 
-    const pageID = this.generatePageID(fullPath);
+    const pageId = this.generatePageId(fullPath);
 
     if (this.context === null) {
       throw new Error('Sourcetool is not set');
     }
 
     const page = new Page(
-      pageID,
+      pageId,
       name,
       fullPath,
       [Object.keys(this.context.pages).length],
@@ -190,7 +190,7 @@ export class Router implements RouterInterface {
       this.removeDuplicates(this.collectGroups()),
     );
 
-    this.context.addPage(pageID, page);
+    this.context.addPage(pageId, page);
   }
 
   /**

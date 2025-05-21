@@ -12,7 +12,7 @@ import {
   table,
 } from '../uibuilder/widgets/table';
 import { createSessionManager, newSession } from '../session';
-import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, uiBuilderGeneratePageId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { Table as TableProto } from '../pb/widget/v1/widget_pb';
@@ -143,7 +143,7 @@ test('table interaction', () => {
 
   table({ runtime, session, page, cursor }, tableData, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'table', [0]);
+  const widgetId = uiBuilderGeneratePageId(page.id, 'table', [0]);
   const state = session.state.getTable(widgetId);
 
   if (!state) {

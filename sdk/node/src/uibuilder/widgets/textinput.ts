@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   TextInputState,
   WidgetTypeTextInput,
@@ -146,12 +146,12 @@ export function textInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTextInput, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTextInput, path);
 
-  let textInputState = session.state.getTextInput(widgetID);
+  let textInputState = session.state.getTextInput(widgetId);
   if (!textInputState) {
     textInputState = new TextInputState(
-      widgetID,
+      widgetId,
       textInputOpts.defaultValue,
       textInputOpts.label,
       textInputOpts.placeholder,
@@ -170,7 +170,7 @@ export function textInput(
     textInputState.maxLength = textInputOpts.maxLength;
     textInputState.minLength = textInputOpts.minLength;
   }
-  session.state.set(widgetID, textInputState);
+  session.state.set(widgetId, textInputState);
 
   const textInputProto = convertStateToTextInputProto(
     textInputState as TextInputState,
@@ -181,7 +181,7 @@ export function textInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'textInput',
         value: textInputProto,

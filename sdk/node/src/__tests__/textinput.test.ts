@@ -6,7 +6,7 @@ import {
   convertStateToTextInputProto,
 } from '../uibuilder/widgets/textinput';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -126,7 +126,7 @@ test('textInput', () => {
 
   builder.textInput(label, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'textInput', [0]);
+  const widgetId = uiBuilderGeneratePageId(page.id, 'textInput', [0]);
   const state = session.state.getTextInput(widgetId);
 
   if (!state) {

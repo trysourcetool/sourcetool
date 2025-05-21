@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   TableState,
   TableValue,
@@ -157,12 +157,12 @@ export function table(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTable, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeTable, path);
 
-  let tableState = session.state.getTable(widgetID);
+  let tableState = session.state.getTable(widgetId);
   if (!tableState) {
     tableState = new TableState(
-      widgetID,
+      widgetId,
       data,
       tableOpts.header,
       tableOpts.description,
@@ -182,7 +182,7 @@ export function table(
     tableState.rowSelection = tableOpts.rowSelection;
   }
 
-  session.state.set(widgetID, tableState);
+  session.state.set(widgetId, tableState);
 
   const tableProto = convertStateToTableProto(tableState as TableState);
 
@@ -191,7 +191,7 @@ export function table(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'table',
         value: tableProto,

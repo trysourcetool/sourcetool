@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   DateInputState,
   WidgetTypeDateInput,
@@ -178,12 +178,12 @@ export function dateInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeDateInput, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeDateInput, path);
 
-  let dateInputState = session.state.getDateInput(widgetID);
+  let dateInputState = session.state.getDateInput(widgetId);
   if (!dateInputState) {
     dateInputState = new DateInputState(
-      widgetID,
+      widgetId,
       dateInputOpts.defaultValue,
       dateInputOpts.label,
       dateInputOpts.placeholder,
@@ -206,7 +206,7 @@ export function dateInput(
     dateInputState.minValue = dateInputOpts.minValue;
     dateInputState.location = dateInputOpts.location;
   }
-  session.state.set(widgetID, dateInputState);
+  session.state.set(widgetId, dateInputState);
 
   const dateInputProto = convertStateToDateInputProto(
     dateInputState as DateInputState,
@@ -217,7 +217,7 @@ export function dateInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'dateInput',
         value: dateInputProto,

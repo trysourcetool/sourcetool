@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   CheckboxGroupState,
   CheckboxGroupValue,
@@ -147,17 +147,17 @@ export function checkboxGroup(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
+  const widgetId = uiBuilderGeneratePageId(
     page.id,
     WidgetTypeCheckboxGroup,
     path,
   );
 
-  let checkboxGroupState = session.state.getCheckboxGroup(widgetID);
+  let checkboxGroupState = session.state.getCheckboxGroup(widgetId);
   const formatFunc = checkboxGroupOpts.formatFunc || ((v: string) => v);
   if (!checkboxGroupState) {
     checkboxGroupState = new CheckboxGroupState(
-      widgetID,
+      widgetId,
       defaultVal,
       checkboxGroupOpts.label,
       checkboxGroupOpts.options.map(formatFunc),
@@ -177,7 +177,7 @@ export function checkboxGroup(
     checkboxGroupState.disabled = checkboxGroupOpts.disabled;
   }
 
-  session.state.set(widgetID, checkboxGroupState);
+  session.state.set(widgetId, checkboxGroupState);
 
   const checkboxGroupProto = convertStateToCheckboxGroupProto(
     checkboxGroupState as CheckboxGroupState,
@@ -188,7 +188,7 @@ export function checkboxGroup(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'checkboxGroup',
         value: checkboxGroupProto,

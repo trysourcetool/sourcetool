@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   NumberInputState,
   WidgetTypeNumberInput,
@@ -146,16 +146,16 @@ export function numberInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
+  const widgetId = uiBuilderGeneratePageId(
     page.id,
     WidgetTypeNumberInput,
     path,
   );
 
-  let numberInputState = session.state.getNumberInput(widgetID);
+  let numberInputState = session.state.getNumberInput(widgetId);
   if (!numberInputState) {
     numberInputState = new NumberInputState(
-      widgetID,
+      widgetId,
       numberInputOpts.defaultValue,
       numberInputOpts.label,
       numberInputOpts.placeholder,
@@ -175,7 +175,7 @@ export function numberInput(
     numberInputState.minValue = numberInputOpts.minValue;
   }
 
-  session.state.set(widgetID, numberInputState);
+  session.state.set(widgetId, numberInputState);
 
   const numberInputProto = convertStateToNumberInputProto(
     numberInputState as NumberInputState,
@@ -186,7 +186,7 @@ export function numberInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'numberInput',
         value: numberInputProto,

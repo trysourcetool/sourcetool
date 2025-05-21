@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   MarkdownState,
   WidgetTypeMarkdown,
@@ -40,16 +40,16 @@ export function markdown(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeMarkdown, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeMarkdown, path);
 
-  let markdownState = session.state.getMarkdown(widgetID);
+  let markdownState = session.state.getMarkdown(widgetId);
   if (!markdownState) {
-    markdownState = new MarkdownState(widgetID, markdownOpts.body);
+    markdownState = new MarkdownState(widgetId, markdownOpts.body);
   } else {
     markdownState.body = markdownOpts.body;
   }
 
-  session.state.set(widgetID, markdownState);
+  session.state.set(widgetId, markdownState);
 
   const markdownProto = convertStateToMarkdownProto(
     markdownState as MarkdownState,
@@ -60,7 +60,7 @@ export function markdown(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'markdown',
         value: markdownProto,

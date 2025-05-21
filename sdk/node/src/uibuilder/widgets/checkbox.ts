@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, uiBuilderGeneratePageId } from '../';
 import {
   CheckboxState,
   WidgetTypeCheckbox,
@@ -101,12 +101,12 @@ export function checkbox(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeCheckbox, path);
+  const widgetId = uiBuilderGeneratePageId(page.id, WidgetTypeCheckbox, path);
 
-  let checkboxState = session.state.getCheckbox(widgetID);
+  let checkboxState = session.state.getCheckbox(widgetId);
   if (!checkboxState) {
     checkboxState = new CheckboxState(
-      widgetID,
+      widgetId,
       checkboxOpts.label,
       checkboxOpts.defaultValue,
       checkboxOpts.defaultValue,
@@ -119,7 +119,7 @@ export function checkbox(
     checkboxState.required = checkboxOpts.required;
     checkboxState.disabled = checkboxOpts.disabled;
   }
-  session.state.set(widgetID, checkboxState);
+  session.state.set(widgetId, checkboxState);
 
   const checkboxProto = convertStateToCheckboxProto(
     checkboxState as CheckboxState,
@@ -130,7 +130,7 @@ export function checkbox(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'checkbox',
         value: checkboxProto,

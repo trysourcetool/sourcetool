@@ -7,7 +7,7 @@ import {
 } from '../uibuilder/widgets/numberinput';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { UIBuilder, uiBuilderGeneratePageId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -126,7 +126,7 @@ test('numberInput', () => {
 
   builder.numberInput(label, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'numberInput', [0]);
+  const widgetId = uiBuilderGeneratePageId(page.id, 'numberInput', [0]);
   const state = session.state.getNumberInput(widgetId);
 
   if (!state) {

@@ -68,7 +68,7 @@ export class Sourcetool implements RouterInterface {
     this.endpoint = `${config.endpoint}/ws`;
 
     // Extract namespace DNS
-    const namespaceDNS = hostParts[1].split(':')[0];
+    const namespaceDns = hostParts[1].split(':')[0];
 
     const keyParts = this.apiKey.split('_');
     if (keyParts.length !== 2) {
@@ -87,7 +87,7 @@ export class Sourcetool implements RouterInterface {
         pages: this.pages,
         addPage: this.addPage.bind(this),
       },
-      namespaceDNS,
+      namespaceDns,
     );
   }
 
