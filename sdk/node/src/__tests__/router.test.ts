@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest';
-import { removeDuplicates, Router } from '../router';
+import { removeDuplicates, RouterImpl } from '../router';
 import { Sourcetool, SourcetoolConfig } from '../sourcetool';
 import { Page } from '../page';
 
@@ -68,7 +68,7 @@ describe('join path', () => {
       };
 
       const sourcetool = new Sourcetool(config);
-      const router = new Router(
+      const router = new RouterImpl(
         {
           environment: (sourcetool as any).environment,
           pages: (sourcetool as any).pages,
@@ -129,7 +129,7 @@ describe('generate page id', () => {
 
   const sourcetool = new Sourcetool(config);
 
-  const router = new Router(
+  const router = new RouterImpl(
     {
       environment: (sourcetool as any).environment,
       pages: (sourcetool as any).pages,

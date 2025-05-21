@@ -1,5 +1,5 @@
 import { UIBuilder } from './uibuilder';
-import { RouterInterface } from './router';
+import { Router } from './router';
 import { ButtonOptions } from './uibuilder/widgets/button';
 import { CheckboxOptions } from './uibuilder/widgets/checkbox';
 import { TextInputOptions } from './uibuilder/widgets/textinput';
@@ -54,7 +54,7 @@ export type {
   UIBuilder,
 
   // Router
-  RouterInterface,
+  Router,
 
   // Sourcetool
   SourcetoolConfig,
