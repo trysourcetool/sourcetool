@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageID } from '../';
+import { UIBuilder, Cursor, generateWidgetId, UIBuilderImpl } from '../index';
 import { ColumnsState, WidgetTypeColumns } from '../../session/state/columns';
 import {
   ColumnItemState,
   WidgetTypeColumnItem,
 } from '../../session/state/columnitem';
-import { ColumnsOptions } from '../../types/options';
+import { ColumnsInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   ColumnItem,
@@ -20,28 +20,14 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * Columns component options
+ * Columns options
  */
-export interface ColumnsComponentOptions {
+export interface ColumnsOptions {
   /**
    * Column weights
    * @description Relative weights for each column
    */
   weight?: number[];
-}
-
-/**
- * Columns component class
- */
-export class Columns {
-  /**
-   * Set column weights
-   * @param weights Column weights
-   * @returns Columns options
-   */
-  static weight(...weights: number[]): ColumnsComponentOptions {
-    return { weight: weights };
-  }
 }
 
 /**
@@ -59,7 +45,7 @@ export function columns(
     cursor: Cursor;
   },
   cols: number,
-  options: ColumnsComponentOptions = {},
+  options: ColumnsOptions = {},
 ): UIBuilder[] {
   if (cols < 1) {
     return [];
@@ -71,13 +57,13 @@ export function columns(
     return [];
   }
 
-  const columnsOpts: ColumnsOptions = {
+  const columnsOpts: ColumnsInternalOptions = {
     columns: cols,
     weight: options.weight,
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeColumns, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeColumns, path);
 
   // Calculate weights
   let weights = columnsOpts.weight || [];
@@ -97,8 +83,8 @@ export function columns(
   const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
   // Create columns state
-  const columnsState = new ColumnsState(widgetID, cols);
-  session.state.set(widgetID, columnsState);
+  const columnsState = new ColumnsState(widgetId, cols);
+  session.state.set(widgetId, columnsState);
 
   // Send columns widget
   const columnsProto = convertStateToColumnsProto(columnsState);
@@ -109,7 +95,7 @@ export function columns(
       pageId: page.id,
       path: convertPathToInt32Array(path),
       widget: create(WidgetSchema, {
-        id: widgetID,
+        id: widgetId,
         type: {
           case: 'columns',
           value: columnsProto,
@@ -129,16 +115,16 @@ export function columns(
     const columnPath = [...path, i];
 
     // Create column item state
-    const columnItemID = uiBuilderGeneratePageID(
+    const columnItemId = generateWidgetId(
       page.id,
       WidgetTypeColumnItem,
       columnPath,
     );
     const columnItemState = new ColumnItemState(
-      columnItemID,
+      columnItemId,
       weights[i] / totalWeight,
     );
-    session.state.set(columnItemID, columnItemState);
+    session.state.set(columnItemId, columnItemState);
 
     // Send column item widget
     const columnItemProto = convertStateToColumnItemProto(
@@ -150,7 +136,7 @@ export function columns(
       pageId: page.id,
       path: convertPathToInt32Array(columnPath),
       widget: create(WidgetSchema, {
-        id: columnItemID,
+        id: columnItemId,
         type: {
           case: 'columnItem',
           value: columnItemProto,
@@ -161,7 +147,12 @@ export function columns(
     runtime.wsClient.enqueue(uuidv4(), renderWidget);
 
     // Create builder for this column
-    const columnBuilder = new UIBuilder(runtime, session, page, columnCursor);
+    const columnBuilder = new UIBuilderImpl(
+      runtime,
+      session,
+      page,
+      columnCursor,
+    );
     builders.push(columnBuilder);
   }
 

@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TextAreaState,
   WidgetTypeTextArea,
 } from '../../session/state/textarea';
-import { TextAreaOptions } from '../../types/options';
+import { TextAreaInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TextArea as TextAreaProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * TextArea component options
+ * TextArea options
  */
-export interface TextAreaComponentOptions {
+export interface TextAreaOptions {
   /**
    * Placeholder text
    */
@@ -71,92 +71,6 @@ export interface TextAreaComponentOptions {
 }
 
 /**
- * TextArea component class
- */
-export class TextArea {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns TextArea options
-   */
-  static placeholder(placeholder: string): TextAreaComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns TextArea options
-   */
-  static defaultValue(value: string): TextAreaComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns TextArea options
-   */
-  static required(required: boolean): TextAreaComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns TextArea options
-   */
-  static disabled(disabled: boolean): TextAreaComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the maximum length of the input
-   * @param length Maximum length
-   * @returns TextArea options
-   */
-  static maxLength(length: number): TextAreaComponentOptions {
-    return { maxLength: length };
-  }
-
-  /**
-   * Set the minimum length of the input
-   * @param length Minimum length
-   * @returns TextArea options
-   */
-  static minLength(length: number): TextAreaComponentOptions {
-    return { minLength: length };
-  }
-
-  /**
-   * Set the maximum number of lines
-   * @param lines Maximum number of lines
-   * @returns TextArea options
-   */
-  static maxLines(lines: number): TextAreaComponentOptions {
-    return { maxLines: lines };
-  }
-
-  /**
-   * Set the minimum number of lines
-   * @param lines Minimum number of lines
-   * @returns TextArea options
-   */
-  static minLines(lines: number): TextAreaComponentOptions {
-    return { minLines: lines };
-  }
-
-  /**
-   * Set whether to auto-resize the textarea
-   * @param autoResize Whether to auto-resize
-   * @returns TextArea options
-   */
-  static autoResize(autoResize: boolean): TextAreaComponentOptions {
-    return { autoResize };
-  }
-}
-
-/**
  * Add a textarea to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -171,7 +85,7 @@ export function textArea(
     cursor: Cursor;
   },
   label: string,
-  options: TextAreaComponentOptions = {},
+  options: TextAreaOptions = {},
 ): string {
   const { runtime, session, page, cursor } = context;
 
@@ -182,7 +96,7 @@ export function textArea(
   // Set default minLines
   const defaultMinLines = 2;
 
-  const textAreaOpts: TextAreaOptions = {
+  const textAreaOpts: TextAreaInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,
@@ -197,12 +111,12 @@ export function textArea(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTextArea, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTextArea, path);
 
-  let textAreaState = session.state.getTextArea(widgetID);
+  let textAreaState = session.state.getTextArea(widgetId);
   if (!textAreaState) {
     textAreaState = new TextAreaState(
-      widgetID,
+      widgetId,
       textAreaOpts.defaultValue,
       textAreaOpts.label,
       textAreaOpts.placeholder,
@@ -228,7 +142,7 @@ export function textArea(
     textAreaState.autoResize = textAreaOpts.autoResize;
   }
 
-  session.state.set(widgetID, textAreaState);
+  session.state.set(widgetId, textAreaState);
 
   const textAreaProto = convertStateToTextAreaProto(
     textAreaState as TextAreaState,
@@ -239,7 +153,7 @@ export function textArea(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'textArea',
         value: textAreaProto,

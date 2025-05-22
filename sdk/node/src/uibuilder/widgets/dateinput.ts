@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   DateInputState,
   WidgetTypeDateInput,
 } from '../../session/state/dateinput';
-import { DateInputOptions } from '../../types/options';
+import { DateInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   DateInput as DateInputProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * DateInput component options
+ * DateInput options
  */
-export interface DateInputComponentOptions {
+export interface DateInputOptions {
   /**
    * Placeholder text
    */
@@ -66,83 +66,6 @@ export interface DateInputComponentOptions {
 }
 
 /**
- * DateInput component class
- */
-export class DateInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns DateInput options
-   */
-  static placeholder(placeholder: string): DateInputComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns DateInput options
-   */
-  static defaultValue(value: Date): DateInputComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns DateInput options
-   */
-  static required(required: boolean): DateInputComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns DateInput options
-   */
-  static disabled(disabled: boolean): DateInputComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the date format
-   * @param format Date format
-   * @returns DateInput options
-   */
-  static format(format: string): DateInputComponentOptions {
-    return { format };
-  }
-
-  /**
-   * Set the maximum date
-   * @param value Maximum date
-   * @returns DateInput options
-   */
-  static maxValue(value: Date): DateInputComponentOptions {
-    return { maxValue: value };
-  }
-
-  /**
-   * Set the minimum date
-   * @param value Minimum date
-   * @returns DateInput options
-   */
-  static minValue(value: Date): DateInputComponentOptions {
-    return { minValue: value };
-  }
-
-  /**
-   * Set the timezone location
-   * @param location Timezone location
-   * @returns DateInput options
-   */
-  static location(location: string): DateInputComponentOptions {
-    return { location };
-  }
-}
-
-/**
  * Add a date input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -157,7 +80,7 @@ export function dateInput(
     cursor: Cursor;
   },
   label: string,
-  options: DateInputComponentOptions = {},
+  options: DateInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -165,7 +88,7 @@ export function dateInput(
     return null;
   }
 
-  const dateInputOpts: DateInputOptions = {
+  const dateInputOpts: DateInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,
@@ -178,12 +101,12 @@ export function dateInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeDateInput, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeDateInput, path);
 
-  let dateInputState = session.state.getDateInput(widgetID);
+  let dateInputState = session.state.getDateInput(widgetId);
   if (!dateInputState) {
     dateInputState = new DateInputState(
-      widgetID,
+      widgetId,
       dateInputOpts.defaultValue,
       dateInputOpts.label,
       dateInputOpts.placeholder,
@@ -206,7 +129,7 @@ export function dateInput(
     dateInputState.minValue = dateInputOpts.minValue;
     dateInputState.location = dateInputOpts.location;
   }
-  session.state.set(widgetID, dateInputState);
+  session.state.set(widgetId, dateInputState);
 
   const dateInputProto = convertStateToDateInputProto(
     dateInputState as DateInputState,
@@ -217,7 +140,7 @@ export function dateInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'dateInput',
         value: dateInputProto,

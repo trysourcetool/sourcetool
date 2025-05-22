@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder } from './uibuilder';
+import { UIBuilderImpl } from './uibuilder';
 import { Page, PageManager } from './page';
 import {
   createSessionManager,
@@ -123,22 +123,22 @@ export class Runtime {
       throw new Error('Session ID is required');
     }
 
-    const sessionID = msg.sessionId;
-    const pageID = msg.pageId;
+    const sessionId = msg.sessionId;
+    const pageId = msg.pageId;
 
     // Create session
-    const session = newSession(sessionID, pageID);
+    const session = newSession(sessionId, pageId);
 
     this.sessionManager.setSession(session);
 
     // Get page
-    const page = this.pageManager.getPage(pageID);
+    const page = this.pageManager.getPage(pageId);
     if (!page) {
-      throw new Error(`Page not found: ${pageID}`);
+      throw new Error(`Page not found: ${pageId}`);
     }
 
     // Create UI builder
-    const ui = new UIBuilder(this, session, page);
+    const ui = new UIBuilderImpl(this, session, page);
 
     try {
       // Run page
@@ -148,7 +148,7 @@ export class Runtime {
       this.wsClient.enqueue(
         uuidv4(),
         create(ScriptFinishedSchema, {
-          sessionId: sessionID,
+          sessionId: sessionId,
           status: ScriptFinished_Status.SUCCESS,
         }),
       );
@@ -157,7 +157,7 @@ export class Runtime {
       this.wsClient.enqueue(
         uuidv4(),
         create(ScriptFinishedSchema, {
-          sessionId: sessionID,
+          sessionId: sessionId,
           status: ScriptFinished_Status.FAILURE,
         }),
       );
@@ -172,23 +172,23 @@ export class Runtime {
    * @returns Promise
    */
   async handleRerunPage(msg: RerunPage): Promise<void> {
-    const sessionID = msg.sessionId;
-    const pageID = msg.pageId;
+    const sessionId = msg.sessionId;
+    const pageId = msg.pageId;
 
     // Get session
-    const session = this.sessionManager.getSession(sessionID);
+    const session = this.sessionManager.getSession(sessionId);
     if (!session) {
-      throw new Error(`Session not found: ${sessionID}`);
+      throw new Error(`Session not found: ${sessionId}`);
     }
 
     // Get page
-    const page = this.pageManager.getPage(pageID);
+    const page = this.pageManager.getPage(pageId);
     if (!page) {
-      throw new Error(`Page not found: ${pageID}`);
+      throw new Error(`Page not found: ${pageId}`);
     }
 
     // Reset states if page changed
-    if (session.pageId !== pageID) {
+    if (session.pageId !== pageId) {
       session.state.resetStates();
     }
 
@@ -368,7 +368,7 @@ export class Runtime {
     session.state.setStates(newWidgetStates);
 
     // Create UI builder
-    const ui = new UIBuilder(this, session, page);
+    const ui = new UIBuilderImpl(this, session, page);
 
     try {
       // Run page
@@ -378,7 +378,7 @@ export class Runtime {
       this.wsClient.enqueue(
         uuidv4(),
         create(ScriptFinishedSchema, {
-          sessionId: sessionID,
+          sessionId: sessionId,
           status: ScriptFinished_Status.SUCCESS,
         }),
       );
@@ -390,7 +390,7 @@ export class Runtime {
       this.wsClient.enqueue(
         uuidv4(),
         create(ScriptFinishedSchema, {
-          sessionId: sessionID,
+          sessionId: sessionId,
           status: ScriptFinished_Status.FAILURE,
         }),
       );
@@ -404,22 +404,22 @@ export class Runtime {
    * @param msg Message
    */
   handleCloseSession(msg: CloseSession): void {
-    const sessionID = msg.sessionId;
-    this.sessionManager.disconnectSession(sessionID);
+    const sessionId = msg.sessionId;
+    this.sessionManager.disconnectSession(sessionId);
   }
 
   /**
    * Send exception
    * @param id Message ID
-   * @param sessionID Session ID
+   * @param sessionId Session ID
    * @param err Error
    */
-  sendException(id: string, sessionID: string, err: Error): void {
+  sendException(id: string, sessionId: string, err: Error): void {
     const exception = create(ExceptionSchema, {
       title: 'Error',
       message: err.message,
       stackTrace: err.stack ? [err.stack] : undefined,
-      sessionId: sessionID,
+      sessionId: sessionId,
     });
 
     this.wsClient.enqueue(id, exception);
@@ -448,7 +448,7 @@ export async function startRuntime(
   const wsClient = new Client({
     url: endpoint,
     apiKey,
-    instanceID: uuidv4(),
+    instanceId: uuidv4(),
     pingInterval: 1000,
     reconnectDelay: 1000,
     onReconnecting: () => {

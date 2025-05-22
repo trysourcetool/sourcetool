@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   CheckboxState,
   WidgetTypeCheckbox,
 } from '../../session/state/checkbox';
-import { CheckboxOptions } from '../../types/options';
+import { CheckboxInternalOptions } from '../../types/options';
 import {
   Checkbox as CheckboxProto,
   CheckboxSchema,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Checkbox component options
+ * Checkbox options
  */
-export interface CheckboxComponentOptions {
+export interface CheckboxOptions {
   /**
    * Default value of the checkbox
    * @default false
@@ -39,38 +39,6 @@ export interface CheckboxComponentOptions {
 }
 
 /**
- * Checkbox component class
- */
-export class Checkbox {
-  /**
-   * Set the default value of the checkbox
-   * @param value Default value
-   * @returns Checkbox options
-   */
-  static defaultValue(value: boolean): CheckboxComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the checkbox required
-   * @param required Whether the checkbox is required
-   * @returns Checkbox options
-   */
-  static required(required: boolean): CheckboxComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the checkbox
-   * @param disabled Whether the checkbox is disabled
-   * @returns Checkbox options
-   */
-  static disabled(disabled: boolean): CheckboxComponentOptions {
-    return { disabled };
-  }
-}
-
-/**
  * Add a checkbox to the UI
  * @param builder The UI builder
  * @param label The checkbox label
@@ -85,7 +53,7 @@ export function checkbox(
     cursor: Cursor;
   },
   label: string,
-  options: CheckboxComponentOptions = {},
+  options: CheckboxOptions = {},
 ): boolean {
   const { runtime, session, page, cursor } = context;
 
@@ -93,7 +61,7 @@ export function checkbox(
     return false;
   }
 
-  const checkboxOpts: CheckboxOptions = {
+  const checkboxOpts: CheckboxInternalOptions = {
     label,
     defaultValue: options.defaultValue ?? false,
     required: options.required ?? false,
@@ -101,12 +69,12 @@ export function checkbox(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeCheckbox, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeCheckbox, path);
 
-  let checkboxState = session.state.getCheckbox(widgetID);
+  let checkboxState = session.state.getCheckbox(widgetId);
   if (!checkboxState) {
     checkboxState = new CheckboxState(
-      widgetID,
+      widgetId,
       checkboxOpts.label,
       checkboxOpts.defaultValue,
       checkboxOpts.defaultValue,
@@ -119,7 +87,7 @@ export function checkbox(
     checkboxState.required = checkboxOpts.required;
     checkboxState.disabled = checkboxOpts.disabled;
   }
-  session.state.set(widgetID, checkboxState);
+  session.state.set(widgetId, checkboxState);
 
   const checkboxProto = convertStateToCheckboxProto(
     checkboxState as CheckboxState,
@@ -130,7 +98,7 @@ export function checkbox(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'checkbox',
         value: checkboxProto,

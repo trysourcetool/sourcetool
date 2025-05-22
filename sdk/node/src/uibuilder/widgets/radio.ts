@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   RadioState,
   RadioValue,
   WidgetTypeRadio,
 } from '../../session/state/radio';
-import { RadioOptions } from '../../types/options';
+import { RadioInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import { Radio as RadioProto, RadioSchema } from '../../pb/widget/v1/widget_pb';
 import { RenderWidgetSchema } from '../../pb/websocket/v1/message_pb';
@@ -13,9 +13,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Radio component options
+ * Radio options
  */
-export interface RadioComponentOptions {
+export interface RadioOptions {
   /**
    * Radio options
    */
@@ -45,58 +45,6 @@ export interface RadioComponentOptions {
 }
 
 /**
- * Radio component class
- */
-export class Radio {
-  /**
-   * Set the radio options
-   * @param options Radio options
-   * @returns Radio options
-   */
-  static options(...options: string[]): RadioComponentOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns Radio options
-   */
-  static defaultValue(value: string): RadioComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns Radio options
-   */
-  static required(required: boolean): RadioComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns Radio options
-   */
-  static disabled(disabled: boolean): RadioComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns Radio options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): RadioComponentOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a radio input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -111,7 +59,7 @@ export function radio(
     cursor: Cursor;
   },
   label: string,
-  options: RadioComponentOptions = {},
+  options: RadioOptions = {},
 ): RadioValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -119,7 +67,7 @@ export function radio(
     return null;
   }
 
-  const radioOpts: RadioOptions = {
+  const radioOpts: RadioInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,
@@ -140,14 +88,14 @@ export function radio(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeRadio, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeRadio, path);
 
-  let radioState = session.state.getRadio(widgetID);
+  let radioState = session.state.getRadio(widgetId);
   const formatFunc = radioOpts.formatFunc || ((v: string) => v);
 
   if (!radioState) {
     radioState = new RadioState(
-      widgetID,
+      widgetId,
       defaultVal,
       radioOpts.label,
       radioOpts.options.map(formatFunc),
@@ -165,7 +113,7 @@ export function radio(
     radioState.disabled = radioOpts.disabled;
   }
 
-  session.state.set(widgetID, radioState);
+  session.state.set(widgetId, radioState);
 
   const radioProto = convertStateToRadioProto(radioState as RadioState);
 
@@ -174,7 +122,7 @@ export function radio(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'radio',
         value: radioProto,

@@ -6,7 +6,7 @@ import {
   convertStateToFormProto,
 } from '../uibuilder/widgets/form';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { generateWidgetId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -87,7 +87,7 @@ test('form', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const buttonLabel = 'Submit';
   const formOptions = {
@@ -99,7 +99,7 @@ test('form', () => {
 
   expect(submitted).toBe(false);
 
-  const formWidgetId = uiBuilderGeneratePageID(page.id, 'form', [0]);
+  const formWidgetId = generateWidgetId(page.id, 'form', [0]);
   const formState = session.state.getForm(formWidgetId);
 
   if (!formState) {
@@ -114,7 +114,7 @@ test('form', () => {
 
   formBuilder.textInput('Name', { defaultValue: 'John Doe' });
 
-  const textInputId = uiBuilderGeneratePageID(page.id, 'textInput', [0, 0]);
+  const textInputId = generateWidgetId(page.id, 'textInput', [0, 0]);
   const textInputState = session.state.getTextInput(textInputId);
 
   if (!textInputState) {

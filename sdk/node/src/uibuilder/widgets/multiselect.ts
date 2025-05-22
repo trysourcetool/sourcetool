@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   MultiSelectState,
   MultiSelectValue,
   WidgetTypeMultiSelect,
 } from '../../session/state/multiselect';
-import { MultiSelectOptions } from '../../types/options';
+import { MultiSelectInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   MultiSelect as MultiSelectProto,
@@ -17,9 +17,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * MultiSelect component options
+ * MultiSelect options
  */
-export interface MultiSelectComponentOptions {
+export interface MultiSelectOptions {
   /**
    * MultiSelect options
    */
@@ -54,67 +54,6 @@ export interface MultiSelectComponentOptions {
 }
 
 /**
- * MultiSelect component class
- */
-export class MultiSelect {
-  /**
-   * Set the multiselect options
-   * @param options MultiSelect options
-   * @returns MultiSelect options
-   */
-  static options(...options: string[]): MultiSelectComponentOptions {
-    return { options };
-  }
-
-  /**
-   * Set the default values
-   * @param values Default values
-   * @returns MultiSelect options
-   */
-  static defaultValue(...values: string[]): MultiSelectComponentOptions {
-    return { defaultValue: values };
-  }
-
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns MultiSelect options
-   */
-  static placeholder(placeholder: string): MultiSelectComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns MultiSelect options
-   */
-  static required(required: boolean): MultiSelectComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns MultiSelect options
-   */
-  static disabled(disabled: boolean): MultiSelectComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the format function for option labels
-   * @param formatFunc Format function
-   * @returns MultiSelect options
-   */
-  static formatFunc(
-    formatFunc: (value: string, index: number) => string,
-  ): MultiSelectComponentOptions {
-    return { formatFunc };
-  }
-}
-
-/**
  * Add a multiselect to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -129,7 +68,7 @@ export function multiSelect(
     cursor: Cursor;
   },
   label: string,
-  options: MultiSelectComponentOptions = {},
+  options: MultiSelectOptions = {},
 ): MultiSelectValue | null {
   const { runtime, session, page, cursor } = context;
 
@@ -137,7 +76,7 @@ export function multiSelect(
     return null;
   }
 
-  const multiSelectOpts: MultiSelectOptions = {
+  const multiSelectOpts: MultiSelectInternalOptions = {
     label,
     options: options.options || [],
     defaultValue: options.defaultValue || null,
@@ -161,17 +100,13 @@ export function multiSelect(
   }
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
-    page.id,
-    WidgetTypeMultiSelect,
-    path,
-  );
+  const widgetId = generateWidgetId(page.id, WidgetTypeMultiSelect, path);
 
-  let multiSelectState = session.state.getMultiSelect(widgetID);
+  let multiSelectState = session.state.getMultiSelect(widgetId);
   const formatFunc = multiSelectOpts.formatFunc || ((v: string) => v);
   if (!multiSelectState) {
     multiSelectState = new MultiSelectState(
-      widgetID,
+      widgetId,
       defaultVal,
       multiSelectOpts.label,
       multiSelectOpts.options.map(formatFunc),
@@ -190,7 +125,7 @@ export function multiSelect(
     multiSelectState.required = multiSelectOpts.required;
     multiSelectState.disabled = multiSelectOpts.disabled;
   }
-  session.state.set(widgetID, multiSelectState);
+  session.state.set(widgetId, multiSelectState);
 
   const multiSelectProto = convertStateToMultiSelectProto(
     multiSelectState as MultiSelectState,
@@ -201,7 +136,7 @@ export function multiSelect(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'multiSelect',
         value: multiSelectProto,

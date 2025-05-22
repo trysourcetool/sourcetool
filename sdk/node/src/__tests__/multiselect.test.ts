@@ -8,7 +8,7 @@ import {
 } from '../uibuilder/widgets/multiselect';
 import { createSessionManager, newSession } from '../session';
 import { MockClient } from '../websocket/mock/websocket';
-import { Cursor, uiBuilderGeneratePageID } from '../uibuilder';
+import { Cursor, generateWidgetId } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 
@@ -121,7 +121,7 @@ test('multiSelect', () => {
 
   multiSelect({ runtime, session, page, cursor }, label, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'multiselect', [0]);
+  const widgetId = generateWidgetId(page.id, 'multiselect', [0]);
   const state = session.state.getMultiSelect(widgetId);
 
   const expectedDefaultIndexes = options.defaultValue

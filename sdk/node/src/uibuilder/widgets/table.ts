@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TableState,
   TableValue,
@@ -10,7 +10,7 @@ import {
   TableStateValueSelection,
   TableSelection,
 } from '../../session/state/table';
-import { TableOptions } from '../../types/options';
+import { TableInternalOptions } from '../../types/options';
 import { create, toJson } from '@bufbuild/protobuf';
 import {
   Table as TableProto,
@@ -23,9 +23,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * Table component options
+ * Table options
  */
-export interface TableComponentOptions {
+export interface TableOptions {
   /**
    * Table header
    */
@@ -60,65 +60,6 @@ export interface TableComponentOptions {
 }
 
 /**
- * Table component class
- */
-export class Table {
-  /**
-   * Set the table header
-   * @param header Table header
-   * @returns Table options
-   */
-  static header(header: string): TableComponentOptions {
-    return { header };
-  }
-
-  /**
-   * Set the table description
-   * @param description Table description
-   * @returns Table options
-   */
-  static description(description: string): TableComponentOptions {
-    return { description };
-  }
-
-  /**
-   * Set the table height
-   * @param height Table height
-   * @returns Table options
-   */
-  static height(height: number): TableComponentOptions {
-    return { height };
-  }
-
-  /**
-   * Set the column order
-   * @param columns Column order
-   * @returns Table options
-   */
-  static columnOrder(...columns: string[]): TableComponentOptions {
-    return { columnOrder: columns };
-  }
-
-  /**
-   * Set the selection behavior
-   * @param behavior Selection behavior
-   * @returns Table options
-   */
-  static onSelect(behavior: TableOnSelect): TableComponentOptions {
-    return { onSelect: behavior };
-  }
-
-  /**
-   * Set the row selection mode
-   * @param mode Row selection mode
-   * @returns Table options
-   */
-  static rowSelection(mode: TableRowSelection): TableComponentOptions {
-    return { rowSelection: mode };
-  }
-}
-
-/**
  * Add a table to the UI
  * @param builder The UI builder
  * @param data The table data
@@ -133,7 +74,7 @@ export function table(
     cursor: Cursor;
   },
   data: any,
-  options: TableComponentOptions = {},
+  options: TableOptions = {},
 ): TableValue {
   const { runtime, session, page, cursor } = context;
 
@@ -141,7 +82,7 @@ export function table(
     return {};
   }
 
-  const tableOpts: TableOptions = {
+  const tableOpts: TableInternalOptions = {
     header: options.header || '',
     description: options.description || '',
     height: options.height !== undefined ? options.height : null,
@@ -157,12 +98,12 @@ export function table(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTable, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTable, path);
 
-  let tableState = session.state.getTable(widgetID);
+  let tableState = session.state.getTable(widgetId);
   if (!tableState) {
     tableState = new TableState(
-      widgetID,
+      widgetId,
       data,
       tableOpts.header,
       tableOpts.description,
@@ -182,7 +123,7 @@ export function table(
     tableState.rowSelection = tableOpts.rowSelection;
   }
 
-  session.state.set(widgetID, tableState);
+  session.state.set(widgetId, tableState);
 
   const tableProto = convertStateToTableProto(tableState as TableState);
 
@@ -191,7 +132,7 @@ export function table(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'table',
         value: tableProto,

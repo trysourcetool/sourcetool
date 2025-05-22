@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   NumberInputState,
   WidgetTypeNumberInput,
 } from '../../session/state/numberinput';
-import { NumberInputOptions } from '../../types/options';
+import { NumberInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   NumberInput as NumberInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * NumberInput component options
+ * NumberInput options
  */
-export interface NumberInputComponentOptions {
+export interface NumberInputOptions {
   /**
    * Placeholder text
    */
@@ -53,65 +53,6 @@ export interface NumberInputComponentOptions {
 }
 
 /**
- * NumberInput component class
- */
-export class NumberInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns NumberInput options
-   */
-  static placeholder(placeholder: string): NumberInputComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns NumberInput options
-   */
-  static defaultValue(value: number): NumberInputComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns NumberInput options
-   */
-  static required(required: boolean): NumberInputComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns NumberInput options
-   */
-  static disabled(disabled: boolean): NumberInputComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the maximum value
-   * @param value Maximum value
-   * @returns NumberInput options
-   */
-  static maxValue(value: number): NumberInputComponentOptions {
-    return { maxValue: value };
-  }
-
-  /**
-   * Set the minimum value
-   * @param value Minimum value
-   * @returns NumberInput options
-   */
-  static minValue(value: number): NumberInputComponentOptions {
-    return { minValue: value };
-  }
-}
-
-/**
  * Add a number input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -126,7 +67,7 @@ export function numberInput(
     cursor: Cursor;
   },
   label: string,
-  options: NumberInputComponentOptions = {},
+  options: NumberInputOptions = {},
 ): number | null {
   const { runtime, session, page, cursor } = context;
 
@@ -134,7 +75,7 @@ export function numberInput(
     return null;
   }
 
-  const numberInputOpts: NumberInputOptions = {
+  const numberInputOpts: NumberInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue:
@@ -146,16 +87,12 @@ export function numberInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
-    page.id,
-    WidgetTypeNumberInput,
-    path,
-  );
+  const widgetId = generateWidgetId(page.id, WidgetTypeNumberInput, path);
 
-  let numberInputState = session.state.getNumberInput(widgetID);
+  let numberInputState = session.state.getNumberInput(widgetId);
   if (!numberInputState) {
     numberInputState = new NumberInputState(
-      widgetID,
+      widgetId,
       numberInputOpts.defaultValue,
       numberInputOpts.label,
       numberInputOpts.placeholder,
@@ -175,7 +112,7 @@ export function numberInput(
     numberInputState.minValue = numberInputOpts.minValue;
   }
 
-  session.state.set(widgetID, numberInputState);
+  session.state.set(widgetId, numberInputState);
 
   const numberInputProto = convertStateToNumberInputProto(
     numberInputState as NumberInputState,
@@ -186,7 +123,7 @@ export function numberInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'numberInput',
         value: numberInputProto,

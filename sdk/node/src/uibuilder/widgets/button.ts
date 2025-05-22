@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import { ButtonState, WidgetTypeButton } from '../../session/state/button';
-import { ButtonOptions } from '../../types/options';
+import { ButtonInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   ButtonSchema,
@@ -14,28 +14,14 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * Button component options
+ * Button options
  */
-export interface ButtonComponentOptions {
+export interface ButtonOptions {
   /**
    * Whether the button is disabled
    * @default false
    */
   disabled?: boolean;
-}
-
-/**
- * Button component class
- */
-export class Button {
-  /**
-   * Create a disabled button
-   * @param disabled Whether the button is disabled
-   * @returns Button options
-   */
-  static disabled(disabled: boolean): ButtonComponentOptions {
-    return { disabled };
-  }
 }
 
 /**
@@ -53,7 +39,7 @@ export function button(
     cursor: Cursor;
   },
   label: string,
-  options: ButtonComponentOptions = {},
+  options: ButtonOptions = {},
 ): boolean {
   const { runtime, session, page, cursor } = context;
 
@@ -61,18 +47,18 @@ export function button(
     return false;
   }
 
-  const buttonOpts: ButtonOptions = {
+  const buttonOpts: ButtonInternalOptions = {
     label,
     disabled: options.disabled ?? false,
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeButton, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeButton, path);
 
-  let buttonState = session.state.getButton(widgetID);
+  let buttonState = session.state.getButton(widgetId);
   if (!buttonState) {
     buttonState = new ButtonState(
-      widgetID,
+      widgetId,
       false,
       buttonOpts.label,
       buttonOpts.disabled,
@@ -81,7 +67,7 @@ export function button(
     buttonState.label = buttonOpts.label;
     buttonState.disabled = buttonOpts.disabled;
   }
-  session.state.set(widgetID, buttonState);
+  session.state.set(widgetId, buttonState);
 
   const buttonProto = convertStateToButtonProto(buttonState as ButtonState);
 
@@ -90,7 +76,7 @@ export function button(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'button',
         value: buttonProto,

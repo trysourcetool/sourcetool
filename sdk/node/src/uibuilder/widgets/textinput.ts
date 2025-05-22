@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TextInputState,
   WidgetTypeTextInput,
 } from '../../session/state/textinput';
-import { TextInputOptions } from '../../types/options';
+import { TextInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TextInput as TextInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * TextInput component options
+ * TextInput options
  */
-export interface TextInputComponentOptions {
+export interface TextInputOptions {
   /**
    * Placeholder text
    */
@@ -53,65 +53,6 @@ export interface TextInputComponentOptions {
 }
 
 /**
- * TextInput component class
- */
-export class TextInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns TextInput options
-   */
-  static placeholder(placeholder: string): TextInputComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns TextInput options
-   */
-  static defaultValue(value: string): TextInputComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns TextInput options
-   */
-  static required(required: boolean): TextInputComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns TextInput options
-   */
-  static disabled(disabled: boolean): TextInputComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the maximum length
-   * @param length Maximum length
-   * @returns TextInput options
-   */
-  static maxLength(length: number): TextInputComponentOptions {
-    return { maxLength: length };
-  }
-
-  /**
-   * Set the minimum length
-   * @param length Minimum length
-   * @returns TextInput options
-   */
-  static minLength(length: number): TextInputComponentOptions {
-    return { minLength: length };
-  }
-}
-
-/**
  * Add a text input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -126,7 +67,7 @@ export function textInput(
     cursor: Cursor;
   },
   label: string,
-  options: TextInputComponentOptions = {},
+  options: TextInputOptions = {},
 ): string {
   const { runtime, session, page, cursor } = context;
 
@@ -134,7 +75,7 @@ export function textInput(
     return '';
   }
 
-  const textInputOpts: TextInputOptions = {
+  const textInputOpts: TextInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue:
@@ -146,12 +87,12 @@ export function textInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTextInput, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTextInput, path);
 
-  let textInputState = session.state.getTextInput(widgetID);
+  let textInputState = session.state.getTextInput(widgetId);
   if (!textInputState) {
     textInputState = new TextInputState(
-      widgetID,
+      widgetId,
       textInputOpts.defaultValue,
       textInputOpts.label,
       textInputOpts.placeholder,
@@ -170,7 +111,7 @@ export function textInput(
     textInputState.maxLength = textInputOpts.maxLength;
     textInputState.minLength = textInputOpts.minLength;
   }
-  session.state.set(widgetID, textInputState);
+  session.state.set(widgetId, textInputState);
 
   const textInputProto = convertStateToTextInputProto(
     textInputState as TextInputState,
@@ -181,7 +122,7 @@ export function textInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'textInput',
         value: textInputProto,

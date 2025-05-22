@@ -1,18 +1,18 @@
 // Common options interfaces for UI components
 
-export type ButtonOptions = {
+export type ButtonInternalOptions = {
   label: string;
   disabled: boolean;
 };
 
-export type CheckboxOptions = {
+export type CheckboxInternalOptions = {
   label: string;
   defaultValue: boolean;
   required: boolean;
   disabled: boolean;
 };
 
-export type CheckboxGroupOptions = {
+export type CheckboxGroupInternalOptions = {
   label: string;
   options: string[];
   defaultValue: string[] | null;
@@ -21,12 +21,12 @@ export type CheckboxGroupOptions = {
   formatFunc?: (value: string, index: number) => string;
 };
 
-export type ColumnsOptions = {
+export type ColumnsInternalOptions = {
   columns: number;
   weight?: number[];
 };
 
-export type DateInputOptions = {
+export type DateInputInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: Date | null;
@@ -38,7 +38,7 @@ export type DateInputOptions = {
   location: string; // Timezone location
 };
 
-export type DateTimeInputOptions = {
+export type DateTimeInputInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: Date | null;
@@ -50,17 +50,17 @@ export type DateTimeInputOptions = {
   location: string; // Timezone location
 };
 
-export type FormOptions = {
+export type FormInternalOptions = {
   buttonLabel: string;
   buttonDisabled: boolean;
   clearOnSubmit: boolean;
 };
 
-export type MarkdownOptions = {
+export type MarkdownInternalOptions = {
   body: string;
 };
 
-export type MultiSelectOptions = {
+export type MultiSelectInternalOptions = {
   label: string;
   options: string[];
   defaultValue: string[] | null;
@@ -70,7 +70,7 @@ export type MultiSelectOptions = {
   formatFunc?: (value: string, index: number) => string;
 };
 
-export type NumberInputOptions = {
+export type NumberInputInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: number | null;
@@ -80,7 +80,7 @@ export type NumberInputOptions = {
   minValue: number | null;
 };
 
-export type RadioOptions = {
+export type RadioInternalOptions = {
   label: string;
   options: string[];
   defaultValue: string | null;
@@ -89,7 +89,7 @@ export type RadioOptions = {
   formatFunc?: (value: string, index: number) => string;
 };
 
-export type SelectboxOptions = {
+export type SelectboxInternalOptions = {
   label: string;
   options: string[];
   defaultValue: string | null;
@@ -99,7 +99,7 @@ export type SelectboxOptions = {
   formatFunc?: (value: string, index: number) => string;
 };
 
-export type TableOptions = {
+export type TableInternalOptions = {
   header: string;
   description: string;
   height: number | null;
@@ -108,7 +108,7 @@ export type TableOptions = {
   rowSelection: string;
 };
 
-export type TextAreaOptions = {
+export type TextAreaInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: string | null;
@@ -121,7 +121,7 @@ export type TextAreaOptions = {
   autoResize: boolean;
 };
 
-export type TextInputOptions = {
+export type TextInputInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: string | null;
@@ -131,7 +131,7 @@ export type TextInputOptions = {
   minLength: number | null;
 };
 
-export type TimeInputOptions = {
+export type TimeInputInternalOptions = {
   label: string;
   placeholder: string;
   defaultValue: Date | null;

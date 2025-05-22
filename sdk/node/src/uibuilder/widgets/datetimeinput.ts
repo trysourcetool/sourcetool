@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   DateTimeInputState,
   WidgetTypeDateTimeInput,
 } from '../../session/state/datetimeinput';
-import { DateTimeInputOptions } from '../../types/options';
+import { DateTimeInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   DateTimeInput as DateTimeInputProto,
@@ -17,9 +17,9 @@ import { Session } from '../../session';
 import { Page } from '../../page';
 
 /**
- * DateTimeInput component options
+ * DateTimeInput options
  */
-export interface DateTimeInputComponentOptions {
+export interface DateTimeInputOptions {
   /**
    * Placeholder text
    */
@@ -66,83 +66,6 @@ export interface DateTimeInputComponentOptions {
 }
 
 /**
- * DateTimeInput component class
- */
-export class DateTimeInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns DateTimeInput options
-   */
-  static placeholder(placeholder: string): DateTimeInputComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns DateTimeInput options
-   */
-  static defaultValue(value: Date): DateTimeInputComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns DateTimeInput options
-   */
-  static required(required: boolean): DateTimeInputComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns DateTimeInput options
-   */
-  static disabled(disabled: boolean): DateTimeInputComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the date and time format
-   * @param format Date and time format
-   * @returns DateTimeInput options
-   */
-  static format(format: string): DateTimeInputComponentOptions {
-    return { format };
-  }
-
-  /**
-   * Set the maximum date and time
-   * @param value Maximum date and time
-   * @returns DateTimeInput options
-   */
-  static maxValue(value: Date): DateTimeInputComponentOptions {
-    return { maxValue: value };
-  }
-
-  /**
-   * Set the minimum date and time
-   * @param value Minimum date and time
-   * @returns DateTimeInput options
-   */
-  static minValue(value: Date): DateTimeInputComponentOptions {
-    return { minValue: value };
-  }
-
-  /**
-   * Set the timezone location
-   * @param location Timezone location
-   * @returns DateTimeInput options
-   */
-  static location(location: string): DateTimeInputComponentOptions {
-    return { location };
-  }
-}
-
-/**
  * Add a date and time input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -157,7 +80,7 @@ export function dateTimeInput(
     cursor: Cursor;
   },
   label: string,
-  options: DateTimeInputComponentOptions = {},
+  options: DateTimeInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -165,7 +88,7 @@ export function dateTimeInput(
     return null;
   }
 
-  const dateTimeInputOpts: DateTimeInputOptions = {
+  const dateTimeInputOpts: DateTimeInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,
@@ -178,16 +101,12 @@ export function dateTimeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(
-    page.id,
-    WidgetTypeDateTimeInput,
-    path,
-  );
+  const widgetId = generateWidgetId(page.id, WidgetTypeDateTimeInput, path);
 
-  let dateTimeInputState = session.state.getDateTimeInput(widgetID);
+  let dateTimeInputState = session.state.getDateTimeInput(widgetId);
   if (!dateTimeInputState) {
     dateTimeInputState = new DateTimeInputState(
-      widgetID,
+      widgetId,
       dateTimeInputOpts.defaultValue,
       dateTimeInputOpts.label,
       dateTimeInputOpts.placeholder,
@@ -210,7 +129,7 @@ export function dateTimeInput(
     dateTimeInputState.minValue = dateTimeInputOpts.minValue;
     dateTimeInputState.location = dateTimeInputOpts.location;
   }
-  session.state.set(widgetID, dateTimeInputState);
+  session.state.set(widgetId, dateTimeInputState);
 
   const dateTimeInputProto = convertStateToDateTimeInputProto(
     dateTimeInputState as DateTimeInputState,
@@ -221,7 +140,7 @@ export function dateTimeInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'dateTimeInput',
         value: dateTimeInputProto,

@@ -9,7 +9,7 @@ export function removeDuplicates(groups: string[]): string[] {
 /**
  * Router interface
  */
-export interface RouterInterface {
+export interface Router {
   /**
    * Add a page to the router
    * @param relativePath Relative path
@@ -27,14 +27,14 @@ export interface RouterInterface {
    * @param groups Access groups
    * @returns Router
    */
-  accessGroups(...groups: string[]): RouterInterface;
+  accessGroups(...groups: string[]): Router;
 
   /**
    * Create a new router group
    * @param relativePath Relative path
    * @returns Router
    */
-  group(relativePath: string): RouterInterface;
+  group(relativePath: string): Router;
 }
 
 type RouterContext = {
@@ -46,8 +46,8 @@ type RouterContext = {
 /**
  * Router class
  */
-export class Router implements RouterInterface {
-  private parent: Router | null;
+export class RouterImpl implements Router {
+  private parent: RouterImpl | null;
   private context: RouterContext | null;
   private basePath: string;
   private namespaceDNS: string;
@@ -64,7 +64,7 @@ export class Router implements RouterInterface {
   constructor(
     context: RouterContext | null,
     namespaceDNS: string,
-    parent: Router | null = null,
+    parent: RouterImpl | null = null,
     basePath: string = '',
     groups: string[] = [],
   ) {
@@ -80,7 +80,7 @@ export class Router implements RouterInterface {
    * @param fullPath Full path
    * @returns Page ID
    */
-  generatePageID(fullPath: string): string {
+  generatePageId(fullPath: string): string {
     const ns = uuidv5(this.namespaceDNS, uuidv5.DNS);
     return uuidv5(`${fullPath}-${this.context?.environment}`, ns);
   }
@@ -135,7 +135,7 @@ export class Router implements RouterInterface {
    */
   private collectGroups(): string[] {
     const groups: string[] = [];
-    let current: Router | null = this;
+    let current: RouterImpl | null = this;
 
     while (current !== null) {
       groups.push(...current.groups);
@@ -175,14 +175,14 @@ export class Router implements RouterInterface {
       fullPath = this.joinPath(relativePath);
     }
 
-    const pageID = this.generatePageID(fullPath);
+    const pageId = this.generatePageId(fullPath);
 
     if (this.context === null) {
       throw new Error('Sourcetool is not set');
     }
 
     const page = new Page(
-      pageID,
+      pageId,
       name,
       fullPath,
       [Object.keys(this.context.pages).length],
@@ -190,7 +190,7 @@ export class Router implements RouterInterface {
       this.removeDuplicates(this.collectGroups()),
     );
 
-    this.context.addPage(pageID, page);
+    this.context.addPage(pageId, page);
   }
 
   /**
@@ -198,7 +198,7 @@ export class Router implements RouterInterface {
    * @param groups Access groups
    * @returns Router
    */
-  accessGroups(...groups: string[]): RouterInterface {
+  accessGroups(...groups: string[]): Router {
     if (groups.length > 0) {
       this.groups.push(...groups);
     }
@@ -210,11 +210,11 @@ export class Router implements RouterInterface {
    * @param relativePath Relative path
    * @returns Router
    */
-  group(relativePath: string): RouterInterface {
+  group(relativePath: string): Router {
     if (this.context === null) {
       throw new Error('Sourcetool is not set');
     }
-    return new Router(
+    return new RouterImpl(
       this.context,
       this.namespaceDNS,
       this,

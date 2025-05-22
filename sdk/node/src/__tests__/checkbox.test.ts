@@ -7,7 +7,7 @@ import {
   convertStateToCheckboxProto,
 } from '../uibuilder/widgets/checkbox';
 import { createSessionManager, newSession } from '../session';
-import { UIBuilder, uiBuilderGeneratePageID } from '../uibuilder';
+import { generateWidgetId, UIBuilderImpl } from '../uibuilder';
 import { Page, PageManager } from '../page';
 import { Runtime } from '../runtime';
 import { MockClient } from '../websocket/mock/websocket';
@@ -95,7 +95,7 @@ test('checkbox', () => {
     throw new Error('Page not found');
   }
 
-  const builder = new UIBuilder(runtime, session, page);
+  const builder = new UIBuilderImpl(runtime, session, page);
 
   const label = 'Test Checkbox';
   const options = {
@@ -106,7 +106,7 @@ test('checkbox', () => {
 
   builder.checkbox(label, options);
 
-  const widgetId = uiBuilderGeneratePageID(page.id, 'checkbox', [0]);
+  const widgetId = generateWidgetId(page.id, 'checkbox', [0]);
   const state = session.state.getCheckbox(widgetId);
 
   if (!state) {

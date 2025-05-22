@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { UIBuilder, Cursor, uiBuilderGeneratePageID } from '../';
+import { UIBuilder, Cursor, generateWidgetId, UIBuilderImpl } from '../index';
 import { FormState, WidgetTypeForm } from '../../session/state/form';
-import { FormOptions } from '../../types/options';
+import { FormInternalOptions } from '../../types/options';
 import { create, fromJson } from '@bufbuild/protobuf';
 import {
   Form as FormProto,
@@ -13,9 +13,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * Form component options
+ * Form options
  */
-export interface FormComponentOptions {
+export interface FormOptions {
   /**
    * Whether the button is disabled
    * @default false
@@ -27,29 +27,6 @@ export interface FormComponentOptions {
    * @default false
    */
   clearOnSubmit?: boolean;
-}
-
-/**
- * Form component class
- */
-export class Form {
-  /**
-   * Disable the button
-   * @param disabled Whether the button is disabled
-   * @returns Form options
-   */
-  static buttonDisabled(disabled: boolean): FormComponentOptions {
-    return { buttonDisabled: disabled };
-  }
-
-  /**
-   * Clear the form on submit
-   * @param clear Whether to clear the form on submit
-   * @returns Form options
-   */
-  static clearOnSubmit(clear: boolean): FormComponentOptions {
-    return { clearOnSubmit: clear };
-  }
 }
 
 /**
@@ -67,27 +44,27 @@ export function form(
     cursor: Cursor;
   },
   buttonLabel: string,
-  options: FormComponentOptions = {},
+  options: FormOptions = {},
 ): [UIBuilder, boolean] {
   const { runtime, session, page, cursor } = context;
 
   if (!session || !page || !cursor) {
-    return [new UIBuilder(runtime, session, page), false];
+    return [new UIBuilderImpl(runtime, session, page), false];
   }
 
-  const formOpts: FormOptions = {
+  const formOpts: FormInternalOptions = {
     buttonLabel,
     buttonDisabled: options.buttonDisabled || false,
     clearOnSubmit: options.clearOnSubmit || false,
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeForm, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeForm, path);
 
-  let formState = session.state.getForm(widgetID);
+  let formState = session.state.getForm(widgetId);
   if (!formState) {
     formState = new FormState(
-      widgetID,
+      widgetId,
       false,
       formOpts.buttonLabel,
       formOpts.buttonDisabled,
@@ -98,7 +75,7 @@ export function form(
     formState.buttonDisabled = formOpts.buttonDisabled;
     formState.clearOnSubmit = formOpts.clearOnSubmit;
   }
-  session.state.set(widgetID, formState);
+  session.state.set(widgetId, formState);
 
   const formProto = convertStateToFormProto(formState as FormState);
 
@@ -107,7 +84,7 @@ export function form(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'form',
         value: formProto,
@@ -123,7 +100,7 @@ export function form(
   const childCursor = new Cursor();
   childCursor.parentPath = path;
 
-  const childBuilder = new UIBuilder(runtime, session, page, childCursor);
+  const childBuilder = new UIBuilderImpl(runtime, session, page, childCursor);
 
   return [childBuilder, formState.value];
 }

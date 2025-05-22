@@ -1,6 +1,6 @@
 import { UIBuilder } from './uibuilder';
 import { Page } from './page';
-import { Router, RouterInterface } from './router';
+import { Router, RouterImpl } from './router';
 import { Runtime, startRuntime } from './runtime';
 
 /**
@@ -21,7 +21,7 @@ export interface SourcetoolConfig {
 /**
  * Sourcetool class
  */
-export class Sourcetool implements RouterInterface {
+export class Sourcetool implements Router {
   /**
    * API key
    */
@@ -35,7 +35,7 @@ export class Sourcetool implements RouterInterface {
   /**
    * Router
    */
-  private router: RouterInterface;
+  private router: Router;
 
   /**
    * Pages
@@ -68,7 +68,7 @@ export class Sourcetool implements RouterInterface {
     this.endpoint = `${config.endpoint}/ws`;
 
     // Extract namespace DNS
-    const namespaceDNS = hostParts[1].split(':')[0];
+    const namespaceDns = hostParts[1].split(':')[0];
 
     const keyParts = this.apiKey.split('_');
     if (keyParts.length !== 2) {
@@ -81,13 +81,13 @@ export class Sourcetool implements RouterInterface {
     this.pages = {};
 
     // Initialize router
-    this.router = new Router(
+    this.router = new RouterImpl(
       {
         environment: this.environment,
         pages: this.pages,
         addPage: this.addPage.bind(this),
       },
-      namespaceDNS,
+      namespaceDns,
     );
   }
 
@@ -165,7 +165,7 @@ export class Sourcetool implements RouterInterface {
    * @param groups Access groups
    * @returns Router
    */
-  accessGroups(...groups: string[]): RouterInterface {
+  accessGroups(...groups: string[]): Router {
     return this.router.accessGroups(...groups);
   }
 
@@ -174,7 +174,7 @@ export class Sourcetool implements RouterInterface {
    * @param relativePath Relative path
    * @returns Router
    */
-  group(relativePath: string): RouterInterface {
+  group(relativePath: string): Router {
     return this.router.group(relativePath);
   }
 }

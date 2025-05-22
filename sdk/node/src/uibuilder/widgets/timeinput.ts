@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Cursor, uiBuilderGeneratePageID } from '../';
+import { Cursor, generateWidgetId } from '../';
 import {
   TimeInputState,
   WidgetTypeTimeInput,
 } from '../../session/state/timeinput';
-import { TimeInputOptions } from '../../types/options';
+import { TimeInputInternalOptions } from '../../types/options';
 import { create, fromJson, toJson } from '@bufbuild/protobuf';
 import {
   TimeInput as TimeInputProto,
@@ -16,9 +16,9 @@ import { Runtime } from '../../runtime';
 import { Session } from '../../session';
 import { Page } from '../../page';
 /**
- * TimeInput component options
+ * TimeInput options
  */
-export interface TimeInputComponentOptions {
+export interface TimeInputOptions {
   /**
    * Placeholder text
    */
@@ -49,56 +49,6 @@ export interface TimeInputComponentOptions {
 }
 
 /**
- * TimeInput component class
- */
-export class TimeInput {
-  /**
-   * Set the placeholder text
-   * @param placeholder Placeholder text
-   * @returns TimeInput options
-   */
-  static placeholder(placeholder: string): TimeInputComponentOptions {
-    return { placeholder };
-  }
-
-  /**
-   * Set the default value
-   * @param value Default value
-   * @returns TimeInput options
-   */
-  static defaultValue(value: Date): TimeInputComponentOptions {
-    return { defaultValue: value };
-  }
-
-  /**
-   * Make the input required
-   * @param required Whether the input is required
-   * @returns TimeInput options
-   */
-  static required(required: boolean): TimeInputComponentOptions {
-    return { required };
-  }
-
-  /**
-   * Disable the input
-   * @param disabled Whether the input is disabled
-   * @returns TimeInput options
-   */
-  static disabled(disabled: boolean): TimeInputComponentOptions {
-    return { disabled };
-  }
-
-  /**
-   * Set the timezone location
-   * @param location Timezone location
-   * @returns TimeInput options
-   */
-  static location(location: string): TimeInputComponentOptions {
-    return { location };
-  }
-}
-
-/**
  * Add a time input to the UI
  * @param builder The UI builder
  * @param label The input label
@@ -113,7 +63,7 @@ export function timeInput(
     cursor: Cursor;
   },
   label: string,
-  options: TimeInputComponentOptions = {},
+  options: TimeInputOptions = {},
 ): Date | null {
   const { runtime, session, page, cursor } = context;
 
@@ -121,7 +71,7 @@ export function timeInput(
     return null;
   }
 
-  const timeInputOpts: TimeInputOptions = {
+  const timeInputOpts: TimeInputInternalOptions = {
     label,
     placeholder: options.placeholder || '',
     defaultValue: options.defaultValue || null,
@@ -131,12 +81,12 @@ export function timeInput(
   };
 
   const path = cursor.getPath();
-  const widgetID = uiBuilderGeneratePageID(page.id, WidgetTypeTimeInput, path);
+  const widgetId = generateWidgetId(page.id, WidgetTypeTimeInput, path);
 
-  let timeInputState = session.state.getTimeInput(widgetID);
+  let timeInputState = session.state.getTimeInput(widgetId);
   if (!timeInputState) {
     timeInputState = new TimeInputState(
-      widgetID,
+      widgetId,
       timeInputOpts.defaultValue,
       timeInputOpts.label,
       timeInputOpts.placeholder,
@@ -145,7 +95,7 @@ export function timeInput(
       timeInputOpts.disabled,
       timeInputOpts.location,
     );
-    session.state.set(widgetID, timeInputState);
+    session.state.set(widgetId, timeInputState);
   } else {
     timeInputState.label = timeInputOpts.label;
     timeInputState.placeholder = timeInputOpts.placeholder;
@@ -153,7 +103,7 @@ export function timeInput(
     timeInputState.required = timeInputOpts.required;
     timeInputState.disabled = timeInputOpts.disabled;
     timeInputState.location = timeInputOpts.location;
-    session.state.set(widgetID, timeInputState);
+    session.state.set(widgetId, timeInputState);
   }
 
   const timeInputProto = convertStateToTimeInputProto(
@@ -165,7 +115,7 @@ export function timeInput(
     pageId: page.id,
     path: convertPathToInt32Array(path),
     widget: create(WidgetSchema, {
-      id: widgetID,
+      id: widgetId,
       type: {
         case: 'timeInput',
         value: timeInputProto,
