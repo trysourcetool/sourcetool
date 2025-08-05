@@ -80,11 +80,11 @@ secure_download() {
     log_info "Downloading from $url..."
     
     # Create temp directory
-    local tmp_dir=$(mktemp -d)
-    trap "rm -rf $tmp_dir" EXIT
+    local tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "$tmp_dir"' EXIT
     
     # Download file
-    if ! curl -fsSL "$url" -o "$tmp_dir/$(basename $output)"; then
+    if ! curl -fsSL "$url" -o "$tmp_dir/$(basename "$output")"; then
         log_error "Failed to download $url"
         return 1
     fi
@@ -100,17 +100,17 @@ secure_download() {
                 log_error "Failed to download checksum"
                 return 1
             }
-            expected_checksum=$(cat "$tmp_dir/checksum.txt" | awk '{print $1}')
+            expected_checksum="$(awk '{print $1}' "$tmp_dir/checksum.txt")"
         fi
         
         # Calculate actual checksum
         if command_exists sha256sum; then
-            actual_checksum=$(sha256sum "$tmp_dir/$(basename $output)" | awk '{print $1}')
+            actual_checksum="$(sha256sum "$tmp_dir/$(basename "$output")" | awk '{print $1}')"
         elif command_exists shasum; then
-            actual_checksum=$(shasum -a 256 "$tmp_dir/$(basename $output)" | awk '{print $1}')
+            actual_checksum="$(shasum -a 256 "$tmp_dir/$(basename "$output")" | awk '{print $1}')"
         else
             log_warn "Cannot verify checksum - no sha256sum or shasum available"
-            mv "$tmp_dir/$(basename $output)" "$output"
+            mv "$tmp_dir/$(basename "$output")" "$output"
             return 0
         fi
         
@@ -125,7 +125,7 @@ secure_download() {
     fi
     
     # Move to final location
-    mv "$tmp_dir/$(basename $output)" "$output"
+    mv "$tmp_dir/$(basename "$output")" "$output"
     return 0
 }
 
@@ -149,7 +149,7 @@ check_prerequisites() {
     
     # Check Go version
     if command_exists go; then
-        local go_version=$(go version | awk '{print $3}' | sed 's/go//')
+        local go_version="$(go version | awk '{print $3}' | sed 's/go//')"
         if ! version_ge "$go_version" "$REQUIRED_GO_VERSION"; then
             log_error "Go $REQUIRED_GO_VERSION or higher is required (found: $go_version)"
             prerequisites_met=false
@@ -164,7 +164,7 @@ check_prerequisites() {
     
     # Check Node.js version
     if command_exists node; then
-        local node_version=$(node -v | sed 's/v//')
+        local node_version="$(node -v | sed 's/v//')"
         if ! version_ge "$node_version" "$REQUIRED_NODE_VERSION"; then
             log_error "Node.js $REQUIRED_NODE_VERSION or higher is required (found: $node_version)"
             prerequisites_met=false
@@ -219,7 +219,7 @@ setup_path() {
         log_warn "Please run 'source $shell_config' or restart your terminal"
         
         # Export for current session
-        export PATH="$PATH:$go_bin"
+        export PATH="${PATH}:${go_bin}"
         path_updated=true
     fi
     
@@ -229,7 +229,7 @@ setup_path() {
 # Install pnpm
 install_pnpm() {
     if command_exists pnpm; then
-        local current_version=$(pnpm -v)
+        local current_version="$(pnpm -v)"
         if version_ge "$current_version" "$REQUIRED_PNPM_VERSION"; then
             log_success "pnpm $current_version already installed"
             return 0
@@ -332,7 +332,7 @@ install_buf() {
             ;;
         ubuntu|linux)
             local buf_bin="$HOME/go/bin/buf"
-            local arch=$(uname -m)
+            local arch="$(uname -m)"
             case "$arch" in
                 x86_64) arch="x86_64" ;;
                 aarch64) arch="aarch64" ;;
@@ -343,7 +343,7 @@ install_buf() {
             esac
             
             secure_download \
-                "https://github.com/bufbuild/buf/releases/latest/download/buf-Linux-$arch" \
+                "https://github.com/bufbuild/buf/releases/latest/download/buf-Linux-${arch}" \
                 "$buf_bin" \
                 "" ""
             chmod +x "$buf_bin"
@@ -395,7 +395,7 @@ install_docker() {
             curl -fsSL https://get.docker.com | sudo sh
             
             # Add user to docker group
-            sudo usermod -aG docker "$USER"
+            sudo usermod -aG docker "${USER}"
             log_warn "You need to log out and back in for docker group membership to take effect"
             ;;
         linux)
