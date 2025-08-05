@@ -212,7 +212,7 @@ setup_path() {
         
         # Add to PATH
         echo "" >> "$shell_config"
-        echo "# Added by sourcetool install script" >> "$shell_config"
+        echo "# Added by Sourcetool install script" >> "$shell_config"
         echo "export PATH=\"\$PATH:$go_bin\"" >> "$shell_config"
         
         log_info "Added $go_bin to PATH in $shell_config"
