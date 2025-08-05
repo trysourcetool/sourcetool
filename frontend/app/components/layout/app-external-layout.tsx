@@ -32,6 +32,7 @@ import {
   KeyRound,
   Loader2,
   LogOut,
+  MessageSquare,
   Settings2,
   Split,
   Users,
@@ -134,6 +135,14 @@ export function AppExternalLayout(props: PropsWithChildren) {
                 <Link to={'/'} onClick={handleSidebarClose}>
                   <FileText />
                   <span>{t('components_layout_sidebar_pages')}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenu>
+            <SidebarMenu>
+              <SidebarMenuButton asChild isActive={pathname.includes('/agents')}>
+                <Link to={'/agents'} onClick={handleSidebarClose}>
+                  <MessageSquare />
+                  <span>{t('components_layout_sidebar_agents')}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenu>

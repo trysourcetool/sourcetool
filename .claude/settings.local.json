@@ -2,6 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)"
       "WebSearch",
       "Bash(go build:*)",
       "Bash(go test:*)"

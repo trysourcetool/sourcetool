@@ -1,6 +1,7 @@
 {
   "breadcrumbs_pages": "Pages",
   "breadcrumbs_users": "Users",
+  "breadcrumbs_agents": "Agents",
   "breadcrumbs_api_keys": "API keys",
   "breadcrumbs_permission_groups": "Permission groups",
   "breadcrumbs_groups": "Groups",
@@ -38,6 +39,7 @@
   "zod_errors_password_same_as_current": "New password cannot be the same as the current password",
 
   "routes_pages_page_header": "Pages",
+  "routes_agents_page_header": "Agents",
   "routes_pages_placeholder_title": "Add your first page to get started with Sourcetool",
   "routes_pages_placeholder_description": "Add the following code to your backend:",
   "routes_pages_placeholder_restart_server": "Restart your server and reload this page",
@@ -334,6 +336,7 @@
   "components_layout_app_version": "v0.1.12",
   "components_layout_sidebar_pages": "Pages",
   "components_layout_sidebar_users": "Users",
+  "components_layout_sidebar_agents": "Agents",
   "components_layout_sidebar_environments": "Environments",
   "components_layout_sidebar_api_keys": "API keys",
   "components_layout_sidebar_permissions": "Permissions",
