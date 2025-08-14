@@ -35,6 +35,10 @@ type LicenseValidityResponse struct {
 	Subscription *SubscriptionResponse `json:"subscription,omitempty"`
 }
 
+type UpdateSeatsRequest struct {
+	Seats int64 `json:"seats"`
+}
+
 func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, error) {
 	if baseURL == "" {
 		return nil, fmt.Errorf("license server base URL cannot be empty")
@@ -84,7 +88,8 @@ func (c *Checker) Validate(ctx context.Context) error {
 func (c *Checker) UpdateSeats(ctx context.Context, seats int64) error {
 	endpoint := c.BaseURL + "/v1/seats"
 
-	body, err := json.Marshal(map[string]int64{"seats": seats})
+	reqBody := UpdateSeatsRequest{Seats: seats}
+	body, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
