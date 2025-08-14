@@ -34,8 +34,9 @@ type LicenseValidityResponse struct {
 }
 
 func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, error) {
+	defaultBaseURL := "http://host.docker.internal:8082"
 	if baseURL == "" {
-		baseURL = "http://host.docker.internal:8082"
+		baseURL = defaultBaseURL
 	}
 	if config.Config.Env != config.EnvLocal {
 		matched, err := regexp.MatchString(`^https?://(?:[a-zA-Z0-9-]+\.)?license\.trysourcetool\.com$`, baseURL)
