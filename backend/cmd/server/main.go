@@ -33,6 +33,8 @@ func init() {
 }
 
 func main() {
+	const defaultLicenseServerBaseURL = "http://host.docker.internal:8082"
+
 	autoMigrateFlag := flag.Bool("auto-migrate", false, "run migrations before starting the server")
 	flag.Parse()
 
@@ -66,7 +68,7 @@ func main() {
 
 	baseURL := os.Getenv("LICENSE_SERVER_BASE_URL")
 	if baseURL == "" {
-		baseURL = "http://host.docker.internal:8082"
+		baseURL = defaultLicenseServerBaseURL
 	}
 	licenseKey := os.Getenv("LICENSE_KEY")
 	licenseChecker, err := license.NewChecker(baseURL, licenseKey, 10*time.Second)
