@@ -74,10 +74,6 @@ func main() {
 		logger.Logger.Fatal("failed to create license checker", zap.Error(err))
 	}
 
-	if err := licenseChecker.Validate(ctx); err != nil {
-		logger.Logger.Fatal("license validation failed", zap.Error(err))
-	}
-
 	if config.Config.Env == config.EnvLocal {
 		if err := internal.LoadFixtures(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
@@ -103,6 +99,36 @@ func main() {
 	}
 
 	eg, egCtx := errgroup.WithContext(ctx)
+
+	const licenseGracePeriod = 24 * time.Hour
+	eg.Go(func() error {
+		if err := licenseChecker.Validate(egCtx); err == nil {
+			return nil
+		} else {
+			logger.Logger.Warn("license validation failed, entering grace period", zap.Error(err))
+			start := time.Now()
+			ticker := time.NewTicker(1 * time.Minute)
+			defer ticker.Stop()
+			lastErr := err
+			for {
+				select {
+				case <-egCtx.Done():
+					return nil
+				case <-ticker.C:
+					if err := licenseChecker.Validate(egCtx); err == nil {
+						logger.Logger.Info("license validation succeeded after retry")
+						return nil
+					} else {
+						lastErr = err
+						logger.Logger.Warn("license validation retry failed", zap.Error(err))
+					}
+					if time.Since(start) > licenseGracePeriod {
+						return fmt.Errorf("license validation failed after grace period: %v", lastErr)
+					}
+				}
+			}
+		}
+	})
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
