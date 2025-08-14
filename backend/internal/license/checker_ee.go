@@ -14,6 +14,8 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 )
 
+var licenseServerURLRegex = regexp.MustCompile(`^https?://(?:[a-zA-Z0-9-]+\.)?license\.trysourcetool\.com$`)
+
 type SubscriptionResponse struct {
 	ID                   string `json:"id"`
 	UserID               string `json:"userId"`
@@ -38,11 +40,7 @@ func NewChecker(baseURL, licenseKey string, timeout time.Duration) (*Checker, er
 		return nil, fmt.Errorf("license server base URL cannot be empty")
 	}
 	if config.Config.Env != config.EnvLocal {
-		matched, err := regexp.MatchString(`^https?://(?:[a-zA-Z0-9-]+\.)?license\.trysourcetool\.com$`, baseURL)
-		if err != nil {
-			return nil, fmt.Errorf("invalid license server URL: %v", err)
-		}
-		if !matched {
+		if !licenseServerURLRegex.MatchString(baseURL) {
 			return nil, fmt.Errorf("license server URL must be a *.license.trysourcetool.com domain")
 		}
 	}
