@@ -109,7 +109,7 @@ func main() {
 			start := time.Now()
 			ticker := time.NewTicker(1 * time.Minute)
 			defer ticker.Stop()
-			lastErr := err
+			var lastErr error
 			for {
 				select {
 				case <-egCtx.Done():
