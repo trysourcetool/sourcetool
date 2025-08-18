@@ -495,6 +495,13 @@ func (s *Server) handleDeleteUser(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		// Acquire advisory lock for license seat management to prevent race conditions
+		if !config.Config.IsCloudEdition {
+			if err := tx.AcquireLicenseSeatLock(ctx); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.User().DeleteOrganizationAccess(ctx, orgAccess); err != nil {
 			return err
 		}

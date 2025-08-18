@@ -22,4 +22,8 @@ type DB interface {
 
 type Tx interface {
 	Stores
+	// AcquireLicenseSeatLock acquires an advisory lock for license seat management.
+	// The lock is automatically released when the transaction ends (commit or rollback).
+	// This ensures serial execution of seat allocation/deallocation operations.
+	AcquireLicenseSeatLock(ctx context.Context) error
 }
