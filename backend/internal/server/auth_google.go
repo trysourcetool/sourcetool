@@ -269,6 +269,13 @@ func (s *Server) handleAuthenticateWithGoogle(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		// Acquire advisory lock for license seat management to prevent race conditions
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := tx.AcquireLicenseSeatLock(ctx); err != nil {
+				return err
+			}
+		}
+
 		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation {
 			// For invitation flow, create org access and delete invitation
 			userInvitation, err := s.db.User().GetInvitation(ctx, database.UserInvitationByEmail(userInfo.Email), database.UserInvitationByOrganizationID(stateClaims.InvitationOrgID))
@@ -288,6 +295,12 @@ func (s *Server) handleAuthenticateWithGoogle(w http.ResponseWriter, r *http.Req
 
 		if err := tx.User().Update(ctx, u); err != nil {
 			return err
+		}
+
+		if stateClaims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -374,6 +387,13 @@ func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		// Acquire advisory lock for license seat management to prevent race conditions
+		if claims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := tx.AcquireLicenseSeatLock(ctx); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.User().Create(ctx, u); err != nil {
 			return errdefs.ErrInternal(fmt.Errorf("failed to create user: %w", err))
 		}
@@ -427,6 +447,12 @@ func (s *Server) handleRegisterWithGoogle(w http.ResponseWriter, r *http.Request
 		if hasOrganization {
 			authURL, err = buildSaveAuthURL(orgSubdomain)
 			if err != nil {
+				return err
+			}
+		}
+
+		if claims.Flow == jwt.GoogleAuthFlowInvitation && !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
 				return err
 			}
 		}

@@ -18,6 +18,7 @@ import (
 	"github.com/trysourcetool/sourcetool/backend/cmd/internal"
 	"github.com/trysourcetool/sourcetool/backend/internal/config"
 	"github.com/trysourcetool/sourcetool/backend/internal/encrypt"
+	"github.com/trysourcetool/sourcetool/backend/internal/license"
 	"github.com/trysourcetool/sourcetool/backend/internal/logger"
 	"github.com/trysourcetool/sourcetool/backend/internal/permission"
 	"github.com/trysourcetool/sourcetool/backend/internal/postgres"
@@ -32,6 +33,8 @@ func init() {
 }
 
 func main() {
+	const defaultLicenseServerBaseURL = "http://host.docker.internal:8082"
+
 	autoMigrateFlag := flag.Bool("auto-migrate", false, "run migrations before starting the server")
 	flag.Parse()
 
@@ -63,6 +66,16 @@ func main() {
 		logger.Logger.Fatal("failed to create encryptor", zap.Error(err))
 	}
 
+	baseURL := os.Getenv("LICENSE_SERVER_BASE_URL")
+	if baseURL == "" {
+		baseURL = defaultLicenseServerBaseURL
+	}
+	licenseKey := os.Getenv("LICENSE_KEY")
+	licenseChecker, err := license.NewChecker(baseURL, licenseKey, 10*time.Second)
+	if err != nil {
+		logger.Logger.Fatal("failed to create license checker", zap.Error(err))
+	}
+
 	if config.Config.Env == config.EnvLocal {
 		if err := internal.LoadFixtures(ctx, db); err != nil {
 			logger.Logger.Fatal(err.Error())
@@ -76,7 +89,7 @@ func main() {
 	}
 
 	handler := chi.NewRouter()
-	s := server.New(db, pubsub, wsManager, permission.NewChecker(db), upgrader, encryptor)
+	s := server.New(db, pubsub, wsManager, upgrader, encryptor, permission.NewChecker(db), licenseChecker)
 	s.Install(handler)
 
 	srv := &http.Server{
@@ -88,6 +101,53 @@ func main() {
 	}
 
 	eg, egCtx := errgroup.WithContext(ctx)
+
+	const licenseGracePeriod = 24 * time.Hour
+	eg.Go(func() error {
+		// Helper function to validate license and log result
+		validateWithLogging := func(isRetry bool) error {
+			err := licenseChecker.Validate(egCtx)
+			if err == nil {
+				if isRetry {
+					logger.Logger.Info("license validation succeeded after retry")
+				}
+				return nil
+			}
+			if isRetry {
+				logger.Logger.Warn("license validation retry failed", zap.Error(err))
+			} else {
+				logger.Logger.Warn("license validation failed, entering grace period", zap.Error(err))
+			}
+			return err
+		}
+
+		// Initial validation
+		if err := validateWithLogging(false); err == nil {
+			return nil
+		}
+
+		// Grace period with retries
+		start := time.Now()
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		var lastErr error
+
+		for {
+			select {
+			case <-egCtx.Done():
+				return nil
+			case <-ticker.C:
+				if err := validateWithLogging(true); err == nil {
+					return nil
+				} else {
+					lastErr = err
+				}
+				if time.Since(start) > licenseGracePeriod {
+					return fmt.Errorf("license validation failed after grace period: %v", lastErr)
+				}
+			}
+		}
+	})
 	eg.Go(func() error {
 		logger.Logger.Info(fmt.Sprintf("Listening on port %s\n", port))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

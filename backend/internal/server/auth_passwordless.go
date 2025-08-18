@@ -589,6 +589,13 @@ func (s *Server) handleAuthenticateWithInvitationMagicLink(w http.ResponseWriter
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		// Acquire advisory lock for license seat management to prevent race conditions
+		if !config.Config.IsCloudEdition {
+			if err := tx.AcquireLicenseSeatLock(ctx); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
@@ -599,6 +606,12 @@ func (s *Server) handleAuthenticateWithInvitationMagicLink(w http.ResponseWriter
 
 		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
 			return err
+		}
+
+		if !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -706,6 +719,13 @@ func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r 
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
+		// Acquire advisory lock for license seat management to prevent race conditions
+		if !config.Config.IsCloudEdition {
+			if err := tx.AcquireLicenseSeatLock(ctx); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.User().DeleteInvitation(ctx, userInvitation); err != nil {
 			return err
 		}
@@ -720,6 +740,12 @@ func (s *Server) handleRegisterWithInvitationMagicLink(w http.ResponseWriter, r 
 
 		if err := s.createPersonalAPIKey(ctx, tx, u, invitedOrg); err != nil {
 			return err
+		}
+
+		if !config.Config.IsCloudEdition {
+			if err := s.licenseChecker.UpdateSeats(ctx, int64(1)); err != nil {
+				return err
+			}
 		}
 
 		return nil

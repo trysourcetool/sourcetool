@@ -30,6 +30,7 @@ COPY backend/migrations /app/migrations
 COPY --from=frontend-builder /app/frontend/dist /app/static-full
 RUN ln -s /app/static-full /app/static
 ENV STATIC_FILES_DIR=/app/static
+ENV LICENSE_SERVER_BASE_URL=https://license.trysourcetool.com
 EXPOSE 8080
 
 # Default command to start the server

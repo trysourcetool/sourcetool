@@ -127,6 +127,25 @@ func (tx *tx) User() database.UserStore {
 	return newUserStore(internal.NewQueryLogger(tx.db))
 }
 
+// AcquireLicenseSeatLock acquires a PostgreSQL advisory lock for license seat management.
+// This lock ensures that seat allocation/deallocation operations are serialized across
+// all application instances sharing the same database.
+// The lock is automatically released when the transaction ends (commit or rollback).
+func (tx *tx) AcquireLicenseSeatLock(ctx context.Context) error {
+	// Using a fixed lock ID for license seat management
+	// This number should be unique within the application's lock namespace
+	const licenseSeatLockID int64 = 0x4C49434E // "LICN" in hex
+
+	// pg_advisory_xact_lock waits until the lock is available
+	// The lock is automatically released at transaction end
+	_, err := tx.db.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", licenseSeatLockID)
+	if err != nil {
+		return fmt.Errorf("failed to acquire license seat lock: %w", err)
+	}
+
+	return nil
+}
+
 const (
 	maxIdleConns = 25
 	maxOpenConns = 100
