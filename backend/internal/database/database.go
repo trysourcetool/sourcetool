@@ -12,6 +12,7 @@ type Stores interface {
 	HostInstance() HostInstanceStore
 	Organization() OrganizationStore
 	Page() PageStore
+	Agent() AgentStore
 	Session() SessionStore
 	User() UserStore
 }
