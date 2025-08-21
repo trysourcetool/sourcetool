@@ -8,6 +8,7 @@ import (
 
 type Router interface {
 	Page(relativePath, name string, handler func(UIBuilder) error)
+	Agent(relativePath string, agentDef *Agent) *Agent
 	AccessGroups(groups ...string) Router
 	Group(relativePath string) Router
 }
@@ -31,6 +32,12 @@ func newRouter(st *Sourcetool, namespaceDNS string) Router {
 func (r *router) generatePageID(fullPath string) uuid.UUID {
 	ns := uuid.NewV5(uuid.NamespaceDNS, r.namespaceDNS)
 	return uuid.NewV5(ns, fullPath+"-"+r.sourcetool.environment)
+}
+
+func (r *router) generateAgentID(fullPath string) uuid.UUID {
+	ns := uuid.NewV5(uuid.NamespaceDNS, r.namespaceDNS)
+	// Add "agent-" prefix to avoid collision with page IDs
+	return uuid.NewV5(ns, "agent-"+fullPath+"-"+r.sourcetool.environment)
 }
 
 func (r *router) joinPath(relativePath string) string {
@@ -110,6 +117,28 @@ func (r *router) AccessGroups(groups ...string) Router {
 		r.groups = append(r.groups, groups...)
 	}
 	return r
+}
+
+func (r *router) Agent(relativePath string, agentDef *Agent) *Agent {
+	var fullPath string
+	if relativePath == "" {
+		if r.basePath == "" {
+			fullPath = "/"
+		} else {
+			fullPath = strings.TrimSuffix(r.basePath, "/")
+		}
+	} else {
+		fullPath = r.joinPath(relativePath)
+	}
+	agentID := r.generateAgentID(fullPath)
+
+	// Create agent instance using the internal constructor
+	agent := newAgent(agentDef, agentID, fullPath, removeDuplicates(r.collectGroups()))
+
+	// Register with sourcetool
+	r.sourcetool.addAgent(agentID, agent)
+
+	return agent
 }
 
 func (r *router) Group(relativePath string) Router {
