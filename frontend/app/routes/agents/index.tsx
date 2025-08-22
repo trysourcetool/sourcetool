@@ -6,12 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { useDispatch, useSelector } from '@/store';
 import { environmentsStore } from '@/store/modules/environments';
-import { Bot, MessageSquare } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { agentsStore } from '@/store/modules/agents';
+import { usersStore } from '@/store/modules/users';
+import { apiKeysStore } from '@/store/modules/apiKeys';
+import { Bot, AlertCircle } from 'lucide-react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,40 +23,14 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { SelectValue } from '@radix-ui/react-select';
+import { CodeBlock } from '@/components/common/code-block';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
-// Mock data for agents
-const mockAgents = [
-  { 
-    id: '1', 
-    name: 'Assistant AI', 
-    description: 'General purpose AI assistant for everyday tasks',
-    status: 'online', 
-    avatar: null,
-    lastActive: new Date(),
-    messagesCount: 156
-  },
-  { 
-    id: '2', 
-    name: 'Code Helper', 
-    description: 'Specialized in code review and debugging',
-    status: 'online', 
-    avatar: null,
-    lastActive: new Date(),
-    messagesCount: 89
-  },
-  { 
-    id: '3', 
-    name: 'Data Analyst', 
-    description: 'Expert in data analysis and visualization',
-    status: 'offline', 
-    avatar: null,
-    lastActive: new Date(Date.now() - 3600000), // 1 hour ago
-    messagesCount: 234
-  },
-];
 
 export default function Agents() {
   const isInitialLoading = useRef(false);
+  const [isInitialLoaded, setIsInitialLoaded] = useState(false);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<
     string | null
   >(null);
@@ -62,6 +38,27 @@ export default function Agents() {
   const { setBreadcrumbsState } = useBreadcrumbs();
   const { t } = useTranslation('common');
   const environments = useSelector(environmentsStore.selector.getEnvironments);
+  const agents = useSelector(agentsStore.selector.getAgents);
+  const user = useSelector(usersStore.selector.getUserMe);
+  const devKey = useSelector(apiKeysStore.selector.getDevKey);
+  const apiKeys = useSelector(apiKeysStore.selector.getApiKeys);
+
+  const selectedApiKey = useMemo(() => {
+    if (!selectedEnvironmentId) {
+      return null;
+    }
+    if (
+      environments.find((e) => e.id === selectedEnvironmentId)?.slug ===
+      'development'
+    ) {
+      return devKey;
+    }
+    return (
+      apiKeys.find(
+        (apiKey) => apiKey.environment.id === selectedEnvironmentId,
+      ) ?? null
+    );
+  }, [apiKeys, devKey, environments, selectedEnvironmentId]);
 
   // TODO: Consider using redux-persist if localStorage is used frequently
   const setLocalStorageSelectedEnvironmentId = (environmentId: string) => {
@@ -76,8 +73,7 @@ export default function Agents() {
   const handleSelectEnvironment = async (environmentId: string) => {
     setSelectedEnvironmentId(environmentId);
     setLocalStorageSelectedEnvironmentId(environmentId);
-    // TODO: Add agent filtering by environment when backend is ready
-    // await dispatch(agentsStore.asyncActions.listAgents({ environmentId }));
+    await dispatch(agentsStore.asyncActions.listAgents({ environmentId }));
   };
 
   useEffect(() => {
@@ -92,6 +88,7 @@ export default function Agents() {
       (async () => {
         const resultActions = await Promise.all([
           dispatch(environmentsStore.asyncActions.listEnvironments()),
+          dispatch(apiKeysStore.asyncActions.listApiKeys()),
         ]);
         if (
           environmentsStore.asyncActions.listEnvironments.fulfilled.match(
@@ -116,10 +113,10 @@ export default function Agents() {
           ) {
             setLocalStorageSelectedEnvironmentId(environmentId);
           }
-          // TODO: Load agents for selected environment
-          // await dispatch(agentsStore.asyncActions.listAgents({ environmentId }));
+          await dispatch(agentsStore.asyncActions.listAgents({ environmentId }));
         }
         isInitialLoading.current = false;
+        setIsInitialLoaded(true);
       })();
     }
   }, [dispatch]);
@@ -133,7 +130,7 @@ export default function Agents() {
       <div className="p-4 md:p-6">
         <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
           <div className="flex gap-2 text-lg font-bold">
-            {mockAgents.length} Agents in
+            {agents.length} Agents in
             <div className="flex items-center gap-2">
               <div
                 className="size-3 rounded-full"
@@ -167,9 +164,100 @@ export default function Agents() {
             )}
           </div>
         </div>
+        
+        {isInitialLoaded && agents.length === 0 && (
+          <div className="flex w-full flex-col gap-4 rounded-md md:border md:p-6">
+            <h2 className="text-xl font-bold">
+              {t('routes_agents_placeholder_title')}
+            </h2>
+            <p className="text-sidebar-foreground font-normal">
+              {t('routes_agents_placeholder_description')}
+            </p>
+            {!selectedApiKey?.key && (
+              <Alert
+                variant="destructive"
+                className="border-destructive bg-destructive/10"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>No API Key Found for This Environment</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    Create an API key for this environment to access the setup
+                    code and get started with your integration.
+                  </p>
+                  <Button variant="destructive" asChild>
+                    <Link to={'/apiKeys/new'}>Edit API Key</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            <CodeBlock
+              code={`package main
 
+import (
+	"context"
+	"log"
+
+	"github.com/trysourcetool/sourcetool-go"
+	"github.com/trysourcetool/sourcetool-go/agent"
+	"github.com/trysourcetool/sourcetool-go/agent/models"
+)
+
+// Weather tool parameters
+type WeatherParams struct {
+	Location string \`json:"location" desc:"City name or coordinates" required:"true"\`
+}
+
+func main() {
+	s := sourcetool.New(&sourcetool.Config{
+		APIKey:   "${selectedApiKey?.key ?? 'your_api_key'}",
+		Endpoint: "${user?.organization?.webSocketEndpoint}",
+	})
+
+	// Create weather tool
+	weatherTool := agent.NewTool("get_weather", "Get current weather information",
+		func(ctx context.Context, params WeatherParams) (interface{}, error) {
+			// Your weather API logic here
+			return map[string]interface{}{
+				"location":    params.Location,
+				"temperature": "72°F",
+				"condition":   "Sunny",
+				"humidity":    "45%",
+			}, nil
+		},
+	)
+
+	// Create and register an agent
+	s.Agent("assistant", &sourcetool.Agent{
+		Name:        "assistant", 
+		Description: "A helpful AI assistant for general tasks",
+		Instructions: "You are a helpful assistant. Be concise and accurate.",
+		Model:       models.OpenAI("gpt-4o-mini"),
+		Tools:       []agent.Tool{weatherTool},
+	})
+
+	if err := s.Listen(); err != nil {
+		log.Fatal(err)
+	}
+}`}
+              language="go"
+            />
+
+            <p className="text-sidebar-foreground font-normal">
+              {t('routes_agents_placeholder_restart_server')}
+            </p>
+            <p className="text-sidebar-foreground font-normal">
+              {t('routes_agents_placeholder_agent_added')}
+            </p>
+            <p className="text-sidebar-foreground font-normal">
+              {t('routes_agents_placeholder_documentation')}
+            </p>
+          </div>
+        )}
+        
+        {agents.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {mockAgents.map((agent) => (
+          {agents.map((agent) => (
             <Link
               key={agent.id}
               to="/agents/$agentId"
@@ -185,37 +273,23 @@ export default function Agents() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">{agent.name}</CardTitle>
-                        <Badge
-                          variant={agent.status === 'online' ? 'default' : 'secondary'}
-                          className="mt-1"
-                        >
-                          {agent.status}
-                        </Badge>
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          Model: {agent.model}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="mb-4">
-                    {agent.description}
+                    {agent.description || 'No description available'}
                   </CardDescription>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-4 w-4" />
-                      <span>{agent.messagesCount} messages</span>
-                    </div>
-                    <span>
-                      {agent.status === 'online' 
-                        ? 'Active now' 
-                        : `Last active ${new Date(agent.lastActive).toLocaleTimeString()}`
-                      }
-                    </span>
-                  </div>
                 </CardContent>
               </Card>
             </Link>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

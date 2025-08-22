@@ -46,6 +46,12 @@
   "routes_pages_placeholder_page_added": "You should see your \"Welcome to Sourcetool!\" page added",
   "routes_pages_placeholder_documentation": "See the documentation for other components and detailed specifications",
 
+  "routes_agents_placeholder_title": "Add your first agent to get started with AI assistants",
+  "routes_agents_placeholder_description": "Add the following code to your backend to create an agent:",
+  "routes_agents_placeholder_restart_server": "Restart your server and reload this page",
+  "routes_agents_placeholder_agent_added": "You should see your agent added to the list",
+  "routes_agents_placeholder_documentation": "See the documentation for agent configuration and capabilities",
+
   "routes_groups_page_header": "Permissions",
   "routes_groups_title": "Permission Groups",
   "routes_groups_search_placeholder": "Search permission groups",

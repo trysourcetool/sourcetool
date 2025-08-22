@@ -6,6 +6,7 @@ import * as hostInstances from './modules/hostInstances';
 import * as apiKeys from './modules/apiKeys';
 import * as auth from './modules/auth';
 import * as groups from './modules/groups';
+import * as agents from './modules/agents';
 import { api as apiInstance } from './instance';
 
 export const api = {
@@ -17,6 +18,7 @@ export const api = {
   environments,
   hostInstances,
   groups,
+  agents,
   setExpiresAt: (expiresAt: string) => {
     apiInstance.setExpiresAt(expiresAt);
   },

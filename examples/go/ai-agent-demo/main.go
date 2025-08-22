@@ -89,7 +89,7 @@ type DatabaseBackup struct {
 func main() {
 	// Initialize Sourcetool
 	st := sourcetool.New(&sourcetool.Config{
-		APIKey:   "development_GEBWX4LsqzGRMBI0orlaMNb5tnycTeXLGEBWX4LsqzGRMBI0orl",
+		APIKey:   "your_api_key",
 		Endpoint: "ws://localhost:3000",
 	})
 
