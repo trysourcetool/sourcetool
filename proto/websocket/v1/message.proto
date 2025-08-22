@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package websocket.v1;
 
+import "agent/v1/agent.proto";
 import "exception/v1/exception.proto";
 import "page/v1/page.proto";
 import "widget/v1/widget.proto";
@@ -26,6 +27,7 @@ message InitializeHost {
   string sdk_name = 2;
   string sdk_version = 3;
   repeated page.v1.Page pages = 4;
+  repeated agent.v1.Agent agents = 5;
 }
 
 message InitializeHostCompleted {

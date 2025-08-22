@@ -13,6 +13,7 @@ type Stores interface {
 	Organization() OrganizationStore
 	Page() PageStore
 	Agent() AgentStore
+	AgentTool() AgentToolStore
 	Session() SessionStore
 	User() UserStore
 }

@@ -415,26 +415,26 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, bool, *core.APIKey, []*core.Page, []*core.Page, []*core.Page, error) {
+func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, bool, *core.APIKey, []*core.Page, []*core.Page, []*core.Page, []*core.Agent, []*core.Agent, []*core.Agent, []*core.AgentTool, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
-		return nil, false, nil, nil, nil, nil, errors.New("invalid message")
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, errors.New("invalid message")
 	}
 
 	hashedAPIKey := core.HashAPIKey(in.ApiKey)
 	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKeyHash(hashedAPIKey))
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	hostInstanceID, err := uuid.FromString(instanceID)
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, errdefs.ErrInvalidArgument(err)
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, errdefs.ErrInvalidArgument(err)
 	}
 
 	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
 	if err != nil && !errdefs.IsHostInstanceNotFound(err) {
-		return nil, false, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	hostExists := hostInstance != nil
@@ -453,7 +453,7 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 
 	existingPages, err := s.db.Page().List(ctx, database.PageByAPIKeyID(apikey.ID))
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	existingPageMap := make(map[string]*core.Page)
@@ -478,7 +478,7 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 		} else {
 			pageID, err := uuid.FromString(reqPage.Id)
 			if err != nil {
-				return nil, false, nil, nil, nil, nil, err
+				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
 			}
 			newPage := &core.Page{
 				ID:             pageID,
@@ -499,5 +499,71 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 		}
 	}
 
-	return hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, nil
+	// Process agents similar to pages
+	existingAgents, err := s.db.Agent().List(ctx, database.AgentByAPIKeyID(apikey.ID))
+	if err != nil {
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+	}
+
+	existingAgentMap := make(map[string]*core.Agent)
+	for _, a := range existingAgents {
+		existingAgentMap[a.ID.String()] = a
+	}
+
+	requestAgentIDs := make(map[string]struct{})
+	for _, a := range in.Agents {
+		requestAgentIDs[a.Id] = struct{}{}
+	}
+
+	insertAgents := make([]*core.Agent, 0)
+	updateAgents := make([]*core.Agent, 0)
+	deleteAgents := make([]*core.Agent, 0)
+	var allAgentTools []*core.AgentTool
+	for _, reqAgent := range in.Agents {
+		var agentID uuid.UUID
+		if existingAgent, ok := existingAgentMap[reqAgent.Id]; ok {
+			existingAgent.Name = reqAgent.Name
+			existingAgent.Description = reqAgent.Description
+			existingAgent.Instructions = reqAgent.Instructions
+			existingAgent.Model = reqAgent.Model
+			updateAgents = append(updateAgents, existingAgent)
+			agentID = existingAgent.ID
+		} else {
+			parsedAgentID, err := uuid.FromString(reqAgent.Id)
+			if err != nil {
+				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+			}
+			newAgent := &core.Agent{
+				ID:             parsedAgentID,
+				OrganizationID: apikey.OrganizationID,
+				EnvironmentID:  apikey.EnvironmentID,
+				APIKeyID:       apikey.ID,
+				Name:           reqAgent.Name,
+				Description:    reqAgent.Description,
+				Instructions:   reqAgent.Instructions,
+				Model:          reqAgent.Model,
+			}
+			insertAgents = append(insertAgents, newAgent)
+			agentID = parsedAgentID
+		}
+
+		// Create tools for this agent
+		for _, reqTool := range reqAgent.Tools {
+			agentTool := &core.AgentTool{
+				ID:          uuid.Must(uuid.NewV4()),
+				AgentID:     agentID,
+				Name:        reqTool.Name,
+				Description: reqTool.Description,
+			}
+			allAgentTools = append(allAgentTools, agentTool)
+		}
+	}
+
+	for _, existingAgent := range existingAgents {
+		if _, exists := requestAgentIDs[existingAgent.ID.String()]; !exists {
+			deleteAgents = append(deleteAgents, existingAgent)
+		}
+	}
+
+	return hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, allAgentTools, nil
 }

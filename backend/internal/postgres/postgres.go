@@ -51,6 +51,10 @@ func (db *db) Agent() database.AgentStore {
 	return newAgentStore(internal.NewQueryLogger(db.db))
 }
 
+func (db *db) AgentTool() database.AgentToolStore {
+	return newAgentToolStore(internal.NewQueryLogger(db.db))
+}
+
 func (db *db) Session() database.SessionStore {
 	return newSessionStore(internal.NewQueryLogger(db.db))
 }
@@ -125,6 +129,10 @@ func (tx *tx) Page() database.PageStore {
 
 func (tx *tx) Agent() database.AgentStore {
 	return newAgentStore(internal.NewQueryLogger(tx.db))
+}
+
+func (tx *tx) AgentTool() database.AgentToolStore {
+	return newAgentToolStore(internal.NewQueryLogger(tx.db))
 }
 
 func (tx *tx) Session() database.SessionStore {

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package agent.v1;
+
+message Agent {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string instructions = 4;
+  string model = 5;
+  repeated string groups = 6;
+  repeated Tool tools = 7;
+}
+
+message Tool {
+  string name = 1;
+  string description = 2;
+}

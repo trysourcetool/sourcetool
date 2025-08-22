@@ -11,6 +11,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	agentv1 "github.com/trysourcetool/sourcetool-go/internal/pb/agent/v1"
 	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/pb/exception/v1"
 	pagev1 "github.com/trysourcetool/sourcetool-go/internal/pb/page/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
@@ -26,7 +27,7 @@ type runtime struct {
 	pageManager    *pageManager
 }
 
-func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime, error) {
+func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page, agents map[uuid.UUID]*Agent) (*runtime, error) {
 	r := &runtime{
 		sessionManager: session.NewSessionManager(),
 		pageManager:    newPageManager(pages),
@@ -43,7 +44,7 @@ func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime,
 		},
 		OnReconnected: func() {
 			logger.Log.Info("Reconnected!")
-			r.sendInitializeHost(apiKey, pages)
+			r.sendInitializeHost(apiKey, pages, agents)
 		},
 	})
 	if err != nil {
@@ -73,12 +74,12 @@ func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime,
 		}
 	})
 
-	r.sendInitializeHost(apiKey, pages)
+	r.sendInitializeHost(apiKey, pages, agents)
 
 	return r, nil
 }
 
-func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
+func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page, agents map[uuid.UUID]*Agent) {
 	pagesPayload := make([]*pagev1.Page, 0, len(pages))
 	for _, page := range pages {
 		pagesPayload = append(pagesPayload, &pagev1.Page{
@@ -90,11 +91,33 @@ func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
 		})
 	}
 
+	agentsPayload := make([]*agentv1.Agent, 0, len(agents))
+	for _, agent := range agents {
+		toolsPayload := make([]*agentv1.Tool, 0, len(agent.Tools))
+		for _, tool := range agent.Tools {
+			toolsPayload = append(toolsPayload, &agentv1.Tool{
+				Name:        tool.GetName(),
+				Description: tool.GetDescription(),
+			})
+		}
+
+		agentsPayload = append(agentsPayload, &agentv1.Agent{
+			Id:           agent.id.String(),
+			Name:         agent.Name,
+			Description:  agent.Description,
+			Instructions: agent.Instructions,
+			Model:        agent.Model.ID(),
+			Groups:       agent.accessGroups,
+			Tools:        toolsPayload,
+		})
+	}
+
 	msg := &websocketv1.InitializeHost{
 		ApiKey:     apiKey,
 		SdkName:    "sourcetool-go",
 		SdkVersion: "0.1.12",
 		Pages:      pagesPayload,
+		Agents:     agentsPayload,
 	}
 
 	resp, err := r.wsClient.EnqueueWithResponse(uuid.Must(uuid.NewV4()).String(), msg)

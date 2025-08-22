@@ -57,7 +57,7 @@ func (s *Sourcetool) Listen() error {
 	defer logger.Sync()
 
 	s.mu.RLock()
-	r, err := startRuntime(s.apiKey, s.endpoint, s.pages)
+	r, err := startRuntime(s.apiKey, s.endpoint, s.pages, s.agents)
 	s.mu.RUnlock()
 	if err != nil {
 		return err

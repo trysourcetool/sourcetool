@@ -31,6 +31,7 @@ var (
 	ErrPageNotFound                       = Status("page_not_found", 404)
 	ErrSessionNotFound                    = Status("session_not_found", 404)
 	ErrAgentNotFound                      = Status("agent_not_found", 404)
+	ErrAgentToolNotFound                  = Status("agent_tool_not_found", 404)
 	ErrUserNotFound                       = Status("user_not_found", 404)
 	ErrUserEmailAlreadyExists             = Status("user_email_already_exists", 409)
 	ErrUserRegistrationRequestNotFound    = Status("user_registration_request_not_found", 404)
