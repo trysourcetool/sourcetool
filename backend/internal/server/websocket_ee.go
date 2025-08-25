@@ -21,7 +21,7 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 		return errors.New("invalid message")
 	}
 
-	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
+	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, insertAgentTools, updateAgentTools, deleteAgentTools, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
 	if err != nil {
 		return err
 	}
@@ -29,6 +29,9 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 	var allGroupSlugs []string
 	for _, p := range in.Pages {
 		allGroupSlugs = append(allGroupSlugs, p.Groups...)
+	}
+	for _, a := range in.Agents {
+		allGroupSlugs = append(allGroupSlugs, a.Groups...)
 	}
 	groups, err := s.db.Group().List(ctx, database.GroupByOrganizationID(apikey.OrganizationID), database.GroupBySlugs(allGroupSlugs))
 	if err != nil {
@@ -62,6 +65,40 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 		}
 		if len(insertPages) > 0 {
 			if err := tx.Page().BulkInsert(ctx, insertPages); err != nil {
+				return err
+			}
+		}
+
+		// Handle agents
+		if len(deleteAgents) > 0 {
+			if err := tx.Agent().BulkDelete(ctx, deleteAgents); err != nil {
+				return err
+			}
+		}
+		if len(updateAgents) > 0 {
+			if err := tx.Agent().BulkUpdate(ctx, updateAgents); err != nil {
+				return err
+			}
+		}
+		if len(insertAgents) > 0 {
+			if err := tx.Agent().BulkInsert(ctx, insertAgents); err != nil {
+				return err
+			}
+		}
+
+		// Handle agent tools
+		if len(deleteAgentTools) > 0 {
+			if err := tx.AgentTool().BulkDelete(ctx, deleteAgentTools); err != nil {
+				return err
+			}
+		}
+		if len(updateAgentTools) > 0 {
+			if err := tx.AgentTool().BulkUpdate(ctx, updateAgentTools); err != nil {
+				return err
+			}
+		}
+		if len(insertAgentTools) > 0 {
+			if err := tx.AgentTool().BulkInsert(ctx, insertAgentTools); err != nil {
 				return err
 			}
 		}

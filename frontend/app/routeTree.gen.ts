@@ -14,10 +14,13 @@ import { Route as rootRoute } from './routes/root'
 import { Route as layoutAuthPreviewImport } from './routes/layout-auth-preview'
 import { Route as layoutDefaultImport } from './routes/layout-default'
 import { Route as layoutAuthExternalImport } from './routes/layout-auth-external'
+import { Route as layoutAuthAgentImport } from './routes/layout-auth-agent'
 import { Route as pagesIndexImport } from './routes/pages/index'
 import { Route as usersRouteImport } from './routes/users/route'
+import { Route as agentsRouteImport } from './routes/agents/route'
 import { Route as pagesPageIdIndexImport } from './routes/pages/pageId/index'
 import { Route as usersUserIdIndexImport } from './routes/users/$userId/index'
+import { Route as agentsAgentIdIndexImport } from './routes/agents/$agentId/index'
 import { Route as OnboardingIndexImport } from './routes/onboarding/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as usersIndexImport } from './routes/users/index'
@@ -25,6 +28,7 @@ import { Route as SettingsIndexImport } from './routes/settings/index'
 import { Route as GroupsIndexImport } from './routes/groups/index'
 import { Route as EnvironmentsIndexImport } from './routes/environments/index'
 import { Route as ApiKeysIndexImport } from './routes/apiKeys/index'
+import { Route as agentsIndexImport } from './routes/agents/index'
 import { Route as SignupFollowupIndexImport } from './routes/signup/followup/index'
 import { Route as OrganizationsNewIndexImport } from './routes/organizations/new/index'
 import { Route as OnboardingCompleteIndexImport } from './routes/onboarding/complete/index'
@@ -36,6 +40,7 @@ import { Route as EnvironmentsNewIndexImport } from './routes/environments/new/i
 import { Route as EnvironmentsEnvironmentIdIndexImport } from './routes/environments/$environmentId/index'
 import { Route as ApiKeysNewIndexImport } from './routes/apiKeys/new/index'
 import { Route as ApiKeysApiKeyIdIndexImport } from './routes/apiKeys/$apiKeyId/index'
+import { Route as agentsAgentIdChatChatIdIndexImport } from './routes/agents/$agentId/chat/$chatId/index'
 import { Route as AuthMagicAuthenticateIndexImport } from './routes/auth/magic/authenticate/index'
 import { Route as AuthInvitationsLoginIndexImport } from './routes/auth/invitations/login/index'
 import { Route as AuthInvitationsEmailSentIndexImport } from './routes/auth/invitations/emailSent/index'
@@ -61,6 +66,11 @@ const layoutAuthExternalRoute = layoutAuthExternalImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const layoutAuthAgentRoute = layoutAuthAgentImport.update({
+  id: '/_agent',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const pagesIndexRoute = pagesIndexImport.update({
   id: '/',
   path: '/',
@@ -70,6 +80,12 @@ const pagesIndexRoute = pagesIndexImport.update({
 const usersRouteRoute = usersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => layoutAuthExternalRoute,
+} as any)
+
+const agentsRouteRoute = agentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => layoutAuthExternalRoute,
 } as any)
 
@@ -83,6 +99,12 @@ const usersUserIdIndexRoute = usersUserIdIndexImport.update({
   id: '/$userId',
   path: '/$userId',
   getParentRoute: () => usersRouteRoute,
+} as any)
+
+const agentsAgentIdIndexRoute = agentsAgentIdIndexImport.update({
+  id: '/$agentId',
+  path: '/$agentId',
+  getParentRoute: () => agentsRouteRoute,
 } as any)
 
 const OnboardingIndexRoute = OnboardingIndexImport.update({
@@ -125,6 +147,12 @@ const ApiKeysIndexRoute = ApiKeysIndexImport.update({
   id: '/apiKeys/',
   path: '/apiKeys/',
   getParentRoute: () => layoutAuthExternalRoute,
+} as any)
+
+const agentsIndexRoute = agentsIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => agentsRouteRoute,
 } as any)
 
 const SignupFollowupIndexRoute = SignupFollowupIndexImport.update({
@@ -195,6 +223,13 @@ const ApiKeysApiKeyIdIndexRoute = ApiKeysApiKeyIdIndexImport.update({
   getParentRoute: () => layoutAuthExternalRoute,
 } as any)
 
+const agentsAgentIdChatChatIdIndexRoute =
+  agentsAgentIdChatChatIdIndexImport.update({
+    id: '/agents/$agentId/chat/$chatId',
+    path: '/agents/$agentId/chat/$chatId',
+    getParentRoute: () => layoutAuthAgentRoute,
+  } as any)
+
 const AuthMagicAuthenticateIndexRoute = AuthMagicAuthenticateIndexImport.update(
   {
     id: '/auth/magic/authenticate/',
@@ -247,6 +282,13 @@ const AuthInvitationsMagicAuthenticateIndexRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_agent': {
+      id: '/_agent'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof layoutAuthAgentImport
+      parentRoute: typeof rootRoute
+    }
     '/_auth': {
       id: '/_auth'
       path: ''
@@ -268,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof layoutAuthPreviewImport
       parentRoute: typeof rootRoute
     }
+    '/_auth/agents': {
+      id: '/_auth/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof agentsRouteImport
+      parentRoute: typeof layoutAuthExternalImport
+    }
     '/_auth/users': {
       id: '/_auth/users'
       path: '/users'
@@ -281,6 +330,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof pagesIndexImport
       parentRoute: typeof layoutAuthExternalImport
+    }
+    '/_auth/agents/': {
+      id: '/_auth/agents/'
+      path: '/'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof agentsIndexImport
+      parentRoute: typeof agentsRouteImport
     }
     '/_auth/apiKeys/': {
       id: '/_auth/apiKeys/'
@@ -330,6 +386,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingIndexImport
       parentRoute: typeof layoutDefaultImport
+    }
+    '/_auth/agents/$agentId': {
+      id: '/_auth/agents/$agentId'
+      path: '/$agentId'
+      fullPath: '/agents/$agentId'
+      preLoaderRoute: typeof agentsAgentIdIndexImport
+      parentRoute: typeof agentsRouteImport
     }
     '/_auth/users/$userId': {
       id: '/_auth/users/$userId'
@@ -450,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthMagicAuthenticateIndexImport
       parentRoute: typeof layoutDefaultImport
     }
+    '/_agent/agents/$agentId/chat/$chatId': {
+      id: '/_agent/agents/$agentId/chat/$chatId'
+      path: '/agents/$agentId/chat/$chatId'
+      fullPath: '/agents/$agentId/chat/$chatId'
+      preLoaderRoute: typeof agentsAgentIdChatChatIdIndexImport
+      parentRoute: typeof layoutAuthAgentImport
+    }
     '/_default/auth/invitations/magic/authenticate/': {
       id: '/_default/auth/invitations/magic/authenticate/'
       path: '/auth/invitations/magic/authenticate'
@@ -476,6 +546,32 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface layoutAuthAgentRouteChildren {
+  agentsAgentIdChatChatIdIndexRoute: typeof agentsAgentIdChatChatIdIndexRoute
+}
+
+const layoutAuthAgentRouteChildren: layoutAuthAgentRouteChildren = {
+  agentsAgentIdChatChatIdIndexRoute: agentsAgentIdChatChatIdIndexRoute,
+}
+
+const layoutAuthAgentRouteWithChildren = layoutAuthAgentRoute._addFileChildren(
+  layoutAuthAgentRouteChildren,
+)
+
+interface agentsRouteRouteChildren {
+  agentsIndexRoute: typeof agentsIndexRoute
+  agentsAgentIdIndexRoute: typeof agentsAgentIdIndexRoute
+}
+
+const agentsRouteRouteChildren: agentsRouteRouteChildren = {
+  agentsIndexRoute: agentsIndexRoute,
+  agentsAgentIdIndexRoute: agentsAgentIdIndexRoute,
+}
+
+const agentsRouteRouteWithChildren = agentsRouteRoute._addFileChildren(
+  agentsRouteRouteChildren,
+)
+
 interface usersRouteRouteChildren {
   usersIndexRoute: typeof usersIndexRoute
   usersUserIdIndexRoute: typeof usersUserIdIndexRoute
@@ -491,6 +587,7 @@ const usersRouteRouteWithChildren = usersRouteRoute._addFileChildren(
 )
 
 interface layoutAuthExternalRouteChildren {
+  agentsRouteRoute: typeof agentsRouteRouteWithChildren
   usersRouteRoute: typeof usersRouteRouteWithChildren
   pagesIndexRoute: typeof pagesIndexRoute
   ApiKeysIndexRoute: typeof ApiKeysIndexRoute
@@ -506,6 +603,7 @@ interface layoutAuthExternalRouteChildren {
 }
 
 const layoutAuthExternalRouteChildren: layoutAuthExternalRouteChildren = {
+  agentsRouteRoute: agentsRouteRouteWithChildren,
   usersRouteRoute: usersRouteRouteWithChildren,
   pagesIndexRoute: pagesIndexRoute,
   ApiKeysIndexRoute: ApiKeysIndexRoute,
@@ -576,8 +674,10 @@ const layoutAuthPreviewRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof layoutAuthPreviewRouteWithChildren
+  '/agents': typeof agentsRouteRouteWithChildren
   '/users': typeof usersRouteRouteWithChildren
   '/': typeof pagesIndexRoute
+  '/agents/': typeof agentsIndexRoute
   '/apiKeys': typeof ApiKeysIndexRoute
   '/environments': typeof EnvironmentsIndexRoute
   '/groups': typeof GroupsIndexRoute
@@ -585,6 +685,7 @@ export interface FileRoutesByFullPath {
   '/users/': typeof usersIndexRoute
   '/login': typeof LoginIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
+  '/agents/$agentId': typeof agentsAgentIdIndexRoute
   '/users/$userId': typeof usersUserIdIndexRoute
   '/pages/$': typeof pagesPageIdIndexRoute
   '/apiKeys/$apiKeyId': typeof ApiKeysApiKeyIdIndexRoute
@@ -602,6 +703,7 @@ export interface FileRoutesByFullPath {
   '/auth/invitations/emailSent': typeof AuthInvitationsEmailSentIndexRoute
   '/auth/invitations/login': typeof AuthInvitationsLoginIndexRoute
   '/auth/magic/authenticate': typeof AuthMagicAuthenticateIndexRoute
+  '/agents/$agentId/chat/$chatId': typeof agentsAgentIdChatChatIdIndexRoute
   '/auth/invitations/magic/authenticate': typeof AuthInvitationsMagicAuthenticateIndexRoute
   '/auth/invitations/signup/followup': typeof AuthInvitationsSignupFollowupIndexRoute
   '/users/email/update/confirm': typeof usersEmailUpdateConfirmIndexRoute
@@ -610,6 +712,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '': typeof layoutAuthPreviewRouteWithChildren
   '/': typeof pagesIndexRoute
+  '/agents': typeof agentsIndexRoute
   '/apiKeys': typeof ApiKeysIndexRoute
   '/environments': typeof EnvironmentsIndexRoute
   '/groups': typeof GroupsIndexRoute
@@ -617,6 +720,7 @@ export interface FileRoutesByTo {
   '/users': typeof usersIndexRoute
   '/login': typeof LoginIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
+  '/agents/$agentId': typeof agentsAgentIdIndexRoute
   '/users/$userId': typeof usersUserIdIndexRoute
   '/pages/$': typeof pagesPageIdIndexRoute
   '/apiKeys/$apiKeyId': typeof ApiKeysApiKeyIdIndexRoute
@@ -634,6 +738,7 @@ export interface FileRoutesByTo {
   '/auth/invitations/emailSent': typeof AuthInvitationsEmailSentIndexRoute
   '/auth/invitations/login': typeof AuthInvitationsLoginIndexRoute
   '/auth/magic/authenticate': typeof AuthMagicAuthenticateIndexRoute
+  '/agents/$agentId/chat/$chatId': typeof agentsAgentIdChatChatIdIndexRoute
   '/auth/invitations/magic/authenticate': typeof AuthInvitationsMagicAuthenticateIndexRoute
   '/auth/invitations/signup/followup': typeof AuthInvitationsSignupFollowupIndexRoute
   '/users/email/update/confirm': typeof usersEmailUpdateConfirmIndexRoute
@@ -641,11 +746,14 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/_agent': typeof layoutAuthAgentRouteWithChildren
   '/_auth': typeof layoutAuthExternalRouteWithChildren
   '/_default': typeof layoutDefaultRouteWithChildren
   '/_preview': typeof layoutAuthPreviewRouteWithChildren
+  '/_auth/agents': typeof agentsRouteRouteWithChildren
   '/_auth/users': typeof usersRouteRouteWithChildren
   '/_auth/': typeof pagesIndexRoute
+  '/_auth/agents/': typeof agentsIndexRoute
   '/_auth/apiKeys/': typeof ApiKeysIndexRoute
   '/_auth/environments/': typeof EnvironmentsIndexRoute
   '/_auth/groups/': typeof GroupsIndexRoute
@@ -653,6 +761,7 @@ export interface FileRoutesById {
   '/_auth/users/': typeof usersIndexRoute
   '/_default/login/': typeof LoginIndexRoute
   '/_default/onboarding/': typeof OnboardingIndexRoute
+  '/_auth/agents/$agentId': typeof agentsAgentIdIndexRoute
   '/_auth/users/$userId': typeof usersUserIdIndexRoute
   '/_preview/pages/$': typeof pagesPageIdIndexRoute
   '/_auth/apiKeys/$apiKeyId/': typeof ApiKeysApiKeyIdIndexRoute
@@ -670,6 +779,7 @@ export interface FileRoutesById {
   '/_default/auth/invitations/emailSent/': typeof AuthInvitationsEmailSentIndexRoute
   '/_default/auth/invitations/login/': typeof AuthInvitationsLoginIndexRoute
   '/_default/auth/magic/authenticate/': typeof AuthMagicAuthenticateIndexRoute
+  '/_agent/agents/$agentId/chat/$chatId': typeof agentsAgentIdChatChatIdIndexRoute
   '/_default/auth/invitations/magic/authenticate/': typeof AuthInvitationsMagicAuthenticateIndexRoute
   '/_default/auth/invitations/signup/followup/': typeof AuthInvitationsSignupFollowupIndexRoute
   '/_default/users/email/update/confirm/': typeof usersEmailUpdateConfirmIndexRoute
@@ -679,8 +789,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
+    | '/agents'
     | '/users'
     | '/'
+    | '/agents/'
     | '/apiKeys'
     | '/environments'
     | '/groups'
@@ -688,6 +800,7 @@ export interface FileRouteTypes {
     | '/users/'
     | '/login'
     | '/onboarding'
+    | '/agents/$agentId'
     | '/users/$userId'
     | '/pages/$'
     | '/apiKeys/$apiKeyId'
@@ -705,6 +818,7 @@ export interface FileRouteTypes {
     | '/auth/invitations/emailSent'
     | '/auth/invitations/login'
     | '/auth/magic/authenticate'
+    | '/agents/$agentId/chat/$chatId'
     | '/auth/invitations/magic/authenticate'
     | '/auth/invitations/signup/followup'
     | '/users/email/update/confirm'
@@ -712,6 +826,7 @@ export interface FileRouteTypes {
   to:
     | ''
     | '/'
+    | '/agents'
     | '/apiKeys'
     | '/environments'
     | '/groups'
@@ -719,6 +834,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/login'
     | '/onboarding'
+    | '/agents/$agentId'
     | '/users/$userId'
     | '/pages/$'
     | '/apiKeys/$apiKeyId'
@@ -736,16 +852,20 @@ export interface FileRouteTypes {
     | '/auth/invitations/emailSent'
     | '/auth/invitations/login'
     | '/auth/magic/authenticate'
+    | '/agents/$agentId/chat/$chatId'
     | '/auth/invitations/magic/authenticate'
     | '/auth/invitations/signup/followup'
     | '/users/email/update/confirm'
   id:
     | '__root__'
+    | '/_agent'
     | '/_auth'
     | '/_default'
     | '/_preview'
+    | '/_auth/agents'
     | '/_auth/users'
     | '/_auth/'
+    | '/_auth/agents/'
     | '/_auth/apiKeys/'
     | '/_auth/environments/'
     | '/_auth/groups/'
@@ -753,6 +873,7 @@ export interface FileRouteTypes {
     | '/_auth/users/'
     | '/_default/login/'
     | '/_default/onboarding/'
+    | '/_auth/agents/$agentId'
     | '/_auth/users/$userId'
     | '/_preview/pages/$'
     | '/_auth/apiKeys/$apiKeyId/'
@@ -770,6 +891,7 @@ export interface FileRouteTypes {
     | '/_default/auth/invitations/emailSent/'
     | '/_default/auth/invitations/login/'
     | '/_default/auth/magic/authenticate/'
+    | '/_agent/agents/$agentId/chat/$chatId'
     | '/_default/auth/invitations/magic/authenticate/'
     | '/_default/auth/invitations/signup/followup/'
     | '/_default/users/email/update/confirm/'
@@ -777,12 +899,14 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  layoutAuthAgentRoute: typeof layoutAuthAgentRouteWithChildren
   layoutAuthExternalRoute: typeof layoutAuthExternalRouteWithChildren
   layoutDefaultRoute: typeof layoutDefaultRouteWithChildren
   layoutAuthPreviewRoute: typeof layoutAuthPreviewRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  layoutAuthAgentRoute: layoutAuthAgentRouteWithChildren,
   layoutAuthExternalRoute: layoutAuthExternalRouteWithChildren,
   layoutDefaultRoute: layoutDefaultRouteWithChildren,
   layoutAuthPreviewRoute: layoutAuthPreviewRouteWithChildren,
@@ -798,14 +922,22 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "root.tsx",
       "children": [
+        "/_agent",
         "/_auth",
         "/_default",
         "/_preview"
       ]
     },
+    "/_agent": {
+      "filePath": "layout-auth-agent.tsx",
+      "children": [
+        "/_agent/agents/$agentId/chat/$chatId"
+      ]
+    },
     "/_auth": {
       "filePath": "layout-auth-external.tsx",
       "children": [
+        "/_auth/agents",
         "/_auth/users",
         "/_auth/",
         "/_auth/apiKeys/",
@@ -845,6 +977,14 @@ export const routeTree = rootRoute
         "/_preview/pages/$"
       ]
     },
+    "/_auth/agents": {
+      "filePath": "agents/route.tsx",
+      "parent": "/_auth",
+      "children": [
+        "/_auth/agents/",
+        "/_auth/agents/$agentId"
+      ]
+    },
     "/_auth/users": {
       "filePath": "users/route.tsx",
       "parent": "/_auth",
@@ -856,6 +996,10 @@ export const routeTree = rootRoute
     "/_auth/": {
       "filePath": "pages/index.tsx",
       "parent": "/_auth"
+    },
+    "/_auth/agents/": {
+      "filePath": "agents/index.tsx",
+      "parent": "/_auth/agents"
     },
     "/_auth/apiKeys/": {
       "filePath": "apiKeys/index.tsx",
@@ -884,6 +1028,10 @@ export const routeTree = rootRoute
     "/_default/onboarding/": {
       "filePath": "onboarding/index.tsx",
       "parent": "/_default"
+    },
+    "/_auth/agents/$agentId": {
+      "filePath": "agents/$agentId/index.tsx",
+      "parent": "/_auth/agents"
     },
     "/_auth/users/$userId": {
       "filePath": "users/$userId/index.tsx",
@@ -952,6 +1100,10 @@ export const routeTree = rootRoute
     "/_default/auth/magic/authenticate/": {
       "filePath": "auth/magic/authenticate/index.tsx",
       "parent": "/_default"
+    },
+    "/_agent/agents/$agentId/chat/$chatId": {
+      "filePath": "agents/$agentId/chat/$chatId/index.tsx",
+      "parent": "/_agent"
     },
     "/_default/auth/invitations/magic/authenticate/": {
       "filePath": "auth/invitations/magic/authenticate/index.tsx",

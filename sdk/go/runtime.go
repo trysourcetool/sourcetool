@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/trysourcetool/sourcetool-go/internal/errdefs"
 	"github.com/trysourcetool/sourcetool-go/internal/logger"
+	agentv1 "github.com/trysourcetool/sourcetool-go/internal/pb/agent/v1"
 	exceptionv1 "github.com/trysourcetool/sourcetool-go/internal/pb/exception/v1"
 	pagev1 "github.com/trysourcetool/sourcetool-go/internal/pb/page/v1"
 	websocketv1 "github.com/trysourcetool/sourcetool-go/internal/pb/websocket/v1"
@@ -24,12 +27,14 @@ type runtime struct {
 	wsClient       websocket.Client
 	sessionManager *session.SessionManager
 	pageManager    *pageManager
+	agentManager   *agentManager
 }
 
-func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime, error) {
+func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page, agents map[uuid.UUID]*Agent) (*runtime, error) {
 	r := &runtime{
 		sessionManager: session.NewSessionManager(),
 		pageManager:    newPageManager(pages),
+		agentManager:   newAgentManager(agents),
 	}
 
 	wsClient, err := websocket.NewClient(websocket.Config{
@@ -43,7 +48,7 @@ func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime,
 		},
 		OnReconnected: func() {
 			logger.Log.Info("Reconnected!")
-			r.sendInitializeHost(apiKey, pages)
+			r.sendInitializeHost(apiKey, pages, agents)
 		},
 	})
 	if err != nil {
@@ -68,17 +73,41 @@ func startRuntime(apiKey, endpoint string, pages map[uuid.UUID]*page) (*runtime,
 				r.sendException(msg.Id, t.CloseSession.SessionId, err)
 			}
 			return nil
+		case *websocketv1.Message_InitializeAgentChat:
+			if err := r.handleInitializeAgentChat(t.InitializeAgentChat); err != nil {
+				r.sendAgentError(ptrconv.StringValue(t.InitializeAgentChat.SessionId), t.InitializeAgentChat.AgentId, err)
+			}
+			return nil
+		case *websocketv1.Message_SendAgentMessage:
+			if err := r.handleSendAgentMessage(t.SendAgentMessage); err != nil {
+				r.sendAgentError(t.SendAgentMessage.SessionId, t.SendAgentMessage.AgentId, err)
+			}
+			return nil
+		case *websocketv1.Message_AgentResponse:
+			// AgentResponse is sent from the server to the client through the SDK
+			// SDK doesn't need to process it, just ignore
+			return nil
+		case *websocketv1.Message_AgentChatComplete:
+			// AgentChatComplete is sent from the server to the client through the SDK
+			// SDK doesn't need to process it, just ignore
+			return nil
+		case *websocketv1.Message_InitializeHostCompleted:
+			// InitializeHostCompleted is a response from server confirming host initialization
+			// Log for debugging purposes
+			logger.Log.Info("Host initialization completed",
+				zap.String("host_instance_id", t.InitializeHostCompleted.HostInstanceId))
+			return nil
 		default:
 			return fmt.Errorf("unknown message type: %T", t)
 		}
 	})
 
-	r.sendInitializeHost(apiKey, pages)
+	r.sendInitializeHost(apiKey, pages, agents)
 
 	return r, nil
 }
 
-func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
+func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page, agents map[uuid.UUID]*Agent) {
 	pagesPayload := make([]*pagev1.Page, 0, len(pages))
 	for _, page := range pages {
 		pagesPayload = append(pagesPayload, &pagev1.Page{
@@ -90,11 +119,33 @@ func (r *runtime) sendInitializeHost(apiKey string, pages map[uuid.UUID]*page) {
 		})
 	}
 
+	agentsPayload := make([]*agentv1.Agent, 0, len(agents))
+	for _, agent := range agents {
+		toolsPayload := make([]*agentv1.Tool, 0, len(agent.Tools))
+		for _, tool := range agent.Tools {
+			toolsPayload = append(toolsPayload, &agentv1.Tool{
+				Name:        tool.GetName(),
+				Description: tool.GetDescription(),
+			})
+		}
+
+		agentsPayload = append(agentsPayload, &agentv1.Agent{
+			Id:           agent.id.String(),
+			Name:         agent.Name,
+			Description:  agent.Description,
+			Instructions: agent.Instructions,
+			Model:        agent.Model.ID(),
+			Groups:       agent.accessGroups,
+			Tools:        toolsPayload,
+		})
+	}
+
 	msg := &websocketv1.InitializeHost{
 		ApiKey:     apiKey,
 		SdkName:    "sourcetool-go",
 		SdkVersion: "0.1.12",
 		Pages:      pagesPayload,
+		Agents:     agentsPayload,
 	}
 
 	resp, err := r.wsClient.EnqueueWithResponse(uuid.Must(uuid.NewV4()).String(), msg)
@@ -297,4 +348,350 @@ func (r *runtime) Close() error {
 	err := r.wsClient.Close()
 	r.wsClient = nil
 	return err
+}
+
+// Agent handling methods
+
+// AgentSession represents an agent chat session in the SDK.
+type AgentSession struct {
+	ID           uuid.UUID
+	AgentID      uuid.UUID
+	Conversation []Message // Using SDK's Message type
+	StartedAt    time.Time
+	LastActivity time.Time
+}
+
+// agentSessions stores active agent sessions.
+var (
+	agentSessions   = make(map[uuid.UUID]*AgentSession)
+	agentSessionsMu sync.RWMutex
+)
+
+// handleInitializeAgentChat handles agent chat initialization from backend.
+func (r *runtime) handleInitializeAgentChat(msg *websocketv1.InitializeAgentChat) error {
+	if msg.SessionId == nil {
+		return errdefs.ErrInvalidParameter(errors.New("session id is required"))
+	}
+
+	sessionID, err := uuid.FromString(ptrconv.StringValue(msg.SessionId))
+	if err != nil {
+		return errdefs.ErrInvalidParameter(err)
+	}
+
+	agentID, err := uuid.FromString(msg.AgentId)
+	if err != nil {
+		return errdefs.ErrInvalidParameter(err)
+	}
+
+	// Get the agent from the agent manager
+	agent := r.agentManager.getAgent(agentID)
+	if agent == nil {
+		return errdefs.ErrInternal(fmt.Errorf("agent not found: %s", agentID))
+	}
+
+	// Create a new agent session
+	agentSession := &AgentSession{
+		ID:           sessionID,
+		AgentID:      agentID,
+		Conversation: []Message{},
+		StartedAt:    time.Now(),
+		LastActivity: time.Now(),
+	}
+
+	// Store the agent session
+	agentSessionsMu.Lock()
+	agentSessions[sessionID] = agentSession
+	agentSessionsMu.Unlock()
+
+	// Send completion message back to backend
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), &websocketv1.InitializeAgentChatCompleted{
+		SessionId: sessionID.String(),
+		AgentId:   agentID.String(),
+	})
+
+	logger.Log.Info("Agent chat session initialized",
+		zap.String("session_id", sessionID.String()),
+		zap.String("agent_id", agentID.String()))
+
+	return nil
+}
+
+func (r *runtime) handleSendAgentMessage(msg *websocketv1.SendAgentMessage) error {
+	agentID, err := uuid.FromString(msg.AgentId)
+	if err != nil {
+		return errdefs.ErrInvalidParameter(err)
+	}
+
+	agent := r.agentManager.getAgent(agentID)
+	if agent == nil {
+		return errdefs.ErrInternal(fmt.Errorf("agent not found: %s", agentID))
+	}
+
+	// Get or create the agent session
+	sessionID, err := uuid.FromString(msg.SessionId)
+	if err != nil {
+		return errdefs.ErrInvalidParameter(err)
+	}
+
+	agentSessionsMu.RLock()
+	agentSession, exists := agentSessions[sessionID]
+	agentSessionsMu.RUnlock()
+
+	if !exists {
+		// If session doesn't exist, create a new one (backward compatibility)
+		agentSession = &AgentSession{
+			ID:           sessionID,
+			AgentID:      agentID,
+			Conversation: []Message{},
+			StartedAt:    time.Now(),
+			LastActivity: time.Now(),
+		}
+		agentSessionsMu.Lock()
+		agentSessions[sessionID] = agentSession
+		agentSessionsMu.Unlock()
+	}
+
+	// Update last activity
+	agentSession.LastActivity = time.Now()
+
+	// Add the new user message to conversation
+	agentSession.Conversation = append(agentSession.Conversation, Message{
+		Role:    "user",
+		Content: msg.Message,
+	})
+
+	// Also include any conversation history sent from backend
+	conversation := agentSession.Conversation
+	if len(msg.ConversationHistory) > 0 {
+		// If backend sends conversation history, use it instead
+		conversation = make([]Message, len(msg.ConversationHistory))
+		for i, chatMsg := range msg.ConversationHistory {
+			var role string
+			switch chatMsg.Role {
+			case websocketv1.ChatMessage_ROLE_USER:
+				role = "user"
+			case websocketv1.ChatMessage_ROLE_ASSISTANT:
+				role = "assistant"
+			case websocketv1.ChatMessage_ROLE_SYSTEM:
+				role = "system"
+			case websocketv1.ChatMessage_ROLE_TOOL:
+				role = "tool"
+			default:
+				role = "user"
+			}
+
+			toolCalls := make([]ToolCall, len(chatMsg.ToolCalls))
+			for j, tc := range chatMsg.ToolCalls {
+				toolCalls[j] = ToolCall{
+					ID:     tc.Id,
+					Name:   tc.Name,
+					Params: make(map[string]interface{}),
+				}
+				// Parse JSON arguments if needed
+				// TODO: Add proper JSON parsing
+			}
+
+			conversation[i] = Message{
+				Role:      role,
+				Content:   chatMsg.Content,
+				ToolCalls: toolCalls,
+			}
+		}
+		// Update the session's conversation
+		agentSession.Conversation = conversation
+	}
+
+	// Create context for agent execution
+	ctx := &Context{
+		Context:      context.Background(),
+		Message:      msg.Message,
+		Conversation: conversation,
+		SessionID:    msg.SessionId,
+		tools:        agent.toolsMap,
+	}
+
+	// Start streaming response
+	go r.streamAgentResponse(ctx, agent, msg.SessionId, msg.AgentId)
+
+	return nil
+}
+
+func (r *runtime) streamAgentResponse(ctx *Context, agent *Agent, sessionID, agentID string) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			logger.Log.Error("Agent execution panic",
+				zap.String("session_id", sessionID),
+				zap.String("agent_id", agentID),
+				zap.Any("panic", rec))
+			r.sendAgentError(sessionID, agentID, fmt.Errorf("agent execution panic: %v", rec))
+		}
+	}()
+
+	logger.Log.Info("Starting agent streaming response",
+		zap.String("session_id", sessionID),
+		zap.String("agent_id", agentID),
+		zap.String("message", ctx.Message))
+
+	// Buffer to accumulate the full response for session storage
+	var fullResponse strings.Builder
+	chunkCount := 0
+
+	// Create tool notification callback
+	agent.SetToolNotifier(func(toolID, toolName, parameters string) {
+		r.sendToolCallStart(sessionID, agentID, toolID, toolName, parameters)
+	}, func(toolID, result string, duration int64) {
+		r.sendToolCallComplete(sessionID, agentID, toolID, result, duration)
+	}, func(toolID, errorMessage string, duration int64) {
+		r.sendToolCallError(sessionID, agentID, toolID, errorMessage, duration)
+	})
+
+	// Stream response using the agent's streaming capability
+	err := agent.Stream(ctx.Context, ctx.Message, func(chunk string) error {
+		chunkCount++
+		logger.Log.Debug("Streaming chunk received",
+			zap.String("session_id", sessionID),
+			zap.Int("chunk_count", chunkCount),
+			zap.Int("chunk_length", len(chunk)),
+			zap.String("chunk_preview", func() string {
+				if len(chunk) > 50 {
+					return chunk[:50] + "..."
+				}
+				return chunk
+			}()))
+
+		// Accumulate full response
+		fullResponse.WriteString(chunk)
+
+		// Send each chunk immediately to the client
+		r.sendAgentTextChunk(sessionID, agentID, chunk)
+
+		return nil
+	}, WithConversation(ctx.Conversation))
+	if err != nil {
+		logger.Log.Error("Agent streaming failed",
+			zap.String("session_id", sessionID),
+			zap.String("agent_id", agentID),
+			zap.Error(err))
+		r.sendAgentError(sessionID, agentID, err)
+		return
+	}
+
+	// Get the complete response text
+	completeResponse := fullResponse.String()
+
+	logger.Log.Info("Agent streaming completed",
+		zap.String("session_id", sessionID),
+		zap.String("agent_id", agentID),
+		zap.Int("total_chunks", chunkCount),
+		zap.Int("total_length", len(completeResponse)))
+
+	// Update the agent session with the assistant's complete response
+	sessionUUID, _ := uuid.FromString(sessionID)
+	agentSessionsMu.RLock()
+	if agentSession, exists := agentSessions[sessionUUID]; exists {
+		agentSession.Conversation = append(agentSession.Conversation, Message{
+			Role:    "assistant",
+			Content: completeResponse,
+		})
+		agentSession.LastActivity = time.Now()
+		logger.Log.Debug("Updated agent session conversation",
+			zap.String("session_id", sessionID),
+			zap.Int("conversation_length", len(agentSession.Conversation)))
+	}
+	agentSessionsMu.RUnlock()
+
+	// Send completion message
+	logger.Log.Info("Sending agent completion message",
+		zap.String("session_id", sessionID),
+		zap.String("agent_id", agentID))
+	r.sendAgentComplete(sessionID, agentID, completeResponse)
+}
+
+func (r *runtime) sendAgentTextChunk(sessionID, agentID, content string) {
+	msg := &websocketv1.AgentResponse{
+		SessionId: sessionID,
+		AgentId:   agentID,
+		Type:      websocketv1.AgentResponse_RESPONSE_TYPE_TEXT_CHUNK,
+		Content: &websocketv1.AgentResponse_TextChunk{
+			TextChunk: content,
+		},
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
+}
+
+func (r *runtime) sendAgentComplete(sessionID, agentID, finalMessage string) {
+	msg := &websocketv1.AgentChatComplete{
+		SessionId:    sessionID,
+		AgentId:      agentID,
+		FinalMessage: finalMessage,
+		TotalTokens:  0, // TODO: Add token counting
+		DurationMs:   0, // TODO: Add duration tracking
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
+}
+
+func (r *runtime) sendAgentError(sessionID, agentID string, err error) {
+	msg := &websocketv1.AgentResponse{
+		SessionId: sessionID,
+		AgentId:   agentID,
+		Type:      websocketv1.AgentResponse_RESPONSE_TYPE_ERROR,
+		Content: &websocketv1.AgentResponse_ErrorMessage{
+			ErrorMessage: err.Error(),
+		},
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
+}
+
+func (r *runtime) sendToolCallStart(sessionID, agentID, toolID, toolName, parameters string) {
+	msg := &websocketv1.AgentResponse{
+		SessionId: sessionID,
+		AgentId:   agentID,
+		Type:      websocketv1.AgentResponse_RESPONSE_TYPE_TOOL_CALL_START,
+		Content: &websocketv1.AgentResponse_ToolCallInfo{
+			ToolCallInfo: &websocketv1.ToolCallInfo{
+				ToolId:     toolID,
+				ToolName:   toolName,
+				Parameters: parameters,
+			},
+		},
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
+}
+
+func (r *runtime) sendToolCallComplete(sessionID, agentID, toolID, result string, duration int64) {
+	msg := &websocketv1.AgentResponse{
+		SessionId: sessionID,
+		AgentId:   agentID,
+		Type:      websocketv1.AgentResponse_RESPONSE_TYPE_TOOL_CALL_COMPLETE,
+		Content: &websocketv1.AgentResponse_ToolCallInfo{
+			ToolCallInfo: &websocketv1.ToolCallInfo{
+				ToolId:     toolID,
+				Result:     result,
+				DurationMs: duration,
+			},
+		},
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
+}
+
+func (r *runtime) sendToolCallError(sessionID, agentID, toolID, errorMessage string, duration int64) {
+	msg := &websocketv1.AgentResponse{
+		SessionId: sessionID,
+		AgentId:   agentID,
+		Type:      websocketv1.AgentResponse_RESPONSE_TYPE_TOOL_CALL_ERROR,
+		Content: &websocketv1.AgentResponse_ToolCallInfo{
+			ToolCallInfo: &websocketv1.ToolCallInfo{
+				ToolId:       toolID,
+				ErrorMessage: errorMessage,
+				DurationMs:   duration,
+			},
+		},
+	}
+
+	r.wsClient.Enqueue(uuid.Must(uuid.NewV4()).String(), msg)
 }

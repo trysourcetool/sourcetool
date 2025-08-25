@@ -43,6 +43,12 @@ func NewMessage(id string, payload proto.Message) (*websocketv1.Message, error) 
 		msg.Type = &websocketv1.Message_ScriptFinished{ScriptFinished: p}
 	case *exceptionv1.Exception:
 		msg.Type = &websocketv1.Message_Exception{Exception: p}
+	case *websocketv1.AgentResponse:
+		msg.Type = &websocketv1.Message_AgentResponse{AgentResponse: p}
+	case *websocketv1.AgentChatComplete:
+		msg.Type = &websocketv1.Message_AgentChatComplete{AgentChatComplete: p}
+	case *websocketv1.InitializeAgentChatCompleted:
+		msg.Type = &websocketv1.Message_InitializeAgentChatCompleted{InitializeAgentChatCompleted: p}
 	default:
 		return nil, fmt.Errorf("unsupported message type: %T", payload)
 	}

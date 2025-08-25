@@ -17,6 +17,7 @@ type Sourcetool struct {
 	endpoint    string
 	runtime     *runtime
 	pages       map[uuid.UUID]*page
+	agents      map[uuid.UUID]*Agent
 	mu          sync.RWMutex
 }
 
@@ -35,6 +36,7 @@ func New(config *Config) *Sourcetool {
 		environment: keyParts[0],
 		endpoint:    fmt.Sprintf("%s/ws", config.Endpoint),
 		pages:       make(map[uuid.UUID]*page),
+		agents:      make(map[uuid.UUID]*Agent),
 	}
 	s.Router = newRouter(s, namespaceDNS)
 	return s
@@ -45,13 +47,17 @@ func (s *Sourcetool) Listen() error {
 		return err
 	}
 
+	if err := s.validateAgents(); err != nil {
+		return err
+	}
+
 	if err := logger.Init(); err != nil {
 		return fmt.Errorf("failed to initialize logger: %v", err)
 	}
 	defer logger.Sync()
 
 	s.mu.RLock()
-	r, err := startRuntime(s.apiKey, s.endpoint, s.pages)
+	r, err := startRuntime(s.apiKey, s.endpoint, s.pages, s.agents)
 	s.mu.RUnlock()
 	if err != nil {
 		return err
@@ -92,4 +98,34 @@ func (s *Sourcetool) addPage(id uuid.UUID, p *page) {
 	s.mu.Lock()
 	s.pages[id] = p
 	s.mu.Unlock()
+}
+
+func (s *Sourcetool) addAgent(id uuid.UUID, a *Agent) {
+	s.mu.Lock()
+	s.agents[id] = a
+	s.mu.Unlock()
+}
+
+func (s *Sourcetool) validateAgents() error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for _, agent := range s.agents {
+		if err := agent.Validate(); err != nil {
+			return err
+		}
+	}
+
+	agentsByRoute := make(map[string]uuid.UUID)
+	for id, a := range s.agents {
+		agentsByRoute[a.route] = id
+	}
+
+	newAgents := make(map[uuid.UUID]*Agent)
+	for _, id := range agentsByRoute {
+		newAgents[id] = s.agents[id]
+	}
+	s.agents = newAgents
+
+	return nil
 }

@@ -189,6 +189,15 @@ func (s *Server) installRESTHandlers(router *chi.Mux) {
 				})
 			})
 
+			r.Route("/agents", func(r chi.Router) {
+				r.Use(s.authUserWithOrganization)
+				r.Get("/", s.errorHandler(s.handleListAgents))
+
+				r.Route("/{agentID}", func(r chi.Router) {
+					r.Get("/", s.errorHandler(s.handleGetAgent))
+				})
+			})
+
 			r.Route("/hostInstances", func(r chi.Router) {
 				r.Use(s.authUserWithOrganization)
 				r.Get("/ping", s.errorHandler(s.handlePingHostInstance))

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package websocket.v1;
 
+import "agent/v1/agent.proto";
 import "exception/v1/exception.proto";
 import "page/v1/page.proto";
 import "widget/v1/widget.proto";
@@ -18,6 +19,12 @@ message Message {
     RerunPage rerun_page = 8;
     CloseSession close_session = 9;
     ScriptFinished script_finished = 10;
+    // Agent chat messages
+    InitializeAgentChat initialize_agent_chat = 11;
+    InitializeAgentChatCompleted initialize_agent_chat_completed = 12;
+    SendAgentMessage send_agent_message = 13;
+    AgentResponse agent_response = 14;
+    AgentChatComplete agent_chat_complete = 15;
   }
 }
 
@@ -26,6 +33,7 @@ message InitializeHost {
   string sdk_name = 2;
   string sdk_version = 3;
   repeated page.v1.Page pages = 4;
+  repeated agent.v1.Agent agents = 5;
 }
 
 message InitializeHostCompleted {
@@ -67,4 +75,93 @@ message ScriptFinished {
 
   string session_id = 1;
   Status status = 2;
+}
+
+// Agent chat messages
+
+message InitializeAgentChat {
+  optional string session_id = 1;
+  string agent_id = 2;
+}
+
+message InitializeAgentChatCompleted {
+  string session_id = 1;
+  string agent_id = 2;
+}
+
+message SendAgentMessage {
+  string session_id = 1;
+  string agent_id = 2;
+  string message = 3;
+  repeated ChatMessage conversation_history = 4;
+}
+
+message ChatMessage {
+  enum Role {
+    ROLE_UNSPECIFIED = 0;
+    ROLE_USER = 1;
+    ROLE_ASSISTANT = 2;
+    ROLE_SYSTEM = 3;
+    ROLE_TOOL = 4;
+  }
+
+  Role role = 1;
+  string content = 2;
+  optional string tool_call_id = 3;
+  repeated ToolCall tool_calls = 4;
+  int64 timestamp = 5;
+}
+
+message ToolCall {
+  string id = 1;
+  string name = 2;
+  string arguments = 3;
+}
+
+message AgentResponse {
+  enum ResponseType {
+    RESPONSE_TYPE_UNSPECIFIED = 0;
+    RESPONSE_TYPE_TEXT_CHUNK = 1;
+    RESPONSE_TYPE_TOOL_CALL = 2;
+    RESPONSE_TYPE_TOOL_RESULT = 3;
+    RESPONSE_TYPE_ERROR = 4;
+    RESPONSE_TYPE_TOOL_CALL_START = 5;
+    RESPONSE_TYPE_TOOL_CALL_COMPLETE = 6;
+    RESPONSE_TYPE_TOOL_CALL_ERROR = 7;
+  }
+
+  string session_id = 1;
+  string agent_id = 2;
+  ResponseType type = 3;
+
+  oneof content {
+    string text_chunk = 4;
+    ToolCall tool_call = 5;
+    ToolResult tool_result = 6;
+    string error_message = 7;
+    ToolCallInfo tool_call_info = 8;
+  }
+}
+
+message ToolResult {
+  string tool_call_id = 1;
+  string result = 2;
+  bool success = 3;
+}
+
+message ToolCallInfo {
+  string tool_id = 1;
+  string tool_name = 2;
+  string parameters = 3;
+  string result = 4;
+  string error_message = 5;
+  int64 duration_ms = 6;
+}
+
+message AgentChatComplete {
+  string session_id = 1;
+  string agent_id = 2;
+  string final_message = 3;
+  int32 total_tokens = 4;
+  int64 duration_ms = 5;
 }

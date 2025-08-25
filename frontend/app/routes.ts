@@ -25,6 +25,10 @@ export default rootRoute('root.tsx', [
       route('/', 'users/index.tsx'),
       route('/$userId', 'users/$userId/index.tsx'),
     ]),
+    route('/agents', 'agents/route.tsx', [
+      route('/', 'agents/index.tsx'),
+      route('/$agentId', 'agents/$agentId/index.tsx'),
+    ]),
     physical('/apiKeys', 'apiKeys'),
     physical('/groups', 'groups'),
     physical('/environments', 'environments'),
@@ -32,5 +36,8 @@ export default rootRoute('root.tsx', [
   ]),
   layout('preview', 'layout-auth-preview.tsx', [
     route('/pages/$', 'pages/pageId/index.tsx'),
+  ]),
+  layout('agent', 'layout-auth-agent.tsx', [
+    route('/agents/$agentId/chat/$chatId', 'agents/$agentId/chat/$chatId/index.tsx'),
   ]),
 ]);
