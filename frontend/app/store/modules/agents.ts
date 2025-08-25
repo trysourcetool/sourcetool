@@ -149,3 +149,4 @@ export const agentsStore = {
 };
 
 export type AgentsState = State;
+export type { Agent };

@@ -21,7 +21,7 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 		return errors.New("invalid message")
 	}
 
-	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, agentTools, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
+	hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, insertAgentTools, updateAgentTools, deleteAgentTools, err := s.handleInitializeHostBase(ctx, conn, instanceID, msg)
 	if err != nil {
 		return err
 	}
@@ -86,38 +86,19 @@ func (s *Server) handleInitializeHost(ctx context.Context, conn *websocket.Conn,
 			}
 		}
 
-		// Delete existing agent tools for agents being updated or deleted
-		allAgentIDs := make([]uuid.UUID, 0)
-		for _, agent := range updateAgents {
-			allAgentIDs = append(allAgentIDs, agent.ID)
-		}
-		for _, agent := range deleteAgents {
-			allAgentIDs = append(allAgentIDs, agent.ID)
-		}
-		if len(allAgentIDs) > 0 {
-			existingAgentTools, err := tx.AgentTool().List(ctx, database.AgentToolByAgentID(allAgentIDs[0]))
-			if err != nil {
+		// Handle agent tools
+		if len(deleteAgentTools) > 0 {
+			if err := tx.AgentTool().BulkDelete(ctx, deleteAgentTools); err != nil {
 				return err
 			}
-			var toolsToDelete []*core.AgentTool
-			for _, tool := range existingAgentTools {
-				for _, agentID := range allAgentIDs {
-					if tool.AgentID == agentID {
-						toolsToDelete = append(toolsToDelete, tool)
-						break
-					}
-				}
-			}
-			if len(toolsToDelete) > 0 {
-				if err := tx.AgentTool().BulkDelete(ctx, toolsToDelete); err != nil {
-					return err
-				}
+		}
+		if len(updateAgentTools) > 0 {
+			if err := tx.AgentTool().BulkUpdate(ctx, updateAgentTools); err != nil {
+				return err
 			}
 		}
-
-		// Insert new agent tools
-		if len(agentTools) > 0 {
-			if err := tx.AgentTool().BulkInsert(ctx, agentTools); err != nil {
+		if len(insertAgentTools) > 0 {
+			if err := tx.AgentTool().BulkInsert(ctx, insertAgentTools); err != nil {
 				return err
 			}
 		}

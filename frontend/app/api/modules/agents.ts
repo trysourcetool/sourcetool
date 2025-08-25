@@ -6,6 +6,10 @@ export type Agent = {
   description: string;
   instructions: string;
   model: string;
+  tools?: Array<{
+    name: string;
+    description: string;
+  }>;
 };
 
 export const listAgents = async ({ environmentId }: { environmentId: string }) => {

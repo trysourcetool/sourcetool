@@ -38,6 +38,14 @@ func AgentByEnvironmentID(id uuid.UUID) AgentQuery {
 	return AgentByEnvironmentIDQuery{EnvironmentID: id}
 }
 
+type AgentBySessionIDQuery struct{ SessionID uuid.UUID }
+
+func (q AgentBySessionIDQuery) isAgentQuery() {}
+
+func AgentBySessionID(id uuid.UUID) AgentQuery {
+	return AgentBySessionIDQuery{SessionID: id}
+}
+
 type AgentLimitQuery struct{ Limit uint64 }
 
 func (q AgentLimitQuery) isAgentQuery() {}

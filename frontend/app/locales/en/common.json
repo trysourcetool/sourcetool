@@ -51,6 +51,7 @@
   "routes_agents_placeholder_restart_server": "Restart your server and reload this page",
   "routes_agents_placeholder_agent_added": "You should see your agent added to the list",
   "routes_agents_placeholder_documentation": "See the documentation for agent configuration and capabilities",
+  "routes_agents_loading": "Loading...",
 
   "routes_groups_page_header": "Permissions",
   "routes_groups_title": "Permission Groups",

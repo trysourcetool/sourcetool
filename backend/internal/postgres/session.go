@@ -60,6 +60,7 @@ func (s *sessionStore) buildQuery(ctx context.Context, queries ...database.Sessi
 		`s."organization_id"`,
 		`s."user_id"`,
 		`s."environment_id"`,
+		`s."type"`,
 		`s."created_at"`,
 		`s."updated_at"`,
 	).
@@ -83,12 +84,14 @@ func (s *sessionStore) Create(ctx context.Context, m *core.Session) error {
 			`"organization_id"`,
 			`"user_id"`,
 			`"environment_id"`,
+			`"type"`,
 		).
 		Values(
 			m.ID,
 			m.OrganizationID,
 			m.UserID,
 			m.EnvironmentID,
+			m.Type,
 		).
 		RunWith(s.db).
 		ExecContext(ctx); err != nil {

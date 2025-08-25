@@ -112,3 +112,6 @@ terraform.rc
 
 # Repomix
 repomix-output.xml
+
+# Serena
+.serena/cache

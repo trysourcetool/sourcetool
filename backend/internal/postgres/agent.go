@@ -69,6 +69,12 @@ func (s *agentStore) applyQueries(b sq.SelectBuilder, queries ...database.AgentQ
 			b = b.Where(sq.Eq{`a."api_key_id"`: q.APIKeyID})
 		case database.AgentByEnvironmentIDQuery:
 			b = b.Where(sq.Eq{`a."environment_id"`: q.EnvironmentID})
+		case database.AgentBySessionIDQuery:
+			b = b.
+				InnerJoin(`"api_key" ak ON ak."id" = a."api_key_id"`).
+				InnerJoin(`"environment" e ON e."id" = ak."environment_id"`).
+				InnerJoin(`"session" s ON s."environment_id" = e."id"`).
+				Where(sq.Eq{`s."id"`: q.SessionID})
 		case database.AgentLimitQuery:
 			b = b.Limit(q.Limit)
 		case database.AgentOffsetQuery:

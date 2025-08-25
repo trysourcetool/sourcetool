@@ -74,6 +74,125 @@ func (ScriptFinished_Status) EnumDescriptor() ([]byte, []int) {
 	return file_websocket_v1_message_proto_rawDescGZIP(), []int{8, 0}
 }
 
+type ChatMessage_Role int32
+
+const (
+	ChatMessage_ROLE_UNSPECIFIED ChatMessage_Role = 0
+	ChatMessage_ROLE_USER        ChatMessage_Role = 1
+	ChatMessage_ROLE_ASSISTANT   ChatMessage_Role = 2
+	ChatMessage_ROLE_SYSTEM      ChatMessage_Role = 3
+	ChatMessage_ROLE_TOOL        ChatMessage_Role = 4
+)
+
+// Enum value maps for ChatMessage_Role.
+var (
+	ChatMessage_Role_name = map[int32]string{
+		0: "ROLE_UNSPECIFIED",
+		1: "ROLE_USER",
+		2: "ROLE_ASSISTANT",
+		3: "ROLE_SYSTEM",
+		4: "ROLE_TOOL",
+	}
+	ChatMessage_Role_value = map[string]int32{
+		"ROLE_UNSPECIFIED": 0,
+		"ROLE_USER":        1,
+		"ROLE_ASSISTANT":   2,
+		"ROLE_SYSTEM":      3,
+		"ROLE_TOOL":        4,
+	}
+)
+
+func (x ChatMessage_Role) Enum() *ChatMessage_Role {
+	p := new(ChatMessage_Role)
+	*p = x
+	return p
+}
+
+func (x ChatMessage_Role) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ChatMessage_Role) Descriptor() protoreflect.EnumDescriptor {
+	return file_websocket_v1_message_proto_enumTypes[1].Descriptor()
+}
+
+func (ChatMessage_Role) Type() protoreflect.EnumType {
+	return &file_websocket_v1_message_proto_enumTypes[1]
+}
+
+func (x ChatMessage_Role) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ChatMessage_Role.Descriptor instead.
+func (ChatMessage_Role) EnumDescriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{12, 0}
+}
+
+type AgentResponse_ResponseType int32
+
+const (
+	AgentResponse_RESPONSE_TYPE_UNSPECIFIED        AgentResponse_ResponseType = 0
+	AgentResponse_RESPONSE_TYPE_TEXT_CHUNK         AgentResponse_ResponseType = 1
+	AgentResponse_RESPONSE_TYPE_TOOL_CALL          AgentResponse_ResponseType = 2
+	AgentResponse_RESPONSE_TYPE_TOOL_RESULT        AgentResponse_ResponseType = 3
+	AgentResponse_RESPONSE_TYPE_ERROR              AgentResponse_ResponseType = 4
+	AgentResponse_RESPONSE_TYPE_TOOL_CALL_START    AgentResponse_ResponseType = 5
+	AgentResponse_RESPONSE_TYPE_TOOL_CALL_COMPLETE AgentResponse_ResponseType = 6
+	AgentResponse_RESPONSE_TYPE_TOOL_CALL_ERROR    AgentResponse_ResponseType = 7
+)
+
+// Enum value maps for AgentResponse_ResponseType.
+var (
+	AgentResponse_ResponseType_name = map[int32]string{
+		0: "RESPONSE_TYPE_UNSPECIFIED",
+		1: "RESPONSE_TYPE_TEXT_CHUNK",
+		2: "RESPONSE_TYPE_TOOL_CALL",
+		3: "RESPONSE_TYPE_TOOL_RESULT",
+		4: "RESPONSE_TYPE_ERROR",
+		5: "RESPONSE_TYPE_TOOL_CALL_START",
+		6: "RESPONSE_TYPE_TOOL_CALL_COMPLETE",
+		7: "RESPONSE_TYPE_TOOL_CALL_ERROR",
+	}
+	AgentResponse_ResponseType_value = map[string]int32{
+		"RESPONSE_TYPE_UNSPECIFIED":        0,
+		"RESPONSE_TYPE_TEXT_CHUNK":         1,
+		"RESPONSE_TYPE_TOOL_CALL":          2,
+		"RESPONSE_TYPE_TOOL_RESULT":        3,
+		"RESPONSE_TYPE_ERROR":              4,
+		"RESPONSE_TYPE_TOOL_CALL_START":    5,
+		"RESPONSE_TYPE_TOOL_CALL_COMPLETE": 6,
+		"RESPONSE_TYPE_TOOL_CALL_ERROR":    7,
+	}
+)
+
+func (x AgentResponse_ResponseType) Enum() *AgentResponse_ResponseType {
+	p := new(AgentResponse_ResponseType)
+	*p = x
+	return p
+}
+
+func (x AgentResponse_ResponseType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AgentResponse_ResponseType) Descriptor() protoreflect.EnumDescriptor {
+	return file_websocket_v1_message_proto_enumTypes[2].Descriptor()
+}
+
+func (AgentResponse_ResponseType) Type() protoreflect.EnumType {
+	return &file_websocket_v1_message_proto_enumTypes[2]
+}
+
+func (x AgentResponse_ResponseType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AgentResponse_ResponseType.Descriptor instead.
+func (AgentResponse_ResponseType) EnumDescriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{14, 0}
+}
+
 type Message struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -88,6 +207,11 @@ type Message struct {
 	//	*Message_RerunPage
 	//	*Message_CloseSession
 	//	*Message_ScriptFinished
+	//	*Message_InitializeAgentChat
+	//	*Message_InitializeAgentChatCompleted
+	//	*Message_SendAgentMessage
+	//	*Message_AgentResponse
+	//	*Message_AgentChatComplete
 	Type          isMessage_Type `protobuf_oneof:"type"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -218,6 +342,51 @@ func (x *Message) GetScriptFinished() *ScriptFinished {
 	return nil
 }
 
+func (x *Message) GetInitializeAgentChat() *InitializeAgentChat {
+	if x != nil {
+		if x, ok := x.Type.(*Message_InitializeAgentChat); ok {
+			return x.InitializeAgentChat
+		}
+	}
+	return nil
+}
+
+func (x *Message) GetInitializeAgentChatCompleted() *InitializeAgentChatCompleted {
+	if x != nil {
+		if x, ok := x.Type.(*Message_InitializeAgentChatCompleted); ok {
+			return x.InitializeAgentChatCompleted
+		}
+	}
+	return nil
+}
+
+func (x *Message) GetSendAgentMessage() *SendAgentMessage {
+	if x != nil {
+		if x, ok := x.Type.(*Message_SendAgentMessage); ok {
+			return x.SendAgentMessage
+		}
+	}
+	return nil
+}
+
+func (x *Message) GetAgentResponse() *AgentResponse {
+	if x != nil {
+		if x, ok := x.Type.(*Message_AgentResponse); ok {
+			return x.AgentResponse
+		}
+	}
+	return nil
+}
+
+func (x *Message) GetAgentChatComplete() *AgentChatComplete {
+	if x != nil {
+		if x, ok := x.Type.(*Message_AgentChatComplete); ok {
+			return x.AgentChatComplete
+		}
+	}
+	return nil
+}
+
 type isMessage_Type interface {
 	isMessage_Type()
 }
@@ -258,6 +427,27 @@ type Message_ScriptFinished struct {
 	ScriptFinished *ScriptFinished `protobuf:"bytes,10,opt,name=script_finished,json=scriptFinished,proto3,oneof"`
 }
 
+type Message_InitializeAgentChat struct {
+	// Agent chat messages
+	InitializeAgentChat *InitializeAgentChat `protobuf:"bytes,11,opt,name=initialize_agent_chat,json=initializeAgentChat,proto3,oneof"`
+}
+
+type Message_InitializeAgentChatCompleted struct {
+	InitializeAgentChatCompleted *InitializeAgentChatCompleted `protobuf:"bytes,12,opt,name=initialize_agent_chat_completed,json=initializeAgentChatCompleted,proto3,oneof"`
+}
+
+type Message_SendAgentMessage struct {
+	SendAgentMessage *SendAgentMessage `protobuf:"bytes,13,opt,name=send_agent_message,json=sendAgentMessage,proto3,oneof"`
+}
+
+type Message_AgentResponse struct {
+	AgentResponse *AgentResponse `protobuf:"bytes,14,opt,name=agent_response,json=agentResponse,proto3,oneof"`
+}
+
+type Message_AgentChatComplete struct {
+	AgentChatComplete *AgentChatComplete `protobuf:"bytes,15,opt,name=agent_chat_complete,json=agentChatComplete,proto3,oneof"`
+}
+
 func (*Message_Exception) isMessage_Type() {}
 
 func (*Message_InitializeHost) isMessage_Type() {}
@@ -275,6 +465,16 @@ func (*Message_RerunPage) isMessage_Type() {}
 func (*Message_CloseSession) isMessage_Type() {}
 
 func (*Message_ScriptFinished) isMessage_Type() {}
+
+func (*Message_InitializeAgentChat) isMessage_Type() {}
+
+func (*Message_InitializeAgentChatCompleted) isMessage_Type() {}
+
+func (*Message_SendAgentMessage) isMessage_Type() {}
+
+func (*Message_AgentResponse) isMessage_Type() {}
+
+func (*Message_AgentChatComplete) isMessage_Type() {}
 
 type InitializeHost struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -716,11 +916,693 @@ func (x *ScriptFinished) GetStatus() ScriptFinished_Status {
 	return ScriptFinished_STATUS_UNSPECIFIED
 }
 
+type InitializeAgentChat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionId     *string                `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3,oneof" json:"session_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InitializeAgentChat) Reset() {
+	*x = InitializeAgentChat{}
+	mi := &file_websocket_v1_message_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InitializeAgentChat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InitializeAgentChat) ProtoMessage() {}
+
+func (x *InitializeAgentChat) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InitializeAgentChat.ProtoReflect.Descriptor instead.
+func (*InitializeAgentChat) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *InitializeAgentChat) GetSessionId() string {
+	if x != nil && x.SessionId != nil {
+		return *x.SessionId
+	}
+	return ""
+}
+
+func (x *InitializeAgentChat) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+type InitializeAgentChatCompleted struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InitializeAgentChatCompleted) Reset() {
+	*x = InitializeAgentChatCompleted{}
+	mi := &file_websocket_v1_message_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InitializeAgentChatCompleted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InitializeAgentChatCompleted) ProtoMessage() {}
+
+func (x *InitializeAgentChatCompleted) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InitializeAgentChatCompleted.ProtoReflect.Descriptor instead.
+func (*InitializeAgentChatCompleted) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *InitializeAgentChatCompleted) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *InitializeAgentChatCompleted) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+type SendAgentMessage struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	SessionId           string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentId             string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Message             string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	ConversationHistory []*ChatMessage         `protobuf:"bytes,4,rep,name=conversation_history,json=conversationHistory,proto3" json:"conversation_history,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SendAgentMessage) Reset() {
+	*x = SendAgentMessage{}
+	mi := &file_websocket_v1_message_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendAgentMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendAgentMessage) ProtoMessage() {}
+
+func (x *SendAgentMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendAgentMessage.ProtoReflect.Descriptor instead.
+func (*SendAgentMessage) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SendAgentMessage) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *SendAgentMessage) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *SendAgentMessage) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *SendAgentMessage) GetConversationHistory() []*ChatMessage {
+	if x != nil {
+		return x.ConversationHistory
+	}
+	return nil
+}
+
+type ChatMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          ChatMessage_Role       `protobuf:"varint,1,opt,name=role,proto3,enum=websocket.v1.ChatMessage_Role" json:"role,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	ToolCallId    *string                `protobuf:"bytes,3,opt,name=tool_call_id,json=toolCallId,proto3,oneof" json:"tool_call_id,omitempty"`
+	ToolCalls     []*ToolCall            `protobuf:"bytes,4,rep,name=tool_calls,json=toolCalls,proto3" json:"tool_calls,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatMessage) Reset() {
+	*x = ChatMessage{}
+	mi := &file_websocket_v1_message_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatMessage) ProtoMessage() {}
+
+func (x *ChatMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
+func (*ChatMessage) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ChatMessage) GetRole() ChatMessage_Role {
+	if x != nil {
+		return x.Role
+	}
+	return ChatMessage_ROLE_UNSPECIFIED
+}
+
+func (x *ChatMessage) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *ChatMessage) GetToolCallId() string {
+	if x != nil && x.ToolCallId != nil {
+		return *x.ToolCallId
+	}
+	return ""
+}
+
+func (x *ChatMessage) GetToolCalls() []*ToolCall {
+	if x != nil {
+		return x.ToolCalls
+	}
+	return nil
+}
+
+func (x *ChatMessage) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+type ToolCall struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Arguments     string                 `protobuf:"bytes,3,opt,name=arguments,proto3" json:"arguments,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToolCall) Reset() {
+	*x = ToolCall{}
+	mi := &file_websocket_v1_message_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToolCall) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToolCall) ProtoMessage() {}
+
+func (x *ToolCall) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToolCall.ProtoReflect.Descriptor instead.
+func (*ToolCall) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ToolCall) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ToolCall) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ToolCall) GetArguments() string {
+	if x != nil {
+		return x.Arguments
+	}
+	return ""
+}
+
+type AgentResponse struct {
+	state     protoimpl.MessageState     `protogen:"open.v1"`
+	SessionId string                     `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentId   string                     `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Type      AgentResponse_ResponseType `protobuf:"varint,3,opt,name=type,proto3,enum=websocket.v1.AgentResponse_ResponseType" json:"type,omitempty"`
+	// Types that are valid to be assigned to Content:
+	//
+	//	*AgentResponse_TextChunk
+	//	*AgentResponse_ToolCall
+	//	*AgentResponse_ToolResult
+	//	*AgentResponse_ErrorMessage
+	//	*AgentResponse_ToolCallInfo
+	Content       isAgentResponse_Content `protobuf_oneof:"content"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentResponse) Reset() {
+	*x = AgentResponse{}
+	mi := &file_websocket_v1_message_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentResponse) ProtoMessage() {}
+
+func (x *AgentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentResponse.ProtoReflect.Descriptor instead.
+func (*AgentResponse) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *AgentResponse) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *AgentResponse) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *AgentResponse) GetType() AgentResponse_ResponseType {
+	if x != nil {
+		return x.Type
+	}
+	return AgentResponse_RESPONSE_TYPE_UNSPECIFIED
+}
+
+func (x *AgentResponse) GetContent() isAgentResponse_Content {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+func (x *AgentResponse) GetTextChunk() string {
+	if x != nil {
+		if x, ok := x.Content.(*AgentResponse_TextChunk); ok {
+			return x.TextChunk
+		}
+	}
+	return ""
+}
+
+func (x *AgentResponse) GetToolCall() *ToolCall {
+	if x != nil {
+		if x, ok := x.Content.(*AgentResponse_ToolCall); ok {
+			return x.ToolCall
+		}
+	}
+	return nil
+}
+
+func (x *AgentResponse) GetToolResult() *ToolResult {
+	if x != nil {
+		if x, ok := x.Content.(*AgentResponse_ToolResult); ok {
+			return x.ToolResult
+		}
+	}
+	return nil
+}
+
+func (x *AgentResponse) GetErrorMessage() string {
+	if x != nil {
+		if x, ok := x.Content.(*AgentResponse_ErrorMessage); ok {
+			return x.ErrorMessage
+		}
+	}
+	return ""
+}
+
+func (x *AgentResponse) GetToolCallInfo() *ToolCallInfo {
+	if x != nil {
+		if x, ok := x.Content.(*AgentResponse_ToolCallInfo); ok {
+			return x.ToolCallInfo
+		}
+	}
+	return nil
+}
+
+type isAgentResponse_Content interface {
+	isAgentResponse_Content()
+}
+
+type AgentResponse_TextChunk struct {
+	TextChunk string `protobuf:"bytes,4,opt,name=text_chunk,json=textChunk,proto3,oneof"`
+}
+
+type AgentResponse_ToolCall struct {
+	ToolCall *ToolCall `protobuf:"bytes,5,opt,name=tool_call,json=toolCall,proto3,oneof"`
+}
+
+type AgentResponse_ToolResult struct {
+	ToolResult *ToolResult `protobuf:"bytes,6,opt,name=tool_result,json=toolResult,proto3,oneof"`
+}
+
+type AgentResponse_ErrorMessage struct {
+	ErrorMessage string `protobuf:"bytes,7,opt,name=error_message,json=errorMessage,proto3,oneof"`
+}
+
+type AgentResponse_ToolCallInfo struct {
+	ToolCallInfo *ToolCallInfo `protobuf:"bytes,8,opt,name=tool_call_info,json=toolCallInfo,proto3,oneof"`
+}
+
+func (*AgentResponse_TextChunk) isAgentResponse_Content() {}
+
+func (*AgentResponse_ToolCall) isAgentResponse_Content() {}
+
+func (*AgentResponse_ToolResult) isAgentResponse_Content() {}
+
+func (*AgentResponse_ErrorMessage) isAgentResponse_Content() {}
+
+func (*AgentResponse_ToolCallInfo) isAgentResponse_Content() {}
+
+type ToolResult struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolCallId    string                 `protobuf:"bytes,1,opt,name=tool_call_id,json=toolCallId,proto3" json:"tool_call_id,omitempty"`
+	Result        string                 `protobuf:"bytes,2,opt,name=result,proto3" json:"result,omitempty"`
+	Success       bool                   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToolResult) Reset() {
+	*x = ToolResult{}
+	mi := &file_websocket_v1_message_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToolResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToolResult) ProtoMessage() {}
+
+func (x *ToolResult) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToolResult.ProtoReflect.Descriptor instead.
+func (*ToolResult) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ToolResult) GetToolCallId() string {
+	if x != nil {
+		return x.ToolCallId
+	}
+	return ""
+}
+
+func (x *ToolResult) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
+}
+
+func (x *ToolResult) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type ToolCallInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolId        string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	ToolName      string                 `protobuf:"bytes,2,opt,name=tool_name,json=toolName,proto3" json:"tool_name,omitempty"`
+	Parameters    string                 `protobuf:"bytes,3,opt,name=parameters,proto3" json:"parameters,omitempty"`
+	Result        string                 `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
+	ErrorMessage  string                 `protobuf:"bytes,5,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	DurationMs    int64                  `protobuf:"varint,6,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToolCallInfo) Reset() {
+	*x = ToolCallInfo{}
+	mi := &file_websocket_v1_message_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToolCallInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToolCallInfo) ProtoMessage() {}
+
+func (x *ToolCallInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToolCallInfo.ProtoReflect.Descriptor instead.
+func (*ToolCallInfo) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ToolCallInfo) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *ToolCallInfo) GetToolName() string {
+	if x != nil {
+		return x.ToolName
+	}
+	return ""
+}
+
+func (x *ToolCallInfo) GetParameters() string {
+	if x != nil {
+		return x.Parameters
+	}
+	return ""
+}
+
+func (x *ToolCallInfo) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
+}
+
+func (x *ToolCallInfo) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+func (x *ToolCallInfo) GetDurationMs() int64 {
+	if x != nil {
+		return x.DurationMs
+	}
+	return 0
+}
+
+type AgentChatComplete struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	FinalMessage  string                 `protobuf:"bytes,3,opt,name=final_message,json=finalMessage,proto3" json:"final_message,omitempty"`
+	TotalTokens   int32                  `protobuf:"varint,4,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	DurationMs    int64                  `protobuf:"varint,5,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentChatComplete) Reset() {
+	*x = AgentChatComplete{}
+	mi := &file_websocket_v1_message_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentChatComplete) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentChatComplete) ProtoMessage() {}
+
+func (x *AgentChatComplete) ProtoReflect() protoreflect.Message {
+	mi := &file_websocket_v1_message_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentChatComplete.ProtoReflect.Descriptor instead.
+func (*AgentChatComplete) Descriptor() ([]byte, []int) {
+	return file_websocket_v1_message_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *AgentChatComplete) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *AgentChatComplete) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *AgentChatComplete) GetFinalMessage() string {
+	if x != nil {
+		return x.FinalMessage
+	}
+	return ""
+}
+
+func (x *AgentChatComplete) GetTotalTokens() int32 {
+	if x != nil {
+		return x.TotalTokens
+	}
+	return 0
+}
+
+func (x *AgentChatComplete) GetDurationMs() int64 {
+	if x != nil {
+		return x.DurationMs
+	}
+	return 0
+}
+
 var File_websocket_v1_message_proto protoreflect.FileDescriptor
 
 const file_websocket_v1_message_proto_rawDesc = "" +
 	"\n" +
-	"\x1awebsocket/v1/message.proto\x12\fwebsocket.v1\x1a\x14agent/v1/agent.proto\x1a\x1cexception/v1/exception.proto\x1a\x12page/v1/page.proto\x1a\x16widget/v1/widget.proto\"\xcb\x05\n" +
+	"\x1awebsocket/v1/message.proto\x12\fwebsocket.v1\x1a\x14agent/v1/agent.proto\x1a\x1cexception/v1/exception.proto\x1a\x12page/v1/page.proto\x1a\x16widget/v1/widget.proto\"\x82\t\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x127\n" +
 	"\texception\x18\x02 \x01(\v2\x17.exception.v1.ExceptionH\x00R\texception\x12G\n" +
@@ -733,7 +1615,12 @@ const file_websocket_v1_message_proto_rawDesc = "" +
 	"rerun_page\x18\b \x01(\v2\x17.websocket.v1.RerunPageH\x00R\trerunPage\x12A\n" +
 	"\rclose_session\x18\t \x01(\v2\x1a.websocket.v1.CloseSessionH\x00R\fcloseSession\x12G\n" +
 	"\x0fscript_finished\x18\n" +
-	" \x01(\v2\x1c.websocket.v1.ScriptFinishedH\x00R\x0escriptFinishedB\x06\n" +
+	" \x01(\v2\x1c.websocket.v1.ScriptFinishedH\x00R\x0escriptFinished\x12W\n" +
+	"\x15initialize_agent_chat\x18\v \x01(\v2!.websocket.v1.InitializeAgentChatH\x00R\x13initializeAgentChat\x12s\n" +
+	"\x1finitialize_agent_chat_completed\x18\f \x01(\v2*.websocket.v1.InitializeAgentChatCompletedH\x00R\x1cinitializeAgentChatCompleted\x12N\n" +
+	"\x12send_agent_message\x18\r \x01(\v2\x1e.websocket.v1.SendAgentMessageH\x00R\x10sendAgentMessage\x12D\n" +
+	"\x0eagent_response\x18\x0e \x01(\v2\x1b.websocket.v1.AgentResponseH\x00R\ragentResponse\x12Q\n" +
+	"\x13agent_chat_complete\x18\x0f \x01(\v2\x1f.websocket.v1.AgentChatCompleteH\x00R\x11agentChatCompleteB\x06\n" +
 	"\x04type\"\xb3\x01\n" +
 	"\x0eInitializeHost\x12\x17\n" +
 	"\aapi_key\x18\x01 \x01(\tR\x06apiKey\x12\x19\n" +
@@ -773,7 +1660,87 @@ const file_websocket_v1_message_proto_rawDesc = "" +
 	"\x06Status\x12\x16\n" +
 	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eSTATUS_SUCCESS\x10\x01\x12\x12\n" +
-	"\x0eSTATUS_FAILURE\x10\x02B\xc6\x01\n" +
+	"\x0eSTATUS_FAILURE\x10\x02\"c\n" +
+	"\x13InitializeAgentChat\x12\"\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tH\x00R\tsessionId\x88\x01\x01\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentIdB\r\n" +
+	"\v_session_id\"X\n" +
+	"\x1cInitializeAgentChatCompleted\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\"\xb4\x01\n" +
+	"\x10SendAgentMessage\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\x12L\n" +
+	"\x14conversation_history\x18\x04 \x03(\v2\x19.websocket.v1.ChatMessageR\x13conversationHistory\"\xc9\x02\n" +
+	"\vChatMessage\x122\n" +
+	"\x04role\x18\x01 \x01(\x0e2\x1e.websocket.v1.ChatMessage.RoleR\x04role\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12%\n" +
+	"\ftool_call_id\x18\x03 \x01(\tH\x00R\n" +
+	"toolCallId\x88\x01\x01\x125\n" +
+	"\n" +
+	"tool_calls\x18\x04 \x03(\v2\x16.websocket.v1.ToolCallR\ttoolCalls\x12\x1c\n" +
+	"\ttimestamp\x18\x05 \x01(\x03R\ttimestamp\"_\n" +
+	"\x04Role\x12\x14\n" +
+	"\x10ROLE_UNSPECIFIED\x10\x00\x12\r\n" +
+	"\tROLE_USER\x10\x01\x12\x12\n" +
+	"\x0eROLE_ASSISTANT\x10\x02\x12\x0f\n" +
+	"\vROLE_SYSTEM\x10\x03\x12\r\n" +
+	"\tROLE_TOOL\x10\x04B\x0f\n" +
+	"\r_tool_call_id\"L\n" +
+	"\bToolCall\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
+	"\targuments\x18\x03 \x01(\tR\targuments\"\xa1\x05\n" +
+	"\rAgentResponse\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12<\n" +
+	"\x04type\x18\x03 \x01(\x0e2(.websocket.v1.AgentResponse.ResponseTypeR\x04type\x12\x1f\n" +
+	"\n" +
+	"text_chunk\x18\x04 \x01(\tH\x00R\ttextChunk\x125\n" +
+	"\ttool_call\x18\x05 \x01(\v2\x16.websocket.v1.ToolCallH\x00R\btoolCall\x12;\n" +
+	"\vtool_result\x18\x06 \x01(\v2\x18.websocket.v1.ToolResultH\x00R\n" +
+	"toolResult\x12%\n" +
+	"\rerror_message\x18\a \x01(\tH\x00R\ferrorMessage\x12B\n" +
+	"\x0etool_call_info\x18\b \x01(\v2\x1a.websocket.v1.ToolCallInfoH\x00R\ftoolCallInfo\"\x8c\x02\n" +
+	"\fResponseType\x12\x1d\n" +
+	"\x19RESPONSE_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18RESPONSE_TYPE_TEXT_CHUNK\x10\x01\x12\x1b\n" +
+	"\x17RESPONSE_TYPE_TOOL_CALL\x10\x02\x12\x1d\n" +
+	"\x19RESPONSE_TYPE_TOOL_RESULT\x10\x03\x12\x17\n" +
+	"\x13RESPONSE_TYPE_ERROR\x10\x04\x12!\n" +
+	"\x1dRESPONSE_TYPE_TOOL_CALL_START\x10\x05\x12$\n" +
+	" RESPONSE_TYPE_TOOL_CALL_COMPLETE\x10\x06\x12!\n" +
+	"\x1dRESPONSE_TYPE_TOOL_CALL_ERROR\x10\aB\t\n" +
+	"\acontent\"`\n" +
+	"\n" +
+	"ToolResult\x12 \n" +
+	"\ftool_call_id\x18\x01 \x01(\tR\n" +
+	"toolCallId\x12\x16\n" +
+	"\x06result\x18\x02 \x01(\tR\x06result\x12\x18\n" +
+	"\asuccess\x18\x03 \x01(\bR\asuccess\"\xc2\x01\n" +
+	"\fToolCallInfo\x12\x17\n" +
+	"\atool_id\x18\x01 \x01(\tR\x06toolId\x12\x1b\n" +
+	"\ttool_name\x18\x02 \x01(\tR\btoolName\x12\x1e\n" +
+	"\n" +
+	"parameters\x18\x03 \x01(\tR\n" +
+	"parameters\x12\x16\n" +
+	"\x06result\x18\x04 \x01(\tR\x06result\x12#\n" +
+	"\rerror_message\x18\x05 \x01(\tR\ferrorMessage\x12\x1f\n" +
+	"\vduration_ms\x18\x06 \x01(\x03R\n" +
+	"durationMs\"\xb6\x01\n" +
+	"\x11AgentChatComplete\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x12\x19\n" +
+	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12#\n" +
+	"\rfinal_message\x18\x03 \x01(\tR\ffinalMessage\x12!\n" +
+	"\ftotal_tokens\x18\x04 \x01(\x05R\vtotalTokens\x12\x1f\n" +
+	"\vduration_ms\x18\x05 \x01(\x03R\n" +
+	"durationMsB\xc6\x01\n" +
 	"\x10com.websocket.v1B\fMessageProtoP\x01ZSgithub.com/trysourcetool/sourcetool/backend/internal/pb/go/websocket/v1;websocketv1\xa2\x02\x03WXX\xaa\x02\fWebsocket.V1\xca\x02\fWebsocket\\V1\xe2\x02\x18Websocket\\V1\\GPBMetadata\xea\x02\rWebsocket::V1b\x06proto3"
 
 var (
@@ -788,44 +1755,67 @@ func file_websocket_v1_message_proto_rawDescGZIP() []byte {
 	return file_websocket_v1_message_proto_rawDescData
 }
 
-var file_websocket_v1_message_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_websocket_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_websocket_v1_message_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_websocket_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_websocket_v1_message_proto_goTypes = []any{
-	(ScriptFinished_Status)(0),        // 0: websocket.v1.ScriptFinished.Status
-	(*Message)(nil),                   // 1: websocket.v1.Message
-	(*InitializeHost)(nil),            // 2: websocket.v1.InitializeHost
-	(*InitializeHostCompleted)(nil),   // 3: websocket.v1.InitializeHostCompleted
-	(*InitializeClient)(nil),          // 4: websocket.v1.InitializeClient
-	(*InitializeClientCompleted)(nil), // 5: websocket.v1.InitializeClientCompleted
-	(*RenderWidget)(nil),              // 6: websocket.v1.RenderWidget
-	(*RerunPage)(nil),                 // 7: websocket.v1.RerunPage
-	(*CloseSession)(nil),              // 8: websocket.v1.CloseSession
-	(*ScriptFinished)(nil),            // 9: websocket.v1.ScriptFinished
-	(*v1.Exception)(nil),              // 10: exception.v1.Exception
-	(*v11.Page)(nil),                  // 11: page.v1.Page
-	(*v12.Agent)(nil),                 // 12: agent.v1.Agent
-	(*v13.Widget)(nil),                // 13: widget.v1.Widget
+	(ScriptFinished_Status)(0),           // 0: websocket.v1.ScriptFinished.Status
+	(ChatMessage_Role)(0),                // 1: websocket.v1.ChatMessage.Role
+	(AgentResponse_ResponseType)(0),      // 2: websocket.v1.AgentResponse.ResponseType
+	(*Message)(nil),                      // 3: websocket.v1.Message
+	(*InitializeHost)(nil),               // 4: websocket.v1.InitializeHost
+	(*InitializeHostCompleted)(nil),      // 5: websocket.v1.InitializeHostCompleted
+	(*InitializeClient)(nil),             // 6: websocket.v1.InitializeClient
+	(*InitializeClientCompleted)(nil),    // 7: websocket.v1.InitializeClientCompleted
+	(*RenderWidget)(nil),                 // 8: websocket.v1.RenderWidget
+	(*RerunPage)(nil),                    // 9: websocket.v1.RerunPage
+	(*CloseSession)(nil),                 // 10: websocket.v1.CloseSession
+	(*ScriptFinished)(nil),               // 11: websocket.v1.ScriptFinished
+	(*InitializeAgentChat)(nil),          // 12: websocket.v1.InitializeAgentChat
+	(*InitializeAgentChatCompleted)(nil), // 13: websocket.v1.InitializeAgentChatCompleted
+	(*SendAgentMessage)(nil),             // 14: websocket.v1.SendAgentMessage
+	(*ChatMessage)(nil),                  // 15: websocket.v1.ChatMessage
+	(*ToolCall)(nil),                     // 16: websocket.v1.ToolCall
+	(*AgentResponse)(nil),                // 17: websocket.v1.AgentResponse
+	(*ToolResult)(nil),                   // 18: websocket.v1.ToolResult
+	(*ToolCallInfo)(nil),                 // 19: websocket.v1.ToolCallInfo
+	(*AgentChatComplete)(nil),            // 20: websocket.v1.AgentChatComplete
+	(*v1.Exception)(nil),                 // 21: exception.v1.Exception
+	(*v11.Page)(nil),                     // 22: page.v1.Page
+	(*v12.Agent)(nil),                    // 23: agent.v1.Agent
+	(*v13.Widget)(nil),                   // 24: widget.v1.Widget
 }
 var file_websocket_v1_message_proto_depIdxs = []int32{
-	10, // 0: websocket.v1.Message.exception:type_name -> exception.v1.Exception
-	2,  // 1: websocket.v1.Message.initialize_host:type_name -> websocket.v1.InitializeHost
-	3,  // 2: websocket.v1.Message.initialize_host_completed:type_name -> websocket.v1.InitializeHostCompleted
-	4,  // 3: websocket.v1.Message.initialize_client:type_name -> websocket.v1.InitializeClient
-	5,  // 4: websocket.v1.Message.initialize_client_completed:type_name -> websocket.v1.InitializeClientCompleted
-	6,  // 5: websocket.v1.Message.render_widget:type_name -> websocket.v1.RenderWidget
-	7,  // 6: websocket.v1.Message.rerun_page:type_name -> websocket.v1.RerunPage
-	8,  // 7: websocket.v1.Message.close_session:type_name -> websocket.v1.CloseSession
-	9,  // 8: websocket.v1.Message.script_finished:type_name -> websocket.v1.ScriptFinished
-	11, // 9: websocket.v1.InitializeHost.pages:type_name -> page.v1.Page
-	12, // 10: websocket.v1.InitializeHost.agents:type_name -> agent.v1.Agent
-	13, // 11: websocket.v1.RenderWidget.widget:type_name -> widget.v1.Widget
-	13, // 12: websocket.v1.RerunPage.states:type_name -> widget.v1.Widget
-	0,  // 13: websocket.v1.ScriptFinished.status:type_name -> websocket.v1.ScriptFinished.Status
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	21, // 0: websocket.v1.Message.exception:type_name -> exception.v1.Exception
+	4,  // 1: websocket.v1.Message.initialize_host:type_name -> websocket.v1.InitializeHost
+	5,  // 2: websocket.v1.Message.initialize_host_completed:type_name -> websocket.v1.InitializeHostCompleted
+	6,  // 3: websocket.v1.Message.initialize_client:type_name -> websocket.v1.InitializeClient
+	7,  // 4: websocket.v1.Message.initialize_client_completed:type_name -> websocket.v1.InitializeClientCompleted
+	8,  // 5: websocket.v1.Message.render_widget:type_name -> websocket.v1.RenderWidget
+	9,  // 6: websocket.v1.Message.rerun_page:type_name -> websocket.v1.RerunPage
+	10, // 7: websocket.v1.Message.close_session:type_name -> websocket.v1.CloseSession
+	11, // 8: websocket.v1.Message.script_finished:type_name -> websocket.v1.ScriptFinished
+	12, // 9: websocket.v1.Message.initialize_agent_chat:type_name -> websocket.v1.InitializeAgentChat
+	13, // 10: websocket.v1.Message.initialize_agent_chat_completed:type_name -> websocket.v1.InitializeAgentChatCompleted
+	14, // 11: websocket.v1.Message.send_agent_message:type_name -> websocket.v1.SendAgentMessage
+	17, // 12: websocket.v1.Message.agent_response:type_name -> websocket.v1.AgentResponse
+	20, // 13: websocket.v1.Message.agent_chat_complete:type_name -> websocket.v1.AgentChatComplete
+	22, // 14: websocket.v1.InitializeHost.pages:type_name -> page.v1.Page
+	23, // 15: websocket.v1.InitializeHost.agents:type_name -> agent.v1.Agent
+	24, // 16: websocket.v1.RenderWidget.widget:type_name -> widget.v1.Widget
+	24, // 17: websocket.v1.RerunPage.states:type_name -> widget.v1.Widget
+	0,  // 18: websocket.v1.ScriptFinished.status:type_name -> websocket.v1.ScriptFinished.Status
+	15, // 19: websocket.v1.SendAgentMessage.conversation_history:type_name -> websocket.v1.ChatMessage
+	1,  // 20: websocket.v1.ChatMessage.role:type_name -> websocket.v1.ChatMessage.Role
+	16, // 21: websocket.v1.ChatMessage.tool_calls:type_name -> websocket.v1.ToolCall
+	2,  // 22: websocket.v1.AgentResponse.type:type_name -> websocket.v1.AgentResponse.ResponseType
+	16, // 23: websocket.v1.AgentResponse.tool_call:type_name -> websocket.v1.ToolCall
+	18, // 24: websocket.v1.AgentResponse.tool_result:type_name -> websocket.v1.ToolResult
+	19, // 25: websocket.v1.AgentResponse.tool_call_info:type_name -> websocket.v1.ToolCallInfo
+	26, // [26:26] is the sub-list for method output_type
+	26, // [26:26] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_websocket_v1_message_proto_init() }
@@ -843,15 +1833,29 @@ func file_websocket_v1_message_proto_init() {
 		(*Message_RerunPage)(nil),
 		(*Message_CloseSession)(nil),
 		(*Message_ScriptFinished)(nil),
+		(*Message_InitializeAgentChat)(nil),
+		(*Message_InitializeAgentChatCompleted)(nil),
+		(*Message_SendAgentMessage)(nil),
+		(*Message_AgentResponse)(nil),
+		(*Message_AgentChatComplete)(nil),
 	}
 	file_websocket_v1_message_proto_msgTypes[3].OneofWrappers = []any{}
+	file_websocket_v1_message_proto_msgTypes[9].OneofWrappers = []any{}
+	file_websocket_v1_message_proto_msgTypes[12].OneofWrappers = []any{}
+	file_websocket_v1_message_proto_msgTypes[14].OneofWrappers = []any{
+		(*AgentResponse_TextChunk)(nil),
+		(*AgentResponse_ToolCall)(nil),
+		(*AgentResponse_ToolResult)(nil),
+		(*AgentResponse_ErrorMessage)(nil),
+		(*AgentResponse_ToolCallInfo)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_websocket_v1_message_proto_rawDesc), len(file_websocket_v1_message_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   9,
+			NumEnums:      3,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

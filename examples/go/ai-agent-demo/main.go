@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/trysourcetool/sourcetool-go"
 	"github.com/trysourcetool/sourcetool-go/agent"
 	"github.com/trysourcetool/sourcetool-go/agent/models"
@@ -87,9 +88,14 @@ type DatabaseBackup struct {
 // === Main Application ===
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
 	// Initialize Sourcetool
 	st := sourcetool.New(&sourcetool.Config{
-		APIKey:   "your_api_key",
+		APIKey:   "development_9RQm713nxQFUt5APVrne2FeaAl5evBzm9RQm713nxQFUt5APVrn",
 		Endpoint: "ws://localhost:3000",
 	})
 
@@ -212,7 +218,19 @@ func createWebhookAgent(st *sourcetool.Sourcetool) *sourcetool.Agent {
 - Logging all events for audit purposes
 - Handling errors gracefully and retrying when necessary
 
-Always acknowledge webhook receipt quickly and process asynchronously when needed.`,
+Always acknowledge webhook receipt quickly and process asynchronously when needed.
+
+IMPORTANT: Use tools whenever the user asks about:
+- Processing webhooks (use process_webhook tool)
+- Sending notifications (use send_slack tool)
+- Logging events (use log_event tool)
+- Any webhook-related task
+
+Example phrases that should trigger tool use:
+- "Process this webhook event"
+- "Send a notification about this"
+- "Log this event"
+- "Handle this deployment webhook"`,
 		Tools: tools,
 		Model: models.OpenAI("gpt-4o-mini", models.WithTemperature(0.3)),
 	}
@@ -275,9 +293,20 @@ func createDataAnalysisAgent(st *sourcetool.Sourcetool) *sourcetool.Agent {
 - Exporting data in various formats
 - Performing statistical calculations
 
-Focus on accuracy and provide clear, actionable insights.`,
+Focus on accuracy and provide clear, actionable insights.
+
+IMPORTANT: Always use tools when users ask for:
+- Data analysis (use analyze_data tool)
+- Report generation (use generate_report tool)
+- Data export (use export_data tool)
+
+Example phrases that trigger tool use:
+- "Analyze this data"
+- "Generate a report"
+- "Export the results"
+- "What insights can you find in this dataset?"`,
 		Tools: tools,
-		Model: models.Anthropic("claude-3-5-sonnet", models.WithTemperature(0.2)),
+		Model: models.Anthropic("claude-sonnet-4-20250514", models.WithTemperature(0.2)),
 	}
 }
 
@@ -434,7 +463,7 @@ func createSupportAgent(st *sourcetool.Sourcetool) *sourcetool.Agent {
 
 Always be helpful, professional, and empathetic.`,
 		Tools: tools,
-		Model: models.Anthropic("claude-3-5-haiku", models.WithTemperature(0.5)),
+		Model: models.Google("gemini-1.5-pro", models.WithTemperature(0.5)),
 	}
 }
 

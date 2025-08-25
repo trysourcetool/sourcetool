@@ -1,12 +1,14 @@
 package llm
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -218,8 +220,16 @@ func (c *Client) Complete(ctx context.Context, model models.Model, messages []Me
 
 // Stream sends a streaming completion request.
 func (c *Client) Stream(ctx context.Context, model models.Model, messages []Message, tools []agent.Tool, callback func(chunk StreamChunk) error) error {
+	fmt.Printf("[DEBUG] LLM Stream starting - Provider: %s, Model: %s, Tools: %d, Messages: %d\n",
+		model.Provider(), model.Name(), len(tools), len(messages))
+
 	// Convert tools to LLM format
 	toolSchemas := c.convertTools(tools)
+
+	fmt.Printf("[DEBUG] Converted tools - Count: %d\n", len(toolSchemas))
+	for i, tool := range toolSchemas {
+		fmt.Printf("[DEBUG] Tool %d: %s - %s\n", i+1, tool.Function.Name, tool.Function.Description)
+	}
 
 	// Create request
 	req := CompletionRequest{
@@ -251,14 +261,20 @@ func (c *Client) Stream(ctx context.Context, model models.Model, messages []Mess
 	}
 
 	// Route to appropriate provider
+	fmt.Printf("[DEBUG] Routing to provider: %s\n", model.Provider())
+
 	switch model.Provider() {
 	case "anthropic":
+		fmt.Printf("[DEBUG] Calling streamAnthropic\n")
 		return c.streamAnthropic(ctx, req, callback)
 	case "openai":
+		fmt.Printf("[DEBUG] Calling streamOpenAI\n")
 		return c.streamOpenAI(ctx, req, callback)
 	case "xai":
+		fmt.Printf("[DEBUG] Calling streamXAI\n")
 		return c.streamXAI(ctx, req, callback)
 	case "google":
+		fmt.Printf("[DEBUG] Calling streamGoogle\n")
 		return c.streamGoogle(ctx, req, callback)
 	default:
 		return fmt.Errorf("unsupported model provider: %s", model.Provider())
@@ -460,12 +476,66 @@ func (c *Client) callGoogle(ctx context.Context, req CompletionRequest) (*Comple
 
 // Streaming implementations.
 func (c *Client) streamOpenAI(ctx context.Context, req CompletionRequest, callback func(chunk StreamChunk) error) error {
+	fmt.Printf("[DEBUG] streamOpenAI starting\n")
 	url := "https://api.openai.com/v1/chat/completions"
 
 	// Convert to OpenAI format (remove unsupported parameters)
 	openaiReq := c.convertToOpenAIFormat(req)
 
+	tools, ok := openaiReq["tools"].([]ToolSchema)
+	if ok {
+		fmt.Printf("[DEBUG] OpenAI request converted, tools: %d\n", len(tools))
+	} else {
+		fmt.Printf("[DEBUG] OpenAI request converted, tools: not present or wrong type\n")
+	}
+
 	jsonData, err := json.Marshal(openaiReq)
+	if err != nil {
+		fmt.Printf("[DEBUG] Failed to marshal OpenAI request: %v\n", err)
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	fmt.Printf("[DEBUG] OpenAI request marshaled, size: %d bytes\n", len(jsonData))
+
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+getAPIKey("OPENAI_API_KEY"))
+	httpReq.Header.Set("Accept", "text/event-stream")
+
+	fmt.Printf("[DEBUG] Sending OpenAI HTTP request\n")
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		fmt.Printf("[DEBUG] OpenAI HTTP request failed: %v\n", err)
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Printf("[DEBUG] OpenAI response received, status: %d\n", resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[DEBUG] OpenAI error response: %s\n", string(body))
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	fmt.Printf("[DEBUG] Starting OpenAI streaming response parsing\n")
+
+	// Parse streaming response
+	return c.parseStreamingResponse(resp.Body, callback)
+}
+
+func (c *Client) streamAnthropic(ctx context.Context, req CompletionRequest, callback func(chunk StreamChunk) error) error {
+	// Convert to Anthropic format with streaming enabled
+	anthropicReq := c.convertToAnthropicFormat(req)
+	anthropicReq["stream"] = true
+
+	url := "https://api.anthropic.com/v1/messages"
+
+	jsonData, err := json.Marshal(anthropicReq)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
@@ -475,8 +545,10 @@ func (c *Client) streamOpenAI(ctx context.Context, req CompletionRequest, callba
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
+	// Set Anthropic-specific headers
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", "Bearer "+getAPIKey("OPENAI_API_KEY"))
+	httpReq.Header.Set("x-api-key", getAPIKey("ANTHROPIC_API_KEY"))
+	httpReq.Header.Set("anthropic-version", "2023-06-01")
 	httpReq.Header.Set("Accept", "text/event-stream")
 
 	resp, err := c.httpClient.Do(httpReq)
@@ -490,13 +562,8 @@ func (c *Client) streamOpenAI(ctx context.Context, req CompletionRequest, callba
 		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Parse streaming response
-	return c.parseStreamingResponse(resp.Body, callback)
-}
-
-func (c *Client) streamAnthropic(ctx context.Context, req CompletionRequest, callback func(chunk StreamChunk) error) error {
-	// Implement Anthropic streaming
-	return fmt.Errorf("streaming not yet implemented for Anthropic")
+	// Parse Anthropic streaming response
+	return c.parseAnthropicStreamingResponse(resp.Body, callback)
 }
 
 func (c *Client) streamXAI(ctx context.Context, req CompletionRequest, callback func(chunk StreamChunk) error) error {
@@ -505,8 +572,42 @@ func (c *Client) streamXAI(ctx context.Context, req CompletionRequest, callback 
 }
 
 func (c *Client) streamGoogle(ctx context.Context, req CompletionRequest, callback func(chunk StreamChunk) error) error {
-	// Implement Google streaming
-	return fmt.Errorf("streaming not yet implemented for Google")
+	// Convert to Google format
+	googleReq := c.convertToGoogleFormat(req)
+
+	// Use streaming endpoint - note the streamGenerateContent
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1/models/%s:streamGenerateContent", req.Model)
+
+	// Add alt=sse parameter for Server-Sent Events
+	url += "?alt=sse"
+
+	jsonData, err := json.Marshal(googleReq)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("x-goog-api-key", getAPIKey("GOOGLE_API_KEY"))
+	httpReq.Header.Set("Accept", "text/event-stream")
+
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse Google streaming response
+	return c.parseGoogleStreamingResponse(resp.Body, callback)
 }
 
 // Helper functions for format conversion
@@ -744,19 +845,299 @@ func (c *Client) convertFromGoogleFormat(resp map[string]interface{}) *Completio
 }
 
 func (c *Client) parseStreamingResponse(body io.Reader, callback func(chunk StreamChunk) error) error {
-	// Parse Server-Sent Events format
-	// This is a simplified implementation
-	// In production, you'd want to use a proper SSE parser
+	fmt.Printf("[DEBUG] parseStreamingResponse started\n")
+	scanner := bufio.NewScanner(body)
+	lineCount := 0
 
-	// For now, return an error indicating streaming needs full implementation
-	return fmt.Errorf("streaming response parsing not fully implemented")
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		lineCount++
+		fmt.Printf("[DEBUG] SSE line %d: %q\n", lineCount, line)
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, ":") {
+			continue
+		}
+
+		// Parse SSE data lines
+		if strings.HasPrefix(line, "data: ") {
+			data := strings.TrimPrefix(line, "data: ")
+			fmt.Printf("[DEBUG] SSE data: %q\n", data)
+
+			// Check for stream completion
+			if data == "[DONE]" {
+				fmt.Printf("[DEBUG] Stream completion marker received\n")
+				return nil
+			}
+
+			// Parse JSON chunk
+			var response struct {
+				ID      string `json:"id"`
+				Object  string `json:"object"`
+				Created int64  `json:"created"`
+				Model   string `json:"model"`
+				Choices []struct {
+					Index int `json:"index"`
+					Delta struct {
+						Role      string `json:"role,omitempty"`
+						Content   string `json:"content,omitempty"`
+						ToolCalls []struct {
+							Index int `json:"index"`
+							ID    string `json:"id"`
+							Type  string `json:"type"`
+							Function struct {
+								Name      string `json:"name"`
+								Arguments string `json:"arguments"`
+							} `json:"function"`
+						} `json:"tool_calls,omitempty"`
+					} `json:"delta"`
+					FinishReason *string `json:"finish_reason"`
+				} `json:"choices"`
+			}
+
+			if err := json.Unmarshal([]byte(data), &response); err != nil {
+				// Skip malformed JSON chunks
+				continue
+			}
+
+			// Convert to StreamChunk format
+			chunk := StreamChunk{
+				ID:      response.ID,
+				Object:  response.Object,
+				Created: response.Created,
+				Model:   response.Model,
+				Choices: make([]StreamChoice, len(response.Choices)),
+			}
+
+			for i, choice := range response.Choices {
+				delta := StreamDelta{
+					Role:    choice.Delta.Role,
+					Content: choice.Delta.Content,
+				}
+				
+				// Convert tool calls if present
+				if len(choice.Delta.ToolCalls) > 0 {
+					fmt.Printf("[DEBUG] Found %d tool calls in delta\n", len(choice.Delta.ToolCalls))
+					delta.ToolCalls = make([]ToolCall, len(choice.Delta.ToolCalls))
+					for j, tc := range choice.Delta.ToolCalls {
+						delta.ToolCalls[j] = ToolCall{
+							ID:   tc.ID,
+							Type: tc.Type,
+							Function: FunctionCall{
+								Name:      tc.Function.Name,
+								Arguments: tc.Function.Arguments,
+							},
+						}
+						fmt.Printf("[DEBUG] Tool call %d: ID=%s, Name=%s, Args=%s\n", j, tc.ID, tc.Function.Name, tc.Function.Arguments)
+					}
+				}
+				
+				chunk.Choices[i] = StreamChoice{
+					Index:        choice.Index,
+					Delta:        delta,
+					FinishReason: choice.FinishReason,
+				}
+			}
+
+			// Call the callback with the parsed chunk
+			if err := callback(chunk); err != nil {
+				return fmt.Errorf("callback error: %w", err)
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading stream: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) parseAnthropicStreamingResponse(body io.Reader, callback func(chunk StreamChunk) error) error {
+	scanner := bufio.NewScanner(body)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, ":") {
+			continue
+		}
+
+		// Parse SSE event lines
+		if strings.HasPrefix(line, "event: ") {
+			eventType := strings.TrimPrefix(line, "event: ")
+
+			// Read the next line which should be data
+			if !scanner.Scan() {
+				break
+			}
+			dataLine := strings.TrimSpace(scanner.Text())
+
+			if !strings.HasPrefix(dataLine, "data: ") {
+				continue
+			}
+
+			data := strings.TrimPrefix(dataLine, "data: ")
+
+			// Handle different Anthropic event types
+			switch eventType {
+			case "content_block_delta":
+				// Parse content delta
+				var delta struct {
+					Type  string `json:"type"`
+					Index int    `json:"index"`
+					Delta struct {
+						Type string `json:"type"`
+						Text string `json:"text"`
+					} `json:"delta"`
+				}
+
+				if err := json.Unmarshal([]byte(data), &delta); err != nil {
+					continue
+				}
+
+				// Convert to StreamChunk format
+				chunk := StreamChunk{
+					ID:      fmt.Sprintf("anthropic-%d", time.Now().UnixNano()),
+					Object:  "chat.completion.chunk",
+					Created: time.Now().Unix(),
+					Model:   "claude-model",
+					Choices: []StreamChoice{{
+						Index: delta.Index,
+						Delta: StreamDelta{
+							Content: delta.Delta.Text,
+						},
+					}},
+				}
+
+				// Call the callback with the parsed chunk
+				if err := callback(chunk); err != nil {
+					return fmt.Errorf("callback error: %w", err)
+				}
+
+			case "message_stop":
+				// Stream completed
+				return nil
+
+			case "error":
+				// Parse error
+				var errorData struct {
+					Type struct {
+						Type    string `json:"type"`
+						Message string `json:"message"`
+					} `json:"error"`
+				}
+
+				if err := json.Unmarshal([]byte(data), &errorData); err != nil {
+					return fmt.Errorf("stream error: %s", data)
+				}
+
+				return fmt.Errorf("anthropic stream error: %s", errorData.Type.Message)
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading stream: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) parseGoogleStreamingResponse(body io.Reader, callback func(chunk StreamChunk) error) error {
+	scanner := bufio.NewScanner(body)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, ":") {
+			continue
+		}
+
+		// Parse SSE data lines
+		if strings.HasPrefix(line, "data: ") {
+			data := strings.TrimPrefix(line, "data: ")
+
+			// Parse JSON chunk
+			var response struct {
+				Candidates []struct {
+					Content struct {
+						Parts []struct {
+							Text string `json:"text"`
+						} `json:"parts"`
+						Role string `json:"role"`
+					} `json:"content"`
+					FinishReason string `json:"finishReason,omitempty"`
+					Index        int    `json:"index"`
+				} `json:"candidates"`
+				UsageMetadata struct {
+					PromptTokenCount     int `json:"promptTokenCount"`
+					CandidatesTokenCount int `json:"candidatesTokenCount"`
+					TotalTokenCount      int `json:"totalTokenCount"`
+				} `json:"usageMetadata,omitempty"`
+			}
+
+			if err := json.Unmarshal([]byte(data), &response); err != nil {
+				// Skip malformed JSON chunks
+				continue
+			}
+
+			// Convert to StreamChunk format
+			chunk := StreamChunk{
+				ID:      fmt.Sprintf("google-%d", time.Now().UnixNano()),
+				Object:  "chat.completion.chunk",
+				Created: time.Now().Unix(),
+				Model:   "google-model",
+				Choices: make([]StreamChoice, len(response.Candidates)),
+			}
+
+			for i, candidate := range response.Candidates {
+				content := ""
+				if len(candidate.Content.Parts) > 0 {
+					content = candidate.Content.Parts[0].Text
+				}
+
+				var finishReason *string
+				if candidate.FinishReason != "" {
+					finishReason = &candidate.FinishReason
+				}
+
+				chunk.Choices[i] = StreamChoice{
+					Index: candidate.Index,
+					Delta: StreamDelta{
+						Role:    candidate.Content.Role,
+						Content: content,
+					},
+					FinishReason: finishReason,
+				}
+			}
+
+			// Call the callback with the parsed chunk
+			if err := callback(chunk); err != nil {
+				return fmt.Errorf("callback error: %w", err)
+			}
+
+			// Check for completion
+			for _, choice := range chunk.Choices {
+				if choice.FinishReason != nil {
+					return nil
+				}
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading stream: %w", err)
+	}
+
+	return nil
 }
 
 // Utility functions.
 func getAPIKey(envVar string) string {
-	// In a real implementation, get from environment variables
-	// For demo purposes, return placeholder
-	return "placeholder-api-key"
+	return os.Getenv(envVar)
 }
 
 func getString(m map[string]interface{}, key string) string {

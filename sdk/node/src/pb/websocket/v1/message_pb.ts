@@ -18,7 +18,7 @@ import type { Message as Message$1 } from "@bufbuild/protobuf";
  * Describes the file websocket/v1/message.proto.
  */
 export const file_websocket_v1_message: GenFile = /*@__PURE__*/
-  fileDesc("Chp3ZWJzb2NrZXQvdjEvbWVzc2FnZS5wcm90bxIMd2Vic29ja2V0LnYxIq8ECgdNZXNzYWdlEgoKAmlkGAEgASgJEiwKCWV4Y2VwdGlvbhgCIAEoCzIXLmV4Y2VwdGlvbi52MS5FeGNlcHRpb25IABI3Cg9pbml0aWFsaXplX2hvc3QYAyABKAsyHC53ZWJzb2NrZXQudjEuSW5pdGlhbGl6ZUhvc3RIABJKChlpbml0aWFsaXplX2hvc3RfY29tcGxldGVkGAQgASgLMiUud2Vic29ja2V0LnYxLkluaXRpYWxpemVIb3N0Q29tcGxldGVkSAASOwoRaW5pdGlhbGl6ZV9jbGllbnQYBSABKAsyHi53ZWJzb2NrZXQudjEuSW5pdGlhbGl6ZUNsaWVudEgAEk4KG2luaXRpYWxpemVfY2xpZW50X2NvbXBsZXRlZBgGIAEoCzInLndlYnNvY2tldC52MS5Jbml0aWFsaXplQ2xpZW50Q29tcGxldGVkSAASMwoNcmVuZGVyX3dpZGdldBgHIAEoCzIaLndlYnNvY2tldC52MS5SZW5kZXJXaWRnZXRIABItCgpyZXJ1bl9wYWdlGAggASgLMhcud2Vic29ja2V0LnYxLlJlcnVuUGFnZUgAEjMKDWNsb3NlX3Nlc3Npb24YCSABKAsyGi53ZWJzb2NrZXQudjEuQ2xvc2VTZXNzaW9uSAASNwoPc2NyaXB0X2ZpbmlzaGVkGAogASgLMhwud2Vic29ja2V0LnYxLlNjcmlwdEZpbmlzaGVkSABCBgoEdHlwZSKHAQoOSW5pdGlhbGl6ZUhvc3QSDwoHYXBpX2tleRgBIAEoCRIQCghzZGtfbmFtZRgCIAEoCRITCgtzZGtfdmVyc2lvbhgDIAEoCRIcCgVwYWdlcxgEIAMoCzINLnBhZ2UudjEuUGFnZRIfCgZhZ2VudHMYBSADKAsyDy5hZ2VudC52MS5BZ2VudCIzChdJbml0aWFsaXplSG9zdENvbXBsZXRlZBIYChBob3N0X2luc3RhbmNlX2lkGAEgASgJIksKEEluaXRpYWxpemVDbGllbnQSFwoKc2Vzc2lvbl9pZBgBIAEoCUgAiAEBEg8KB3BhZ2VfaWQYAiABKAlCDQoLX3Nlc3Npb25faWQiLwoZSW5pdGlhbGl6ZUNsaWVudENvbXBsZXRlZBISCgpzZXNzaW9uX2lkGAEgASgJImQKDFJlbmRlcldpZGdldBISCgpzZXNzaW9uX2lkGAEgASgJEg8KB3BhZ2VfaWQYAiABKAkSDAoEcGF0aBgDIAMoBRIhCgZ3aWRnZXQYBCABKAsyES53aWRnZXQudjEuV2lkZ2V0IlMKCVJlcnVuUGFnZRISCgpzZXNzaW9uX2lkGAEgASgJEg8KB3BhZ2VfaWQYAiABKAkSIQoGc3RhdGVzGAMgAygLMhEud2lkZ2V0LnYxLldpZGdldCIiCgxDbG9zZVNlc3Npb24SEgoKc2Vzc2lvbl9pZBgBIAEoCSKjAQoOU2NyaXB0RmluaXNoZWQSEgoKc2Vzc2lvbl9pZBgBIAEoCRIzCgZzdGF0dXMYAiABKA4yIy53ZWJzb2NrZXQudjEuU2NyaXB0RmluaXNoZWQuU3RhdHVzIkgKBlN0YXR1cxIWChJTVEFUVVNfVU5TUEVDSUZJRUQQABISCg5TVEFUVVNfU1VDQ0VTUxABEhIKDlNUQVRVU19GQUlMVVJFEAJCvgEKEGNvbS53ZWJzb2NrZXQudjFCDE1lc3NhZ2VQcm90b1ABWktnaXRodWIuY29tL3RyeXNvdXJjZXRvb2wvc291cmNldG9vbC1nby9pbnRlcm5hbC9wYi93ZWJzb2NrZXQvdjE7d2Vic29ja2V0djGiAgNXWFiqAgxXZWJzb2NrZXQuVjHKAgxXZWJzb2NrZXRcVjHiAhhXZWJzb2NrZXRcVjFcR1BCTWV0YWRhdGHqAg1XZWJzb2NrZXQ6OlYxYgZwcm90bzM", [file_agent_v1_agent, file_exception_v1_exception, file_page_v1_page, file_widget_v1_widget]);
+  fileDesc("Chp3ZWJzb2NrZXQvdjEvbWVzc2FnZS5wcm90bxIMd2Vic29ja2V0LnYxIv8GCgdNZXNzYWdlEgoKAmlkGAEgASgJEiwKCWV4Y2VwdGlvbhgCIAEoCzIXLmV4Y2VwdGlvbi52MS5FeGNlcHRpb25IABI3Cg9pbml0aWFsaXplX2hvc3QYAyABKAsyHC53ZWJzb2NrZXQudjEuSW5pdGlhbGl6ZUhvc3RIABJKChlpbml0aWFsaXplX2hvc3RfY29tcGxldGVkGAQgASgLMiUud2Vic29ja2V0LnYxLkluaXRpYWxpemVIb3N0Q29tcGxldGVkSAASOwoRaW5pdGlhbGl6ZV9jbGllbnQYBSABKAsyHi53ZWJzb2NrZXQudjEuSW5pdGlhbGl6ZUNsaWVudEgAEk4KG2luaXRpYWxpemVfY2xpZW50X2NvbXBsZXRlZBgGIAEoCzInLndlYnNvY2tldC52MS5Jbml0aWFsaXplQ2xpZW50Q29tcGxldGVkSAASMwoNcmVuZGVyX3dpZGdldBgHIAEoCzIaLndlYnNvY2tldC52MS5SZW5kZXJXaWRnZXRIABItCgpyZXJ1bl9wYWdlGAggASgLMhcud2Vic29ja2V0LnYxLlJlcnVuUGFnZUgAEjMKDWNsb3NlX3Nlc3Npb24YCSABKAsyGi53ZWJzb2NrZXQudjEuQ2xvc2VTZXNzaW9uSAASNwoPc2NyaXB0X2ZpbmlzaGVkGAogASgLMhwud2Vic29ja2V0LnYxLlNjcmlwdEZpbmlzaGVkSAASQgoVaW5pdGlhbGl6ZV9hZ2VudF9jaGF0GAsgASgLMiEud2Vic29ja2V0LnYxLkluaXRpYWxpemVBZ2VudENoYXRIABJVCh9pbml0aWFsaXplX2FnZW50X2NoYXRfY29tcGxldGVkGAwgASgLMioud2Vic29ja2V0LnYxLkluaXRpYWxpemVBZ2VudENoYXRDb21wbGV0ZWRIABI8ChJzZW5kX2FnZW50X21lc3NhZ2UYDSABKAsyHi53ZWJzb2NrZXQudjEuU2VuZEFnZW50TWVzc2FnZUgAEjUKDmFnZW50X3Jlc3BvbnNlGA4gASgLMhsud2Vic29ja2V0LnYxLkFnZW50UmVzcG9uc2VIABI+ChNhZ2VudF9jaGF0X2NvbXBsZXRlGA8gASgLMh8ud2Vic29ja2V0LnYxLkFnZW50Q2hhdENvbXBsZXRlSABCBgoEdHlwZSKHAQoOSW5pdGlhbGl6ZUhvc3QSDwoHYXBpX2tleRgBIAEoCRIQCghzZGtfbmFtZRgCIAEoCRITCgtzZGtfdmVyc2lvbhgDIAEoCRIcCgVwYWdlcxgEIAMoCzINLnBhZ2UudjEuUGFnZRIfCgZhZ2VudHMYBSADKAsyDy5hZ2VudC52MS5BZ2VudCIzChdJbml0aWFsaXplSG9zdENvbXBsZXRlZBIYChBob3N0X2luc3RhbmNlX2lkGAEgASgJIksKEEluaXRpYWxpemVDbGllbnQSFwoKc2Vzc2lvbl9pZBgBIAEoCUgAiAEBEg8KB3BhZ2VfaWQYAiABKAlCDQoLX3Nlc3Npb25faWQiLwoZSW5pdGlhbGl6ZUNsaWVudENvbXBsZXRlZBISCgpzZXNzaW9uX2lkGAEgASgJImQKDFJlbmRlcldpZGdldBISCgpzZXNzaW9uX2lkGAEgASgJEg8KB3BhZ2VfaWQYAiABKAkSDAoEcGF0aBgDIAMoBRIhCgZ3aWRnZXQYBCABKAsyES53aWRnZXQudjEuV2lkZ2V0IlMKCVJlcnVuUGFnZRISCgpzZXNzaW9uX2lkGAEgASgJEg8KB3BhZ2VfaWQYAiABKAkSIQoGc3RhdGVzGAMgAygLMhEud2lkZ2V0LnYxLldpZGdldCIiCgxDbG9zZVNlc3Npb24SEgoKc2Vzc2lvbl9pZBgBIAEoCSKjAQoOU2NyaXB0RmluaXNoZWQSEgoKc2Vzc2lvbl9pZBgBIAEoCRIzCgZzdGF0dXMYAiABKA4yIy53ZWJzb2NrZXQudjEuU2NyaXB0RmluaXNoZWQuU3RhdHVzIkgKBlN0YXR1cxIWChJTVEFUVVNfVU5TUEVDSUZJRUQQABISCg5TVEFUVVNfU1VDQ0VTUxABEhIKDlNUQVRVU19GQUlMVVJFEAIiTwoTSW5pdGlhbGl6ZUFnZW50Q2hhdBIXCgpzZXNzaW9uX2lkGAEgASgJSACIAQESEAoIYWdlbnRfaWQYAiABKAlCDQoLX3Nlc3Npb25faWQiRAocSW5pdGlhbGl6ZUFnZW50Q2hhdENvbXBsZXRlZBISCgpzZXNzaW9uX2lkGAEgASgJEhAKCGFnZW50X2lkGAIgASgJIoIBChBTZW5kQWdlbnRNZXNzYWdlEhIKCnNlc3Npb25faWQYASABKAkSEAoIYWdlbnRfaWQYAiABKAkSDwoHbWVzc2FnZRgDIAEoCRI3ChRjb252ZXJzYXRpb25faGlzdG9yeRgEIAMoCzIZLndlYnNvY2tldC52MS5DaGF0TWVzc2FnZSKYAgoLQ2hhdE1lc3NhZ2USLAoEcm9sZRgBIAEoDjIeLndlYnNvY2tldC52MS5DaGF0TWVzc2FnZS5Sb2xlEg8KB2NvbnRlbnQYAiABKAkSGQoMdG9vbF9jYWxsX2lkGAMgASgJSACIAQESKgoKdG9vbF9jYWxscxgEIAMoCzIWLndlYnNvY2tldC52MS5Ub29sQ2FsbBIRCgl0aW1lc3RhbXAYBSABKAMiXwoEUm9sZRIUChBST0xFX1VOU1BFQ0lGSUVEEAASDQoJUk9MRV9VU0VSEAESEgoOUk9MRV9BU1NJU1RBTlQQAhIPCgtST0xFX1NZU1RFTRADEg0KCVJPTEVfVE9PTBAEQg8KDV90b29sX2NhbGxfaWQiNwoIVG9vbENhbGwSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglhcmd1bWVudHMYAyABKAkiygQKDUFnZW50UmVzcG9uc2USEgoKc2Vzc2lvbl9pZBgBIAEoCRIQCghhZ2VudF9pZBgCIAEoCRI2CgR0eXBlGAMgASgOMigud2Vic29ja2V0LnYxLkFnZW50UmVzcG9uc2UuUmVzcG9uc2VUeXBlEhQKCnRleHRfY2h1bmsYBCABKAlIABIrCgl0b29sX2NhbGwYBSABKAsyFi53ZWJzb2NrZXQudjEuVG9vbENhbGxIABIvCgt0b29sX3Jlc3VsdBgGIAEoCzIYLndlYnNvY2tldC52MS5Ub29sUmVzdWx0SAASFwoNZXJyb3JfbWVzc2FnZRgHIAEoCUgAEjQKDnRvb2xfY2FsbF9pbmZvGAggASgLMhoud2Vic29ja2V0LnYxLlRvb2xDYWxsSW5mb0gAIowCCgxSZXNwb25zZVR5cGUSHQoZUkVTUE9OU0VfVFlQRV9VTlNQRUNJRklFRBAAEhwKGFJFU1BPTlNFX1RZUEVfVEVYVF9DSFVOSxABEhsKF1JFU1BPTlNFX1RZUEVfVE9PTF9DQUxMEAISHQoZUkVTUE9OU0VfVFlQRV9UT09MX1JFU1VMVBADEhcKE1JFU1BPTlNFX1RZUEVfRVJST1IQBBIhCh1SRVNQT05TRV9UWVBFX1RPT0xfQ0FMTF9TVEFSVBAFEiQKIFJFU1BPTlNFX1RZUEVfVE9PTF9DQUxMX0NPTVBMRVRFEAYSIQodUkVTUE9OU0VfVFlQRV9UT09MX0NBTExfRVJST1IQB0IJCgdjb250ZW50IkMKClRvb2xSZXN1bHQSFAoMdG9vbF9jYWxsX2lkGAEgASgJEg4KBnJlc3VsdBgCIAEoCRIPCgdzdWNjZXNzGAMgASgIIoIBCgxUb29sQ2FsbEluZm8SDwoHdG9vbF9pZBgBIAEoCRIRCgl0b29sX25hbWUYAiABKAkSEgoKcGFyYW1ldGVycxgDIAEoCRIOCgZyZXN1bHQYBCABKAkSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCRITCgtkdXJhdGlvbl9tcxgGIAEoAyJ7ChFBZ2VudENoYXRDb21wbGV0ZRISCgpzZXNzaW9uX2lkGAEgASgJEhAKCGFnZW50X2lkGAIgASgJEhUKDWZpbmFsX21lc3NhZ2UYAyABKAkSFAoMdG90YWxfdG9rZW5zGAQgASgFEhMKC2R1cmF0aW9uX21zGAUgASgDQr4BChBjb20ud2Vic29ja2V0LnYxQgxNZXNzYWdlUHJvdG9QAVpLZ2l0aHViLmNvbS90cnlzb3VyY2V0b29sL3NvdXJjZXRvb2wtZ28vaW50ZXJuYWwvcGIvd2Vic29ja2V0L3YxO3dlYnNvY2tldHYxogIDV1hYqgIMV2Vic29ja2V0LlYxygIMV2Vic29ja2V0XFYx4gIYV2Vic29ja2V0XFYxXEdQQk1ldGFkYXRh6gINV2Vic29ja2V0OjpWMWIGcHJvdG8z", [file_agent_v1_agent, file_exception_v1_exception, file_page_v1_page, file_widget_v1_widget]);
 
 /**
  * @generated from message websocket.v1.Message
@@ -86,6 +86,38 @@ export type Message = Message$1<"websocket.v1.Message"> & {
      */
     value: ScriptFinished;
     case: "scriptFinished";
+  } | {
+    /**
+     * Agent chat messages
+     *
+     * @generated from field: websocket.v1.InitializeAgentChat initialize_agent_chat = 11;
+     */
+    value: InitializeAgentChat;
+    case: "initializeAgentChat";
+  } | {
+    /**
+     * @generated from field: websocket.v1.InitializeAgentChatCompleted initialize_agent_chat_completed = 12;
+     */
+    value: InitializeAgentChatCompleted;
+    case: "initializeAgentChatCompleted";
+  } | {
+    /**
+     * @generated from field: websocket.v1.SendAgentMessage send_agent_message = 13;
+     */
+    value: SendAgentMessage;
+    case: "sendAgentMessage";
+  } | {
+    /**
+     * @generated from field: websocket.v1.AgentResponse agent_response = 14;
+     */
+    value: AgentResponse;
+    case: "agentResponse";
+  } | {
+    /**
+     * @generated from field: websocket.v1.AgentChatComplete agent_chat_complete = 15;
+     */
+    value: AgentChatComplete;
+    case: "agentChatComplete";
   } | { case: undefined; value?: undefined };
 };
 
@@ -142,6 +174,31 @@ export type MessageJson = {
    * @generated from field: websocket.v1.ScriptFinished script_finished = 10;
    */
   scriptFinished?: ScriptFinishedJson;
+
+  /**
+   * @generated from field: websocket.v1.InitializeAgentChat initialize_agent_chat = 11;
+   */
+  initializeAgentChat?: InitializeAgentChatJson;
+
+  /**
+   * @generated from field: websocket.v1.InitializeAgentChatCompleted initialize_agent_chat_completed = 12;
+   */
+  initializeAgentChatCompleted?: InitializeAgentChatCompletedJson;
+
+  /**
+   * @generated from field: websocket.v1.SendAgentMessage send_agent_message = 13;
+   */
+  sendAgentMessage?: SendAgentMessageJson;
+
+  /**
+   * @generated from field: websocket.v1.AgentResponse agent_response = 14;
+   */
+  agentResponse?: AgentResponseJson;
+
+  /**
+   * @generated from field: websocket.v1.AgentChatComplete agent_chat_complete = 15;
+   */
+  agentChatComplete?: AgentChatCompleteJson;
 };
 
 /**
@@ -507,4 +564,644 @@ export type ScriptFinished_StatusJson = "STATUS_UNSPECIFIED" | "STATUS_SUCCESS" 
  */
 export const ScriptFinished_StatusSchema: GenEnum<ScriptFinished_Status, ScriptFinished_StatusJson> = /*@__PURE__*/
   enumDesc(file_websocket_v1_message, 8, 0);
+
+/**
+ * @generated from message websocket.v1.InitializeAgentChat
+ */
+export type InitializeAgentChat = Message$1<"websocket.v1.InitializeAgentChat"> & {
+  /**
+   * @generated from field: optional string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
+};
+
+/**
+ * JSON type for the message websocket.v1.InitializeAgentChat.
+ */
+export type InitializeAgentChatJson = {
+  /**
+   * @generated from field: optional string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId?: string;
+};
+
+/**
+ * Describes the message websocket.v1.InitializeAgentChat.
+ * Use `create(InitializeAgentChatSchema)` to create a new message.
+ */
+export const InitializeAgentChatSchema: GenMessage<InitializeAgentChat, InitializeAgentChatJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 9);
+
+/**
+ * @generated from message websocket.v1.InitializeAgentChatCompleted
+ */
+export type InitializeAgentChatCompleted = Message$1<"websocket.v1.InitializeAgentChatCompleted"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
+};
+
+/**
+ * JSON type for the message websocket.v1.InitializeAgentChatCompleted.
+ */
+export type InitializeAgentChatCompletedJson = {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId?: string;
+};
+
+/**
+ * Describes the message websocket.v1.InitializeAgentChatCompleted.
+ * Use `create(InitializeAgentChatCompletedSchema)` to create a new message.
+ */
+export const InitializeAgentChatCompletedSchema: GenMessage<InitializeAgentChatCompleted, InitializeAgentChatCompletedJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 10);
+
+/**
+ * @generated from message websocket.v1.SendAgentMessage
+ */
+export type SendAgentMessage = Message$1<"websocket.v1.SendAgentMessage"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
+
+  /**
+   * @generated from field: string message = 3;
+   */
+  message: string;
+
+  /**
+   * @generated from field: repeated websocket.v1.ChatMessage conversation_history = 4;
+   */
+  conversationHistory: ChatMessage[];
+};
+
+/**
+ * JSON type for the message websocket.v1.SendAgentMessage.
+ */
+export type SendAgentMessageJson = {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId?: string;
+
+  /**
+   * @generated from field: string message = 3;
+   */
+  message?: string;
+
+  /**
+   * @generated from field: repeated websocket.v1.ChatMessage conversation_history = 4;
+   */
+  conversationHistory?: ChatMessageJson[];
+};
+
+/**
+ * Describes the message websocket.v1.SendAgentMessage.
+ * Use `create(SendAgentMessageSchema)` to create a new message.
+ */
+export const SendAgentMessageSchema: GenMessage<SendAgentMessage, SendAgentMessageJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 11);
+
+/**
+ * @generated from message websocket.v1.ChatMessage
+ */
+export type ChatMessage = Message$1<"websocket.v1.ChatMessage"> & {
+  /**
+   * @generated from field: websocket.v1.ChatMessage.Role role = 1;
+   */
+  role: ChatMessage_Role;
+
+  /**
+   * @generated from field: string content = 2;
+   */
+  content: string;
+
+  /**
+   * @generated from field: optional string tool_call_id = 3;
+   */
+  toolCallId?: string;
+
+  /**
+   * @generated from field: repeated websocket.v1.ToolCall tool_calls = 4;
+   */
+  toolCalls: ToolCall[];
+
+  /**
+   * @generated from field: int64 timestamp = 5;
+   */
+  timestamp: bigint;
+};
+
+/**
+ * JSON type for the message websocket.v1.ChatMessage.
+ */
+export type ChatMessageJson = {
+  /**
+   * @generated from field: websocket.v1.ChatMessage.Role role = 1;
+   */
+  role?: ChatMessage_RoleJson;
+
+  /**
+   * @generated from field: string content = 2;
+   */
+  content?: string;
+
+  /**
+   * @generated from field: optional string tool_call_id = 3;
+   */
+  toolCallId?: string;
+
+  /**
+   * @generated from field: repeated websocket.v1.ToolCall tool_calls = 4;
+   */
+  toolCalls?: ToolCallJson[];
+
+  /**
+   * @generated from field: int64 timestamp = 5;
+   */
+  timestamp?: string;
+};
+
+/**
+ * Describes the message websocket.v1.ChatMessage.
+ * Use `create(ChatMessageSchema)` to create a new message.
+ */
+export const ChatMessageSchema: GenMessage<ChatMessage, ChatMessageJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 12);
+
+/**
+ * @generated from enum websocket.v1.ChatMessage.Role
+ */
+export enum ChatMessage_Role {
+  /**
+   * @generated from enum value: ROLE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: ROLE_USER = 1;
+   */
+  USER = 1,
+
+  /**
+   * @generated from enum value: ROLE_ASSISTANT = 2;
+   */
+  ASSISTANT = 2,
+
+  /**
+   * @generated from enum value: ROLE_SYSTEM = 3;
+   */
+  SYSTEM = 3,
+
+  /**
+   * @generated from enum value: ROLE_TOOL = 4;
+   */
+  TOOL = 4,
+}
+
+/**
+ * JSON type for the enum websocket.v1.ChatMessage.Role.
+ */
+export type ChatMessage_RoleJson = "ROLE_UNSPECIFIED" | "ROLE_USER" | "ROLE_ASSISTANT" | "ROLE_SYSTEM" | "ROLE_TOOL";
+
+/**
+ * Describes the enum websocket.v1.ChatMessage.Role.
+ */
+export const ChatMessage_RoleSchema: GenEnum<ChatMessage_Role, ChatMessage_RoleJson> = /*@__PURE__*/
+  enumDesc(file_websocket_v1_message, 12, 0);
+
+/**
+ * @generated from message websocket.v1.ToolCall
+ */
+export type ToolCall = Message$1<"websocket.v1.ToolCall"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string arguments = 3;
+   */
+  arguments: string;
+};
+
+/**
+ * JSON type for the message websocket.v1.ToolCall.
+ */
+export type ToolCallJson = {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id?: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name?: string;
+
+  /**
+   * @generated from field: string arguments = 3;
+   */
+  arguments?: string;
+};
+
+/**
+ * Describes the message websocket.v1.ToolCall.
+ * Use `create(ToolCallSchema)` to create a new message.
+ */
+export const ToolCallSchema: GenMessage<ToolCall, ToolCallJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 13);
+
+/**
+ * @generated from message websocket.v1.AgentResponse
+ */
+export type AgentResponse = Message$1<"websocket.v1.AgentResponse"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
+
+  /**
+   * @generated from field: websocket.v1.AgentResponse.ResponseType type = 3;
+   */
+  type: AgentResponse_ResponseType;
+
+  /**
+   * @generated from oneof websocket.v1.AgentResponse.content
+   */
+  content: {
+    /**
+     * @generated from field: string text_chunk = 4;
+     */
+    value: string;
+    case: "textChunk";
+  } | {
+    /**
+     * @generated from field: websocket.v1.ToolCall tool_call = 5;
+     */
+    value: ToolCall;
+    case: "toolCall";
+  } | {
+    /**
+     * @generated from field: websocket.v1.ToolResult tool_result = 6;
+     */
+    value: ToolResult;
+    case: "toolResult";
+  } | {
+    /**
+     * @generated from field: string error_message = 7;
+     */
+    value: string;
+    case: "errorMessage";
+  } | {
+    /**
+     * @generated from field: websocket.v1.ToolCallInfo tool_call_info = 8;
+     */
+    value: ToolCallInfo;
+    case: "toolCallInfo";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * JSON type for the message websocket.v1.AgentResponse.
+ */
+export type AgentResponseJson = {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId?: string;
+
+  /**
+   * @generated from field: websocket.v1.AgentResponse.ResponseType type = 3;
+   */
+  type?: AgentResponse_ResponseTypeJson;
+
+  /**
+   * @generated from field: string text_chunk = 4;
+   */
+  textChunk?: string;
+
+  /**
+   * @generated from field: websocket.v1.ToolCall tool_call = 5;
+   */
+  toolCall?: ToolCallJson;
+
+  /**
+   * @generated from field: websocket.v1.ToolResult tool_result = 6;
+   */
+  toolResult?: ToolResultJson;
+
+  /**
+   * @generated from field: string error_message = 7;
+   */
+  errorMessage?: string;
+
+  /**
+   * @generated from field: websocket.v1.ToolCallInfo tool_call_info = 8;
+   */
+  toolCallInfo?: ToolCallInfoJson;
+};
+
+/**
+ * Describes the message websocket.v1.AgentResponse.
+ * Use `create(AgentResponseSchema)` to create a new message.
+ */
+export const AgentResponseSchema: GenMessage<AgentResponse, AgentResponseJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 14);
+
+/**
+ * @generated from enum websocket.v1.AgentResponse.ResponseType
+ */
+export enum AgentResponse_ResponseType {
+  /**
+   * @generated from enum value: RESPONSE_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TEXT_CHUNK = 1;
+   */
+  TEXT_CHUNK = 1,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TOOL_CALL = 2;
+   */
+  TOOL_CALL = 2,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TOOL_RESULT = 3;
+   */
+  TOOL_RESULT = 3,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_ERROR = 4;
+   */
+  ERROR = 4,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TOOL_CALL_START = 5;
+   */
+  TOOL_CALL_START = 5,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TOOL_CALL_COMPLETE = 6;
+   */
+  TOOL_CALL_COMPLETE = 6,
+
+  /**
+   * @generated from enum value: RESPONSE_TYPE_TOOL_CALL_ERROR = 7;
+   */
+  TOOL_CALL_ERROR = 7,
+}
+
+/**
+ * JSON type for the enum websocket.v1.AgentResponse.ResponseType.
+ */
+export type AgentResponse_ResponseTypeJson = "RESPONSE_TYPE_UNSPECIFIED" | "RESPONSE_TYPE_TEXT_CHUNK" | "RESPONSE_TYPE_TOOL_CALL" | "RESPONSE_TYPE_TOOL_RESULT" | "RESPONSE_TYPE_ERROR" | "RESPONSE_TYPE_TOOL_CALL_START" | "RESPONSE_TYPE_TOOL_CALL_COMPLETE" | "RESPONSE_TYPE_TOOL_CALL_ERROR";
+
+/**
+ * Describes the enum websocket.v1.AgentResponse.ResponseType.
+ */
+export const AgentResponse_ResponseTypeSchema: GenEnum<AgentResponse_ResponseType, AgentResponse_ResponseTypeJson> = /*@__PURE__*/
+  enumDesc(file_websocket_v1_message, 14, 0);
+
+/**
+ * @generated from message websocket.v1.ToolResult
+ */
+export type ToolResult = Message$1<"websocket.v1.ToolResult"> & {
+  /**
+   * @generated from field: string tool_call_id = 1;
+   */
+  toolCallId: string;
+
+  /**
+   * @generated from field: string result = 2;
+   */
+  result: string;
+
+  /**
+   * @generated from field: bool success = 3;
+   */
+  success: boolean;
+};
+
+/**
+ * JSON type for the message websocket.v1.ToolResult.
+ */
+export type ToolResultJson = {
+  /**
+   * @generated from field: string tool_call_id = 1;
+   */
+  toolCallId?: string;
+
+  /**
+   * @generated from field: string result = 2;
+   */
+  result?: string;
+
+  /**
+   * @generated from field: bool success = 3;
+   */
+  success?: boolean;
+};
+
+/**
+ * Describes the message websocket.v1.ToolResult.
+ * Use `create(ToolResultSchema)` to create a new message.
+ */
+export const ToolResultSchema: GenMessage<ToolResult, ToolResultJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 15);
+
+/**
+ * @generated from message websocket.v1.ToolCallInfo
+ */
+export type ToolCallInfo = Message$1<"websocket.v1.ToolCallInfo"> & {
+  /**
+   * @generated from field: string tool_id = 1;
+   */
+  toolId: string;
+
+  /**
+   * @generated from field: string tool_name = 2;
+   */
+  toolName: string;
+
+  /**
+   * @generated from field: string parameters = 3;
+   */
+  parameters: string;
+
+  /**
+   * @generated from field: string result = 4;
+   */
+  result: string;
+
+  /**
+   * @generated from field: string error_message = 5;
+   */
+  errorMessage: string;
+
+  /**
+   * @generated from field: int64 duration_ms = 6;
+   */
+  durationMs: bigint;
+};
+
+/**
+ * JSON type for the message websocket.v1.ToolCallInfo.
+ */
+export type ToolCallInfoJson = {
+  /**
+   * @generated from field: string tool_id = 1;
+   */
+  toolId?: string;
+
+  /**
+   * @generated from field: string tool_name = 2;
+   */
+  toolName?: string;
+
+  /**
+   * @generated from field: string parameters = 3;
+   */
+  parameters?: string;
+
+  /**
+   * @generated from field: string result = 4;
+   */
+  result?: string;
+
+  /**
+   * @generated from field: string error_message = 5;
+   */
+  errorMessage?: string;
+
+  /**
+   * @generated from field: int64 duration_ms = 6;
+   */
+  durationMs?: string;
+};
+
+/**
+ * Describes the message websocket.v1.ToolCallInfo.
+ * Use `create(ToolCallInfoSchema)` to create a new message.
+ */
+export const ToolCallInfoSchema: GenMessage<ToolCallInfo, ToolCallInfoJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 16);
+
+/**
+ * @generated from message websocket.v1.AgentChatComplete
+ */
+export type AgentChatComplete = Message$1<"websocket.v1.AgentChatComplete"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
+
+  /**
+   * @generated from field: string final_message = 3;
+   */
+  finalMessage: string;
+
+  /**
+   * @generated from field: int32 total_tokens = 4;
+   */
+  totalTokens: number;
+
+  /**
+   * @generated from field: int64 duration_ms = 5;
+   */
+  durationMs: bigint;
+};
+
+/**
+ * JSON type for the message websocket.v1.AgentChatComplete.
+ */
+export type AgentChatCompleteJson = {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId?: string;
+
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId?: string;
+
+  /**
+   * @generated from field: string final_message = 3;
+   */
+  finalMessage?: string;
+
+  /**
+   * @generated from field: int32 total_tokens = 4;
+   */
+  totalTokens?: number;
+
+  /**
+   * @generated from field: int64 duration_ms = 5;
+   */
+  durationMs?: string;
+};
+
+/**
+ * Describes the message websocket.v1.AgentChatComplete.
+ * Use `create(AgentChatCompleteSchema)` to create a new message.
+ */
+export const AgentChatCompleteSchema: GenMessage<AgentChatComplete, AgentChatCompleteJson> = /*@__PURE__*/
+  messageDesc(file_websocket_v1_message, 17);
 

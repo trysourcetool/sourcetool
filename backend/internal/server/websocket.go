@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"github.com/gorilla/websocket"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/trysourcetool/sourcetool/backend/internal"
@@ -115,6 +116,7 @@ func (s *Server) handleInitializeClient(ctx context.Context, conn *websocket.Con
 			OrganizationID: page.OrganizationID,
 			EnvironmentID:  env.ID,
 			UserID:         ctxUser.ID,
+			Type:           core.SessionTypePage,
 		}
 		sessionExists = false
 	}
@@ -246,6 +248,9 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return errors.New("invalid message")
 	}
 
+	// Debug log for tracking CloseSession calls
+	logger.Logger.Sugar().Debugf("CloseSession called - sessionId: %s, messageId: %s", in.SessionId, msg.Id)
+
 	sessionID, err := uuid.FromString(in.SessionId)
 	if err != nil {
 		return errdefs.ErrAPIKeyNotFound(err)
@@ -256,9 +261,33 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 		return err
 	}
 
-	_, err = s.db.Page().Get(ctx, database.PageByEnvironmentID(sess.EnvironmentID), database.PageBySessionID(sess.ID))
-	if err != nil {
-		return err
+	// Check session type and validate accordingly
+	switch sess.Type {
+	case core.SessionTypePage:
+		pages, err := s.db.Page().List(ctx, database.PageByEnvironmentID(sess.EnvironmentID), database.PageBySessionID(sess.ID))
+		if err != nil {
+			logger.Logger.Sugar().Warnf("Page not found for session %s, continuing with cleanup", sess.ID)
+		} else if len(pages) > 0 {
+			logger.Logger.Sugar().Debugf("Closing page session: %s (environment has %d pages)", sess.ID, len(pages))
+		} else {
+			logger.Logger.Sugar().Warnf("No pages found in environment for page session %s", sess.ID)
+		}
+	case core.SessionTypeAgent:
+		agents, err := s.db.Agent().List(ctx, database.AgentByEnvironmentID(sess.EnvironmentID), database.AgentBySessionID(sess.ID))
+		if err != nil {
+			logger.Logger.Sugar().Warnf("Failed to get agents for session %s: %v", sess.ID, err)
+		} else if len(agents) > 0 {
+			logger.Logger.Sugar().Debugf("Closing agent session: %s (environment has %d agents)", sess.ID, len(agents))
+		} else {
+			logger.Logger.Sugar().Warnf("No agents found in environment for agent session %s", sess.ID)
+		}
+	default:
+		// Handle legacy sessions without type (assume page type)
+		logger.Logger.Sugar().Debugf("Session %s has no type, treating as page session", sess.ID)
+		_, err = s.db.Page().Get(ctx, database.PageByEnvironmentID(sess.EnvironmentID), database.PageBySessionID(sess.ID))
+		if err != nil {
+			logger.Logger.Sugar().Warnf("Page not found for legacy session %s, continuing with cleanup", sess.ID)
+		}
 	}
 
 	if err := s.db.WithTx(ctx, func(tx database.Tx) error {
@@ -289,6 +318,9 @@ func (s *Server) handleCloseSession(ctx context.Context, conn *websocket.Conn, m
 	}
 
 	s.wsManager.DisconnectClient(sess.ID)
+
+	// Debug log for successful session cleanup
+	logger.Logger.Sugar().Debugf("CloseSession completed successfully - sessionId: %s", sess.ID.String())
 
 	return nil
 }
@@ -408,6 +440,34 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
 				continue
 			}
+		// Agent chat message handlers
+		case *websocketv1.Message_InitializeAgentChat:
+			if err := s.handleInitializeAgentChat(ctx, conn, &msg); err != nil {
+				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
+				continue
+			}
+		case *websocketv1.Message_InitializeAgentChatCompleted:
+			// This message is sent from backend to client, not from SDK
+			// It should not be received here, log and skip
+			logger.Logger.Debug("Received InitializeAgentChatCompleted message - skipping",
+				zap.String("message_id", msg.Id))
+			continue
+		case *websocketv1.Message_SendAgentMessage:
+			if err := s.handleSendAgentMessage(ctx, conn, &msg); err != nil {
+				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
+				continue
+			}
+		case *websocketv1.Message_AgentResponse:
+			if err := s.handleAgentResponse(ctx, conn, &msg); err != nil {
+				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
+				continue
+			}
+		case *websocketv1.Message_AgentChatComplete:
+			// This is typically sent from the host to the client
+			if err := s.handleAgentResponse(ctx, conn, &msg); err != nil {
+				s.sendErrWebSocketMessage(ctx, conn, msg.Id, err)
+				continue
+			}
 		default:
 			logger.Logger.Sugar().Errorf("Unknown method: %s", msg.Type)
 			continue
@@ -415,26 +475,26 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, bool, *core.APIKey, []*core.Page, []*core.Page, []*core.Page, []*core.Agent, []*core.Agent, []*core.Agent, []*core.AgentTool, error) {
+func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.Conn, instanceID string, msg *websocketv1.Message) (*core.HostInstance, bool, *core.APIKey, []*core.Page, []*core.Page, []*core.Page, []*core.Agent, []*core.Agent, []*core.Agent, []*core.AgentTool, []*core.AgentTool, []*core.AgentTool, error) {
 	in := msg.GetInitializeHost()
 	if in == nil {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, errors.New("invalid message")
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, errors.New("invalid message")
 	}
 
 	hashedAPIKey := core.HashAPIKey(in.ApiKey)
 	apikey, err := s.db.APIKey().Get(ctx, database.APIKeyByKeyHash(hashedAPIKey))
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	hostInstanceID, err := uuid.FromString(instanceID)
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, errdefs.ErrInvalidArgument(err)
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, errdefs.ErrInvalidArgument(err)
 	}
 
 	hostInstance, err := s.db.HostInstance().Get(ctx, database.HostInstanceByID(hostInstanceID))
 	if err != nil && !errdefs.IsHostInstanceNotFound(err) {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	hostExists := hostInstance != nil
@@ -453,7 +513,7 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 
 	existingPages, err := s.db.Page().List(ctx, database.PageByAPIKeyID(apikey.ID))
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	existingPageMap := make(map[string]*core.Page)
@@ -478,7 +538,7 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 		} else {
 			pageID, err := uuid.FromString(reqPage.Id)
 			if err != nil {
-				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 			}
 			newPage := &core.Page{
 				ID:             pageID,
@@ -502,7 +562,7 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 	// Process agents similar to pages
 	existingAgents, err := s.db.Agent().List(ctx, database.AgentByAPIKeyID(apikey.ID))
 	if err != nil {
-		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
 	existingAgentMap := make(map[string]*core.Agent)
@@ -518,20 +578,17 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 	insertAgents := make([]*core.Agent, 0)
 	updateAgents := make([]*core.Agent, 0)
 	deleteAgents := make([]*core.Agent, 0)
-	var allAgentTools []*core.AgentTool
 	for _, reqAgent := range in.Agents {
-		var agentID uuid.UUID
 		if existingAgent, ok := existingAgentMap[reqAgent.Id]; ok {
 			existingAgent.Name = reqAgent.Name
 			existingAgent.Description = reqAgent.Description
 			existingAgent.Instructions = reqAgent.Instructions
 			existingAgent.Model = reqAgent.Model
 			updateAgents = append(updateAgents, existingAgent)
-			agentID = existingAgent.ID
 		} else {
 			parsedAgentID, err := uuid.FromString(reqAgent.Id)
 			if err != nil {
-				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, err
+				return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
 			}
 			newAgent := &core.Agent{
 				ID:             parsedAgentID,
@@ -544,18 +601,6 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 				Model:          reqAgent.Model,
 			}
 			insertAgents = append(insertAgents, newAgent)
-			agentID = parsedAgentID
-		}
-
-		// Create tools for this agent
-		for _, reqTool := range reqAgent.Tools {
-			agentTool := &core.AgentTool{
-				ID:          uuid.Must(uuid.NewV4()),
-				AgentID:     agentID,
-				Name:        reqTool.Name,
-				Description: reqTool.Description,
-			}
-			allAgentTools = append(allAgentTools, agentTool)
 		}
 	}
 
@@ -565,5 +610,82 @@ func (s *Server) handleInitializeHostBase(ctx context.Context, conn *websocket.C
 		}
 	}
 
-	return hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, allAgentTools, nil
+	// Process agent tools
+	insertAgentTools := make([]*core.AgentTool, 0)
+	updateAgentTools := make([]*core.AgentTool, 0)
+	deleteAgentTools := make([]*core.AgentTool, 0)
+
+	// Build a map of all agents (existing + new) for tool processing
+	allAgentsMap := make(map[string]*core.Agent)
+	for _, agent := range existingAgents {
+		allAgentsMap[agent.ID.String()] = agent
+	}
+	for _, agent := range insertAgents {
+		allAgentsMap[agent.ID.String()] = agent
+	}
+
+	// Process tools for each agent in the request
+	for _, reqAgent := range in.Agents {
+		agentID, err := uuid.FromString(reqAgent.Id)
+		if err != nil {
+			return nil, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		}
+
+		// Get existing tools for this agent
+		existingTools, err := s.db.AgentTool().List(ctx, database.AgentToolByAgentID(agentID))
+		if err != nil {
+			// If agent doesn't exist yet (new agent), there won't be any tools
+			// Continue with empty list
+			existingTools = []*core.AgentTool{}
+		}
+
+		// Create a map of existing tools by name
+		existingToolMap := make(map[string]*core.AgentTool)
+		for _, tool := range existingTools {
+			existingToolMap[tool.Name] = tool
+		}
+
+		// Track which tools are in the request
+		requestToolNames := make(map[string]struct{})
+		for _, reqTool := range reqAgent.Tools {
+			requestToolNames[reqTool.Name] = struct{}{}
+		}
+
+		// Process tools from request
+		for _, reqTool := range reqAgent.Tools {
+			if existingTool, ok := existingToolMap[reqTool.Name]; ok {
+				// Update existing tool
+				existingTool.Description = reqTool.Description
+				updateAgentTools = append(updateAgentTools, existingTool)
+			} else {
+				// Insert new tool
+				newTool := &core.AgentTool{
+					ID:          uuid.Must(uuid.NewV4()),
+					AgentID:     agentID,
+					Name:        reqTool.Name,
+					Description: reqTool.Description,
+				}
+				insertAgentTools = append(insertAgentTools, newTool)
+			}
+		}
+
+		// Mark tools for deletion
+		for _, existingTool := range existingTools {
+			if _, exists := requestToolNames[existingTool.Name]; !exists {
+				deleteAgentTools = append(deleteAgentTools, existingTool)
+			}
+		}
+	}
+
+	// Also check for tools that need to be deleted for agents that are being deleted
+	for _, agent := range deleteAgents {
+		existingTools, err := s.db.AgentTool().List(ctx, database.AgentToolByAgentID(agent.ID))
+		if err != nil {
+			// If error occurs, skip this agent's tools
+			continue
+		}
+		deleteAgentTools = append(deleteAgentTools, existingTools...)
+	}
+
+	return hostInstance, hostExists, apikey, insertPages, updatePages, deletePages, insertAgents, updateAgents, deleteAgents, insertAgentTools, updateAgentTools, deleteAgentTools, nil
 }

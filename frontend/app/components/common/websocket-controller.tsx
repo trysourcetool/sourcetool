@@ -85,6 +85,22 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
         if (message.exception) {
           dispatch(pagesStore.actions.setException(message.exception));
         }
+        // Handle agent messages
+        if (message.agentResponse) {
+          console.log('Forwarding agent response:', message.agentResponse);
+          // Forward agent response to any active agent WebSocket hooks
+          window.dispatchEvent(new CustomEvent('agentWebSocketMessage', { detail: message }));
+        }
+        if (message.agentChatComplete) {
+          console.log('Forwarding agent chat complete:', message.agentChatComplete);
+          // Forward agent chat complete to any active agent WebSocket hooks  
+          window.dispatchEvent(new CustomEvent('agentWebSocketMessage', { detail: message }));
+        }
+        if (message.initializeAgentChatCompleted) {
+          console.log('Forwarding agent chat initialization:', message.initializeAgentChatCompleted);
+          // Forward agent chat initialization to any active agent WebSocket hooks
+          window.dispatchEvent(new CustomEvent('agentWebSocketMessage', { detail: message }));
+        }
       });
     },
     shouldReconnect: (event) => {
@@ -95,6 +111,21 @@ const WebSocketBlock = ({ onDisable }: { onDisable: () => void }) => {
       return true;
     },
   });
+
+  // Listen for agent messages from agent WebSocket hook
+  useEffect(() => {
+    const handleSendAgentMessage = (event: CustomEvent) => {
+      const binaryData = event.detail;
+      console.log('WebSocketController: Forwarding agent message', binaryData);
+      sendMessage(binaryData);
+    };
+
+    window.addEventListener('sendAgentMessage', handleSendAgentMessage as EventListener);
+    
+    return () => {
+      window.removeEventListener('sendAgentMessage', handleSendAgentMessage as EventListener);
+    };
+  }, [sendMessage]);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: ReadyState.CONNECTING,
@@ -354,7 +385,7 @@ export const WebSocketController = () => {
       isAuthChecked === 'checked' &&
       ((ENVIRONMENTS.IS_CLOUD_EDITION && isSubDomainMatched) ||
         !ENVIRONMENTS.IS_CLOUD_EDITION) &&
-      location.pathname.match(/^\/pages\/.*$/)
+      (location.pathname.match(/^\/pages\/.*$/) || location.pathname.match(/^\/agents\/.*$/))
     ) {
       setIsSocketReady(true);
     }

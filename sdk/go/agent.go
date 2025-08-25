@@ -16,6 +16,13 @@ import (
 	"github.com/trysourcetool/sourcetool-go/agent/models"
 )
 
+// ToolNotificationCallbacks defines callbacks for tool execution events
+type ToolNotificationCallbacks struct {
+	OnToolStart    func(toolID, toolName, parameters string)
+	OnToolComplete func(toolID, result string, duration int64)
+	OnToolError    func(toolID, errorMessage string, duration int64)
+}
+
 // Agent defines an AI agent with its configuration and execution capabilities.
 type Agent struct {
 	Name         string
@@ -29,11 +36,12 @@ type Agent struct {
 	MaxSteps int // Maximum number of tool execution steps
 
 	// Internal fields (managed automatically)
-	id           uuid.UUID
-	route        string
-	toolsMap     map[string]agent.Tool
-	accessGroups []string
-	llmClient    *llm.Client
+	id               uuid.UUID
+	route            string
+	toolsMap         map[string]agent.Tool
+	accessGroups     []string
+	llmClient        *llm.Client
+	toolNotifications *ToolNotificationCallbacks
 }
 
 // GenerateRequest represents a request to generate a response.
@@ -286,6 +294,15 @@ func (a *Agent) GetDescription() string {
 	return a.Description
 }
 
+// SetToolNotifier sets callbacks for tool execution events
+func (a *Agent) SetToolNotifier(onStart func(string, string, string), onComplete func(string, string, int64), onError func(string, string, int64)) {
+	a.toolNotifications = &ToolNotificationCallbacks{
+		OnToolStart:    onStart,
+		OnToolComplete: onComplete,
+		OnToolError:    onError,
+	}
+}
+
 // hasAccess checks if user has access to this agent based on groups.
 // TODO: Will be used for access control implementation.
 //
@@ -379,6 +396,16 @@ func (a *Agent) generateResponse(req *GenerateRequest) (*Response, error) {
 
 // streamResponse processes a streaming generation request.
 func (a *Agent) streamResponse(req *GenerateRequest, callback StreamCallback) error {
+	// Create execution context
+	execCtx := &Context{
+		Context:      req.Context,
+		Message:      req.Message,
+		Conversation: req.Conversation,
+		User:         req.User,
+		SessionID:    req.SessionID,
+		tools:        a.toolsMap,
+	}
+
 	// Build the system prompt with instructions and tool information
 	systemPrompt := a.buildSystemPrompt()
 
@@ -391,32 +418,8 @@ func (a *Agent) streamResponse(req *GenerateRequest, callback StreamCallback) er
 		Content: req.Message,
 	})
 
-	// Convert conversation to LLM format
-	llmMessages := a.convertConversationToLLM(conversation)
-
-	// Add system message with instructions and available tools
-	systemMessage := a.buildSystemMessage()
-	if systemMessage != "" {
-		llmMessages = append([]llm.Message{{
-			Role:    "system",
-			Content: systemMessage,
-		}}, llmMessages...)
-	}
-
-	// Use streaming API
-	return a.llmClient.Stream(
-		req.Context,
-		a.Model,
-		llmMessages,
-		a.Tools,
-		func(chunk llm.StreamChunk) error {
-			// Extract content from streaming chunk
-			if len(chunk.Choices) > 0 && chunk.Choices[0].Delta.Content != "" {
-				return callback(chunk.Choices[0].Delta.Content)
-			}
-			return nil
-		},
-	)
+	// Execute with tool calling support and streaming
+	return a.executeWithToolsStreaming(execCtx, conversation, callback)
 }
 
 // buildSystemPrompt creates the system prompt with instructions and tool info.
@@ -447,6 +450,190 @@ func (a *Agent) prepareConversation(conversation []Message, systemPrompt string)
 	// Update existing system message
 	conversation[0].Content = systemPrompt
 	return conversation
+}
+
+// executeWithToolsStreaming executes the agent with tool calling support and streaming.
+func (a *Agent) executeWithToolsStreaming(ctx *Context, conversation []Message, callback StreamCallback) error {
+	maxSteps := a.MaxSteps
+	if maxSteps == 0 {
+		maxSteps = 10
+	}
+
+	fmt.Printf("[DEBUG] Starting executeWithToolsStreaming - Agent: %s, MaxSteps: %d\n", a.Name, maxSteps)
+
+	currentConversation := make([]Message, len(conversation))
+	copy(currentConversation, conversation)
+
+	for step := 0; step < maxSteps; step++ {
+		fmt.Printf("[DEBUG] Step %d/%d - Agent: %s\n", step+1, maxSteps, a.Name)
+		// Convert conversation to LLM format
+		llmMessages := a.convertConversationToLLM(currentConversation)
+
+		// Add system message with instructions and available tools
+		systemMessage := a.buildSystemMessage()
+		if systemMessage != "" {
+			llmMessages = append([]llm.Message{{
+				Role:    "system",
+				Content: systemMessage,
+			}}, llmMessages...)
+		}
+
+		// Check if this is a simple response (no tools needed)
+		// First try streaming
+		var fullContent strings.Builder
+		var hasToolCalls bool
+		chunkCount := 0
+		
+		fmt.Printf("[DEBUG] Starting LLM streaming call - Agent: %s, Step: %d\n", a.Name, step+1)
+		
+		err := a.llmClient.Stream(
+			ctx.Context,
+			a.Model,
+			llmMessages,
+			a.Tools,
+			func(chunk llm.StreamChunk) error {
+				chunkCount++
+				fmt.Printf("[DEBUG] Received streaming chunk %d - Agent: %s, Step: %d\n", chunkCount, a.Name, step+1)
+				
+				if len(chunk.Choices) > 0 {
+					choice := chunk.Choices[0]
+					
+					// Stream text content
+					if choice.Delta.Content != "" {
+						fmt.Printf("[DEBUG] Text content: %q - Agent: %s\n", choice.Delta.Content, a.Name)
+						fullContent.WriteString(choice.Delta.Content)
+						return callback(choice.Delta.Content)
+					}
+					
+					// Check for tool calls - OpenAI sends them in the first chunk with ID and name
+					if len(choice.Delta.ToolCalls) > 0 {
+						fmt.Printf("[DEBUG] Tool calls detected - Agent: %s, Count: %d\n", a.Name, len(choice.Delta.ToolCalls))
+						for i, tc := range choice.Delta.ToolCalls {
+							fmt.Printf("[DEBUG] Tool call %d: ID=%s, Name=%s\n", i, tc.ID, tc.Function.Name)
+							// OpenAI sends tool calls even if name is empty (only ID), so check for any tool call presence
+							if tc.ID != "" || tc.Function.Name != "" {
+								hasToolCalls = true
+							}
+						}
+					}
+					
+					// Also check finish_reason for tool_calls
+					if choice.FinishReason != nil && *choice.FinishReason == "tool_calls" {
+						fmt.Printf("[DEBUG] Tool calls detected via finish_reason - Agent: %s\n", a.Name)
+						hasToolCalls = true
+					}
+				}
+				return nil
+			},
+		)
+		
+		if err != nil {
+			fmt.Printf("[DEBUG] Streaming failed - Agent: %s, Step: %d, Error: %v\n", a.Name, step+1, err)
+			return fmt.Errorf("streaming failed at step %d: %w", step, err)
+		}
+		
+		fmt.Printf("[DEBUG] Streaming completed - Agent: %s, Step: %d, Chunks: %d, HasToolCalls: %v, Content: %q\n", 
+			a.Name, step+1, chunkCount, hasToolCalls, fullContent.String())
+
+		// Add streamed content to conversation
+		assistantMessage := Message{
+			Role:    "assistant",
+			Content: fullContent.String(),
+		}
+		
+		// If no tools were called, we're done
+		if !hasToolCalls {
+			fmt.Printf("[DEBUG] No tool calls, finishing - Agent: %s, Step: %d\n", a.Name, step+1)
+			currentConversation = append(currentConversation, assistantMessage)
+			return nil
+		}
+		
+		fmt.Printf("[DEBUG] Tool calls detected, executing tools - Agent: %s, Step: %d\n", a.Name, step+1)
+
+		// If tools were called, we need to execute them
+		// Make a non-streaming call to get the tool calls properly
+		llmResponse, err := a.llmClient.Complete(
+			ctx.Context,
+			a.Model,
+			llmMessages,
+			a.Tools,
+		)
+		if err != nil {
+			return fmt.Errorf("tool call detection failed at step %d: %w", step, err)
+		}
+
+		if len(llmResponse.Choices) > 0 && len(llmResponse.Choices[0].Message.ToolCalls) > 0 {
+			// Extract tool calls from the complete response
+			choice := llmResponse.Choices[0]
+			message := choice.Message
+			
+			// Convert tool calls
+			toolCalls := make([]ToolCall, len(message.ToolCalls))
+			for i, tc := range message.ToolCalls {
+				var params map[string]interface{}
+				if tc.Function.Arguments != "" {
+					if err := json.Unmarshal([]byte(tc.Function.Arguments), &params); err != nil {
+						return fmt.Errorf("failed to parse tool call arguments: %w", err)
+					}
+				} else {
+					params = make(map[string]interface{})
+				}
+
+				toolCalls[i] = ToolCall{
+					ID:     tc.ID,
+					Name:   tc.Function.Name,
+					Params: params,
+				}
+			}
+			
+			assistantMessage.ToolCalls = toolCalls
+			currentConversation = append(currentConversation, assistantMessage)
+
+			// Execute tools and send structured messages
+			for _, toolCall := range toolCalls {
+				// Notify tool execution start
+				if err := a.notifyToolStart(ctx, toolCall); err != nil {
+					fmt.Printf("[DEBUG] Failed to notify tool start: %v\n", err)
+				}
+				
+				startTime := time.Now()
+				result, err := a.executeToolCall(ctx, toolCall)
+				duration := time.Since(startTime)
+				
+				if err != nil {
+					// Notify tool execution error
+					if notifyErr := a.notifyToolError(ctx, toolCall, err, duration); notifyErr != nil {
+						fmt.Printf("[DEBUG] Failed to notify tool error: %v\n", notifyErr)
+					}
+					result.Error = err.Error()
+				} else {
+					// Notify tool execution completion
+					if notifyErr := a.notifyToolComplete(ctx, toolCall, result, duration); notifyErr != nil {
+						fmt.Printf("[DEBUG] Failed to notify tool complete: %v\n", notifyErr)
+					}
+				}
+
+				// Add tool result to conversation
+				currentConversation = append(currentConversation, Message{
+					Role:    "tool",
+					Content: a.formatToolResult(result),
+					ToolID:  result.ID, // This is the tool call ID that links to the assistant message
+				})
+				
+				fmt.Printf("[DEBUG] Added tool result to conversation - ToolID: %s, Content: %s\n", result.ID, a.formatToolResult(result))
+			}
+
+			// Continue the loop for next LLM response
+			continue
+		} else {
+			// No tool calls, we're done
+			currentConversation = append(currentConversation, assistantMessage)
+			return nil
+		}
+	}
+
+	// Max steps reached
+	return callback(fmt.Sprintf("\n\n⚠️ Reached maximum steps (%d). Task may be incomplete.", maxSteps))
 }
 
 // executeWithTools executes the agent with tool calling support.
@@ -648,6 +835,24 @@ func (a *Agent) convertConversationToLLM(conversation []Message) []llm.Message {
 		if msg.Role == "tool" && msg.ToolID != "" {
 			llmMsg.ToolCallID = msg.ToolID
 		}
+		
+		// Handle tool calls in assistant messages
+		if msg.Role == "assistant" && len(msg.ToolCalls) > 0 {
+			llmMsg.ToolCalls = make([]llm.ToolCall, len(msg.ToolCalls))
+			for j, tc := range msg.ToolCalls {
+				// Convert internal ToolCall to LLM ToolCall
+				argsJSON, _ := json.Marshal(tc.Params)
+				llmMsg.ToolCalls[j] = llm.ToolCall{
+					ID:   tc.ID,
+					Type: "function", // OpenAI uses "function" type
+					Function: llm.FunctionCall{
+						Name:      tc.Name,
+						Arguments: string(argsJSON),
+					},
+				}
+			}
+			fmt.Printf("[DEBUG] Converted %d tool calls for assistant message\n", len(msg.ToolCalls))
+		}
 
 		llmMessages[i] = llmMsg
 	}
@@ -692,4 +897,40 @@ func (am *agentManager) getAgent(id uuid.UUID) *Agent {
 	am.mu.RLock()
 	defer am.mu.RUnlock()
 	return am.agents[id]
+}
+
+// Tool notification methods
+
+// notifyToolStart notifies about tool execution start
+func (a *Agent) notifyToolStart(ctx *Context, toolCall ToolCall) error {
+	if a.toolNotifications != nil && a.toolNotifications.OnToolStart != nil {
+		paramsJSON, _ := json.Marshal(toolCall.Params)
+		a.toolNotifications.OnToolStart(toolCall.ID, toolCall.Name, string(paramsJSON))
+	}
+	
+	fmt.Printf("[DEBUG] Tool starting - ID: %s, Name: %s\n", toolCall.ID, toolCall.Name)
+	return nil
+}
+
+// notifyToolComplete notifies about tool execution completion
+func (a *Agent) notifyToolComplete(ctx *Context, toolCall ToolCall, result ToolCall, duration time.Duration) error {
+	if a.toolNotifications != nil && a.toolNotifications.OnToolComplete != nil {
+		resultJSON, _ := json.Marshal(result.Result)
+		a.toolNotifications.OnToolComplete(toolCall.ID, string(resultJSON), duration.Milliseconds())
+	}
+	
+	fmt.Printf("[DEBUG] Tool completed - ID: %s, Name: %s, Duration: %v\n", 
+		toolCall.ID, toolCall.Name, duration)
+	return nil
+}
+
+// notifyToolError notifies about tool execution error
+func (a *Agent) notifyToolError(ctx *Context, toolCall ToolCall, err error, duration time.Duration) error {
+	if a.toolNotifications != nil && a.toolNotifications.OnToolError != nil {
+		a.toolNotifications.OnToolError(toolCall.ID, err.Error(), duration.Milliseconds())
+	}
+	
+	fmt.Printf("[DEBUG] Tool error - ID: %s, Name: %s, Error: %s, Duration: %v\n", 
+		toolCall.ID, toolCall.Name, err.Error(), duration)
+	return nil
 }

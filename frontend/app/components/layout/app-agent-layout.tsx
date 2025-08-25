@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState, type PropsWithChildren } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -13,12 +12,13 @@ import {
 } from '../ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ModeToggle } from '../common/mode-toggle';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
-import { ArrowLeft, Bot, Loader2, MessageSquare, Plus } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus } from 'lucide-react';
 import { ENVIRONMENTS } from '@/environments';
+import { useSelector } from '@/store';
+import { usersStore } from '@/store/modules/users';
 
 // Mock data for agents and chats
 const mockAgents = [
@@ -73,8 +73,8 @@ export function AppAgentLayout(props: PropsWithChildren) {
   const { agentId, chatId } = useParams({
     from: '/_agent/agents/$agentId/chat/$chatId',
   });
-  const { isAuthChecked, handleNoAuthRoute } = useAuth();
-  const { t } = useTranslation('common');
+  const { isSubDomainMatched, isAuthChecked, handleNoAuthRoute } = useAuth();
+  const user = useSelector(usersStore.selector.getUserMe);
   const navigate = useNavigate();
   const [chats] = useState(mockChats);
 
@@ -82,10 +82,20 @@ export function AppAgentLayout(props: PropsWithChildren) {
   const agent = mockAgents.find(a => a.id === agentId);
 
   useEffect(() => {
-    if (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION) {
-      // Add auth check logic if needed
+    if (
+      isAuthChecked === 'checked' &&
+      ENVIRONMENTS.IS_CLOUD_EDITION &&
+      !isSubDomainMatched
+    ) {
+      handleNoAuthRoute();
+    } else if (
+      isAuthChecked === 'checked' &&
+      !ENVIRONMENTS.IS_CLOUD_EDITION &&
+      !user
+    ) {
+      handleNoAuthRoute();
     }
-  }, [isAuthChecked, handleNoAuthRoute]);
+  }, [isSubDomainMatched, isAuthChecked, handleNoAuthRoute, user]);
 
   const handleNewChat = () => {
     // Generate new chat ID and navigate
@@ -112,7 +122,10 @@ export function AppAgentLayout(props: PropsWithChildren) {
     );
   }
 
-  return isAuthChecked === 'checked' ? (
+  return (isAuthChecked === 'checked' &&
+    ENVIRONMENTS.IS_CLOUD_EDITION &&
+    isSubDomainMatched) ||
+    (isAuthChecked === 'checked' && !ENVIRONMENTS.IS_CLOUD_EDITION && user) ? (
     <>
       <Sidebar collapsible="icon">
         <SidebarHeader>
