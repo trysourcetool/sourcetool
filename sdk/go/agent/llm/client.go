@@ -882,9 +882,9 @@ func (c *Client) parseStreamingResponse(body io.Reader, callback func(chunk Stre
 						Role      string `json:"role,omitempty"`
 						Content   string `json:"content,omitempty"`
 						ToolCalls []struct {
-							Index int `json:"index"`
-							ID    string `json:"id"`
-							Type  string `json:"type"`
+							Index    int    `json:"index"`
+							ID       string `json:"id"`
+							Type     string `json:"type"`
 							Function struct {
 								Name      string `json:"name"`
 								Arguments string `json:"arguments"`
@@ -914,7 +914,7 @@ func (c *Client) parseStreamingResponse(body io.Reader, callback func(chunk Stre
 					Role:    choice.Delta.Role,
 					Content: choice.Delta.Content,
 				}
-				
+
 				// Convert tool calls if present
 				if len(choice.Delta.ToolCalls) > 0 {
 					fmt.Printf("[DEBUG] Found %d tool calls in delta\n", len(choice.Delta.ToolCalls))
@@ -931,7 +931,7 @@ func (c *Client) parseStreamingResponse(body io.Reader, callback func(chunk Stre
 						fmt.Printf("[DEBUG] Tool call %d: ID=%s, Name=%s, Args=%s\n", j, tc.ID, tc.Function.Name, tc.Function.Arguments)
 					}
 				}
-				
+
 				chunk.Choices[i] = StreamChoice{
 					Index:        choice.Index,
 					Delta:        delta,
