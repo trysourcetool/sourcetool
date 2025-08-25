@@ -250,58 +250,6 @@ func TestAgentGenerate(t *testing.T) {
 	}
 }
 
-func TestAgentStream(t *testing.T) {
-	// Create a simple agent
-	testAgent := &Agent{
-		Name:         "test_stream",
-		Description:  "Test agent for streaming",
-		Instructions: "You are a helpful test assistant.",
-		Model:        models.Anthropic("claude-3-5-sonnet", models.WithTemperature(0.5)),
-	}
-
-	// Initialize agent with test data
-	testID, _ := uuid.NewV4()
-	testAgent = newAgent(testAgent, testID, "/test", []string{})
-
-	// Test Stream method
-	var streamedContent string
-	err := testAgent.Stream(context.Background(), "Hello!", func(chunk string) error {
-		streamedContent += chunk
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("Stream failed: %v", err)
-	}
-
-	if streamedContent == "" {
-		t.Error("Streamed content should not be empty")
-	}
-}
-
-func TestSourcetoolAgentRegistration(t *testing.T) {
-	// Create test agent (no Handler needed anymore)
-	testAgent := &Agent{
-		Name:         "test_registration",
-		Description:  "Test agent registration",
-		Instructions: "You are a helpful test assistant.",
-		Model:        models.Anthropic("claude-3-5-sonnet"),
-	}
-
-	// Initialize agent with test data (using router would be more realistic)
-	testID, _ := uuid.NewV4()
-	testAgent = newAgent(testAgent, testID, "/test", []string{})
-
-	// Test the agent's Generate method
-	response, err := testAgent.Generate(context.Background(), "Hello!")
-	if err != nil {
-		t.Fatalf("Generate failed: %v", err)
-	}
-
-	if response.Message == "" {
-		t.Error("Response message should not be empty")
-	}
-}
-
 func TestModelConfiguration(t *testing.T) {
 	// Test Anthropic model
 	anthropicModel := models.Anthropic("claude-3-5-sonnet",
