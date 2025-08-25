@@ -104,7 +104,7 @@ message ChatMessage {
     ROLE_SYSTEM = 3;
     ROLE_TOOL = 4;
   }
-  
+
   Role role = 1;
   string content = 2;
   optional string tool_call_id = 3;
@@ -129,11 +129,11 @@ message AgentResponse {
     RESPONSE_TYPE_TOOL_CALL_COMPLETE = 6;
     RESPONSE_TYPE_TOOL_CALL_ERROR = 7;
   }
-  
+
   string session_id = 1;
   string agent_id = 2;
   ResponseType type = 3;
-  
+
   oneof content {
     string text_chunk = 4;
     ToolCall tool_call = 5;
