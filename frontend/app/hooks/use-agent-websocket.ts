@@ -7,13 +7,9 @@ import {
   type ChatMessage,
   type ToolCall,
   type ToolResult,
-  type ToolCallInfo,
   ChatMessage_Role,
 } from '@/pb/ts/websocket/v1/message_pb';
-import {
-  create,
-  toBinary,
-} from '@bufbuild/protobuf';
+import { create, toBinary } from '@bufbuild/protobuf';
 
 interface ToolCallStatus {
   toolId: string;
@@ -45,8 +41,12 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [toolCall, setToolCall] = useState<ToolCall | null>(null);
   const [toolResult, setToolResult] = useState<ToolResult | null>(null);
-  const [activeToolCalls, setActiveToolCalls] = useState<Map<string, ToolCallStatus>>(new Map());
-  const [completedToolCalls, setCompletedToolCalls] = useState<Map<string, ToolCallStatus>>(new Map());
+  const [activeToolCalls, setActiveToolCalls] = useState<
+    Map<string, ToolCallStatus>
+  >(new Map());
+  const [completedToolCalls, setCompletedToolCalls] = useState<
+    Map<string, ToolCallStatus>
+  >(new Map());
   const [error, setError] = useState<string | null>(null);
   const isInitialized = useRef(false);
   const initializationTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -60,12 +60,15 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
       if (message.initializeAgentChatCompleted) {
         setSessionId(message.initializeAgentChatCompleted.sessionId);
         setError(null);
-        console.log('Agent chat session initialized:', message.initializeAgentChatCompleted.sessionId);
+        console.log(
+          'Agent chat session initialized:',
+          message.initializeAgentChatCompleted.sessionId,
+        );
       }
 
       if (message.agentResponse) {
         const response = message.agentResponse;
-        
+
         switch (response.type) {
           case 'RESPONSE_TYPE_TEXT_CHUNK':
             if (response.textChunk) {
@@ -73,48 +76,50 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
               setIsStreaming(true);
             }
             break;
-            
+
           case 'RESPONSE_TYPE_TOOL_CALL':
             if (response.toolCall) {
               setToolCall(response.toolCall);
               setIsStreaming(false);
             }
             break;
-            
+
           case 'RESPONSE_TYPE_TOOL_RESULT':
             if (response.toolResult) {
               setToolResult(response.toolResult);
             }
             break;
-            
+
           case 'RESPONSE_TYPE_ERROR':
             if (response.errorMessage) {
               setError(response.errorMessage);
               setIsStreaming(false);
             }
             break;
-            
+
           case 'RESPONSE_TYPE_TOOL_CALL_START':
             if (response.toolCallInfo) {
               const toolInfo = response.toolCallInfo;
               // Use current time but ensure it's after the last streaming message
               const now = Date.now();
-              setActiveToolCalls(prev => new Map(prev).set(toolInfo.toolId, {
-                toolId: toolInfo.toolId,
-                toolName: toolInfo.toolName,
-                status: 'starting',
-                parameters: toolInfo.parameters,
-                startTime: now
-              }));
+              setActiveToolCalls((prev) =>
+                new Map(prev).set(toolInfo.toolId, {
+                  toolId: toolInfo.toolId,
+                  toolName: toolInfo.toolName,
+                  status: 'starting',
+                  parameters: toolInfo.parameters,
+                  startTime: now,
+                }),
+              );
             }
             break;
-            
+
           case 'RESPONSE_TYPE_TOOL_CALL_COMPLETE':
             if (response.toolCallInfo) {
               const toolInfo = response.toolCallInfo;
-              
+
               // Update the tool call status to completed
-              setActiveToolCalls(prev => {
+              setActiveToolCalls((prev) => {
                 const updated = new Map(prev);
                 const existing = updated.get(toolInfo.toolId);
                 if (existing) {
@@ -122,32 +127,39 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
                     ...existing,
                     status: 'completed' as const,
                     result: toolInfo.result,
-                    duration: toolInfo.durationMs ? Number(toolInfo.durationMs) : undefined
+                    duration: toolInfo.durationMs
+                      ? Number(toolInfo.durationMs)
+                      : undefined,
                   };
-                  
+
                   // Move to completed tools after a short delay to show completion status
                   setTimeout(() => {
-                    setCompletedToolCalls(prevCompleted => new Map(prevCompleted).set(toolInfo.toolId, completedTool));
-                    setActiveToolCalls(prevActive => {
+                    setCompletedToolCalls((prevCompleted) =>
+                      new Map(prevCompleted).set(
+                        toolInfo.toolId,
+                        completedTool,
+                      ),
+                    );
+                    setActiveToolCalls((prevActive) => {
                       const newActive = new Map(prevActive);
                       newActive.delete(toolInfo.toolId);
                       return newActive;
                     });
                   }, 1000); // Show completed status for 1 second
-                  
+
                   updated.set(toolInfo.toolId, completedTool);
                 }
                 return updated;
               });
             }
             break;
-            
+
           case 'RESPONSE_TYPE_TOOL_CALL_ERROR':
             if (response.toolCallInfo) {
               const toolInfo = response.toolCallInfo;
-              
+
               // Update the tool call status to error
-              setActiveToolCalls(prev => {
+              setActiveToolCalls((prev) => {
                 const updated = new Map(prev);
                 const existing = updated.get(toolInfo.toolId);
                 if (existing) {
@@ -155,26 +167,30 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
                     ...existing,
                     status: 'error' as const,
                     error: toolInfo.errorMessage,
-                    duration: toolInfo.durationMs ? Number(toolInfo.durationMs) : undefined
+                    duration: toolInfo.durationMs
+                      ? Number(toolInfo.durationMs)
+                      : undefined,
                   };
-                  
+
                   // Move to completed tools after a longer delay to show error status
                   setTimeout(() => {
-                    setCompletedToolCalls(prevCompleted => new Map(prevCompleted).set(toolInfo.toolId, errorTool));
-                    setActiveToolCalls(prevActive => {
+                    setCompletedToolCalls((prevCompleted) =>
+                      new Map(prevCompleted).set(toolInfo.toolId, errorTool),
+                    );
+                    setActiveToolCalls((prevActive) => {
                       const newActive = new Map(prevActive);
                       newActive.delete(toolInfo.toolId);
                       return newActive;
                     });
                   }, 2000); // Show error status for 2 seconds
-                  
+
                   updated.set(toolInfo.toolId, errorTool);
                 }
                 return updated;
               });
             }
             break;
-            
+
           default:
             console.warn('Unknown agent response type:', response.type);
         }
@@ -186,10 +202,16 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
       }
     };
 
-    window.addEventListener('agentWebSocketMessage', handleAgentMessage as EventListener);
-    
+    window.addEventListener(
+      'agentWebSocketMessage',
+      handleAgentMessage as EventListener,
+    );
+
     return () => {
-      window.removeEventListener('agentWebSocketMessage', handleAgentMessage as EventListener);
+      window.removeEventListener(
+        'agentWebSocketMessage',
+        handleAgentMessage as EventListener,
+      );
     };
   }, []);
 
@@ -202,12 +224,12 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
       if (initializationTimeout.current) {
         clearTimeout(initializationTimeout.current);
       }
-      
+
       // Delay initialization to handle StrictMode double calls
       initializationTimeout.current = setTimeout(() => {
         if (!isInitialized.current) {
           isInitialized.current = true;
-          
+
           const initMessage = create(MessageSchema, {
             id: uuidv4(),
             type: {
@@ -219,13 +241,15 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
           });
 
           const binaryData = toBinary(MessageSchema, initMessage);
-          window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
-          
+          window.dispatchEvent(
+            new CustomEvent('sendAgentMessage', { detail: binaryData }),
+          );
+
           console.log('Initializing agent chat for:', agentId);
         }
       }, 50); // Small delay to handle React StrictMode double rendering
     }
-    
+
     // Cleanup timeout on unmount or agentId change
     return () => {
       if (initializationTimeout.current) {
@@ -251,17 +275,21 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
       setError(null);
 
       // Convert conversation history to the correct format
-      const chatHistory: ChatMessage[] = conversationHistory.map((msg) => 
+      const chatHistory: ChatMessage[] = conversationHistory.map((msg) =>
         create(ChatMessageSchema, {
-          role: msg.role === 'user' ? ChatMessage_Role.USER : 
-                msg.role === 'assistant' ? ChatMessage_Role.ASSISTANT :
-                msg.role === 'system' ? ChatMessage_Role.SYSTEM :
-                ChatMessage_Role.TOOL,
+          role:
+            msg.role === 'user'
+              ? ChatMessage_Role.USER
+              : msg.role === 'assistant'
+                ? ChatMessage_Role.ASSISTANT
+                : msg.role === 'system'
+                  ? ChatMessage_Role.SYSTEM
+                  : ChatMessage_Role.TOOL,
           content: msg.content,
           toolCallId: msg.toolCallId,
           toolCalls: msg.toolCalls || [],
           timestamp: BigInt(msg.timestamp || Date.now()),
-        })
+        }),
       );
 
       const sendMsg = create(MessageSchema, {
@@ -279,18 +307,20 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
 
       // Send message through main WebSocket controller
       const binaryData = toBinary(MessageSchema, sendMsg);
-      window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
-      
+      window.dispatchEvent(
+        new CustomEvent('sendAgentMessage', { detail: binaryData }),
+      );
+
       console.log('Sending message to agent:', { sessionId, agentId, message });
     },
-    [isConnected, sessionId, agentId]
+    [isConnected, sessionId, agentId],
   );
 
   // Cleanup function to close session
   const closeSession = useCallback(() => {
     if (sessionId) {
       console.log('Closing agent session:', sessionId);
-      
+
       const closeMessage = create(MessageSchema, {
         id: uuidv4(),
         type: {
@@ -302,7 +332,9 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
       });
 
       const binaryData = toBinary(MessageSchema, closeMessage);
-      window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
+      window.dispatchEvent(
+        new CustomEvent('sendAgentMessage', { detail: binaryData }),
+      );
     }
   }, [sessionId]);
 
@@ -312,7 +344,7 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
     if (sessionId) {
       closeSession();
     }
-    
+
     isInitialized.current = false;
     setSessionId(null);
     setStreamingContent('');
@@ -329,7 +361,10 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
     const currentSessionId = sessionId;
     return () => {
       if (currentSessionId) {
-        console.log('Component unmounting, closing agent session:', currentSessionId);
+        console.log(
+          'Component unmounting, closing agent session:',
+          currentSessionId,
+        );
         const closeMessage = create(MessageSchema, {
           id: uuidv4(),
           type: {
@@ -340,7 +375,9 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
           },
         });
         const binaryData = toBinary(MessageSchema, closeMessage);
-        window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
+        window.dispatchEvent(
+          new CustomEvent('sendAgentMessage', { detail: binaryData }),
+        );
       }
     };
   }, [sessionId]);
@@ -348,7 +385,7 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
   // Handle page unload and visibility changes
   useEffect(() => {
     const currentSessionId = sessionId;
-    
+
     const handleBeforeUnload = () => {
       if (currentSessionId) {
         console.log('Page unloading, closing agent session:', currentSessionId);
@@ -362,13 +399,18 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
           },
         });
         const binaryData = toBinary(MessageSchema, closeMessage);
-        window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
+        window.dispatchEvent(
+          new CustomEvent('sendAgentMessage', { detail: binaryData }),
+        );
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && currentSessionId) {
-        console.log('Page becoming hidden, closing agent session:', currentSessionId);
+        console.log(
+          'Page becoming hidden, closing agent session:',
+          currentSessionId,
+        );
         const closeMessage = create(MessageSchema, {
           id: uuidv4(),
           type: {
@@ -379,7 +421,9 @@ export function useAgentWebSocket(agentId: string): UseAgentWebSocketReturn {
           },
         });
         const binaryData = toBinary(MessageSchema, closeMessage);
-        window.dispatchEvent(new CustomEvent('sendAgentMessage', { detail: binaryData }));
+        window.dispatchEvent(
+          new CustomEvent('sendAgentMessage', { detail: binaryData }),
+        );
       }
     };
 
